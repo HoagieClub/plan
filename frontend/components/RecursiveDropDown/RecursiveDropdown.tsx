@@ -5,7 +5,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Button as JoyButton } from '@mui/joy';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';import { Button as JoyButton } from '@mui/joy';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -19,6 +19,7 @@ import LoadingComponent from '../LoadingComponent';
 import SettingsModal from '../Modal';
 
 import styles from '../InfoComponent/InfoComponent.module.scss';
+import { cornersOfRectangle } from '@dnd-kit/core/dist/utilities/algorithms/helpers';
 
 interface Dictionary {
   [key: string]: any;
@@ -36,6 +37,8 @@ interface SatisfactionStatusProps {
   count: number;
   minNeeded: number;
   maxCounted: number;
+  settled: number;
+  unsettled: number;
   isRestrictions: boolean;
 }
 
@@ -57,6 +60,8 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
   count,
   minNeeded,
   maxCounted,
+  settled,
+  unsettled,
   isRestrictions,
 }) => {
   if (manuallySatisfied) {
@@ -66,38 +71,60 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
     return <InfoOutlinedIcon style={{ color: 'blue', marginLeft: '10px' }} />;
   }
   if (maxCounted > 1) {
-    return (
-      <>
-        {satisfied === 'True' ? (
+    if (satisfied === 'True') {
+      return (
+        <>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ fontWeight: 450, color: 'green' }}>{Math.floor(count / minNeeded)}</span>
             <AddCircleOutlineOutlinedIcon style={{ color: 'green', marginLeft: '10px' }} />
           </div>
-        ) : (
+        </>
+      );
+    }
+    if (settled + unsettled >= minNeeded) {
+      return (
+        <>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ fontWeight: 450, color: 'red' }}>
               {count}/{minNeeded}
             </span>
-            <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
+            <ErrorOutlineIcon style={{ color: 'orange', marginLeft: '10px' }} />
           </div>
-        )}
-      </>
+        </>
+      );
+    }
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontWeight: 450, color: 'red' }}>
+          {count}/{minNeeded}
+        </span>
+        <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
+      </div>
+    )
+  }
+
+
+  if (satisfied === 'True') {
+    return (
+      <CheckCircleOutlineIcon style={{ color: 'green', marginLeft: '10px' }} />
     );
   }
-  return (
-    <>
-      {satisfied === 'True' ? (
-        <CheckCircleOutlineIcon style={{ color: 'green', marginLeft: '10px' }} />
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontWeight: 450, color: 'red' }}>
-            {count}/{minNeeded}
-          </span>
-          <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
-        </div>
-      )}
-    </>
-  );
+  if (settled + unsettled >= minNeeded) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontWeight: 450, color: 'red' }}>
+          {count}/{minNeeded}
+        </span>
+        <ErrorOutlineIcon style={{ color: 'orange', marginLeft: '10px' }} />
+      </div>
+    );
+  }
+  return (<div style={{ display: 'flex', alignItems: 'center' }}>
+    <span style={{ fontWeight: 450, color: 'red' }}>
+      {count}/{minNeeded}
+    </span>
+    <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
+  </div>);
 };
 
 // Dropdown component with refined styling
@@ -436,10 +463,11 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
             count={value.count}
             minNeeded={value.min_needed}
             maxCounted={value.max_counted}
+            settled={value.settled ? value.settled[0].length : 0}
+            unsettled={value.unsettled ? value.unsettled[0].length : 0}
             isRestrictions={isRestrictions}
           />
         ) : null;
-
       const subItems = isObject ? { ...value, satisfied: undefined } : value;
       let settledEmpty = false;
       let unsettledEmpty = false;
