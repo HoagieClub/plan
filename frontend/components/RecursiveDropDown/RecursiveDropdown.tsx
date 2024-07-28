@@ -1,10 +1,11 @@
-import { FC, useEffect, useState, useCallback } from 'react';
+import { FC, useEffect, useState, useCallback, useRef } from 'react';
 
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Button as JoyButton } from '@mui/joy';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -390,9 +391,34 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       }
       const isArray = Array.isArray(value);
       if (isArray) {
+        const containerRef = useRef<HTMLDivElement>(null);
+        const endIconRef = useRef(null);
+        const [maxWidth, setMaxWidth] = useState(0);
+        const [endIconWidth, setEndIconWidth] = useState(0);
+
+        useEffect(() => {
+          const calculateMaxWidth = () => {
+            if (containerRef.current) {
+              const buttons = containerRef.current.querySelectorAll('button');
+              const widths = Array.from(buttons).map(button => button.offsetWidth);
+              const maxWidth = Math.max(...widths);
+              setMaxWidth(maxWidth + 1);
+            }
+            if (endIconRef.current) {
+              setEndIconWidth(endIconRef.current.offsetWidth);
+            }
+          };
+
+          setTimeout(calculateMaxWidth, 1);
+          
+        }, [value]);
+
         if (key === 'settled') {
+          // console.log(maxWidth);
           // Render as disabled buttons
-          return value[0].map((item, index) => (
+          return (
+          <div ref = {containerRef}>
+            {value[0].map((item, index) => (
             <Button
               key={index}
               variant='contained'
@@ -401,15 +427,21 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
                 margin: '5px',
                 backgroundColor: '#f7f7f7',
                 color: '#000',
+                // minWidth: '100px',
+                width: maxWidth ? `${maxWidth}px` : 'auto'
               }}
               onClick={() => handleClick(item['crosslistings'], value[1])}
             >
               {item['code']}
             </Button>
-          ));
+          ))}
+          </div>);
         } else if (key === 'unsettled') {
           // Render as normal buttons
-          return value[0].map((item, index) => (
+          // console.log(maxWidth);
+          return (
+            <div ref = {containerRef}>
+              {value[0].map((item, index) => (
             <Button
               key={index}
               variant='contained'
@@ -418,12 +450,17 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
                 backgroundColor: '#f7f7f7',
                 color: '#000',
                 opacity: 0.5,
+                // minWidth: '100px',
+                width: maxWidth ? `${maxWidth}px` : 'auto'
               }}
               onClick={() => handleClick(item['crosslistings'], value[1])}
+              endIcon = {<ErrorOutlineIcon ref = {endIconRef} style = {{color: 'orange'}} />}
             >
               {item['code']}
             </Button>
-          ));
+          ))}
+            </div>
+          );
         }
       }
       const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
