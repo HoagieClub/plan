@@ -49,6 +49,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.settledContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
 @media (hover: hover) {
   .Action:hover {
     background-color: var(--action-background, rgba(0, 0, 0, 0.05));
