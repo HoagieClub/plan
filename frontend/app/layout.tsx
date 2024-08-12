@@ -13,11 +13,14 @@ export const metadata: Metadata = {
   manifest: 'manifest.json',
 };
 
+// changed RootLayout to flex
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en' className={inter.className}>
-      <body>
-        {children}
+    <html lang='en' className={inter.className} style={{ height: '100%' }}>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', margin: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {children}
+        </div>
         <Analytics />
         <SpeedInsights />
       </body>
