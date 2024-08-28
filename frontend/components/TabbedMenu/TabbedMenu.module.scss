@@ -7,11 +7,11 @@
   margin-left: 0.5vw;
   margin-right: 0.5vw;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden; /* Ensures child elements do not break the rounded corners */
   display: flex;
   flex-direction: column;
-  background-color: rgba(246, 246, 246, 1);
+  background-color: white;
 }
 
 .tabMenu {
@@ -19,16 +19,16 @@
   padding: 0;
   margin: 0;
   display: flex;
-  background: #f2f2f2;
+  background: #F4F6FA;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .tabMenu li {
   padding: 10px 20px;
   cursor: pointer;
-  border-right: 1px solid #ccc;
-  border-top-left-radius: 6px; /* Rounded corners for tabs */
-  border-top-right-radius: 6px; /* Rounded corners for tabs */
+  border-right: 1px solid #E6E8F0;
+  border-top-left-radius: 0px; /* Rounded corners for tabs */
+  border-top-right-radius: 0px; /* Rounded corners for tabs */
   display: flex; /* Use flexbox for centering */
   align-items: center; /* Center vertically */
   justify-content: center; /* Center horizontally */
@@ -37,7 +37,7 @@
     border-right: none;
   }
   &:hover {
-    background-color: #e2e2e2;
+    background-color: white;
   }
   &.active {
     background: white;
@@ -48,9 +48,9 @@
 .tabContent {
   padding: 20px;
   background: white;
-  border-radius: 0 0 6px 6px; /* Rounded corners for the bottom part of the rectangle */
+  border-radius: 0 0 5px 5px; /* Rounded corners for the bottom part of the rectangle */
   flex-grow: 1;
   overflow-y: auto; /* Makes the content area scrollable */
   height: 650px; /* Fixed height for the content area */
-  background-color: rgba(246, 246, 246, 1);
+  background-color: white;
 }

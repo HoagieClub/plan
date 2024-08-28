@@ -2,6 +2,17 @@ import { memo, MouseEvent, FC } from 'react';
 
 import { Dialog } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  majorScale,
+  Pane,
+  Text,
+  Position,
+  Popover,
+  Avatar,
+  TabNavigation,
+  Tab,
+  useTheme,
+} from 'evergreen-ui';
 import Image from 'next/image';
 
 import useAuthStore from '../store/authSlice';

@@ -10,8 +10,8 @@
   margin-right: 0.5vw;
   border-radius: 8px;
   transition: background-color 350ms ease;
-  background-color: rgba(246, 246, 246, 1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 1);
+  border: 1px solid #EDEFF5;
   font-size: 1em;
   width: 24vw;
   overflow: hidden; // IMPORTANT: prevents dynamic resizing of container + makes scrollbars cleaner
@@ -42,15 +42,15 @@
     color: rgba(0, 0, 0, 0.5);
     background-color: transparent;
     border-style: dashed;
-    border-color: rgba(0, 0, 0, 0.08);
+    border-color: #EDEFF5;
 
     &:hover {
-      border-color: rgba(0, 0, 0, 0.15);
+      border-color: #EDEFF5;
     }
   }
 
   &.hover {
-    background-color: rgb(235, 235, 235, 1);
+    background-color: #F5FBF8;
   }
 
   &.unstyled {
@@ -68,7 +68,7 @@
   }
 
   &.shadow {
-    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    box-shadow: 0 1px 2px 0 #E6E8F0, 0 1px 3px 1px #E6E8F0;
   }
 
   &:focus-visible {
@@ -90,10 +90,10 @@
   padding-right: 8px;
   align-items: center;
   justify-content: space-between;
-  background-color: #fff;
+  background-color: #F4F6FA;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #EDEFF5;
 
   &:hover {
     .Actions > * {
