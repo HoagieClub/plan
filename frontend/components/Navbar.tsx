@@ -74,7 +74,7 @@ const Navbar: FC = () => {
         </div>
         <div className='hidden lg:flex lg:gap-x-12 '>
           {navigation.map((item) =>
-            item.name === 'Dashboard' ? (
+            (item.name === 'Dashboard' || item.name === 'Calendar') ? (
               <a
                 key={item.name}
                 href={item.href}
