@@ -10,6 +10,8 @@ import useMobileMenuStore from '../store/mobileMenuSlice';
 import DropdownMenu from './DropdownMenu';
 import { Login } from './Login';
 
+import ModalManager from './TutorialModal';
+
 const navigation = [
   { name: 'About', href: '/about/' },
   { name: 'Dashboard', href: '/dashboard/' }, // Should be protected path and not auto-redirect
@@ -24,13 +26,15 @@ const Navbar: FC = () => {
   }));
   const { mobileMenuOpen, setMobileMenuOpen } = useMobileMenuStore();
 
+  const { showTutorial, setShowTutorial } = useState(false);
+
   const handleDashboardClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     login();
   };
 
   const renderUserMenu = () => (isAuthenticated ? <DropdownMenu /> : <Login />);
-
+  
   return (
     <header className={`absolute bg --system-text-color inset-x-0 top-0 z-50 transform}`}>
       <nav className='flex items-center justify-between p-6 lg:px-8' aria-label='Global'>
@@ -122,3 +126,6 @@ const Navbar: FC = () => {
 };
 
 export default memo(Navbar);
+
+
+
