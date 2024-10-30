@@ -67,7 +67,7 @@ req_list:
     - POR 109
   - name: 200-Level
     max_counted: 4
-    min_needed: 0
+    min_needed: 1
     explanation:
     course_list:
     - POR 2**
