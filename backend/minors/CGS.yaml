@@ -20,13 +20,7 @@ contacts:
   email: anna@princeton.edu
 req_list:
   - name: Total Courses
-    - name: Department Restriction
-      explanation: "At most, one course with a primary course listing from the student's department of concentration unless permission is obtained from the faculty director."
-      max_counted: 1
-    - name: Dual Counting
-      explanation: "At most, two courses counted towards the minor that are also counted towards the major."
-      max_counted: 2
-    explanation: Students are required to take five courses in cognitive science
+    explanation: Students are required to take five courses in cognitive science. At most, two courses counted towards the minor that are also counted towards the major. At most, one course with a primary course listing from the student's department of concentration unless permission is obtained from the faculty director."
     min_needed: 5
     max_counted: 1
     req_list:
