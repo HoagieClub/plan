@@ -20,15 +20,21 @@ contacts:
   email: anna@princeton.edu
 req_list:
   - name: Total Courses
-    explanation: "Students are required to take five courses in cognitive science"
+    - name: Department Restriction
+      explanation: "At most, one course with a primary course listing from the student's department of concentration unless permission is obtained from the faculty director."
+      max_counted: 1
+    - name: Dual Counting
+      explanation: "At most, two courses counted towards the minor that are also counted towards the major."
+      max_counted: 2
+    explanation: Students are required to take five courses in cognitive science
     min_needed: 5
     max_counted: 1
     req_list:
     - name: Required Courses
       explanation: At least one course designated with an asterisk in the list below, indicating that it is a CogSci Minor Required Course (CMRC);
       min_needed: 1
-      max_counted: 1
-      course_list: Required Courses
+      max_counted: 5
+      course_list:
         - CHV 300
         - CGS 322
         - CGS 254
@@ -51,7 +57,7 @@ req_list:
     - name: Advanced Courses
       explanation: "Three courses at the 300-level or higher."
       min_needed: 3
-      max_counted: 3
+      max_counted: 5
       course_list:
         - COS 126
         - COS 324 
@@ -123,10 +129,6 @@ req_list:
         - SML 354
   - name: Academic Units
     explanation: "Courses must be taken in at least three different academic units."
-    max_counted: 3
-  - name: Department Restriction
-    explanation: "At most, one course with a primary course listing from the student's department of concentration unless permission is obtained from the faculty director."
+    min_needed: 3
     max_counted: 1
-  - name: Dual Counting
-    explanation: "At most, two courses counted towards the minor that are also counted towards the major."
-    max_counted: 2
+    double_counting_allowed: true
