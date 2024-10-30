@@ -7,13 +7,13 @@ urls:
 - https://spo.princeton.edu/undergraduate/minor
 description: |- 
   Students wishing to complete a minor in the Department of Spanish and 
-  Portuguese must complete the Minor Application Form. 
+  Portuguese must complete the Minor Application Form. <br> <br>
 
   Applications may be submitted as early as the second semester of the 
   sophomore year, after a major has been declared. We highly recommend 
   students apply by the Spring term of their junior year to ensure 
   course plans can be built accordingly. Applications will be accepted 
-  no later than February 15 of the senior year.
+  no later than February 15 of the senior year. <br> <br>
 
   Students who want to minor in both Spanish or Portuguese and the 
   Program in Latin American Studies can do so with the permission of 
@@ -42,7 +42,8 @@ req_list:
     the 300-level or higher). Up to one cross-listed course taken in 
     English can count towards the minor, provided that all written work 
     is completed in Spanish. Note that all Princeton summer courses in 
-    Spain and Argentina offered by SPO count towards the requirement.
+    Spain and Argentina offered by SPO count towards the requirement. 
+    <br> <br>
 
     Up to one course per semester taken abroad at another institution 
     can count towards the minor with the pre-approval of the DUS. 
@@ -52,7 +53,7 @@ req_list:
     equivalent to a course offered at Princeton.
   req_list:
   - name: 200-Level Courses
-    max_counted: 1
+    max_counted: 2
     min_needed: 2
     explanation: |-
       At the 200-level, students are expected to progress by taking one 
@@ -70,7 +71,7 @@ req_list:
       - SPA 207
       - SPA 208
       - SPA 209
-    - name: "Topics Course"
+    - name: Topics Course
       max_counted: 1
       min_needed: 1
       explanation: 
@@ -93,7 +94,7 @@ req_list:
         - SPA 4**
         - SPA 5**
   - name: 300-Level Courses
-    max_counted: 1
+    max_counted: 3
     min_needed: 3
     explanation:
     course_list:
@@ -107,7 +108,7 @@ req_list:
     A capstone assignment in Spanish consisting of a 1500-word 
     reflection on how the student’s work in the minor has informed 
     their learning in their major coursework and potentially their 
-    independent work. 
+    independent work. <br> <br>
 
     The assignment should be independently carried out during the 
     student’s senior year. It must be submitted to the Undergraduate 

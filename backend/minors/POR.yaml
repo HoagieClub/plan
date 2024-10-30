@@ -7,13 +7,13 @@ urls:
 - https://spo.princeton.edu/undergraduate/minor
 description: |- 
   Students wishing to complete a minor in the Department of Spanish and 
-  Portuguese must complete the Minor Application Form. 
+  Portuguese must complete the Minor Application Form. <br> <br>
 
   Applications may be submitted as early as the second semester of the 
   sophomore year, after a major has been declared. We highly recommend 
   students apply by the Spring term of their junior year to ensure 
   course plans can be built accordingly. Applications will be accepted 
-  no later than February 15 of the senior year.
+  no later than February 15 of the senior year. <br> <br>
 
   Students who want to minor in both Spanish or Portuguese and the 
   Program in Latin American Studies can do so with the permission of 
@@ -39,17 +39,17 @@ req_list:
   min_needed: 5
   explanation: |-
     Five POR or cross-listed courses at the 200-level or higher (with 
-    at least one at the 300-level or higher).
+    at least one at the 300-level or higher). <br> <br>
 
     Princeton summer abroad courses in Portugal/Cape Verde or Brazil 
-    offered by SPO count towards the requirement.
+    offered by SPO count towards the requirement. <br> <br>
     
     Up to one course per semester taken abroad at another institution 
     can count towards the minor with the pre-approval of the DUS. 
     Students intending to study abroad must contact the DUS with the 
     description and syllabus of the Portuguese course they intend to 
     have counted towards the minor to make sure that such course is 
-    equivalent to a course offered at Princeton.
+    equivalent to a course offered at Princeton. <br> <br>
 
     Up to one cross-listed course taken in English can count towards 
     the minor, provided that all written work is completed in 
@@ -65,12 +65,20 @@ req_list:
     course_list:
     - POR 107
     - POR 109
-  - name: 300-Level Course(s)
-    max_counted: 1
+  - name: 200-Level
+    max_counted: 4
+    min_needed: 0
+    explanation:
+    course_list:
+    - POR 2**
+  - name: Above 200-Level
+    max_counted: 5
     min_needed: 1
     explanation:
     course_list:
-    - SPA 3*
+    - POR 3**
+    - POR 4**
+    - POR 5**
 - name: Capstone Assignment
   max_counted: 1
   min_needed: 1
@@ -80,7 +88,7 @@ req_list:
     A capstone assignment in Portuguese consisting of a 1500-word 
     reflection on how the student’s work in the minor has informed 
     their learning in their major coursework and potentially their 
-    independent work. 
+    independent work. <br> <br>
 
     The assignment should be independently carried out during the 
     student’s senior year. It must be submitted to the Undergraduate 
