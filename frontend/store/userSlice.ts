@@ -44,6 +44,7 @@ export const useFetchUserProfile = () => {
         timeFormat24h: data.timeFormat24h,
         themeDarkMode: data.themeDarkMode,
       });
+      
     };
 
     fetchProfile();

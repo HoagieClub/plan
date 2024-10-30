@@ -17,6 +17,7 @@ const Dashboard: FC = () => {
   useEffect(() => {
     checkAuthentication().then(() => setIsLoading(false));
   }, [checkAuthentication]);
+  // add useEffect
 
   return (
     <>

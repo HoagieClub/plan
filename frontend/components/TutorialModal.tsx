@@ -5,7 +5,6 @@ import Modal from '@/components/Modal';
 const TutorialModal = ({ onClose }) => {
     return (
         <Modal>
-           <button onClick={onClose}>Close Tutorial</button>
         </Modal>
     );
 };
@@ -15,13 +14,13 @@ const ModalManager = () => {
 
     const [showTutorial, setShowTutorial] = useState(false);
 
-   
     useEffect(() => {
+        const ShownTutorial = localStorage.getItem('tutorialShown');
         const major = localStorage.getItem('major');
         const minors = localStorage.getItem('minors');
 
     
-    if (!major || !minors) {
+    if (!ShownTutorial && (!major || !minors)) {
       setShowTutorial(true); 
     }
 
@@ -32,6 +31,7 @@ const ModalManager = () => {
 
         const profile = useUserSlice.getState().profile;
 
+        localStorage.setItem('tutorialShown', 'true');
         localStorage.setItem('major', JSON.stringify(profile.major));
         localStorage.setItem('minors', JSON.stringify(profile.minors));
     };
