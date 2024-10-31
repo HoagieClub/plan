@@ -27,7 +27,8 @@ req_list:
     - name: Required Courses
       explanation: At least one course designated with an asterisk in the list below, indicating that it is a CogSci Minor Required Course (CMRC);
       min_needed: 1
-      max_counted: 5
+      max_counted: 1
+      double_counting_allowed: true
       course_list:
         - CHV 300
         - CGS 322
@@ -80,25 +81,25 @@ req_list:
         - PHI 315
         - PHI 317
         - PHI 321
-        - *PHI 322
+        - PHI 322
         - PHI 352
         - PHI 380
         - PSY 304
-        - *PSY 306
+        - PSY 306
         - PSY 307
-        - *PSY 309
-        - *PSY 315
+        - PSY 309
+        - PSY 315
         - PSY 316
-        - *PSY 333
+        - PSY 333
         - PSY 337
         - PSY 338 
         - PSY 340
         - PSY 345
-        - *PSY 360
+        - PSY 360
         - PSY 400
         - PSY 409
-        - *PSY 454
-        -  SPI 305
+        - PSY 454
+        - SPI 305
         - SPI 340
         - SPI 404
         - ECO 468
@@ -111,11 +112,24 @@ req_list:
     max_counted: 1
     double_counting_allowed: true
     req-list: 
-    - name: Computer Science
+    - name: CHV
+      min_needed: 1
+      max_counted: 1
+      course_list: 
+        - CHV 300
+    - name: CGS
+      min_needed: 1
+      max_counted: 1
+      course_list: 
+        - CGS 322
+        - CGS 254
+        - CGS 255
+    - name: COS
       min_needed: 1
       max_counted: 1
       course_list: 
         - COS 324 
+        - COS 360
         - COS 402
         - COS 424
         - COS 429
@@ -124,7 +138,7 @@ req_list:
         - COS 495
         - TRA 301
     req_list:
-    - name: Linguistics
+    - name: LIN
       min_needed: 1
       max_counted: 1
       course_list: 
@@ -133,17 +147,24 @@ req_list:
         - LIN 303 
         - LIN 306
         - LIN 308
+        - LIN 309
         - LIN 310
         - LIN 355
         - LIN 360 
         - LIN 406 
         - LIN 412
     req_list:
-    - name: Mechanical and Aerospace Engineering
+    - name: MAE
       min_needed: 1
       max_counted: 1
       course_list: 
         - MAE 345
+    req_list:
+    - name: MUS
+      min_needed: 1
+      max_counted: 1
+      course_list: 
+        - MUS 248
     req_list:
     - name: ENE
       min_needed: 1
@@ -151,53 +172,58 @@ req_list:
       course_list: 
         - ENE 475
     req_list:
-    - name: Electrical and Computer Engineering
+    - name: ECE
       min_needed: 1
       max_counted: 1
       course_list: 
         - ECE 364
     req_list:
-    - name: Neuroscience
+    - name: NEU
       min_needed: 1
       max_counted: 1
       course_list: 
+       - NEU 306
        - NEU 330 
        - NEU 437
     req_list:
-    - name: Philosophy
+    - name: PHI
       min_needed: 1
       max_counted: 1
       course_list: 
+        - PHI 207
         - PHI 311
         - PHI 313
         - PHI 315
         - PHI 317
         - PHI 321
-        - *PHI 322
+        - PHI 322
         - PHI 352
         - PHI 380
     req_list:
-    - name: Psychology
+    - name: PSY
       min_needed: 1
       max_counted: 1
       course_list: 
+        - PSY 248
+        - PSY 254
+        - PSY 255
         - PSY 304
-        - *PSY 306
+        - PSY 306
         - PSY 307
-        - *PSY 309
-        - *PSY 315
+        - PSY 309
+        - PSY 315
         - PSY 316
-        - *PSY 333
+        - PSY 333
         - PSY 337
         - PSY 338 
         - PSY 340
         - PSY 345
-        - *PSY 360
+        - PSY 360
         - PSY 400
         - PSY 409
-        - *PSY 454
+        - PSY 454
     req_list:
-    - name: SPIA
+    - name: SPI
       min_needed: 1
       max_counted: 1
       course_list: 
@@ -205,19 +231,19 @@ req_list:
         - SPI 340
         - SPI 404
     req_list:
-    - name: Economy
+    - name: ECO
       min_needed: 1
       max_counted: 1
       course_list: 
         - ECO 468
     req_list:
-    - name: History
+    - name: HIS
       min_needed: 1
       max_counted: 1
       course_list: 
         - HIS 494
     req_list:
-    - name: Statistics and Machine Learning
+    - name: SML
       min_needed: 1
       max_counted: 1
       course_list: 
