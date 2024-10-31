@@ -119,6 +119,7 @@ const minorOptions = [
   { code: 'MQE', name: 'Quantitative Economics' },
   { code: 'MSE', name: 'Materials Science and Engineering' },
   { code: 'MUS', name: 'Music' },
+  { code: 'NES', name: 'Near Eastern Studies' },
   { code: 'NEU', name: 'Neuroscience' },
   { code: 'PHI', name: 'Philosophy' },
   { code: 'RES', name: 'Russian, East European and Eurasian Studies' },
