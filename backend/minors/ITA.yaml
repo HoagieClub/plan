@@ -30,7 +30,7 @@ req_list:
   - ITA 108
   - ITA 1027
 - name: Program of Study
-  max_counted: 1
+  max_counted: 2
   min_needed: 5
   explanation: |- 
     Students must successfully take a minimum of five courses in the relevant language, linguistics, 
@@ -40,22 +40,18 @@ req_list:
     A 200-level course is a prerequisite for taking 300-level courses in Italian.
   req_list: 
   - name: Advanced Level
-    max_counted: 1
+    max_counted: 5
     min_needed: 3
     course_list: 
     - ITA 3*
   - name: Intermediate Level
-    max_counted: 1
-    min_needed: 0
+    max_counted: 2
+    min_needed: 1
     course_list: 
     - ITA 2*
-    - name: Language Double Counting
-      req_list:
-        min_counted: 0
-        max_counted: 1
-        course_list: 
-        - ITA 207
-        - ITA 208
+    excluded_course_list:
+    - FRE 207
+    - FRE 208
   - name: Exit Interview
     max_counted: 1
     min_needed: 1
@@ -69,3 +65,4 @@ req_list:
       Italian.
     no_req:
     
+
