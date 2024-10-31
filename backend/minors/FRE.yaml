@@ -31,7 +31,7 @@ req_list:
   - FRE 108
   - FRE 1027
 - name: Program of Study
-  max_counted: 1
+  max_counted: 2
   min_needed: 5
   explanation: |- 
     Students must successfully take a minimum of five courses in the relevant language, linguistics, 
@@ -41,18 +41,18 @@ req_list:
     A 200-level course is a prerequisite for taking 300-level courses in French.
   req_list: 
   - name: Advanced Level
-    max_counted: 1
+    max_counted: 5
     min_needed: 3
     course_list: 
     - FRE 3*
   - name: Intermediate Level
-    max_counted: 1
-    min_needed: 0
+    max_counted: 2
+    min_needed: 1
     course_list: 
     - FRE 2*
     - name: Language Double Counting
       req_list:
-        min_counted: 0
+        min_counted: 1
         max_counted: 1
         course_list: 
         - FRE 207
