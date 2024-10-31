@@ -372,6 +372,10 @@ def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
 
     was_satisfied = old_deficit <= 0
     newly_satisfied = 0
+
+    if req['dist_req'] or req['num_courses']:
+        req['double_counting_allowed'] = False
+
     if 'req_list' in req:
         for sub_req in req['req_list']:
             newly_satisfied_added = assign_settled_courses_to_reqs(
