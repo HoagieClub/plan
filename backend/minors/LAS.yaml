@@ -65,35 +65,21 @@ req_list:
     - LAS *
   - name: Path 2
     max_counted: 1
-    min_needed: 2
+    min_needed: 5
     explanation: |-
-      Alternatively, students can fulfill the minor requirements by 
-      taking four courses and, in lieu of a fifth course, completing one of the 
-      following options:
-      - Complete a senior thesis on a Latin American or Caribbean topic, or with 
-      significant Latin American and/or Caribbean content;
-      - Have a meaningful, at least 6- to 10-week-long, structured experience in 
-      Latin America or the Caribbean through an internship, an independent research 
-      project or a service project. After they return, students must submit a 
-      1,000-word memo describing their international experience and its relevance 
-      to the LAS minor. Participation in the Bridge Year Program in a Latin American 
-      country may count toward the fulfillment of this requirement.
-      - Write a 6,000-8000-word research paper on Latin America or the Caribbean. 
-      Students can submit a relevant junior research paper or expand a course final 
-      paper under the supervision of a PLAS faculty member.
+      Students can fulfill the minor requirements by taking four courses and, in 
+      lieu of a fifth course, completing an alternative option.
     req_list: 
     - name: LAS Courses
-      max_counted: 1
-      min_needed: 4
+      max_counted: 4
+      min_needed: 1
       explanation:
       course_list:
       - LAS *
     - name: Alternative options
       max_counted: 1
       min_needed: 1
-      explanation: |-
-        Students can fulfill the minor requirements by taking four courses and, in 
-        lieu of a fifth course, completing an alternative option
+      explanation:
       req_list:
       - name: Senior Thesis
         max_counted: 1
@@ -101,7 +87,7 @@ req_list:
         explanation: |-
           <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so hoagieplan does not check it.</i><br><br>
 
-          - Complete a senior thesis on a Latin American or Caribbean topic, or with 
+          Complete a senior thesis on a Latin American or Caribbean topic, or with 
           significant Latin American and/or Caribbean content
         no_req:
       - name: Structured Internship
@@ -110,7 +96,7 @@ req_list:
         explanation: |-
           <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so hoagieplan does not check it.</i><br><br>
 
-          - Have a meaningful, at least 6- to 10-week-long, structured experience in 
+          Have a meaningful, at least 6- to 10-week-long, structured experience in 
           Latin America or the Caribbean through an internship, an independent research 
           project or a service project. After they return, students must submit a 
           1,000-word memo describing their international experience and its relevance 
@@ -123,7 +109,7 @@ req_list:
         explanation: |-
           <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so hoagieplan does not check it.</i><br><br>
 
-          - Write a 6,000-8000-word research paper on Latin America or the Caribbean. 
+          Write a 6,000-8000-word research paper on Latin America or the Caribbean. 
           Students can submit a relevant junior research paper or expand a course final 
           paper under the supervision of a PLAS faculty member.
         no_req:
