@@ -300,7 +300,7 @@ req_list:
 
       ECE473 / COS473 Elements of Decentralized Finance (S)<br>
       ECE 475 Computer Architecture (S)<br>
-      COS 318 Operating Systems (F)<br>
+      COS 417 Operating Systems (F)<br>
       COS 320 Compiling Techniques (S)<br>
       COS 461 Computer Networks (S)<br><br>
       
@@ -317,8 +317,8 @@ req_list:
       max_counted: 1
       min_needed: 2
       course_list:
-      - COS 318
       - COS 320
+      - COS 417
       - COS 461
       - ECE 368
       - ECE 462
@@ -326,7 +326,6 @@ req_list:
       - ECE 470
       - ECE 472
       - ECE 473 / COS 473
-      - COS 318
     - name: Breadth
       max_counted: 1
       min_needed: 1
@@ -334,8 +333,8 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
-      - COS 318
       - COS 320
+      - COS 417
       - COS 461
       - ECE 368
       - ECE 462
@@ -343,7 +342,6 @@ req_list:
       - ECE 470
       - ECE 472
       - ECE 473 / COS 473
-      - COS 318
       - ECE 397
       - ECE 398
       - ECE 497
