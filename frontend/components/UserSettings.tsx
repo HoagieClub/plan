@@ -127,6 +127,7 @@ const minorOptions = [
   { code: 'SML', name: 'Statistics and Machine Learning' },
   { code: 'TMT', name: 'Theater and Music Theater' },
   { code: 'TRA', name: 'Translation and Intercultural Communication' },
+  { code: 'TUR', name: 'Turkish Language' },
   { code: 'VIS', name: 'Visual Arts' },
   { code: 'VPL', name: 'Values and Public Life' },
 ];
