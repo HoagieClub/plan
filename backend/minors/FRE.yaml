@@ -52,8 +52,8 @@ req_list:
     - FRE 2*
     - name: Language Double Counting
       req_list:
-        min_counted: 1
         max_counted: 1
+        min_needed: 1
         course_list: 
         - FRE 207
         - FRE 208
