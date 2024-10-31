@@ -92,6 +92,7 @@ const majorOptions = [
 
 const minorOptions = [
   { code: 'AFS', name: 'African Studies' },
+  { code: 'ARA', name: 'Arabic Language' },
   { code: 'ASA', name: 'Asian American Studies' },
   { code: 'CHI', name: 'Chinese Language' },
   { code: 'CLA', name: 'Classics' },
