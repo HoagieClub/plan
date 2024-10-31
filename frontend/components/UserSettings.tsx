@@ -120,6 +120,7 @@ const minorOptions = [
   { code: 'MSE', name: 'Materials Science and Engineering' },
   { code: 'MUS', name: 'Music' },
   { code: 'NEU', name: 'Neuroscience' },
+  { code: 'PER', name: 'Persian Language' },
   { code: 'PHI', name: 'Philosophy' },
   { code: 'RES', name: 'Russian, East European and Eurasian Studies' },
   { code: 'SAS', name: 'South Asian Studies' },
