@@ -32,6 +32,7 @@ const useFilterStore = create<FilterState>()(
   persist(
     (set) => ({
       terms: {
+        'Spring 2025': '1254',
         'Fall 2024': '1252',
         'Spring 2024': '1244',
         'Fall 2023': '1242',
@@ -49,6 +50,7 @@ const useFilterStore = create<FilterState>()(
         '1232': 'Fall 2022',
         '1222': 'Fall 2021',
         '1212': 'Fall 2020',
+        '1254': 'Spring 2025',
         '1244': 'Spring 2024',
         '1234': 'Spring 2023',
         '1224': 'Spring 2022',
