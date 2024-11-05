@@ -219,4 +219,61 @@ req_list:
       dist_req: SA
   - name: Seven Total Courses
     max_counted: 1
-    num_courses: 7
+    min_needed: 7
+    req_list:
+    - name: Culture and Difference
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        The requirement in Culture and Difference begins with the premise that human beings experience the world through their respective cultures — the ideas, meanings, norms, and habituations — that are represented in the arts and literature, laws and institutions, and social practices of human societies whose histories and power relationships often differ from one another.  Found across a wide range of disciplines, these courses use cultural analysis to trace the ways in which human beings construct meaning both within and across groups. Culture and Difference courses offer students a lens through which other forms of disciplinary inquiry are enhanced, critiqued, and clarified, often paying close attention to the experiences and perspectives of groups who have historically been excluded from dominant cultural narratives or structures of social power. The requirement in Culture and Difference is the only requirement that may be satisfied either independently or concurrently with another distribution area.
+      dist_req: CD
+    - name: Epistemology and Cognition
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Courses in Epistemology and Cognition address the nature and limits of human knowledge.  The cognitive sciences and related fields study human reasoning as it is. Epistemology — the philosophical theory of knowledge — studies human reasoning as it ought to be.  Both areas of inquiry focus simultaneously on the manifold sources of human knowledge and on the many ways in which human reasoning can be distorted or undermined. Courses in this group are offered in a number of departments, but share the common goal of encouraging students to reflect on the linguistic, psychological, and cultural structures that make knowledge possible. Individual departments may also offer courses in disciplinary “ways of knowing” that invite students to consider the epistemological assumptions and methodological principles that inform research in their fields.
+      dist_req: EC
+    - name: Ethical Thought and Moral Values
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Human beings often disagree about matters of right and wrong, and about how we ought to organize our lives together. The ethical and moral conclusions we reach, however, are not mere matters of opinion. Ethical decisions emerge from fundamental ideas about the nature and possibility of the “good,” our duties and obligations to one another, our aspirations for a virtuous and meaningful life, and the demands of justice.  These ideas, often shaped by ancient traditions of religion and culture, guide the moral questions we ask and the conclusions we reach. Courses in Ethical Thought and Moral Values equip students to understand the basis of their own moral reasoning and ethical issues as they arise in social life, while also cultivating the possibility of a common ethical language among people whose traditions and values differ.
+      dist_req: EM
+    - name: Foreign Language
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Although there is no foreign language requirement for B.S.E. students, intermediate-level language courses (numbered 107 and 108 in the Romance languages, 105 and 107 in all others) and higher may also count towards the seven H/SS courses.
+      course_list:
+      - GER 1025
+      - LANG 1027
+      - LANG 105
+      - LANG 107
+      - LANG 108
+      - LANG 2**
+      - LANG 3**
+      - LANG 4**
+      - LANG 5**
+      excluded_course_list:
+      - FRE 105
+      - ITA 105
+      - POR 105
+      - SPA 105
+    - name: Historical Analysis
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Historical analysis invites students to enter imaginatively into languages, institutions, and worldviews of the past.  It grounds us in the awareness that human life and culture are thousands of years old, and that the world we experience in the present is only a fraction of all that it ever was.  Fundamental to historical analysis is the study of change over time:  why and how did cities rise and fall, technologies develop, social roles transform?  Because we can never directly experience the past, historical analysis depends on the subjective selection and interpretation of texts, artifacts, and other evidence, and from the same evidence many different stories can often be told. Historical analysis requires students to make critical judgments about the conclusions we can draw from the traces of the past to which we have access.
+      dist_req: HA
+    - name: Literature and the Arts
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Human beings have always used imagination to create reflections and representations of ourselves and our world, from cave paintings to symphonies to video games. In making these artistic or imaginative representations, we express ideas about our own nature and investigate the nature of the world around us, often in ways that push at the boundaries of what can be said in ordinary language. In courses in Literature and the Arts, students may produce creative, imaginative works or practice interpreting them. For example, they may choreograph dances or read Shakespeare's plays or create performance pieces that use imaginative and interpretive skills critically and physically. The skill of “close reading” is especially important in this area of inquiry: what can we learn from careful attention to the precise words, colors, or tones that an artist has chosen?
+      dist_req: LA
+    - name: Social Analysis
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Social analysis involves the study of the structures, processes, and meanings human beings create through our interactions with one another, and the networks and institutions through which human behavior develops and evolves. The codes and narratives we share with others, often unspoken, produce our sense of “the normal” and structure our thought and behavior. These components of social life are accessible through both quantitative methods, which involve the statistical analysis of data, and qualitative methods, which rely on the interpretation of data gathered through observation and interaction.  Social analysis enables us to make sense of the social structures and processes that shape individual lives, to understand the role of institutions — such as the family, government, schools, and labor markets — in society, and to define and respond to social problems, such as inequality and violence.
+      dist_req: SA
