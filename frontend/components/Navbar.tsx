@@ -38,20 +38,26 @@ const Navbar: FC = () => {
     login();
   };
 
-  const { isOpen, currentPage, openModal, closeModal } = useModalStore();
+  const { isOpen, currentPage, openModal, closeModal, hasSeenTutorial, setHasSeenTutorial } = useModalStore();
   useEffect(() => {
     if (
       userProfile &&
       userProfile.major &&
       userProfile.major.code === 'Undeclared' &&
       userProfile.minors.length === 0 &&
-      userProfile.certificates.length === 0
+      userProfile.certificates.length === 0 &&
+      !hasSeenTutorial
     ) {
       openModal();
     }
-  }, [openModal, userProfile, userProfile.major, userProfile.minors]);
+  }, [openModal, userProfile, hasSeenTutorial]);
 
   const renderUserMenu = () => (isAuthenticated ? <DropdownMenu /> : <Login />);
+
+  const handleCloseTutorial = () => {
+    setHasSeenTutorial(true);
+    closeModal();
+  };
 
   return (
     <header className={`absolute bg --system-text-color inset-x-0 top-0 z-50 transform}`}>
@@ -105,11 +111,11 @@ const Navbar: FC = () => {
       </nav>
 
       {isOpen && currentPage === 'dashboard' && (
-        <DashboardTutorial isOpen={isOpen} onClose={closeModal} />
+        <DashboardTutorial isOpen={isOpen} onClose={handleCloseTutorial} />
       )}
 
       {isOpen && currentPage === 'calendar' && (
-        <CalendarTutorial isOpen={isOpen} onClose={closeModal} />
+        <CalendarTutorial isOpen={isOpen} onClose={handleCloseTutorial} />
       )}
 
       <Dialog as='div' className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
