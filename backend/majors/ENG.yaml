@@ -44,64 +44,58 @@ req_list:
 
           Literary and Cultural History (LCH) courses ask questions about tradition and transmission over longer periods, and provide background for more specialized study.
         course_list:
-          - ENG 200
-          - ENG 266
-          - ENG 375
-          - ENG 399
-          - AAS 253
-          - AFS 343
-          - COM 235
-          - COM 360
-          - COM 471
-          - HUM 325
+          - ENG 404 
+          - COM 471 
+          - COM 235 
+          - THR 376 
           - ENG 201
-          - ENG 204
-          - ENG 404
-          - ENG 200
           - AAS 359
-          - ASA 224
-          - COM 235
           - LAS 307
-          - THR 376
-          - ENG 415
           - AAS 353
-          - ASA 201
+          - AFS 343 
+          - COM 360 
           - HUM 216
           - HUM 217
           - ENG 200
+          - ENG 204 
+          - AAS 253 
+          - ENG 399
+          - ASA 224
+          - ENG 375
+          - ENG 266
+          - COM 235
+          - ASA 201
+          - HUM 325 
+          - ENG 415
       - name: Literature and Culture before 1700
         max_counted: 1
         min_needed: 1
         explanation: |-
           <i>Editor's Note: This does not represent a comprehensive list of courses that fulfill this requirement as courses change from semester to semester. Some courses may fulfill different requirements depending on their content each semester.</i>
         course_list:
-          - ENG 200
-          - ENG 311
-          - ENG 317
-          - ENG 319
-          - ENG 322
-          - ENG 325
-          - ENG 328
-          - ENG 342
-          - THR 452
-          - ENG 279
-          - ENG 312
-          - ENG 315
-          - ENG 318
-          - ENG 383
-          - ENG 200
-          - ENG 298
-          - ENG 317
-          - ENG 319
-          - ENG 313
-          - ENG 318
-          - ENG 359
-          - ENG 390
-          - ENG 200
-          - ENG 325
-          - ENG 400
-          - ENG 402
-          - ENG 448
+        - ENG 313
+        - ENG 359
+        - ENG 325
+        - THR 452 
+        - ENG 317
+        - ENG 342
+        - ENG 383
+        - ENG 390
+        - ENG 448
+        - ENG 319
+        - ENG 402
+        - ENG 298 
+        - ENG 318 
+        - ENG 328
+        - ENG 311
+        - ENG 279
+        - ENG 318
+        - ENG 200
+        - ENG 312
+        - ENG 322
+        - ENG 400
+        - ENG 315 
+        - ENG 317 
       - name: Literature and Culture from 1700-1900
         max_counted: 1
         min_needed: 1
@@ -111,25 +105,23 @@ req_list:
           Some courses may fulfill different requirements depending on their content each
           semester.</i>
         course_list:
-          - ENG 203
-          - ENG 404
+          - ENG 331 
           - ENG 452
-          - ENG 201
           - ENG 345
-          - ENG 403
-          - ENG 404
-          - GER 307
-          - ENG 203
-          - ENG 304
-          - ENG 331
+          - GER 307 
           - ENG 351
-          - ENG 334
-          - ENG 339
-          - ENG 345
-          - ENG 384
-          - ENG 409
+          - ENG 404 
           - ENG 341
+          - ENG 403
+          - ENG 304
+          - ENG 339
+          - ENG 334
           - ENG 411
+          - ENG 409
+          - ENG 404
+          - ENG 201
+          - ENG 203
+          - ENG 384
       - name: Literature and Culture from 1900-Present
         max_counted: 1
         min_needed: 1
@@ -139,75 +131,70 @@ req_list:
           Some courses may fulfill different requirements depending on their content each
           semester.</i>
         course_list:
-          - ENG 305
-          - ENG 327
-          - ENG 360
-          - ENG 370
-          - ENG 379
+          - ENG 401
           - ENG 394
-          - ENG 398
-          - ENG 402
-          - AAS 223
-          - AAS 312
-          - AAS 392
-          - ECS 342
-          - ENV 363
-          - GSS 203
-          - GSS 230
-          - HIS 387
-          - LAO 330
-          - ENG 204
-          - ENG 218
-          - ENG 275
-          - ENG 279
-          - ENG 295
-          - ENG 309
-          - ENG 340
-          - ENG 401
-          - ENG 405
-          - ENG 406
-          - ENG 441
-          - AAS 231
-          - AMS 317
-          - ENV 251
-          - ENV 271
-          - HUM 352
-          - ENG 304
-          - ENG 351
-          - ENG 379
-          - ENG 444
-          - AAS 359
-          - AMS 425
-          - ASA 224
-          - ENV 363
-          - HUM 352
-          - THR 376
-          - ENG 354
-          - ENG 357
-          - ENG 360
-          - ENG 361
+          - AMS 425 
           - ENG 368
-          - ENG 383
-          - ENG 405
-          - ENG 415
-          - ECS 342
-          - LAO 340
           - THR 347
-          - ENG 259
-          - ENG 269
+          - GSS 230 
+          - HUM 352 
+          - ENG 361
+          - ENG 340 
+          - AMS 334
+          - AAS 223 
+          - GSS 203 
+          - THR 376 
+          - ENG 357
           - ENG 275
-          - ENG 355
-          - ENG 358
-          - ENG 401
-          - ENG 405
-          - ENG 409
           - AAS 230
           - AAS 359
-          - AAS 392
-          - AMS 317
-          - AMS 334
+          - ENG 360
+          - ENG 305
+          - ENV 363 
+          - ENG 327
+          - ENG 405
+          - ENG 444 
+          - ENG 383
+          - ENG 398
+          - ENG 275 
+          - AAS 231 
+          - ENV 271 
+          - ENG 354
+          - ENG 259
           - HUM 307
+          - ENG 402
+          - LAO 340
+          - ENG 355
+          - AMS 317
+          - HIS 387 
+          - AAS 312 
+          - ENG 370
+          - ENG 295
+          - ENG 441 
+          - ENG 351
+          - HUM 352
+          - ECS 342
+          - AMS 317 
+          - ENV 251 
+          - ENG 379 
           - THR 316
+          - ENG 279
+          - ENG 204 
+          - ENG 379
+          - ENG 309
+          - ENG 409
+          - ASA 224
+          - AAS 392 
+          - ENV 363
+          - ENG 358
+          - LAO 330 
+          - ENG 415
+          - AAS 392
+          - ENG 304
+          - ENG 406
+          - ECS 342 
+          - ENG 218 
+          - ENG 269
       - name: Difference and Diversity
         max_counted: 1
         min_needed: 1
@@ -217,68 +204,65 @@ req_list:
           Some courses may fulfill different requirements depending on their content each
           semester.</i>
         course_list:
-          - ENG 370
-          - ENG 379
+          - COM 322
           - ENG 394
-          - AAS 223
-          - AAS 253
-          - AAS 312
-          - AAS 392
-          - AFS 343
-          - GSS 203
-          - GSS 223
-          - GSS 230
-          - GSS 240
-          - GSS 246
-          - LAO 330
-          - ENG 291
-          - ENG 383
-          - ENG 387
-          - ENG 406
-          - ENG 441
-          - AAS 231
-          - AMS 322
-          - COM 466
-          - HUM 352
-          - ENG 379
-          - ENG 444
-          - AAS 359
-          - ASA 224
-          - GSS 223
-          - GSS 303
-          - HUM 352
-          - LAO 347
-          - LAS 307
-          - THR 300
-          - ENG 354
+          - GSS 223 
           - ENG 359
-          - ENG 383
-          - ENG 384
-          - ENG 405
-          - ENG 415
+          - THR 347
+          - GSS 230 
+          - HUM 352 
+          - AMS 404
+          - AAS 223 
+          - GSS 203 
+          - AMS 322 
+          - ENG 404
+          - AAS 230
+          - LAO 347
+          - AAS 359
+          - AAS 326
+          - COM 466 
+          - LAS 307
           - AAS 353
+          - ENG 405
+          - AMS 415
+          - ENG 444 
+          - ENG 383
+          - GSS 303
+          - ASA 389
+          - AAS 231 
+          - GSS 246 
+          - ENG 354
+          - AFS 343 
+          - LAO 340
+          - ENG 246
+          - AAS 312 
+          - ENG 370
+          - ENG 441 
+          - GSS 400
+          - ATL 499
+          - GSS 240 
+          - ENG 379 
+          - LAO 347 
+          - ENG 411
+          - AAS 253 
+          - ENG 379
+          - THR 300
+          - ENG 387
+          - GSS 223
+          - ENG 409
+          - ASA 224
+          - COM 464
+          - AAS 392 
           - AMS 322
           - ASA 201
-          - LAO 340
-          - THR 347
-          - ENG 246
           - ENG 358
-          - ENG 387
-          - ENG 404
-          - ENG 409
-          - ENG 411
-          - AAS 230
-          - AAS 326
-          - AAS 359
+          - LAO 330 
+          - ENG 415
           - AAS 392
-          - AMS 404
-          - AMS 415
-          - ASA 389
-          - ATL 499
-          - COM 322
-          - COM 464
-          - GSS 400
-          - LAO 347
+          - ENG 406
+          - ENG 291 
+          - HUM 352
+          - ENG 384
       - name: Theory and Criticism
         max_counted: 1
         min_needed: 1
@@ -287,54 +271,51 @@ req_list:
 
           Theory and Criticism (T&C) provides tools for thinking critically across all these periods, identities, and genres.
         course_list:
-          - ENG 203
-          - ENG 266
-          - ENG 305
-          - ENG 322
-          - ENG 327
-          - ENG 375
-          - ENG 399
-          - ENG 404
-          - AAS 312
-          - COM 207
-          - COM 360
-          - COM 471
-          - ENV 363
-          - GSS 240
-          - GSS 246
-          - HIS 387
-          - HUM 325
-          - THR 308
-          - THR 452
-          - ENG 218
-          - ENG 291
-          - ENG 295
-          - ENG 306
-          - ENG 387
-          - ENG 388
-          - COM 396
-          - COM 466
-          - ENV 251
-          - ENV 271
-          - GER 307
-          - HUM 346
-          - ENG 203
-          - ENG 317
-          - ENG 444
-          - AMS 425
-          - CLA 208
-          - ENV 363
-          - HUM 328
-          - HUM 346
-          - THR 300
-          - ENG 306
-          - ENG 359
-          - ENG 355
-          - ENG 387
-          - ENG 388
-          - ENG 411
-          - COM 207
-          - HUM 307
+        - THR 308
+        - AMS 425
+        - ENG 359
+        - COM 207
+        - COM 471
+        - ENG 404
+        - COM 207
+        - COM 466
+        - ENG 305
+        - ENV 363 
+        - THR 452 
+        - GER 307 
+        - ENG 306
+        - ENG 327
+        - ENG 444 
+        - ENG 306 
+        - GSS 246 
+        - ENV 271 
+        - ENG 388
+        - HUM 346
+        - HUM 307
+        - ENG 355
+        - HIS 387 
+        - AAS 312 
+        - ENG 295
+        - COM 360 
+        - HUM 328
+        - GSS 240 
+        - ENV 251 
+        - ENG 411
+        - ENG 399
+        - THR 300
+        - ENG 387
+        - ENG 375
+        - ENG 266
+        - CLA 208
+        - ENV 363
+        - HUM 325 
+        - ENG 322
+        - COM 396 
+        - HUM 346 
+        - ENG 291 
+        - ENG 203
+        - ENG 218 
+        - ENG 317 
   - name: Tracks
     max_counted: 1
     min_needed: 1
