@@ -52,40 +52,11 @@ req_list:
   - MAE 224
 - name: Applications of Mathematics
   max_counted: 1
-  min_needed: 2
+  min_needed: 1
   explanation: |-
-    The mathematics courses that are prerequisites for the
-    Departmental upper class courses, normally completed by the end
-    of the sophomore year, are the following:
-  req_list:
-  - name: Differential Equations
-    max_counted: 1
-    min_needed: 1
-    explanation: |-
-      MAE 305 is required for both Mechanical and Aerospace Engineers.
-    course_list:
+    One upper-level course involving applications of mathematics: MAE 305 Mathematics in Engineering I
+  course_list:
     - MAE 305
-  - name: Mathematics Elective
-    max_counted: 1
-    min_needed: 1
-    explanation: |-
-      In addition, all Mechanical Engineers must take a
-      mathematics elective. usually selected from the following list.
-      Alternatives not on this list must be approved by the 
-      Departmental Representative in advance. MAE 306 is strongly
-      recommended for those planning graduate work in engineering or
-      applied science.
-    course_list:
-    - MAE 306
-    - ORF 245
-    - ORF 307
-    - ORF 309
-    - ORF 363
-    - COS 302
-    - COS 240
-    - MAT 330
-    - MAT 393
-    - PHY 403
 - name: Aerospace Track
   max_counted: 1
   min_needed: 2
