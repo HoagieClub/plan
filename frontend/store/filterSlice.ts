@@ -126,6 +126,7 @@ const useFilterStore = create<FilterState>()(
     }),
     {
       name: 'filter-settings',
+      version: 2
     }
   )
 );
