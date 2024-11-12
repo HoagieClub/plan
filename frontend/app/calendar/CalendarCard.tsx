@@ -34,6 +34,7 @@ const CalendarCard: FC<CalendarCardProps> = ({
       className={`calendar-card ${event.textColor}`}
       style={{
         background: getGradientStyle(dept),
+        opacity: event.needsChoice && !event.isChosen ? 0.6 : 1,
         gridRow: `${startIndex} / ${endIndex}`,
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
         width: `calc(100% * ${width})`,

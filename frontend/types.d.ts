@@ -142,6 +142,8 @@ export type CalendarEvent = {
 
   // Defined fields
   isActive: boolean;
+  needsChoice: boolean;
+  isChosen: boolean;
 };
 
 // Note: types from the API, fields in snake_case.

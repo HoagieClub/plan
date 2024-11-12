@@ -105,6 +105,8 @@ const useCalendarStore = create<CalendarStore>()(
           const sections = await response.json();
           console.log('Fetched sections:', sections.length);
 
+          const exceptions = ['Lecture', 'Seminar'];
+
           const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
             section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
               const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
@@ -118,6 +120,8 @@ const useCalendarStore = create<CalendarStore>()(
                 startRowIndex: calculateGridRow(classMeeting.start_time),
                 endRowIndex: calculateGridRow(classMeeting.end_time),
                 isActive: true,
+                needsChoice: !exceptions.includes(section.class_type),
+                isChosen: false,
               }));
             })
           );
@@ -139,20 +143,25 @@ const useCalendarStore = create<CalendarStore>()(
             "Initial sections' active states:",
             calendarEvents.map((s) => s.isActive)
           );
+          console.log(
+            'Initial sections needing choice:',
+            calendarEvents.map((s) => s.needsChoice)
+          );
         } catch (error) {
           console.error('Error adding course:', error);
           set({ error: 'Failed to add course. Please try again.', loading: false });
         }
       },
       activateSection: (clickedSection) => {
+
         set((state) => {
           const term = clickedSection.course.guid.substring(0, 4);
           const selectedCourses = state.selectedCourses[term] || [];
-          const exceptions = ['Lecture', 'Seminar'];
+          const typeExceptions = ['Lecture', 'Seminar'];
 
           // Determine if this is a special exception
           const isException =
-            exceptions.includes(clickedSection.section.class_type) &&
+          typeExceptions.includes(clickedSection.section.class_type) &&
             !(
               clickedSection.section.class_type === 'Seminar' &&
               clickedSection.course.title.includes('Independent Work')
@@ -163,17 +172,26 @@ const useCalendarStore = create<CalendarStore>()(
             return { selectedCourses: state.selectedCourses };
           }
 
+          const sectionsPerGroupping = selectedCourses.filter(
+            (section) =>
+              section.course.guid === clickedSection.course.guid &&
+              section.section.id === clickedSection.section.id
+          ).length;
+
           const isActiveSingle =
             selectedCourses.filter(
               (section) =>
                 section.course.guid === clickedSection.course.guid &&
                 section.isActive &&
                 section.section.class_type === clickedSection.section.class_type
-            ).length === 1;
+            ).length <= sectionsPerGroupping;
 
           const updatedSections = selectedCourses.map((section) => {
-            if (section.course.guid !== clickedSection.course.guid) {
-              return section;
+            if (
+              section.course.guid !== clickedSection.course.guid ||
+              section.section.id === clickedSection.section.id
+            ) {
+              return { ...section, isChosen: !section.isChosen };
             }
 
             if (isActiveSingle && clickedSection.isActive) {
@@ -182,7 +200,11 @@ const useCalendarStore = create<CalendarStore>()(
                 : section;
             } else {
               return section.section.class_type === clickedSection.section.class_type
-                ? { ...section, isActive: section.key === clickedSection.key }
+                ? {
+                    ...section,
+                    isActive: section.key === clickedSection.key,
+                    isChosen: section.key === clickedSection.key,
+                  }
                 : section;
             }
           });
