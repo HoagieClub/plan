@@ -14,11 +14,6 @@ const foundingTeam = [
     link: 'https://www.linkedin.com/in/windsornguyen/',
   },
   {
-    name: 'George Chiriac',
-    gradYear: '2025',
-    link: 'https://www.linkedin.com/in/george-chiriac/',
-  },
-  {
     name: 'Ijay Narang',
     gradYear: '2025',
     link: 'https://www.linkedin.com/in/ijay-narang-20b968216/',
@@ -27,6 +22,11 @@ const foundingTeam = [
     name: 'Kaan Odabas',
     gradYear: '2025',
     link: 'https://www.linkedin.com/in/kaanbodabas/',
+  },
+  {
+    name: 'George Chiriac',
+    gradYear: '2025',
+    link: 'https://www.linkedin.com/in/george-chiriac/',
   },
   {
     name: 'Julia Kashimura',
