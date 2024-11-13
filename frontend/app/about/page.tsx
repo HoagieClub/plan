@@ -224,7 +224,9 @@ const About = () => {
                 <p className="text-center text-lg mb-8 text-[var(--system-text-color)]">
                   HoagiePlan would not exist without our talented team of Developers.
                 </p>
-                <ul className="list-disc text-center text-lg text-[var(--system-text-color)] max-w-2xl mx-auto space-y-4">
+                <ul className="list-disc text-lg text-[var(--system-text-color)] max-w-2xl mx-auto space-y-4"
+                style={{ paddingLeft: '16rem' }}
+                >
                   {contributors.map((contributor) => (
                     <li key={contributor.name} className="list-inside">
                       <a
