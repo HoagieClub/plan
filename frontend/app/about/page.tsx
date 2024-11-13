@@ -61,7 +61,7 @@ const contributors = [
   { name: 'Aaron Yang', link: 'https://www.linkedin.com/in/yang-aaron/'},
   { name: 'Daniel Yeo', link: 'https://www.linkedin.com/in/daniel-yeo-320635248/' },
   { name: 'Emily You', link: 'https://www.linkedin.com/in/emily-you-0a0943215/'},
-  { name: 'Lindsey Zhong', link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/'},
+  { name: 'Linsey Zhong', link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/'},
 ];
 
 const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
