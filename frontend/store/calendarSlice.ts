@@ -83,9 +83,9 @@ const useCalendarStore = create<CalendarStore>()(
         const term = course.guid.substring(0, 4);
         const selectedCourses = get().getSelectedCourses(term);
 
-        console.log('Attempting to add course:', course);
+        // console.log('Attempting to add course:', course);
         if (selectedCourses.some((event) => event.course.guid === course.guid)) {
-          console.log('Course already added:', course);
+          // console.log('Course already added:', course);
           // TODO: Return a snackbar/toast or something nice if the course is already added
           return;
         }
@@ -94,7 +94,7 @@ const useCalendarStore = create<CalendarStore>()(
         try {
           const term = course.guid.substring(0, 4);
           const course_id = course.guid.substring(4);
-          console.log(`Fetching course details from backend for ${term}-${course_id}`);
+          // console.log(`Fetching course details from backend for ${term}-${course_id}`);
           const response = await fetch(
             `${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`
           );
@@ -103,7 +103,7 @@ const useCalendarStore = create<CalendarStore>()(
           }
 
           const sections = await response.json();
-          console.log('Fetched sections:', sections.length);
+          // console.log('Fetched sections:', sections.length);
 
           const exceptions = ['Lecture', 'Seminar'];
 
@@ -126,7 +126,7 @@ const useCalendarStore = create<CalendarStore>()(
             })
           );
 
-          console.log('Prepared calendar events to add:', calendarEvents);
+          // console.log('Prepared calendar events to add:', calendarEvents);
           // set((state) => ({
           //   selectedCourses: [...state.selectedCourses, ...calendarEvents],
           //   loading: false,
@@ -138,22 +138,21 @@ const useCalendarStore = create<CalendarStore>()(
             },
             loading: false,
           }));
-          console.log('Course added successfully:', course.guid);
-          console.log(
-            "Initial sections' active states:",
-            calendarEvents.map((s) => s.isActive)
-          );
-          console.log(
-            'Initial sections needing choice:',
-            calendarEvents.map((s) => s.needsChoice)
-          );
+          // console.log('Course added successfully:', course.guid);
+          // console.log(
+          //   "Initial sections' active states:",
+          //   calendarEvents.map((s) => s.isActive)
+          // );
+          // console.log(
+          //   'Initial sections needing choice:',
+          //   calendarEvents.map((s) => s.needsChoice)
+          // );
         } catch (error) {
-          console.error('Error adding course:', error);
+          // console.error('Error adding course:', error);
           set({ error: 'Failed to add course. Please try again.', loading: false });
         }
       },
       activateSection: (clickedSection) => {
-
         set((state) => {
           const term = clickedSection.course.guid.substring(0, 4);
           const selectedCourses = state.selectedCourses[term] || [];
@@ -161,7 +160,7 @@ const useCalendarStore = create<CalendarStore>()(
 
           // Determine if this is a special exception
           const isException =
-          typeExceptions.includes(clickedSection.section.class_type) &&
+            typeExceptions.includes(clickedSection.section.class_type) &&
             !(
               clickedSection.section.class_type === 'Seminar' &&
               clickedSection.course.title.includes('Independent Work')
@@ -188,15 +187,20 @@ const useCalendarStore = create<CalendarStore>()(
 
           const updatedSections = selectedCourses.map((section) => {
             if (
-              section.course.guid !== clickedSection.course.guid ||
-              section.section.id === clickedSection.section.id
+              section.section.id === clickedSection.section.id &&
+              section.course.guid === clickedSection.course.guid
             ) {
-              return { ...section, isChosen: !section.isChosen };
+              return {
+                ...section,
+                isChosen: !section.isChosen,
+              };
+            } else if (section.course.guid !== clickedSection.course.guid) {
+              return { ...section };
             }
 
             if (isActiveSingle && clickedSection.isActive) {
               return section.section.class_type === clickedSection.section.class_type
-                ? { ...section, isActive: true }
+                ? { ...section, isActive: true, isChosen: false }
                 : section;
             } else {
               return section.section.class_type === clickedSection.section.class_type
