@@ -358,12 +358,12 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={certificateOptions}
+            // Call smartSearch to search through all minors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
             placeholder={'Select your certificate(s)'}
             variant='soft'
             value={certificates}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option.code === value.code
-            }
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newCertificates: MajorMinorType[]) => {
               event.stopPropagation();
               handleCertificatesChange(event, newCertificates);
