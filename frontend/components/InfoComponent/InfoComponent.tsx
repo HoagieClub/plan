@@ -123,17 +123,6 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
           // <div>Loading...</div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '15px' }}>
-          <header className='mb-auto text-right'>
-            <JoyButton
-              variant='soft'
-              color='neutral'
-              onClick={handleCancel}
-              sx={{ ml: 2 }}
-              size='md'
-            >
-              X
-            </JoyButton>
-          </header>
           <footer className='mt-auto text-right'>
             <JoyButton
               variant='soft'
