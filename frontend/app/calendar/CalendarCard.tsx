@@ -25,15 +25,34 @@ const CalendarCard: FC<CalendarCardProps> = ({
   endIndex,
   dept,
 }) => {
-  const getGradientStyle = (dept: string) => {
-    return departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Default color
-  };
+  function getGradientStyle(dept, needsChoice, isChosen) {
+    const baseColor = departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Fallback gradient
+
+    if (!needsChoice || isChosen) {
+      return {
+        backgroundImage: baseColor,
+      };
+    }
+    return {
+      backgroundImage: `
+        ${baseColor}, 
+        repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.1) 0px,
+          rgba(255, 255, 255, 0.1) 7px,
+          rgba(0, 0, 0, 0.05) 7px,
+          rgba(0, 0, 0, 0.05) 13px
+        )
+      `,
+      backgroundBlendMode: 'overlay',
+    };
+  }
 
   return (
     <div
       className={`calendar-card ${event.textColor}`}
       style={{
-        background: getGradientStyle(dept),
+        ...getGradientStyle(dept, event.needsChoice, event.isChosen),
         opacity: event.needsChoice && !event.isChosen ? 0.5 : 1,
         gridRow: `${startIndex} / ${endIndex}`,
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
