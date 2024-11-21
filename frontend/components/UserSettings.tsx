@@ -331,6 +331,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={minorOptions}
+            filterSelectedOptions={true}
             // Call smartSearch to search through all minors and determine matches for inputValue.
             filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
             placeholder={'Select your minor(s)'}
@@ -358,6 +359,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={certificateOptions}
+            filterSelectedOptions={true}
             // Call smartSearch to search through all certificates and determine matches for inputValue.
             filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
             placeholder={'Select your certificate(s)'}
