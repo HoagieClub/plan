@@ -72,7 +72,13 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
     <SettingsModal>
       <div
         className={styles.modal}
-        style={{ width: '85%', height: '75%', padding: '25px' }}
+        style={{
+          width: '85%',
+          height: '75%',
+          padding: '25px',
+          display: 'flex',
+          justifyContent: 'flex-end',
+        }}
         ref={modalRef}
       >
         {' '}
@@ -119,8 +125,15 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
             </div>
           </div>
         ) : (
-          <LoadingComponent />
-          // <div>Loading...</div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              width: '100%',
+            }}
+          >
+            <LoadingComponent />
+          </div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '15px' }}>
           <footer className='mt-auto text-right'>
