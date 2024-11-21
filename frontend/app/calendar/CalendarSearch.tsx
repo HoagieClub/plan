@@ -174,6 +174,13 @@ const CalendarSearch: FC = () => {
     setShowPopup,
   ]);
 
+  const handleReset = useCallback(() => {
+    setLocalLevelFilter([]);
+    setLocalGradingFilter([]);
+    setLocalDistributionFilter(null);
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   const handleCancel = useCallback(() => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalGradingFilter(useFilterStore.getState().gradingFilter);
@@ -200,7 +207,7 @@ const CalendarSearch: FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showPopup, handleSave, handleCancel]);
+  }, [showPopup, handleSave, handleReset, handleCancel]);
 
   const handleSettingsChange = (event) => {
     event.stopPropagation();
@@ -231,6 +238,7 @@ const CalendarSearch: FC = () => {
         setLevelFilter={handleLocalLevelFilterChange}
         setGradingFilter={handleLocalGradingFilterChange}
         handleSave={handleSave}
+        handleReset={handleReset}
         handleCancel={handleCancel}
       >
         <div className='grid grid-cols-1 gap-6'>
@@ -297,6 +305,9 @@ const CalendarSearch: FC = () => {
           <div className='mt-5 text-right'>
             <Button variant='soft' color='primary' onClick={handleSave} size='md'>
               Save
+            </Button>
+            <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+              Reset
             </Button>
             <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
               Cancel

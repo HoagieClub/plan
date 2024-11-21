@@ -49,6 +49,7 @@ export type SettingsModalProps = {
   setLevelFilter?: (level: string[]) => void;
   setGradingFilter?: (grading: string[]) => void;
   handleCancel?: () => void;
+  handleReset?: () => void;
   handleSave?: () => void;
 };
 
