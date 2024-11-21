@@ -174,6 +174,15 @@ const Search: FC = () => {
     setLocalDistributionFilter(useFilterStore.getState().distributionFilter);
     setShowPopup(false);
   }, [setShowPopup]);
+
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setLocalTermFilter('');
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Enter') {
@@ -226,6 +235,7 @@ const Search: FC = () => {
       setLevelFilter={setLocalLevelFilter}
       setGradingFilter={setLocalGradingFilter}
       handleSave={handleSave}
+      handleReset={handleReset}
       handleCancel={handleCancel}
     >
       <div className='grid grid-cols-1 gap-6'>
@@ -312,6 +322,9 @@ const Search: FC = () => {
         <div className='mt-5 text-right'>
           <Button variant='soft' color='primary' onClick={handleSave} size='md'>
             Save
+          </Button>
+          <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+            Reset
           </Button>
           <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
             Cancel
