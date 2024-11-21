@@ -38,7 +38,8 @@ const Navbar: FC = () => {
     login();
   };
 
-  const { isOpen, currentPage, openModal, closeModal, hasSeenTutorial, setHasSeenTutorial } = useModalStore();
+  const { isOpen, currentPage, openModal, closeModal, hasSeenTutorial, setHasSeenTutorial } =
+    useModalStore();
   useEffect(() => {
     if (
       userProfile &&

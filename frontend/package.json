@@ -3,11 +3,15 @@
   "version": "1.90-beta",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 --turbo",
+    "dev": "next dev -p 3000 --turbo -H 0.0.0.0",
+    "dev-https": "next dev -p 3000 --experimental-https --turbo -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "webpack-bundle-analyzer dist/stats.json"
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
+    "prepare": "bun run lint:fix && bun run format"
   },
   "dependencies": {
     "@dnd-kit/sortable": "^8.0.0",

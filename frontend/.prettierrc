@@ -6,11 +6,10 @@
   "singleQuote": true,
   "quoteProps": "as-needed",
   "jsxSingleQuote": true,
-  "tsxSingleQuote": true,
 
   "trailingComma": "es5",
   "bracketSpacing": true,
-  "jsxBracketSameLine": false,
+  "bracketSameLine": false,
   "arrowParens": "always",
   "requirePragma": false,
   "insertPragma": false,

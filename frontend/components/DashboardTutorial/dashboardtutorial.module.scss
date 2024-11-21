@@ -1,6 +1,6 @@
 .modal {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -14,7 +14,6 @@
   overflow: auto;
 }
 
-
 @media (max-width: 600px) {
   .modal {
     width: 90%;
@@ -23,7 +22,6 @@
   }
 }
 
-
 @media (max-width: 768px) {
   .modal {
     width: 80%;
@@ -31,7 +29,6 @@
     padding: 15px;
   }
 }
-
 
 @media (min-width: 1200px) {
   .modal {
@@ -62,7 +59,7 @@
 }
 
 .imageContainer {
-  width: 10%; 
+  width: 10%;
   height: 20%;
 }
 
@@ -76,11 +73,11 @@
   display: flex;
   align-items: center;
   flex-shrink: 0; /* Prevent buttons from shrinking */
-  
-span {
-  margin: 0 10px;
-  margin-left: 20px;
-  font-size: 14px;
-  color: #555;
+
+  span {
+    margin: 0 10px;
+    margin-left: 20px;
+    font-size: 14px;
+    color: #555;
   }
 }

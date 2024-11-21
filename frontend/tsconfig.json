@@ -20,13 +20,8 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
-      "@/components/*": ["components/*"],
-      "@/store/*": ["store/*"],
-      "@/app/*": ["app/*"],
-      "@/types": ["types.d.ts"],
-      "@/utils/*": ["utils/*"],
+      "@/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "postcss.config.js,", ".next/types/**/*.ts"],

@@ -38,7 +38,7 @@ import Search from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu';
 import useSearchStore from '@/store/searchSlice';
 
-import { Item, Container, ContainerProps } from '../../components';
+import { Item, Container, ContainerProps } from '..';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 
@@ -231,7 +231,7 @@ export const PLACEHOLDER_ID = 'placeholder';
 export const SEARCH_RESULTS_ID = 'Search Results';
 const defaultClassYear = new Date().getFullYear();
 
-export function Canvas({
+export function Dashboard({
   user,
   adjustScale = false,
   columns = 2,

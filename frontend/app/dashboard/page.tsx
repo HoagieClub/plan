@@ -9,7 +9,7 @@ import useAuthStore from '@/store/authSlice';
 import { useModalStore } from '@/store/modalSlice';
 import UserState from '@/store/userSlice';
 
-import { Canvas } from './Canvas';
+import { Dashboard } from '@/app/dashboard';
 
 const Dashboard: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -42,7 +42,7 @@ const Dashboard: FC = () => {
         </div>
         <main className='flex flex-grow bg-[#FAFAFA] shadow-xl z-10 rounded pt-0.5vh pb-0.5vh pl-0.5vw pr-0.5vw'>
           {!isLoading && userProfile && userProfile.netId !== '' ? (
-            <Canvas user={userProfile} columns={2} />
+            <Dashboard user={userProfile} columns={2} />
           ) : (
             <div>
               <SkeletonApp />

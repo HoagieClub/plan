@@ -1,62 +1,62 @@
 {
-    "name": "hoagieplan",
-    "short_name": "hoagieplan",
-    "theme_color": "#0F1E2F",
-    "background_color": "#0F1E2F",
-    "display": "standalone",
-    "scope": "/",
-    "start_url": "/",
-    "description": "Princeton, All in One",
-    "icons": [
-        {
-            "src": "/android-chrome-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-256x256.png",
-            "sizes": "256x256",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-384x384.png",
-            "sizes": "384x384",
-            "type": "image/png"
-        },
-        {
-            "src": "/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "/apple-touch-icon.png",
-            "sizes": "180x180",
-            "type": "image/png"
-        },
-        {
-            "src": "/favicon-32x32.png",
-            "sizes": "32x32",
-            "type": "image/png"
-        },
-        {
-            "src": "/favicon-16x16.png",
-            "sizes": "16x16",
-            "type": "image/png"
-        },
-        {
-            "src": "/mstile-150x150.png",
-            "sizes": "150x150",
-            "type": "image/png"
-        },
-        {
-            "src": "/safari-pinned-tab.svg",
-            "sizes": "any",
-            "type": "image/svg+xml"
-        }
-    ]
+  "name": "hoagieplan",
+  "short_name": "hoagieplan",
+  "theme_color": "#0F1E2F",
+  "background_color": "#0F1E2F",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "description": "Princeton, All in One",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/mstile-150x150.png",
+      "sizes": "150x150",
+      "type": "image/png"
+    },
+    {
+      "src": "/safari-pinned-tab.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
 }
