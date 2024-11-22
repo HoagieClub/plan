@@ -103,9 +103,6 @@ const useCalendarStore = create<CalendarStore>()(
           }
 
           const sections = await response.json();
-          // console.log('Fetched sections:', sections.length);
-
-          console.log(sections) 
 
           const uniqueSections = new Set(sections.map((section) => section.class_section));
 
@@ -118,7 +115,7 @@ const useCalendarStore = create<CalendarStore>()(
           );
 
           const uniqueLectureNumbers = new Set(
-          lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
+            lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
           );
 
           const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
