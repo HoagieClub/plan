@@ -2,6 +2,7 @@ import { ChangeEvent, useRef, useState, useEffect, useCallback, FC } from 'react
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -320,7 +321,7 @@ const Search: FC = () => {
       </footer>
     </FilterModal>
   ) : null;
-
+  
   return (
     <>
       <div className='block w-full text-left pr-3'>
@@ -353,7 +354,21 @@ const Search: FC = () => {
           </button>
         </div>
         <div className='mt-3'>
-          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
+          <div className='text-sm font-medium text-gray-500 mb-2'>Recent searches:</div>
+          <div className='flex justify-between items-center mb-2'>
+            <div className='text-sm font-medium text-gray-500'>Upload transcript</div>
+            <button 
+              type='button'
+              className='p-1.5 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600'
+              onClick={() => {
+                // Modal trigger logic would go here
+                console.log('Upload transcript clicked');
+              }}
+              aria-label='Upload transcript'
+            >
+              <ArrowUpTrayIcon className='w-4 h-4 text-gray-500' aria-hidden='true' />
+            </button>
+          </div>
           <div className='flex overflow-x-auto py-2 space-x-2'>
             {recentSearches.map((search, index) => (
               <button
