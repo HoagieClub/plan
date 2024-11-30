@@ -83,7 +83,6 @@ export const mapUserProfileToProfile = async (
   };
 
   const user = await fetchCustomUser(netId, firstName, lastName, email);
-
   return {
     firstName: user?.firstName || firstName,
     lastName: user?.lastName || lastName,

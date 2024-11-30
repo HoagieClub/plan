@@ -125,7 +125,8 @@ req_list:
         explanation:
         course_list:
           - COS 316
-          - COS 318
+          - COS 318 # Deprecated (revamped to COS 417)
+          - COS 417
           - COS 375
           - COS 418
           - COS 461

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('hoagieplan', '0004_alter_section_class_number_delete_courseequivalent'),
+        ("hoagieplan", "0004_alter_section_class_number_delete_courseequivalent"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customuser',
-            name='req_dict',
+            model_name="customuser",
+            name="req_dict",
             field=models.JSONField(null=True),
         ),
     ]

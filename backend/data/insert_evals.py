@@ -2,13 +2,17 @@ import csv
 import json
 import os
 import sys
-from tqdm import tqdm
 from pathlib import Path
+
+import django
+import ujson as json
+from django.db import transaction
+from tqdm import tqdm
+
+from compass.models import CourseComments, CourseEvaluations
 
 sys.path.append(str(Path('../').resolve()))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-
-import django
 
 django.setup()
 from django.db import transaction
@@ -67,6 +71,7 @@ def count_rows(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return sum(1 for _ in csv.reader(f))
 
+
 @transaction.atomic
 def import_data(evals):
     total_rows = count_rows(evals)
@@ -77,16 +82,12 @@ def import_data(evals):
         reader = csv.reader(csvfile)
         next(reader, None)  # Skip header
 
-        for row in tqdm(
-            reader, total=total_rows - 1, desc='Inserting data', unit='row'
-        ):
+        for row in tqdm(reader, total=total_rows - 1, desc='Inserting data', unit='row'):
             course_id, term, evals_str, comments = row[:4]
 
             # Create CourseEvaluations object
             eval_data = parse_evaluations(evals_str)
-            course_eval = CourseEvaluations(
-                course_guid=f'{term}{course_id}', **eval_data
-            )
+            course_eval = CourseEvaluations(course_guid=f'{term}{course_id}', **eval_data)
             course_eval_batch.append(course_eval)
 
             # Create CourseComments objects

@@ -1,4 +1,5 @@
-import { FC, useState, useEffect, useCallback } from "react";
+import { FC, useState, useEffect, useCallback } from 'react';
+import { smartSearch, isOptionEqual } from './MajorMinorSearch';
 
 import {
   Autocomplete,
@@ -33,87 +34,111 @@ const defaultClassYear = new Date().getFullYear();
 
 // Should probably id these corresponding to the ids in the database
 const majorOptions = [
-  { code: "AAS", name: "African American Studies" },
-  { code: "ANT", name: "Anthropology" },
-  { code: "ARC", name: "Architecture" },
-  { code: "ART", name: "Art and Archaeology" },
-  { code: "AST", name: "Astrophysical Sciences" },
-  { code: "CBE", name: "Chemical and Biological Engineering" },
-  { code: "CEE", name: "Civil and Environmental Engineering" },
-  { code: "CHM", name: "Chemistry" },
-  { code: "CLA", name: "Classics" },
-  { code: "COM", name: "Comparative Literature" },
-  { code: "COS-AB", name: "Computer Science - A.B." },
-  { code: "COS-BSE", name: "Computer Science - B.S.E." },
-  { code: "EAS", name: "East Asian Studies" },
-  { code: "ECE", name: "Electrical and Computer Engineering" },
-  { code: "ECO", name: "Economics" },
-  { code: "EEB", name: "Ecology and Evolutionary Biology" },
-  { code: "ENG", name: "English" },
-  { code: "FIT", name: "French and Italian" },
-  { code: "GEO", name: "Geosciences" },
-  { code: "GER", name: "German" },
-  { code: "HIS", name: "History" },
-  { code: "MAE", name: "Mechanical and Aerospace Engineering" },
-  { code: "MAT", name: "Mathematics" },
-  { code: "MOL", name: "Molecular Biology" },
-  { code: "MUS", name: "Music" },
-  { code: "NES", name: "Near Eastern Studies" },
-  { code: "NEU", name: "Neuroscience" },
-  { code: "ORF", name: "Operations Research and Financial Engineering" },
-  { code: "PHI", name: "Philosophy" },
-  { code: "PHY", name: "Physics" },
-  { code: "POL", name: "Politics" },
-  { code: "PSY", name: "Psychology" },
-  { code: "REL", name: "Religion" },
-  { code: "SLA", name: "Slavic Languages and Literatures" },
-  { code: "SOC", name: "Sociology" },
-  { code: "SPA", name: "Spanish" },
-  { code: "POR", name: "Portuguese" },
-  { code: "SPI", name: "School of Public and International Affairs" },
-  // { code: 'Independent', name: 'Independent' },
-  { code: "Undeclared", name: "Undeclared" },
+  { code: 'AAS', name: 'African American Studies' },
+  { code: 'ANT', name: 'Anthropology' },
+  { code: 'ARC', name: 'Architecture' },
+  { code: 'ART', name: 'Art and Archaeology' },
+  { code: 'AST', name: 'Astrophysical Sciences' },
+  { code: 'CBE', name: 'Chemical and Biological Engineering' },
+  { code: 'CEE', name: 'Civil and Environmental Engineering' },
+  { code: 'CHM', name: 'Chemistry' },
+  { code: 'CLA', name: 'Classics' },
+  { code: 'COM', name: 'Comparative Literature' },
+  { code: 'COS-AB', name: 'Computer Science - A.B.' },
+  { code: 'COS-BSE', name: 'Computer Science - B.S.E.' },
+  { code: 'EAS', name: 'East Asian Studies' },
+  { code: 'ECE', name: 'Electrical and Computer Engineering' },
+  { code: 'ECO', name: 'Economics' },
+  { code: 'EEB', name: 'Ecology and Evolutionary Biology' },
+  { code: 'ENG', name: 'English' },
+  { code: 'FIT', name: 'French and Italian' },
+  { code: 'GEO', name: 'Geosciences' },
+  { code: 'GER', name: 'German' },
+  { code: 'HIS', name: 'History' },
+  { code: 'MAE', name: 'Mechanical and Aerospace Engineering' },
+  { code: 'MAT', name: 'Mathematics' },
+  { code: 'MOL', name: 'Molecular Biology' },
+  { code: 'MUS', name: 'Music' },
+  { code: 'NES', name: 'Near Eastern Studies' },
+  { code: 'NEU', name: 'Neuroscience' },
+  { code: 'PER', name: 'Persian Language' },
+  { code: 'ORF', name: 'Operations Research and Financial Engineering' },
+  { code: 'PHI', name: 'Philosophy' },
+  { code: 'PHY', name: 'Physics' },
+  { code: 'POL', name: 'Politics' },
+  { code: 'PSY', name: 'Psychology' },
+  { code: 'REL', name: 'Religion' },
+  { code: 'SLA', name: 'Slavic Languages and Literatures' },
+  { code: 'SOC', name: 'Sociology' },
+  { code: 'SPA', name: 'Spanish' },
+  { code: 'POR', name: 'Portuguese' },
+  { code: 'SPI', name: 'School of Public and International Affairs' },
+  // { code: 'Independent', name: 'Independent' }, TODO: This is an actual major here and should be added.
+  { code: 'Undeclared', name: 'Undeclared' },
 ];
 
 const minorOptions = [
-  { code: "AFS", name: "African Studies" },
-  { code: "ASA", name: "Asian American Studies" },
-  { code: "CHI", name: "Chinese Language" },
-  { code: "CLA", name: "Classics" },
-  { code: "COS", name: "Computer Science" },
-  { code: "CS", name: "Climate Science" },
-  { code: "CWR", name: "Creative Writing" },
-  { code: "DAN", name: "Dance" },
-  { code: "EAS", name: "East Asian Studies Program" },
-  { code: "ENG", name: "English" },
-  { code: "ENV", name: "Environmental Studies" },
-  { code: "FIN", name: "Finance" },
-  { code: "GHP", name: "Global Health and Health Policy" },
-  { code: "GSS", name: "Gender and Sexuality Studies" },
-  { code: "HIS", name: "History" },
-  { code: "HLS", name: "Hellenic Studies" },
-  { code: "HSTM", name: "History of Science, Technology, and Medicine" },
-  { code: "HUM", name: "Humanistic Studies" },
-  { code: "JPN", name: "Japanese Language" },
-  { code: "JRN", name: "Journalism" },
-  { code: "KOR", name: "Korean Language" },
-  { code: "LAO", name: "Latino Studies" },
-  { code: "LIN", name: "Linguistics" },
-  { code: "MED", name: "Medieval Studies" },
-  { code: "MPP", name: "Music Performance" },
-  { code: "MQE", name: "Quantitative Economics" },
-  { code: "MSE", name: "Materials Science and Engineering" },
-  { code: "MUS", name: "Music" },
-  { code: "NEU", name: "Neuroscience" },
-  { code: "PHI", name: "Philosophy" },
-  { code: "RES", name: "Russian, East European and Eurasian Studies" },
-  { code: "SAS", name: "South Asian Studies" },
-  { code: "SLA", name: "Slavic Languages and Literatures" },
-  { code: "SML", name: "Statistics and Machine Learning" },
-  { code: "TMT", name: "Theater and Music Theater" },
-  { code: "TRA", name: "Translation and Intercultural Communication" },
-  { code: "VIS", name: "Visual Arts" },
-  { code: "VPL", name: "Values and Public Life" },
+  { code: 'AAS', name: 'African American Studies' },
+  { code: 'AFS', name: 'African Studies' },
+  { code: 'APC', name: 'Applied and Computational Mathematics' },
+  { code: 'ARA', name: 'Arabic Language' },
+  { code: 'ASA', name: 'Asian American Studies' },
+  { code: 'ART', name: 'Archaeology' },
+  { code: 'BNG', name: 'Bioengineering' },
+  { code: 'CGS', name: 'Cognitive Science' },
+  { code: 'CHI', name: 'Chinese Language' },
+  { code: 'CLA', name: 'Classics' },
+  { code: 'COS', name: 'Computer Science' },
+  { code: 'CS', name: 'Climate Science' },
+  { code: 'CWR', name: 'Creative Writing' },
+  { code: 'DAN', name: 'Dance' },
+  { code: 'EAS', name: 'East Asian Studies' },
+  { code: 'ENE', name: 'Sustainable Energy' },
+  { code: 'ENG', name: 'English' },
+  { code: 'ENV', name: 'Environmental Studies' },
+  { code: 'EUS', name: 'European Studies' },
+  { code: 'FIN', name: 'Finance' },
+  { code: 'FRE', name: 'French Language and Culture' },
+  { code: 'GHP', name: 'Global Health & Health Policy' },
+  { code: 'GSS', name: 'Gender and Sexuality Studies' },
+  { code: 'HOA', name: 'History of Art' },
+  { code: 'HEB', name: 'Hebrew Language and Culture' },
+  { code: 'HIS', name: 'History' },
+  { code: 'HLS', name: 'Hellenic Studies' },
+  { code: 'HSTM', name: 'History of Science, Technology, and Medicine' },
+  { code: 'HUM', name: 'Humanistic Studies' },
+  { code: 'ITA', name: 'Italian Language and Culture' },
+  { code: 'JDS', name: 'Judaic Studies' },
+  { code: 'JPN', name: 'Japanese Language' },
+  { code: 'JRN', name: 'Journalism' },
+  { code: 'KOR', name: 'Korean Language' },
+  { code: 'LAO', name: 'Latino Studies' },
+  { code: 'LAS', name: 'Latin American Studies' },
+  { code: 'LIN', name: 'Linguistics' },
+  { code: 'MAT', name: 'Mathematics' },
+  { code: 'MED', name: 'Medieval Studies' },
+  { code: 'MPP', name: 'Music Performance' },
+  { code: 'MQE', name: 'Quantitative Economics' },
+  { code: 'MSE', name: 'Materials Science and Engineering' },
+  { code: 'MUS', name: 'Music' },
+  { code: 'NES', name: 'Near Eastern Studies' },
+  { code: 'NEU', name: 'Neuroscience' },
+  { code: 'PER', name: 'Persian Language' },
+  { code: 'PHI', name: 'Philosophy' },
+  { code: 'PHY', name: 'Engineering Physics' },
+  { code: 'POR', name: 'Portuguese Language and Culture' },
+  { code: 'REL', name: 'Religion' },
+  { code: 'RES', name: 'Russian, East European and Eurasian Studies' },
+  { code: 'ROB', name: 'Robotics' },
+  { code: 'SAS', name: 'South Asian Studies' },
+  { code: 'SLA', name: 'Slavic Languages and Literatures' },
+  { code: 'SML', name: 'Statistics and Machine Learning' },
+  { code: 'SPA', name: 'Spanish Language and Culture' },
+  { code: 'TMT', name: 'Theater and Music Theater' },
+  { code: 'TRA', name: 'Translation and Intercultural Communication' },
+  { code: 'TUR', name: 'Turkish Language' },
+  { code: 'VIS', name: 'Visual Arts' },
+  { code: 'VPL', name: 'Values and Public Life' },
 ];
 
 const certificateOptions = [
@@ -306,11 +331,13 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={false}
             autoHighlight
             options={majorOptions}
-            placeholder="Select your major"
-            variant="soft"
+            // Call smartSearch to search through all majors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your major'
+            variant='soft'
             value={major}
             // inputValue={major.code === undeclared.code ? '' : major.code}
-            isOptionEqualToValue={(option, value) => option.code === value.code}
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newMajor: MajorMinorType) => {
               event.stopPropagation();
               setMajor(newMajor ?? undeclared);
@@ -332,12 +359,12 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={minorOptions}
-            placeholder={"Select your minor(s)"}
-            variant="soft"
+            // Call smartSearch to search through all minors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
+            placeholder={'Select your minor(s)'}
+            variant='soft'
             value={minors}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option.code === value.code
-            }
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newMinors: MajorMinorType[]) => {
               event.stopPropagation();
               handleMinorsChange(event, newMinors);
@@ -359,12 +386,12 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={certificateOptions}
-            placeholder={"Select your certificate(s)"}
-            variant="soft"
+            // Call smartSearch to search through all certificates and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
+            placeholder={'Select your certificate(s)'}
+            variant='soft'
             value={certificates}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option.code === value.code
-            }
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newCertificates: MajorMinorType[]) => {
               event.stopPropagation();
               handleCertificatesChange(event, newCertificates);

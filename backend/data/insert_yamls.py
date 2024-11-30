@@ -1,11 +1,15 @@
+import json
+import logging
 import os
 import sys
-import json
-import yaml
-import django
-import logging
-from pathlib import Path
 from datetime import date
+from pathlib import Path
+
+import django
+import yaml
+from django.db import transaction
+
+import constants
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
@@ -16,15 +20,14 @@ django.setup()
 import constants
 from hoagieplan.models import (
     Course,
-    Department,
+    CustomUser,
     Degree,
+    Department,
     Major,
     Minor,
-    Certificate,
     Requirement,
+    UserCourses,
 )
-
-from django.db import transaction
 
 DEGREE_FIELDS = ['name', 'code', 'description', 'urls']
 MAJOR_FIELDS = ['name', 'code', 'description', 'urls']
@@ -89,9 +92,7 @@ def load_course_list(course_list):
                         department_id=dept_id, catalog_number__startswith=course_num[0]
                     )
                 else:
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number=course_num
-                    )
+                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
         else:
             try:
                 dept_id = Department.objects.get(code=dept_code).id
@@ -106,13 +107,10 @@ def load_course_list(course_list):
                 dept_list.append(dept_code)
             elif '*' in course_num:
                 course_inst_list += Course.objects.filter(
-                    department_id=dept_id,
-                    catalog_number__startswith=course_num[0]
+                    department_id=dept_id, catalog_number__startswith=course_num[0]
                 )
             else:
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number=course_num
-                )
+                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
     return course_inst_list, dept_list
 
 
@@ -148,13 +146,9 @@ def push_requirement(req):
     if ('req_list' in req) and (len(req['req_list']) != 0):
         for sub_req in req['req_list']:
             if 'completed_by_semester' in req_fields:
-                sub_req['completed_by_semester'] = req_fields[
-                    'completed_by_semester'
-                ]
+                sub_req['completed_by_semester'] = req_fields['completed_by_semester']
             if 'double_counting_allowed' in req_fields:
-                sub_req['double_counting_allowed'] = req_fields[
-                    'double_counting_allowed'
-                ]
+                sub_req['double_counting_allowed'] = req_fields['double_counting_allowed']
             sub_req_inst = push_requirement(sub_req)
             sub_req_inst.parent = req_inst  # assign sub_req_inst as child of req_inst
             sub_req_inst.save()
@@ -196,12 +190,31 @@ def push_degree(yaml_file):
                 degree_fields[field] = data[field]
 
     degree_fields['min_needed'] = len(data['req_list'])
-    degree_inst = Degree.objects.create(**degree_fields)
+
+    degree_inst, created = Degree.objects.update_or_create(
+        name=degree_fields['name'],
+        code=degree_fields['code'],
+        defaults=degree_fields,
+    )
 
     for req in data['req_list']:
         req_inst = push_requirement(req)
         req_inst.degree = degree_inst
         req_inst.save()
+
+    if created:
+        logging.info(f'Created new degree: {degree_inst.name}')
+    else:
+        logging.info(f'Updated existing degree: {degree_inst.name}')
+
+
+def push_undeclared_major():
+    logging.info('Undeclared')
+    _, created = Major.objects.update_or_create(name=UNDECLARED['name'], code=UNDECLARED['code'], defaults=UNDECLARED)
+    if created:
+        logging.info(f'Created new major: {UNDECLARED['code']}')
+    else:
+        logging.info(f'Updated existing major: {UNDECLARED['code']}')
 
 
 def push_major(yaml_file):
@@ -217,7 +230,9 @@ def push_major(yaml_file):
                 major_fields[field] = data[field]
 
     major_fields['min_needed'] = len(data['req_list'])
-    major_inst = Major.objects.create(**major_fields)
+    major_inst, created = Major.objects.update_or_create(
+        name=major_fields['name'], code=major_fields['code'], defaults=major_fields
+    )
 
     degree_code = 'AB' if major_inst.code in constants.AB_MAJORS else 'BSE'
     try:
@@ -230,6 +245,11 @@ def push_major(yaml_file):
         req_inst = push_requirement(req)
         req_inst.major = major_inst
         req_inst.save()
+
+    if created:
+        logging.info(f'Created new major: {major_inst.code}')
+    else:
+        logging.info(f'Updated existing major: {major_inst.code}')
 
 
 def push_minor(yaml_file):
@@ -245,7 +265,9 @@ def push_minor(yaml_file):
                 minor_fields[field] = data[field]
 
     minor_fields['min_needed'] = len(data['req_list'])
-    minor_inst = Minor.objects.create(**minor_fields)
+    minor_inst, created = Minor.objects.update_or_create(
+        name=minor_fields['name'], code=minor_fields['code'], defaults=minor_fields
+    )
 
     if 'excluded_majors' in data:
         for major_code in data['excluded_majors']:
@@ -268,6 +290,11 @@ def push_minor(yaml_file):
         req_inst.minor = minor_inst
         req_inst.save()
 
+    if created:
+        logging.info(f'Created new minor: {minor_inst.code}')
+    else:
+        logging.info(f'Updated existing minor: {minor_inst.code}')
+
 
 def push_certificate(yaml_file):
     data = load_data(yaml_file)
@@ -283,7 +310,9 @@ def push_certificate(yaml_file):
 
     certificate_fields['min_needed'] = len(data['req_list'])
     certificate_fields['active_until'] = date(2025, 5, 1)
-    certificate_inst = Certificate.objects.create(**certificate_fields)
+    certificate_inst, created = Certificate.objects.update_or_create(
+        name=certificate_fields['name'], code=certificate_fields['code'], defaults=certificate_fields
+    )
 
     if 'excluded_majors' in data:
         for major_code in data['excluded_majors']:
@@ -298,6 +327,11 @@ def push_certificate(yaml_file):
         req_inst.certificate = certificate_inst
         req_inst.save()
 
+    if created:
+        logging.info(f'Created new certificate: {certificate_inst.code}')
+    else:
+        logging.info(f'Updated existing certificate: {certificate_inst.code}')
+
 
 def push_degrees(degrees_path):
     logging.info('Pushing degree requirements...')
@@ -308,6 +342,7 @@ def push_degrees(degrees_path):
 
 def push_majors(majors_path):
     logging.info('Pushing major requirements...')
+    push_undeclared_major()
     for file in majors_path.glob('*.yaml'):
         push_major(str(file))
     logging.info('Major requirements pushed!')
@@ -327,12 +362,40 @@ def push_certificates(certificates_path):
     logging.info('Certificate requirements pushed!')
 
 
+def clear_user_requirements():
+    logging.info('Clearing CustomUser_requirements table...')
+    with transaction.atomic():
+        for user_inst in CustomUser.objects.all():
+            user_inst.requirements.clear()
+    logging.info('CustomUser_requirements table cleared!')
+
+
+def clear_user_req_dict():
+    logging.info('Clearing CustomUser req_dict cache...')
+    CustomUser.objects.update(req_dict=None)
+    logging.info('CustomUser req_dict cache cleared!')
+
+
+def clear_requirement_ids():
+    logging.info('Clearing requirement_id column in UserCourses...')
+    UserCourses.objects.update(requirement=None)
+    logging.info('requirement_id column cleared!')
+
+
+def clear_requirements():
+    logging.info('Clearing Requirement table...')
+    Requirement.objects.all().delete()
+    logging.info('Requirement table cleared!')
+
+
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == '__main__':
     with transaction.atomic():
+        clear_user_requirements()
+        clear_user_req_dict()
+        clear_requirement_ids()
+        clear_requirements()
         push_degrees(Path('../degrees').resolve())
         push_majors(Path('../majors').resolve())
         push_certificates(Path('../certificates').resolve())
         push_minors(Path('../minors').resolve())
-        # Push Undeclared major into database
-        Major.objects.create(**UNDECLARED)

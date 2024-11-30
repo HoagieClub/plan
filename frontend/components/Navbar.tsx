@@ -9,11 +9,11 @@ import Image from "next/image";
 import { useModalStore } from "@/store/modalSlice";
 import UserState from "@/store/userSlice";
 
-import useAuthStore from "../store/authSlice";
-import useMobileMenuStore from "../store/mobileMenuSlice";
+import useAuthStore from "@/store/authSlice";
+import useMobileMenuStore from "@/store/mobileMenuSlice";
 
-import CalendarTutorial from "./CalendarTutorial/CalendarTutorial";
-import DashboardTutorial from "./DashboardTutorial/DashboardTutorial";
+import CalendarTutorial from "@/components/CalendarTutorial";
+import DashboardTutorial from "@/components/DashboardTutorial";
 
 import DropdownMenu from "./DropdownMenu";
 import { Login } from "./Login";
@@ -38,20 +38,26 @@ const Navbar: FC = () => {
     login();
   };
 
-  const { isOpen, currentPage, openModal, closeModal } = useModalStore();
+  const { isOpen, currentPage, openModal, closeModal, hasSeenTutorial, setHasSeenTutorial } = useModalStore();
   useEffect(() => {
     if (
       userProfile &&
       userProfile.major &&
       userProfile.major.code === "Undeclared" &&
       userProfile.minors.length === 0 &&
-      userProfile.certificates.length === 0
+      userProfile.certificates.length === 0 &&
+      !hasSeenTutorial
     ) {
       openModal();
     }
-  }, [openModal, userProfile, userProfile.major, userProfile.minors]);
+  }, [openModal, userProfile, hasSeenTutorial]);
 
   const renderUserMenu = () => (isAuthenticated ? <DropdownMenu /> : <Login />);
+
+  const handleCloseTutorial = () => {
+    setHasSeenTutorial(true);
+    closeModal();
+  };
 
   return (
     <header
@@ -117,12 +123,12 @@ const Navbar: FC = () => {
         </div>
       </nav>
 
-      {isOpen && currentPage === "dashboard" && (
-        <DashboardTutorial isOpen={isOpen} onClose={closeModal} />
+      {isOpen && currentPage === 'dashboard' && (
+        <DashboardTutorial isOpen={isOpen} onClose={handleCloseTutorial} />
       )}
 
-      {isOpen && currentPage === "calendar" && (
-        <CalendarTutorial isOpen={isOpen} onClose={closeModal} />
+      {isOpen && currentPage === 'calendar' && (
+        <CalendarTutorial isOpen={isOpen} onClose={handleCloseTutorial} />
       )}
 
       <Dialog

@@ -24,7 +24,7 @@ limitations under the License.
 from django.contrib import admin
 from django.urls import path
 
-from hoagieplan.api import details, search
+from hoagieplan.api import details, search, tutorial
 from hoagieplan.api.auth import cas, csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
@@ -37,6 +37,9 @@ urlpatterns = [
     path("cas/", cas.dispatch, name="cas"),
     # CSRF Token for approving POST requests
     path("csrf/", csrf.csrf_token_view, name="csrf"),
+    # Tutorial
+    path("tutorial/get-status/", tutorial.get_status, name="get_tutorial_status"),
+    path("tutorial/set-status/", tutorial.set_status, name="set_tutorial_status"),
     # Profile
     path("profile/", info.profile, name="profile"),
     path("profile/create_from_auth0/", info.create_from_auth0, name="create_from_auth0"),

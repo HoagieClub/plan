@@ -64,6 +64,7 @@ export type SearchStoreState = {
   setSearchResults: (results: Course[]) => void;
   recentSearches: string[];
   addRecentSearch: (query: string) => void;
+  clearRecentSearches: () => void;
   error: string | null;
   setError: (error: string | null) => void;
   loading: boolean;
@@ -146,6 +147,8 @@ export type CalendarEvent = {
 
   // Defined fields
   isActive: boolean;
+  needsChoice: boolean;
+  isChosen: boolean;
 };
 
 // Note: types from the API, fields in snake_case.

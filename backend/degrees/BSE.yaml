@@ -219,4 +219,37 @@ req_list:
       dist_req: SA
   - name: Seven Total Courses
     max_counted: 1
-    num_courses: 7
+    min_needed: 7
+    req_list:
+    - name: Distribution Area Course
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        One course in the humanities and social sciences.
+      dist_req: 
+      - CD
+      - EC
+      - EM
+      - HA
+      - LA
+      - SA
+    - name: Foreign Language
+      max_counted: 7
+      min_needed: 1
+      explanation: |-
+        Although there is no foreign language requirement for B.S.E. students, intermediate-level language courses (numbered 107 and 108 in the Romance languages, 105 and 107 in all others) and higher may also count towards the seven H/SS courses.
+      course_list:
+      - GER 1025
+      - LANG 1027
+      - LANG 105
+      - LANG 107
+      - LANG 108
+      - LANG 2**
+      - LANG 3**
+      - LANG 4**
+      - LANG 5**
+      excluded_course_list:
+      - FRE 105
+      - ITA 105
+      - POR 105
+      - SPA 105

@@ -5,20 +5,20 @@ from django.db import models
 
 # Choices for degree_type
 DEGREE_TYPE_CHOICES = (
-    ('AB', 'Bachelor of Arts'),
-    ('BSE', 'Bachelor of Science in Engineering'),
+    ("AB", "Bachelor of Arts"),
+    ("BSE", "Bachelor of Science in Engineering"),
 )
 
 # Mapping from semester number to semester name
 TIMELINE_CHOICES = (
-    (1, 'freshman fall'),
-    (2, 'freshman spring'),
-    (3, 'sophomore fall'),
-    (4, 'sophomore spring'),
-    (5, 'junior fall'),
-    (6, 'junior spring'),
-    (7, 'senior fall'),
-    (8, 'senior spring'),
+    (1, "freshman fall"),
+    (2, "freshman spring"),
+    (3, "sophomore fall"),
+    (4, "sophomore spring"),
+    (5, "junior fall"),
+    (6, "junior spring"),
+    (7, "senior fall"),
+    (8, "senior spring"),
 )
 
 # ----------------------------------------------------------------------#
@@ -31,7 +31,7 @@ class Department(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'Department'
+        db_table = "Department"
 
 
 class Degree(models.Model):
@@ -44,21 +44,21 @@ class Degree(models.Model):
     min_needed = models.IntegerField(db_index=True, default=1)
 
     class Meta:
-        db_table = 'Degree'
+        db_table = "Degree"
 
 
 class Major(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=150, db_index=True, null=True)
     code = models.CharField(max_length=10, db_index=True, null=True)
-    degree = models.ManyToManyField('Degree')
+    degree = models.ManyToManyField("Degree")
     description = models.TextField(db_index=True, null=True)
     urls = models.JSONField(db_index=True, null=True)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
 
     class Meta:
-        db_table = 'Major'
+        db_table = "Major"
 
 
 class Minor(models.Model):
@@ -66,15 +66,15 @@ class Minor(models.Model):
     name = models.CharField(max_length=150, db_index=True, null=True)
     code = models.CharField(max_length=10, db_index=True, null=True)
     description = models.TextField(db_index=True, null=True)
-    excluded_majors = models.ManyToManyField('Major')
-    excluded_minors = models.ManyToManyField('Minor')
+    excluded_majors = models.ManyToManyField("Major")
+    excluded_minors = models.ManyToManyField("Minor")
     urls = models.JSONField(db_index=True, null=True)
     apply_by_semester = models.IntegerField(default=6)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
 
     class Meta:
-        db_table = 'Minor'
+        db_table = "Minor"
 
 
 class Certificate(models.Model):
@@ -82,7 +82,7 @@ class Certificate(models.Model):
     name = models.CharField(max_length=150, db_index=True, null=True)
     code = models.CharField(max_length=10, db_index=True, null=True)
     description = models.TextField(db_index=True, null=True)
-    excluded_majors = models.ManyToManyField('Major')
+    excluded_majors = models.ManyToManyField("Major")
     urls = models.JSONField(db_index=True, null=True)
     apply_by_semester = models.IntegerField(default=8)
     max_counted = models.IntegerField(db_index=True, null=True)
@@ -92,7 +92,7 @@ class Certificate(models.Model):
     active_until = models.DateField(null=True, blank=True)
 
     class Meta:
-        db_table = 'Certificate'
+        db_table = "Certificate"
 
 
 # ----------------------------------------------------------------------#
@@ -105,7 +105,7 @@ class Instructor(models.Model):
     full_name = models.CharField(max_length=255, null=True)
 
     class Meta:
-        db_table = 'Instructor'
+        db_table = "Instructor"
 
     def __str__(self):
         return self.full_name
@@ -118,7 +118,7 @@ class AcademicTerm(models.Model):
     end_date = models.DateField(null=True)
 
     class Meta:
-        db_table = 'AcademicTerm'
+        db_table = "AcademicTerm"
 
     def __str__(self):
         return self.term_code
@@ -137,18 +137,14 @@ class Course(models.Model):
     web_address = models.URLField(max_length=255, db_index=True, blank=True, null=True)
     transcript_title = models.CharField(max_length=150, blank=True, null=True)
     long_title = models.CharField(max_length=250, db_index=True, blank=True, null=True)
-    distribution_area_long = models.CharField(
-        max_length=150, db_index=True, blank=True, null=True
-    )
-    distribution_area_short = models.CharField(
-        max_length=10, db_index=True, blank=True, null=True
-    )
+    distribution_area_long = models.CharField(max_length=150, db_index=True, blank=True, null=True)
+    distribution_area_short = models.CharField(max_length=10, db_index=True, blank=True, null=True)
     reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
     grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
     reading_list = models.TextField(blank=True, db_index=True, null=True)
 
     class Meta:
-        db_table = 'Course'
+        db_table = "Course"
 
     def __str__(self):
         return self.title
@@ -156,26 +152,22 @@ class Course(models.Model):
 
 class Section(models.Model):
     CLASS_TYPE_CHOICES = [
-        ('Seminar', 'Seminar'),
-        ('Lecture', 'Lecture'),
-        ('Precept', 'Precept'),
-        ('Unknown', 'Unknown'),
-        ('Class', 'Class'),
-        ('Studio', 'Studio'),
-        ('Drill', 'Drill'),
-        ('Lab', 'Lab'),
-        ('Ear training', 'Ear training'),
+        ("Seminar", "Seminar"),
+        ("Lecture", "Lecture"),
+        ("Precept", "Precept"),
+        ("Unknown", "Unknown"),
+        ("Class", "Class"),
+        ("Studio", "Studio"),
+        ("Drill", "Drill"),
+        ("Lab", "Lab"),
+        ("Ear training", "Ear training"),
     ]
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
     class_number = models.IntegerField(db_index=True, null=True)
-    class_type = models.CharField(
-        max_length=50, choices=CLASS_TYPE_CHOICES, db_index=True, default=''
-    )
+    class_type = models.CharField(max_length=50, choices=CLASS_TYPE_CHOICES, db_index=True, default="")
     class_section = models.CharField(max_length=10, db_index=True, null=True)
-    term = models.ForeignKey(
-        AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True
-    )
+    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
     track = models.CharField(max_length=5, db_index=True, null=True)
     seat_reservations = models.CharField(max_length=1, db_index=True, null=True)
     instructor = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True)
@@ -184,12 +176,12 @@ class Section(models.Model):
     enrollment = models.IntegerField(db_index=True, default=0)
 
     class Meta:
-        db_table = 'Section'
+        db_table = "Section"
 
     def __str__(self):
-        section_title = self.course.title if self.course else 'None'
-        term_code = self.term.term_code if self.term else 'None'
-        return f'{section_title} - {term_code}'
+        section_title = self.course.title if self.course else "None"
+        term_code = self.term.term_code if self.term else "None"
+        return f"{section_title} - {term_code}"
 
 
 class ClassMeeting(models.Model):
@@ -202,21 +194,19 @@ class ClassMeeting(models.Model):
     building_name = models.CharField(max_length=255, db_index=True, null=True)
 
     class Meta:
-        db_table = 'ClassMeeting'
+        db_table = "ClassMeeting"
 
     def __str__(self):
-        return f'{self.section} - {self.start_time} to {self.end_time}'
+        return f"{self.section} - {self.start_time} to {self.end_time}"
 
 
 class ClassYearEnrollment(models.Model):
-    section = models.ForeignKey(
-        Section, on_delete=models.CASCADE, db_index=True, null=True
-    )
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True, null=True)
     class_year = models.IntegerField(null=True)
     enrl_seats = models.IntegerField(null=True)
 
     class Meta:
-        db_table = 'ClassYearEnrollment'
+        db_table = "ClassYearEnrollment"
 
 
 # ----------------------------------------------------------------------#
@@ -234,47 +224,43 @@ class Requirement(models.Model):
     min_grade = models.FloatField(db_index=True, default=0.0)
     completed_by_semester = models.IntegerField(db_index=True, default=8)
     parent = models.ForeignKey(
-        'self',
+        "self",
         on_delete=models.CASCADE,
-        related_name='req_list',
+        related_name="req_list",
         null=True,
     )
     degree = models.ForeignKey(
-        'Degree',
+        "Degree",
         on_delete=models.CASCADE,
-        related_name='req_list',
+        related_name="req_list",
         null=True,
     )
     major = models.ForeignKey(
-        'Major',
+        "Major",
         on_delete=models.CASCADE,
-        related_name='req_list',
+        related_name="req_list",
         null=True,
     )
     minor = models.ForeignKey(
-        'Minor',
+        "Minor",
         on_delete=models.CASCADE,
-        related_name='req_list',
+        related_name="req_list",
         null=True,
     )
     certificate = models.ForeignKey(
-        'Certificate',
+        "Certificate",
         on_delete=models.CASCADE,
-        related_name='req_list',
+        related_name="req_list",
         null=True,
     )
-    course_list = models.ManyToManyField(
-        'Course', db_index=True, related_name='satisfied_by'
-    )
+    course_list = models.ManyToManyField("Course", db_index=True, related_name="satisfied_by")
     dept_list = models.JSONField(db_index=True, null=True)
-    excluded_course_list = models.ManyToManyField(
-        'Course', related_name='not_satisfied_by'
-    )
+    excluded_course_list = models.ManyToManyField("Course", related_name="not_satisfied_by")
     dist_req = models.JSONField(db_index=True, null=True)
     num_courses = models.IntegerField(db_index=True, null=True)
 
     class Meta:
-        db_table = 'Requirement'
+        db_table = "Requirement"
 
 
 # --------------------------------------------------------------------------------------#
@@ -282,17 +268,17 @@ class Requirement(models.Model):
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
-        ('admin', 'Administrator'),
-        ('student', 'Student'),
+        ("admin", "Administrator"),
+        ("student", "Student"),
     )
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
     major = models.ForeignKey(Major, on_delete=models.CASCADE, null=True)
     minors = models.ManyToManyField(Minor)
     certificates = models.ManyToManyField(Certificate)
     requirements = models.ManyToManyField(
-        'Requirement',
-        related_name='users',
+        "Requirement",
+        related_name="users",
         blank=True,
     )  # for manually marked requirements
     req_dict = models.JSONField(null=True)
@@ -301,40 +287,35 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     class_year = models.IntegerField(null=True, blank=True)
+    seen_tutorial = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'CustomUser'
+        db_table = "CustomUser"
 
 
 class UserCourses(models.Model):
     STATUS_CHOICES = (
-        ('planned', 'Planned'),
-        ('in-progress', 'In Progress'),
-        ('completed', 'Completed'),
+        ("planned", "Planned"),
+        ("in-progress", "In Progress"),
+        ("completed", "Completed"),
     )
 
-    user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, db_index=True, null=True
-    )
-    course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, db_index=True, null=True
-    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
     semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)
-    requirement = models.ForeignKey(
-        Requirement, on_delete=models.CASCADE, db_index=True, null=True
-    )
+    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, db_index=True, null=True)
 
     class Meta:
-        db_table = 'UserCourses'
+        db_table = "UserCourses"
 
 
 class CalendarConfiguration(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='calendar_configurations',
+        related_name="calendar_configurations",
         null=True,
         blank=True,
         db_index=True,
@@ -344,42 +325,42 @@ class CalendarConfiguration(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('user', 'name')
-        db_table = 'CalendarConfiguration'
+        unique_together = ("user", "name")
+        db_table = "CalendarConfiguration"
 
     def __str__(self):
-        return f'{self.user.username}: {self.name}'
+        return f"{self.user.username}: {self.name}"
 
 
 class SemesterConfiguration(models.Model):
     calendar_configuration = models.ForeignKey(
         CalendarConfiguration,
         on_delete=models.CASCADE,
-        related_name='semester_configurations',
+        related_name="semester_configurations",
         db_index=True,
     )
     term = models.ForeignKey(
         AcademicTerm,
         on_delete=models.CASCADE,
-        related_name='semester_configurations',
+        related_name="semester_configurations",
         db_index=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('calendar_configuration', 'term')
-        db_table = 'SemesterConfiguration'
+        unique_together = ("calendar_configuration", "term")
+        db_table = "SemesterConfiguration"
 
     def __str__(self):
-        return f'{self.calendar_configuration}: {self.term.suffix}'
+        return f"{self.calendar_configuration}: {self.term.suffix}"
 
 
 class ScheduleSelection(models.Model):
     semester_configuration = models.ForeignKey(
         SemesterConfiguration,
         on_delete=models.CASCADE,
-        related_name='schedule_selections',
+        related_name="schedule_selections",
         db_index=True,
     )
     section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True)
@@ -390,8 +371,8 @@ class ScheduleSelection(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'ScheduleSelection'
-        unique_together = ('semester_configuration', 'section', 'index')
+        db_table = "ScheduleSelection"
+        unique_together = ("semester_configuration", "section", "index")
 
 
 class CourseEvaluations(models.Model):
@@ -420,10 +401,10 @@ class CourseEvaluations(models.Model):
     written_work = models.FloatField(null=True)
 
     class Meta:
-        db_table = 'CourseEvaluations'
+        db_table = "CourseEvaluations"
 
     def __str__(self):
-        return f'Evaluation for {self.course.name} - {self.term.name}'
+        return f"Evaluation for {self.course.name} - {self.term.name}"
 
 
 class CourseComments(models.Model):
@@ -431,10 +412,10 @@ class CourseComments(models.Model):
     comment = models.TextField(null=True)
 
     class Meta:
-        db_table = 'CourseComments'
+        db_table = "CourseComments"
 
     def __str__(self):
-        return f'{self.comment}'
+        return f"{self.comment}"
 
 
 # ----------------------------------------------------------------------#

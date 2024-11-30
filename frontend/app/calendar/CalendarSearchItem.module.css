@@ -75,3 +75,11 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(9, 62, 112, 0.3);
 }
+
+.disabled {
+  background-color: grey;
+
+  &:hover {
+    background-color: grey;
+  }
+}

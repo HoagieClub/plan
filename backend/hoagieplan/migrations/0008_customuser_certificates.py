@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('hoagieplan', '0007_scheduleselection_semesterconfiguration_and_more'),
+        ("hoagieplan", "0007_scheduleselection_semesterconfiguration_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customuser',
-            name='certificates',
-            field=models.ManyToManyField(to='hoagieplan.certificate'),
+            model_name="customuser",
+            name="certificates",
+            field=models.ManyToManyField(to="hoagieplan.certificate"),
         ),
     ]

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('hoagieplan', '0001_initial'),
+        ("hoagieplan", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='crosslistings',
+            model_name="course",
+            name="crosslistings",
             field=models.CharField(db_index=True, max_length=150, null=True),
         ),
     ]

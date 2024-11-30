@@ -50,29 +50,29 @@ req_list:
     explanation: 
     double_counting_allowed: true
     course_list:
-    - MAT201
-    - MAT203
-    - MAT218
+    - MAT 201
+    - MAT 203
+    - MAT 218
   - name: Linear Algebra
     max_counted: 1
     min_needed: 1
     explanation: 
     double_counting_allowed: true
     course_list:
-    - MAT202
-    - MAT204
-    - MAT217
+    - MAT 202
+    - MAT 204
+    - MAT 217
   - name: Familiarity with Proofs
     max_counted: 1
     min_needed: 1
     explanation: 
     double_counting_allowed: true
     course_list:
-    - MAT214
-    - MAT215
-    - MAT216
-    - MAT217
-    - MAT218
+    - MAT 214
+    - MAT 215
+    - MAT 216
+    - MAT 217
+    - MAT 218
 - name: Core
   max_counted: 1
   min_needed: 4
@@ -96,4 +96,3 @@ req_list:
     by a Junior Paper, which can be done in the senior year or as a summer 
     project.
   no_req:
-

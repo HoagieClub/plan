@@ -4,18 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('hoagieplan', '0003_customuser_requirements'),
+        ("hoagieplan", "0003_customuser_requirements"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='section',
-            name='class_number',
+            model_name="section",
+            name="class_number",
             field=models.IntegerField(db_index=True, null=True),
         ),
         migrations.DeleteModel(
-            name='CourseEquivalent',
+            name="CourseEquivalent",
         ),
     ]

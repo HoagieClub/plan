@@ -5,102 +5,113 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('hoagieplan', '0006_calendarconfiguration_calendarselection_and_more'),
+        ("hoagieplan", "0006_calendarconfiguration_calendarselection_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ScheduleSelection',
+            name="ScheduleSelection",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('index', models.PositiveSmallIntegerField()),
-                ('name', models.CharField(blank=True, db_index=True, max_length=100)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hoagieplan.section')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("index", models.PositiveSmallIntegerField()),
+                ("name", models.CharField(blank=True, db_index=True, max_length=100)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("section", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="hoagieplan.section")),
             ],
             options={
-                'db_table': 'ScheduleSelection',
+                "db_table": "ScheduleSelection",
             },
         ),
         migrations.CreateModel(
-            name='SemesterConfiguration',
+            name="SemesterConfiguration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'SemesterConfiguration',
+                "db_table": "SemesterConfiguration",
             },
         ),
         migrations.AlterUniqueTogether(
-            name='calendarselection',
+            name="calendarselection",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='calendarselection',
-            name='configuration',
+            model_name="calendarselection",
+            name="configuration",
         ),
         migrations.RemoveField(
-            model_name='calendarselection',
-            name='section',
+            model_name="calendarselection",
+            name="section",
         ),
         migrations.AlterModelOptions(
-            name='calendarconfiguration',
+            name="calendarconfiguration",
             options={},
         ),
         migrations.AlterUniqueTogether(
-            name='calendarconfiguration',
+            name="calendarconfiguration",
             unique_together=set(),
         ),
         migrations.AlterField(
-            model_name='calendarconfiguration',
-            name='name',
+            model_name="calendarconfiguration",
+            name="name",
             field=models.CharField(blank=True, db_index=True, max_length=100),
         ),
         migrations.AlterUniqueTogether(
-            name='calendarconfiguration',
-            unique_together={('user', 'name')},
+            name="calendarconfiguration",
+            unique_together={("user", "name")},
         ),
         migrations.DeleteModel(
-            name='CalendarFilter',
+            name="CalendarFilter",
         ),
         migrations.DeleteModel(
-            name='CalendarSelection',
+            name="CalendarSelection",
         ),
         migrations.AddField(
-            model_name='semesterconfiguration',
-            name='calendar_configuration',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='semester_configurations', to='hoagieplan.calendarconfiguration'),
+            model_name="semesterconfiguration",
+            name="calendar_configuration",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="semester_configurations",
+                to="hoagieplan.calendarconfiguration",
+            ),
         ),
         migrations.AddField(
-            model_name='semesterconfiguration',
-            name='term',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='semester_configurations', to='hoagieplan.academicterm'),
+            model_name="semesterconfiguration",
+            name="term",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="semester_configurations",
+                to="hoagieplan.academicterm",
+            ),
         ),
         migrations.AddField(
-            model_name='scheduleselection',
-            name='semester_configuration',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedule_selections', to='hoagieplan.semesterconfiguration'),
+            model_name="scheduleselection",
+            name="semester_configuration",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="schedule_selections",
+                to="hoagieplan.semesterconfiguration",
+            ),
         ),
         migrations.RemoveField(
-            model_name='calendarconfiguration',
-            name='index',
+            model_name="calendarconfiguration",
+            name="index",
         ),
         migrations.RemoveField(
-            model_name='calendarconfiguration',
-            name='term',
+            model_name="calendarconfiguration",
+            name="term",
         ),
         migrations.AlterUniqueTogether(
-            name='semesterconfiguration',
-            unique_together={('calendar_configuration', 'term')},
+            name="semesterconfiguration",
+            unique_together={("calendar_configuration", "term")},
         ),
         migrations.AlterUniqueTogether(
-            name='scheduleselection',
-            unique_together={('semester_configuration', 'section', 'index')},
+            name="scheduleselection",
+            unique_together={("semester_configuration", "section", "index")},
         ),
     ]
