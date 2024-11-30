@@ -98,7 +98,7 @@ $box-shadow-hover:
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: 15px;
+  border-radius: 8px;
   @include box-shadow($box-shadow-base);
   padding: 8px;
   margin: -1px;

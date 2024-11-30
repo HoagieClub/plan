@@ -83,9 +83,9 @@ const useCalendarStore = create<CalendarStore>()(
         const term = course.guid.substring(0, 4);
         const selectedCourses = get().getSelectedCourses(term);
 
-        // console.log('Attempting to add course:', course);
+        // // console.log('Attempting to add course:', course);
         if (selectedCourses.some((event) => event.course.guid === course.guid)) {
-          // console.log('Course already added:', course);
+          // // console.log('Course already added:', course);
           // TODO: Return a snackbar/toast or something nice if the course is already added
           return;
         }
@@ -94,7 +94,7 @@ const useCalendarStore = create<CalendarStore>()(
         try {
           const term = course.guid.substring(0, 4);
           const course_id = course.guid.substring(4);
-          // console.log(`Fetching course details from backend for ${term}-${course_id}`);
+          // // console.log(`Fetching course details from backend for ${term}-${course_id}`);
           const response = await fetch(
             `${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`
           );
@@ -117,6 +117,9 @@ const useCalendarStore = create<CalendarStore>()(
           const uniqueLectureNumbers = new Set(
             lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
           );
+          // console.log('Fetched sections:', sections.length);
+
+          const exceptions = ['Lecture', 'Seminar'];
 
           const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
             section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
@@ -187,6 +190,7 @@ const useCalendarStore = create<CalendarStore>()(
                 section.isActive &&
                 section.section.class_type === clickedSection.section.class_type
             ).length <= sectionsPerGroupping;
+            ).length <= sectionsPerGroupping;
 
           const updatedSections = selectedCourses.map((section) => {
             if (
@@ -197,8 +201,16 @@ const useCalendarStore = create<CalendarStore>()(
                 ...section,
                 isChosen: !section.isChosen,
               };
+            } else if (
+              section.section.id === clickedSection.section.id &&
+              section.course.guid === clickedSection.course.guid
+            ) {
+              return {
+                ...section,
+                isChosen: !section.isChosen,
+              };
             } else if (section.course.guid !== clickedSection.course.guid) {
-              return { ...section };
+              return { ...{ ...section } };
             }
 
             if (isActiveSingle && clickedSection.isActive) {

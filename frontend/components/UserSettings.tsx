@@ -1,4 +1,5 @@
 import { FC, useState, useEffect, useCallback } from 'react';
+import { smartSearch, isOptionEqual } from './MajorMinorSearch';
 
 import {
   Autocomplete,
@@ -302,11 +303,13 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={false}
             autoHighlight
             options={majorOptions}
+            // Call smartSearch to search through all majors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
             placeholder='Select your major'
             variant='soft'
             value={major}
             // inputValue={major.code === undeclared.code ? '' : major.code}
-            isOptionEqualToValue={(option, value) => option.code === value.code}
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newMajor: MajorMinorType) => {
               event.stopPropagation();
               setMajor(newMajor ?? undeclared);
@@ -328,12 +331,12 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={minorOptions}
+            // Call smartSearch to search through all minors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
             placeholder={'Select your minor(s)'}
             variant='soft'
             value={minors}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option.code === value.code
-            }
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newMinors: MajorMinorType[]) => {
               event.stopPropagation();
               handleMinorsChange(event, newMinors);
@@ -355,12 +358,12 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={true}
             autoHighlight
             options={certificateOptions}
+            // Call smartSearch to search through all certificates and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
             placeholder={'Select your certificate(s)'}
             variant='soft'
             value={certificates}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option.code === value.code
-            }
+            isOptionEqualToValue={isOptionEqual}
             onChange={(event, newCertificates: MajorMinorType[]) => {
               event.stopPropagation();
               handleCertificatesChange(event, newCertificates);
