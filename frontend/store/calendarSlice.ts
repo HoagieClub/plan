@@ -119,8 +119,6 @@ const useCalendarStore = create<CalendarStore>()(
             lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
           );
 
-          console.log(uniqueLectureNumbers);
-
           const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
             section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
               const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
