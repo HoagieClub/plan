@@ -250,37 +250,6 @@ export function Canvas({
 
   const classYear = user.classYear ?? defaultClassYear;
 
-  const generateSemesters = (classYear: number): Items => {
-    const semesters: Items = {};
-    const startYear = classYear - 4;
-
-    for (let year = startYear; year < classYear; ++year) {
-      semesters[`Fall ${year}`] = [];
-      semesters[`Spring ${year + 1}`] = [];
-    }
-    return semesters;
-  };
-
-  const updateSemesters = (
-    prevItems: Items,
-    classYear: number,
-    userCourses: { [key: number]: Course[] },
-  ): Items => {
-    const startYear = classYear - 4;
-    let semester = 1;
-    for (let year = startYear; year < classYear; ++year) {
-      prevItems[`Fall ${year}`] = userCourses[semester].map(
-        (course) => `${course.course_id}|${course.crosslistings}`,
-      );
-      semester += 1;
-      prevItems[`Spring ${year + 1}`] = userCourses[semester].map(
-        (course) => `${course.course_id}|${course.crosslistings}`,
-      );
-      semester += 1;
-    }
-    return prevItems;
-  };
-
   const semesters = generateSemesters(classYear);
   const [items, setItems] = useState<Items>(() => ({
     [SEARCH_RESULTS_ID]: [], // Initialize search container with no courses

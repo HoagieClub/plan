@@ -1,0 +1,58 @@
+.grid {
+    /* Base grid styles */
+    width: 100%;
+    position: relative;
+    gap: 1rem;
+    padding: 0.5rem;
+
+    /* Ensure consistent sizing */
+    --semester-width: 22.5vw;
+    --grid-template: repeat(4, minmax(0, 1fr));
+}
+
+.semesterContainer {
+    /* Container-specific styles */
+    width: var(--semester-width);
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+/* Hover and interaction states */
+.semesterContainer:focus-within {
+    outline: 2px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+}
+
+/* Grid layout management for different screen sizes */
+@media (max-width: 1280px) {
+    .grid {
+        --semester-width: 30vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+        --semester-width: 90vw;
+    }
+
+    .semesterContainer {
+        max-height: 300px;
+    }
+    }
+
+    /* Animation utilities */
+    .fadeIn {
+    animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

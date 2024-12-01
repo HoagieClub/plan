@@ -1,0 +1,42 @@
+.searchContainer {
+    --search-width: 24vw;
+    --extended-width: 35vw;
+    width: var(--search-width);
+    transition: width 0.2s ease-in-out;
+}
+
+.searchContainer[data-dragging="true"] {
+    width: var(--extended-width);
+}
+
+.resultsList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.searchItem {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.searchItem[data-dragging="true"] {
+    opacity: 0.5;
+}
+
+.searchContainer :global(::-webkit-scrollbar) {
+    width: 6px;
+}
+
+.searchContainer :global(::-webkit-scrollbar-track) {
+    background: transparent;
+}
+
+.searchContainer :global(::-webkit-scrollbar-thumb) {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.searchContainer :global(::-webkit-scrollbar-thumb:hover) {
+    background-color: rgba(0, 0, 0, 0.2);
+}

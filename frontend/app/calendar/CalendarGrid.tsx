@@ -146,5 +146,5 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
   },
 );
 
-CalendarGrid.displayName = "CalendarGrid";
+CalendarGrid.displayName = "CalendarGrid" as const;
 export default CalendarGrid;

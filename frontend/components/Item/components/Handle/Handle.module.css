@@ -1,0 +1,7 @@
+.handle {
+    /* */
+}
+  
+.handle[aria-pressed='true'] {
+cursor: grabbing;
+}

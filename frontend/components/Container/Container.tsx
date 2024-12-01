@@ -1,61 +1,35 @@
 import {
   CSSProperties,
   forwardRef,
-  HTMLAttributes,
   ReactNode,
   Ref,
   RefCallback,
 } from "react";
-
-import classNames from "classnames";
-
+import { cn } from "@/lib/utils";
 import styles from "./Container.module.css";
 
-export type ContainerProps = {
-  children: ReactNode;
-  columns?: number;
-  label?: string | ReactNode;
-  style?: CSSProperties;
-  horizontal?: boolean;
-  hover?: boolean;
-  handleProps?: HTMLAttributes<HTMLDivElement | HTMLButtonElement>;
-  scrollable?: boolean;
-  shadow?: boolean;
-  placeholder?: boolean;
-  unstyled?: boolean;
-  height?: string | number;
-  onClick?(): void;
-  onRemove?(): void;
-};
-
-export const Container = forwardRef<
-  HTMLDivElement | HTMLButtonElement,
-  ContainerProps
->(
+export const Container = forwardRef<HTMLDivElement | HTMLButtonElement, ContainerProps>(
   (
     {
       children,
       columns = 1,
-      // handleProps, // TODO: remove permanently?
       horizontal,
       hover,
       onClick,
-      // onRemove, // TODO: remove permanently?
       label,
       placeholder,
       style,
       scrollable,
       shadow,
       unstyled,
-      height,
+      className,
       ...props
     }: ContainerProps,
     ref: Ref<HTMLDivElement | HTMLButtonElement>,
   ) => {
     const Component = onClick ? "button" : "div";
-    const setRef: RefCallback<HTMLDivElement | HTMLButtonElement> = (
-      instance,
-    ) => {
+    
+    const setRef: RefCallback<HTMLDivElement | HTMLButtonElement> = (instance) => {
       if (typeof ref === "function") {
         ref(instance);
       }
@@ -65,30 +39,58 @@ export const Container = forwardRef<
       <Component
         {...props}
         ref={setRef}
-        style={
-          {
-            ...style,
-            "--columns": columns,
-            height: height,
-          } as CSSProperties
-        }
-        className={classNames(
+        style={{
+          ...style,
+          "--columns": columns,
+        } as CSSProperties}
+        className={cn(
+          // Base styles - minimal and necessary
+          "flex flex-col box-border appearance-none outline-none rounded-lg overflow-hidden",
+          
+          // Base container styles for grid functionality
           styles.Container,
-          unstyled && styles.unstyled,
+          
+          // Conditional styles
+          !unstyled && "bg-gray-50 border border-black/5",
+          unstyled && "overflow-visible bg-transparent border-0",
           horizontal && styles.horizontal,
-          hover && styles.hover,
-          placeholder && styles.placeholder,
-          scrollable && styles.scrollable,
-          shadow && styles.shadow,
+          hover && "hover:bg-gray-100",
+          placeholder && [
+            "justify-center items-center cursor-pointer",
+            "text-black/50 bg-transparent",
+            "border-dashed border-black/[0.08]",
+            "hover:border-black/[0.15]",
+          ],
+          scrollable && "overflow-y-auto",
+          shadow && "shadow-md",
+          className
         )}
         onClick={onClick}
         tabIndex={onClick ? 0 : undefined}
       >
-        {label ? <div className={styles.Header}>{label}</div> : null}
-        {placeholder ? children : <ul>{children}</ul>}
+        {label && (
+          <div className={cn(
+            "flex items-center justify-between",
+            "px-5 py-1.5 bg-white",
+            "rounded-t-lg border-b border-black/5"
+          )}>
+            {label}
+          </div>
+        )}
+        
+        {placeholder ? children : (
+          <ul className={cn(
+            "grid gap-2 p-2 w-full h-full",
+            "align-content-start",
+            scrollable && "overflow-y-auto",
+            horizontal && "overflow-x-auto"
+          )}>
+            {children}
+          </ul>
+        )}
       </Component>
     );
-  },
+  }
 );
 
-Container.displayName = "Container";
+Container.displayName = "Container" as const;

@@ -1,0 +1,15 @@
+.remove {
+    @apply text-red-500;
+}
+
+.remove:hover {
+    @apply bg-red-50;
+}
+
+.remove[data-danger='true'] {
+    @apply bg-red-50;
+}
+
+.remove[data-danger='true']:hover {
+    @apply bg-red-100;
+}

@@ -1,0 +1,26 @@
+.layoutContainer {
+    /* Heights */
+    --container-grid-height: 87vh;
+    --search-grid-height: 85vh;
+
+    /* Widths */
+    --semester-width: 22.5vw;
+    --requirements-width: 26vw;
+    --course-width: 10.5vw;
+    --extended-course-width: 22vw;
+}
+
+/* Utility classes that use our custom properties */
+.searchSection {
+    height: var(--search-grid-height);
+    width: var(--extended-course-width);
+}
+
+.semesterSection {
+    height: var(--container-grid-height);
+}
+
+.requirementsSection {
+    height: var(--container-grid-height);
+    width: var(--requirements-width);
+}

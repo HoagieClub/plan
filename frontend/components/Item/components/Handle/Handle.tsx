@@ -1,22 +1,30 @@
+'use client';
+
 import { forwardRef } from "react";
+import { Action } from "../Action";
+import { type HandleProps } from "./types";
 
-import { Action, ActionProps } from "../Action";
-
-export const Handle = forwardRef<HTMLButtonElement, ActionProps>(
-  (props, ref) => {
-    return (
-      <Action
-        ref={ref}
-        cursor="grab"
-        data-cypress="draggable-handle"
-        {...props}
+export const Handle = forwardRef<HTMLButtonElement, HandleProps>(
+  ({ className, ...props }, ref) => (
+    <Action
+      ref={ref}
+      cursor="grab"
+      data-testid="draggable-handle"
+      aria-label="Drag handle"
+      className={className}
+      {...props}
+    >
+      <svg 
+        viewBox="0 0 20 20" 
+        width="12" 
+        height="12"
+        aria-hidden="true"
+        className="block"
       >
-        <svg viewBox="0 0 20 20" width="12" height="12">
-          <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path>
-        </svg>
-      </Action>
-    );
-  },
+        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
+      </svg>
+    </Action>
+  )
 );
 
-Handle.displayName = "Handle";
+Handle.displayName = "Handle" as const;

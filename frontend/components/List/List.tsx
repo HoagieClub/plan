@@ -30,4 +30,4 @@ export const List = forwardRef<HTMLUListElement, Props>(
   },
 );
 
-List.displayName = "List";
+List.displayName = "List" as const;

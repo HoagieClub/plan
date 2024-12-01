@@ -1,0 +1,31 @@
+export const PRIMARY_COLOR_LIST: string[] = [
+  "#ff7895",
+  "#e38a62",
+  "#cdaf7b",
+  "#94bb77",
+  "#e2c25e",
+  "#ead196",
+  "#e7bc7d",
+  "#d0b895",
+  "#72b4c9",
+  "#2cdbca",
+  "#a8cadc",
+  "#c5bab6",
+  "#bf91bd",
+];
+
+export const SECONDARY_COLOR_LIST: string[] = [
+  "#ff91a9",
+  "#e9a88a",
+  "#d7bf95",
+  "#afcb9a",
+  "#e9d186",
+  "#f5db9d",
+  "#f0d2a8",
+  "#dcc9af",
+  "#96c7d6",
+  "#2ee8d6",
+  "#a8d3dc",
+  "#cac1be",
+  "#c398c1",
+];

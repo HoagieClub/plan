@@ -1,66 +1,48 @@
-import { CSSProperties, memo, forwardRef, ReactNode, useEffect } from "react";
+'use client';
 
-import type { DraggableSyntheticListeners } from "@dnd-kit/core";
-import type { Transform } from "@dnd-kit/utilities";
-import classNames from "classnames";
-
-import { InfoComponent } from "../InfoComponent";
-
+import { memo, forwardRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Handle, Remove } from "./components";
-import styles from "./Item.module.css";
-
-export type Props = {
-  dragOverlay?: boolean;
-  color_primary?: string;
-  color_secondary?: string;
-  disabled?: boolean;
-  dragging?: boolean;
-  handle?: boolean;
-  handleProps?: (element: HTMLElement | null) => void | undefined;
-  height?: number;
-  index?: number;
-  fadeIn?: boolean;
-  transform?: Transform | null;
-  listeners?: DraggableSyntheticListeners;
-  sorting?: boolean;
-  style?: CSSProperties;
-  transition?: string | null;
-  wrapperStyle?: CSSProperties;
-  value: ReactNode; // Note: This should be the text that appears on the course card
-  onRemove?(): void;
-};
+import styles from "@/components/Item/Item.module.css";
+import { type ItemProps } from "@/components/Item/types";
 
 export const Item = memo(
-  forwardRef<HTMLLIElement, Props>(
-    (
-      {
-        color_primary,
-        color_secondary,
-        dragOverlay,
-        dragging,
-        disabled,
-        fadeIn,
-        handle,
-        handleProps,
-        // TODO: need?: height,
-        index,
-        listeners,
-        onRemove,
-        sorting,
-        style,
-        transition,
-        transform,
-        value,
-        wrapperStyle,
-        ...props
-      },
-      ref,
-    ) => {
-      // Grabbing cursor style on overlay
+  forwardRef<HTMLLIElement, ItemProps>(
+    ({
+      // Core props
+      children,
+      className,
+      disabled = false,
+      handle = false,
+      value,
+      
+      // Drag state props
+      dragOverlay = false,
+      dragging = false,
+      sorting = false,
+      fadeIn = false,
+
+      // Style props
+      style,
+      wrapperStyle,
+      colors,
+      height,
+      
+      // Event handlers
+      onRemove,
+      
+      // DND props
+      transform,
+      transition,
+      listeners,
+      handleProps,
+      
+      ...props
+    }, ref) => {
+      // Handle cursor style for drag overlay
       useEffect(() => {
-        if (!dragOverlay) {
-          return;
-        }
+        if (!dragOverlay) return;
+        
         document.body.style.cursor = "grabbing";
         return () => {
           document.body.style.cursor = "";
@@ -69,79 +51,71 @@ export const Item = memo(
 
       return (
         <li
-          className={classNames(
-            styles.Wrapper,
+          className={cn(
+            styles.wrapper,
             fadeIn && styles.fadeIn,
             sorting && styles.sorting,
             dragOverlay && styles.dragOverlay,
+            className
           )}
-          style={
-            {
-              ...wrapperStyle,
-              transition: [transition, wrapperStyle?.transition]
-                .filter(Boolean)
-                .join(", "),
-              "--translate-x": transform
-                ? `${Math.round(transform.x)}px`
-                : undefined,
-              "--translate-y": transform
-                ? `${Math.round(transform.y)}px`
-                : undefined,
-              "--scale-x": transform?.scaleX
-                ? `${transform.scaleX}`
-                : undefined,
-              "--scale-y": transform?.scaleY
-                ? `${transform.scaleY}`
-                : undefined,
-              "--index": index,
-              "--color_primary": color_primary,
-              "--color_secondary": color_secondary,
-            } as CSSProperties
-          }
+          style={{
+            ...wrapperStyle,
+            transition: [transition, wrapperStyle?.transition]
+              .filter(Boolean)
+              .join(", "),
+            '--translate-x': transform ? `${Math.round(transform.x)}px` : undefined,
+            '--translate-y': transform ? `${Math.round(transform.y)}px` : undefined,
+            '--scale-x': transform?.scaleX ? `${transform.scaleX}` : undefined,
+            '--scale-y': transform?.scaleY ? `${transform.scaleY}` : undefined,
+            '--color-primary': colors?.primary,
+            '--color-secondary': colors?.secondary,
+            height
+          } as React.CSSProperties}
           ref={ref}
         >
           <div
-            className={classNames(
-              styles.Item,
+            className={cn(
+              styles.item,
               dragging && styles.dragging,
               handle && styles.withHandle,
               dragOverlay && styles.dragOverlay,
-              disabled && styles.disabled,
-              color_primary && styles.color_primary,
-              color_secondary && styles.color_secondary,
+              disabled && styles.disabled
             )}
             style={style}
-            data-cypress="draggable-item"
-            {...(!handle && !disabled ? listeners : undefined)}
-            {...props}
-            tabIndex={disabled ? -1 : !handle ? 0 : undefined}
+            data-testid="draggable-item"
+            {...(!handle && !disabled ? {
+              tabIndex: disabled ? -1 : !handle ? 0 : undefined,
+              ...listeners
+            } : undefined)}
           >
-            {/* Text Container for InfoComponent */}
-            <div className={styles.TextContainer}>
-              {!disabled ? (
-                <InfoComponent value={value?.toString().split("|")[1] ?? ""} />
-              ) : (
-                value?.toString().split("|")[1] ?? ""
-              )}
+            {/* Content Area */}
+            <div className={styles.content}>
+              {children || value}
             </div>
 
-            {!disabled && handle ? (
+            {/* Handle Button */}
+            {!disabled && handle && (
               <Handle
                 {...handleProps}
                 {...listeners}
-                className={styles.Handle}
+                className={styles.handle}
               />
-            ) : null}
+            )}
 
-            {/* Actions Container for the Remove button */}
-            {!disabled ? (
-              <span className={styles.Actions}>
-                <Remove className={styles.Remove} onClick={onRemove} />
-              </span>
-            ) : null}
+            {/* Remove Button */}
+            {!disabled && onRemove && (
+              <div className={styles.actions}>
+                <Remove 
+                  onClick={onRemove} 
+                  className={styles.remove}
+                />
+              </div>
+            )}
           </div>
         </li>
       );
-    },
-  ),
+    }
+  )
 );
+
+Item.displayName = "Item" as const;

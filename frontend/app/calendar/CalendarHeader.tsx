@@ -33,7 +33,7 @@ const DayCell: FC<{ day: Day; index: number }> = memo(({ day, index }) => {
     </div>
   );
 });
-DayCell.displayName = "DayCell";
+DayCell.displayName = "DayCell" as const;
 
 const CalendarHeader: FC<CalendarHeaderProps> = ({ days, style }) => {
   const gridTemplateColumns: string = `minmax(60px, 100px) repeat(${days.length}, 1fr)`;

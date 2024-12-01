@@ -81,12 +81,6 @@ export type Semester = {
   courses: Course[];
 };
 
-export type SemesterBinProps = {
-  children?: ReactNode;
-  semester: Semester;
-  className?: string;
-};
-
 export type DraggableProps = {
   id: number;
   children: ReactNode;
