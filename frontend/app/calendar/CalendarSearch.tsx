@@ -86,10 +86,12 @@ const CalendarSearch: FC = () => {
   }));
 
   const {
+    termFilter,
     distributionFilter,
     levelFilter,
     gradingFilter,
     showPopup,
+    setTermFilter,
     setDistributionFilter,
     setLevelFilter,
     setGradingFilter,
@@ -143,7 +145,7 @@ const CalendarSearch: FC = () => {
     } else {
       search('', filters);
     }
-  }, [query, distributionFilter, levelFilter, gradingFilter, search]);
+  }, [query, distributionFilter, levelFilter, gradingFilter, search, termFilter]);
 
   function retrieveCachedSearch(search: string) {
     setCalendarSearchResults(searchCache.get(search) || []);
