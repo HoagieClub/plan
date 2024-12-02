@@ -68,6 +68,7 @@ req_list:
   min_needed: ALL
   explanation: |-
     All students in the A.B. program must complete courses in each distribution area in their eight terms of study. The distribution areas are: Culture and Difference (CD) Epistemology and Cognition (EC); Ethical Thought and Moral Values (EM); Historical Analysis (HA); Literature and the Arts (LA); Social Analysis (SA); Quantitative and Computational Reasoning (QCR); and Science and Engineering (SE). For Science and Engineering, at least one course must be a laboratory course (SEL). Students may elect a second laboratory science course, or a nonlaboratory science course (SEN).
+  double_counting_allowed: true
   req_list:
   - name: Culture and Difference
     max_counted: 1
