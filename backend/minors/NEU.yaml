@@ -51,12 +51,15 @@ req_list:
     - NEU 301
     - NEU 331
     - NEU 385
+    - NEU 390
     - NEU 400
     - NEU 403
     - NEU 413
     - NEU 428
     - NEU 430
     - NEU 443
+    - NEU 444
+    - NEU 446
     - NEU 447
     - NEU 460
     - NEU 475
@@ -65,11 +68,9 @@ req_list:
     - ECE 452
     - MOL 250
     - MOL 433
-    - MOL 259
+    - MOL 459
     - MOL 460
     - PHY 562
-    - PSY 207
-    - PSY 317
     - QCB 515
   - name: Circuits & Systems
     max_counted: 1
@@ -82,13 +83,17 @@ req_list:
     - NEU 325
     - NEU 336
     - NEU 385
+    - NEU 390
     - NEU 413
     - NEU 420
     - NEU 422
     - NEU 427
     - NEU 428
+    - NEU 444
     - NEU 460
     - NEU 457
+    - NEU 475
+    - NEU 477
     - NEU 501A
     - NEU 502A
     - PHY 562
@@ -116,6 +121,7 @@ req_list:
     - MAT 323
     - PSY 360
     - QCB 515
+    - SML 354
   - name: Cognitive & Social Neuroscience
     max_counted: 1
     min_needed: 1
@@ -129,10 +135,10 @@ req_list:
     - NEU 338
     - NEU 340
     - NEU 422
+    - NEU 446
+    - NEU 477
     - NEU 499
     - NEU 502A
     - ECE 480
     - PSY 248
     - PSY 409
-
-# Note: 4 classes from 3 different areas
