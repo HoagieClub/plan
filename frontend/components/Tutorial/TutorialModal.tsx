@@ -51,7 +51,7 @@ const Tutorial: React.FC<TutorialProps> = ({
         <div className={styles.pagePhoto}>
           <img
             src={photos[currentPage]}
-            alt={Step ${currentPage + 1}}
+            alt={"Step ${currentPage + 1}"}
             style={{ width: "65%", height: "auto" }}
           />
         </div>

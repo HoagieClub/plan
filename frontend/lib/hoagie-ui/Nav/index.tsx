@@ -81,7 +81,6 @@ function Nav({
     : pathname.includes("/calendar")
       ? "calendar"
       : "dashboard";
-
   return (
     <Pane elevation={1}>
       {HeaderComponent ? (
@@ -166,7 +165,7 @@ function Nav({
             >
               <HelpOutlineIcon
                 fontSize="large"
-                style={{ color: theme.colors.yellow400 }}
+                style={{ color: theme.colors.yellow400}}
                 titleAccess="Open Tutorial"
               />
             </Pane>
@@ -190,6 +189,7 @@ function Nav({
                 />
               </Popover>
             )}
+            {tutorialModal}
           </Pane>
         </Pane>
       </Pane>
