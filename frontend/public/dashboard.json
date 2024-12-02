@@ -1,0 +1,39 @@
+{
+    "headers": [
+      "Welcome to Dashboard!",
+      "Account Settings",
+      "Searching for Courses",
+      "Course Details",
+      "Search Filters",
+      "Drag and Drop",
+      "Confirming Requirement Fulfillment",
+      "Requirement Information",
+      "Search for Requirements",
+      "Mark as Satisfied"
+    ],
+    "pages": [
+      "This tutorial will run you through the functionality that will allow you to plan your 4-year academic schedule.",
+      "Click on the login dropdown in the top right of the screen to access your account settings. These settings allow you to change your name, major, minors, certificates, and class year.",
+      "To search for courses, click on the search bar at the top of the screen. You can search for courses by department, course number, or course title.",
+      "You can view course details including course description, reviews, and further information by clicking on the course card. This will display the course details.",
+      "You can filter your course search by using the search filters. These filters allow you to search for courses by distribution area, levels, semesters, and grading options.",
+      "To add a course to your schedule, drag and drop the course card into the desired semester.",
+      "If a course can fulfill multiple requirements you can confirm which requirement you want it to fulfill by clicking on the course under the respective requirement. This will confirm the requirement fulfillment.",
+      "To view further information about a requirement, click on the requirement name. This will display the requirement details.",
+      "To search for courses that fulfill a specific requirement, click on the Search Courses button in the requirement details pop up. This will autofill search results for courses that fulfill the requirement.",
+      "To mark a requirement as satisfied, click on Mark Satisfied button within the requirement detail pop up. This will mark the requirement as satisfied."
+    ],
+    "photos": [
+      "/welcome.png",
+      "/settings.png",
+      "/search.png",
+      "/course_detail.png",
+      "/filters.png",
+      "/drag.png",
+      "/requirement_confirm.png",
+      "/requirement_detail.png",
+      "/requirement_search.png",
+      "/satisfy.png"
+    ]
+  }
+  

@@ -1,0 +1,33 @@
+{
+    "headers": [
+      "Welcome to Calendar!",
+      "Account Settings",
+      "Selecting Semester",
+      "Searching for Courses",
+      "Search Filters",
+      "Adding Courses",
+      "Removing Courses",
+      "Confirming Course Times"
+    ],
+    "pages": [
+      "This tutorial will run you through the functionality that will allow you to plan your weekly schedule for a specific semester.",
+      "Click on the login dropdown in the top right of the screen to access your account settings. These settings allow you to change your name, major, minors, certificates, and class year.",
+      "To select a semester, click on the desired semester on top of the calendar. This will bring up any selected courses for that semester.",
+      "To search for courses, click on the search bar at the top of the screen. You can search for courses by department, course number, or course title.",
+      "You can filter your course search by using the search filters. These filters allow you to search for courses by distribution area, levels, semesters, and grading options.",
+      "To add a course to your schedule, click on the Add button on the course card. This will add the course to your schedule.",
+      "To remove a course from your schedule, click on the Remove button on the course card. This will remove the course from your schedule.",
+      "In cases in which a course has multiple sections, you can confirm which section you want to add to your schedule by clicking on the section in the calendar."
+    ],
+    "photos": [
+      "/calendar_main.png",
+      "/settings.png",
+      "/semester.png",
+      "/search.png",
+      "/filters.png",
+      "/course_add.png",
+      "/course_remove.png",
+      "/section.png"
+    ]
+  }
+  

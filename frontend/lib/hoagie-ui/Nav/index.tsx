@@ -30,6 +30,8 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
 import ProfileCard from "@/lib/hoagie-ui/ProfileCard";
+import { useTutorialModal } from "@/components/Tutorial/Tutorial";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 export type Nav = {
   // The name of the app for generating the `hoagie{name}` title.
@@ -73,6 +75,12 @@ function Nav({
   const router = useRouter();
   const pathname = usePathname();
   const username = user?.name;
+  const { openTutorialModal, tutorialModal } = useTutorialModal();
+  const tutorialType = pathname.includes("/dashboard")
+    ? "dashboard"
+    : pathname.includes("/calendar")
+      ? "calendar"
+      : "dashboard";
 
   return (
     <Pane elevation={1}>
@@ -148,6 +156,20 @@ function Nav({
                 </Tab>
               ))}
             </TabNavigation>
+            <Pane
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              marginLeft={majorScale(4)}
+              cursor="pointer"
+              onClick={() => openTutorialModal(tutorialType)}
+            >
+              <HelpOutlineIcon
+                fontSize="large"
+                style={{ color: theme.colors.yellow400 }}
+                titleAccess="Open Tutorial"
+              />
+            </Pane>
             {user && (
               <Popover
                 content={
