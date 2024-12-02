@@ -55,11 +55,10 @@ req_list:
     - CBE 442
   - name: Senior Independent Work
     max_counted: 1
-    min_needed: 2
+    min_needed: 1
     explanation: Students must carry out a two-term senior thesis.
     course_list:
-    - CBE 451
-    - CBE 452
+    - CBE 454
 - name: Advanced Science and Math Requirements
   max_counted: 1
   min_needed: ALL
