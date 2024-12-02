@@ -531,7 +531,11 @@ class SearchCourses(APIView):
                 query_conditions &= Q(guid__startswith=term)
 
             if distribution:
-                query_conditions &= Q(distribution_area_short__icontains=distribution)
+                distributions = distribution.split(',')
+                for dist in distributions:
+                    query_conditions &= Q(distribution_area_short__icontains=dist)
+                print(f'distributions: {distribution}')
+                # query_conditions &= Q(distribution_area_short__icontains=distribution)
 
             if levels:
                 levels = levels.split(',')

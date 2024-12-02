@@ -45,7 +45,7 @@ export type SettingsModalProps = {
   children?: ReactNode;
   setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
   setTermFilter?: (term: string) => void;
-  setDistributionFilter?: (distribution: string) => void;
+  setDistributionFilters?: (distribution: string[]) => void;
   setLevelFilter?: (level: string[]) => void;
   setGradingFilter?: (grading: string[]) => void;
   handleCancel?: () => void;
@@ -54,7 +54,7 @@ export type SettingsModalProps = {
 
 export type Filter = {
   termFilter: string;
-  distributionFilter: string;
+  distributionFilters: string[];
   levelFilter: string[];
   gradingFilter: string[];
 };
@@ -126,8 +126,6 @@ export type CalendarEvent = {
 
   // Defined fields
   isActive: boolean;
-  needsChoice: boolean;
-  isChosen: boolean;
 };
 
 // Note: types from the API, fields in snake_case.
