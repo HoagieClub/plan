@@ -127,7 +127,7 @@ req_list:
           One semester of experimental physics: PHY 312.
         course_list:
           - PHY 312
-      - name: Complex Analysis
+      - name: Complex Analysis/Differential Equations
         max_counted: 1
         min_needed: 1
         explanation: |-
