@@ -68,6 +68,7 @@ function invert(obj: TermMap): TermMap {
 
 const CalendarSearch: FC = () => {
   const [isClient, setIsClient] = useState<boolean>(false);
+  const [localDistributionInputValue, setLocalDistributionInputValue] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -208,6 +209,14 @@ const CalendarSearch: FC = () => {
     setShowPopup(false);
   }, [setShowPopup]);
 
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalDistributionInputValue('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Enter") {
@@ -260,6 +269,7 @@ const CalendarSearch: FC = () => {
         setLevelFilter={handleLocalLevelFilterChange}
         setGradingFilter={handleLocalGradingFilterChange}
         handleSave={handleSave}
+        handleReset={handleReset}
         handleCancel={handleCancel}
       >
         <div className="grid grid-cols-1 gap-6">
@@ -339,6 +349,9 @@ const CalendarSearch: FC = () => {
               size="md"
             >
               Save
+            </Button>
+            <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+              Reset
             </Button>
             <Button
               variant="soft"

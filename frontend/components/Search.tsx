@@ -41,6 +41,8 @@ const searchCache = new LRUCache<string, Course[]>({
 const Search: FC = () => {
   const [query, setQuery] = useState<string>("");
   const timerRef = useRef<number>();
+  const [localTermInputValue, setLocalTermInputValue] = useState('');
+  const [localDistributionInputValue, setLocalDistributionInputValue] = useState('');
   const {
     setSearchResults,
     searchResults,
@@ -204,6 +206,17 @@ const Search: FC = () => {
     setLocalDistributionFilter(useFilterStore.getState().distributionFilter);
     setShowPopup(false);
   }, [setShowPopup]);
+
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalDistributionInputValue('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setLocalTermFilter('');
+    setLocalTermInputValue('');
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Enter") {
@@ -258,6 +271,7 @@ const Search: FC = () => {
       setLevelFilter={setLocalLevelFilter}
       setGradingFilter={setLocalGradingFilter}
       handleSave={handleSave}
+      handleReset={handleReset}
       handleCancel={handleCancel}
     >
       <div className="grid grid-cols-1 gap-6">
@@ -269,13 +283,15 @@ const Search: FC = () => {
             options={Object.keys(terms)}
             placeholder="Semester"
             variant="soft"
-            value={termsInverse[localTermFilter]}
+            value={termsInverse[localTermFilter] || null}
+            inputValue={localTermInputValue}
             isOptionEqualToValue={(option, value) =>
               value === "" || option === value
             }
             onChange={(event, newTermName: string | null) => {
               event.stopPropagation();
-              setLocalTermFilter(terms[newTermName ?? ""] ?? "");
+              setLocalTermFilter(terms[newTermName ?? ''] ?? '');
+              setLocalTermInputValue(newTermName ?? '');
             }}
             getOptionLabel={(option) => option.toString()}
             renderOption={(props, option) => (
@@ -293,15 +309,18 @@ const Search: FC = () => {
             options={Object.keys(distributionAreas)}
             placeholder="Distribution area"
             variant="soft"
-            value={distributionAreasInverse[localDistributionFilter]}
+            value={distributionAreasInverse[localDistributionFilter] || null}
+            inputValue={localDistributionInputValue}
             isOptionEqualToValue={(option, value) =>
               value === "" || option === value
             }
+            onInputChange={(_, newInputValue) => {
+              setLocalDistributionInputValue(newInputValue);
+            }}
             onChange={(event, newDistributionName: string | null) => {
               event.stopPropagation();
-              setLocalDistributionFilter(
-                distributionAreas[newDistributionName ?? ""] ?? "",
-              );
+              setLocalDistributionFilter(distributionAreas[newDistributionName ?? ''] ?? '');
+              setLocalDistributionInputValue(newDistributionName ?? '');
             }}
             getOptionLabel={(option) => option.toString()}
             renderOption={(props, option) => (
@@ -354,6 +373,9 @@ const Search: FC = () => {
         <div className="mt-5 text-right">
           <Button variant="soft" color="primary" onClick={handleSave} size="md">
             Save
+          </Button>
+          <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+            Reset
           </Button>
           <Button
             variant="soft"
