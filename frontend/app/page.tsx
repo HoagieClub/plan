@@ -95,7 +95,7 @@ export default function Index() {
         paddingBottom={majorScale(7)}
       >
         <Heading size={900} className='hoagie'>
-          Welcome to Hoagie Plan
+          Welcome to HoagiePlan
         </Heading>
         <br />
         <p>Explore courses, read reviews, and manage your four-year schedule.</p>

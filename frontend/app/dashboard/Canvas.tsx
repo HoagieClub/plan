@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -28,6 +28,7 @@ import TabbedMenu from '@/components/TabbedMenu/TabbedMenu';
 import useSearchStore from '@/store/searchSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { useUpdateRequirements } from '@/hooks/update-requirements';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 
@@ -225,6 +226,9 @@ export function Canvas({
   minimal = false,
   scrollable,
 }: Props) {
+  // Convenient updateRequirements hook initialized with the user's NetID
+  const { updateRequirements, academicPlan, isUpdating } = useUpdateRequirements(profile.netId);
+
   // This limits the width of the course cards
   const wrapperStyle = () => ({
     width: courseWidth,
@@ -289,7 +293,7 @@ export function Canvas({
   const initialRequirements: Dictionary = {};
 
   // State for academic requirements
-  const [academicPlan, setAcademicPlan] = useState<Dictionary>(initialRequirements);
+  // const [academicPlan, setAcademicPlan] = useState<Dictionary>(initialRequirements);
 
   // TODO: Make this dynamic later
   const userMajorCode = 'COS-BSE';
@@ -336,19 +340,19 @@ export function Canvas({
     }
   }, [profile.netId]);
 
-  const updateRequirements = useCallback(() => {
-    fetch(`${process.env.BACKEND}/update_requirements/`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'X-NetId': profile.netId,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAcademicPlan(data);
-      });
-  }, [profile.netId]);
+  // const updateRequirements = useCallback(() => {
+  //   fetch(`${process.env.BACKEND}/update_requirements/`, {
+  //     method: 'GET',
+  //     credentials: 'include',
+  //     headers: {
+  //       'X-NetId': profile.netId,
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       setAcademicPlan(data);
+  //     });
+  // }, [profile.netId]);
 
   // Fetch user courses and check requirements on initial render
   useEffect(() => {

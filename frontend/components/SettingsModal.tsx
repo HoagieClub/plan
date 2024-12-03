@@ -21,11 +21,14 @@ export function useSettingsModal() {
       <UserSettings
         profile={userProfile}
         onClose={() => setIsModalOpen(false)}
-        onSave={() => {
-          window.location.reload(); // Refresh page on save
-          // TODO: eventually just refresh only necessary components
-          // updateProfile(newProfileData); // Update the Zustand store with new profile data
-          // setIsModalOpen(false);
+        onSave={(newProfileData) => {
+          // Update the Zustand store with new profile data
+          useUserSlice.setState((state) => ({
+            profile: { ...state.profile, ...newProfileData },
+          }));
+        
+          // Close the modal
+          setIsModalOpen(false);
         }}
       />
     </SettingsModal>

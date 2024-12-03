@@ -17,7 +17,7 @@ interface TabbedMenuProps {
 
 const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, profile, csrfToken, updateRequirements }) => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
-
+  console.log('does tabs data update?', tabsData);
   useEffect(() => {
     // Only set the active tab if it's not already set
     if (!activeTab && tabsData && Object.keys(tabsData).length > 0) {

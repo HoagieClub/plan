@@ -39,6 +39,7 @@ def get_user(request):
             user_inst.first_name = first_name
             user_inst.last_name = last_name
             user_inst.net_id = net_id
+            user_inst.username = net_id
             user_inst.save()
         else:
             email_prefix = email.split("@")[0]
