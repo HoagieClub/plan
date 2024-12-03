@@ -41,6 +41,8 @@ const config: Config = {
         "hoagieplan-purple": "#663399",
       },
       backgroundColor: {
+        "hoagieplan-dark-yellow": "#FFB020",
+        "hoagieplan-light-yellow": "#FFEFD2",
         "dnd-gray": "rgba(0, 0, 0, 0.05)", // Background "on hover" color dnd uses
       },
     },

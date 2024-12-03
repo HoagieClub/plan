@@ -1,6 +1,18 @@
 // TODO: Check all of these with Cmd + Shift + F and delete any unused ones
 import { CSSProperties, ReactNode } from "react";
+import "evergreen-ui";
 import { UserProfile } from "@auth0/nextjs-auth0/client";
+
+declare module "evergreen-ui" {
+  interface DefaultTheme {
+    title: string;
+  }
+}
+
+export type HoagieUser = {
+  name?: string;
+  email?: string;
+};
 
 export type AuthState = {
   user?: Profile;

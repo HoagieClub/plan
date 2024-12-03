@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import django
-import orjson as oj
 from django.db import transaction
 from tqdm import tqdm
 

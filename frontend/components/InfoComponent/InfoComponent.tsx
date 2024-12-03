@@ -19,6 +19,8 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
   const coursenum = value.split(" ")[1];
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [courseDetails, setCourseDetails] = useState<{
+    // TODO: Address this typing eventually.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   } | null>(null);
 

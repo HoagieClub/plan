@@ -1,5 +1,4 @@
 from typing import Dict, Any
-import orjson as oj
 import requests
 from configs import Configs
 

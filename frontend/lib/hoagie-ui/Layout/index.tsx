@@ -12,9 +12,12 @@
 
 "use client";
 
+"use client";
+
 import { Pane } from "evergreen-ui";
 import { ReactNode } from "react";
 import { useTheme } from "evergreen-ui";
+import Footer from "@/lib/hoagie-ui/Footer";
 
 function Layout({ children }: { children: ReactNode }) {
   const theme = useTheme();
@@ -25,7 +28,10 @@ function Layout({ children }: { children: ReactNode }) {
       minHeight="100vh"
       background={theme.colors.yellow100}
     >
-      {children}
+      <Pane flex="1">{children}</Pane>
+      <Pane>
+        <Footer />
+      </Pane>
     </Pane>
   );
 }

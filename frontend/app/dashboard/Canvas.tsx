@@ -287,7 +287,9 @@ export function Canvas({
   }));
 
   type Dictionary = {
-    [key: string]: any; // TODO: Aim to replace 'any' with more specific types.
+    // TODO: Address this typing eventually.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 
   // Initialize a more structured dictionary if possible

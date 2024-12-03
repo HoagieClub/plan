@@ -231,7 +231,7 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 });
 
 export const hoagieYellow = mergeTheme(hoagieUI, {
-  title: "yellow",
+  title: "#FFB020",
   colors: {
     ...hoagieUI.colors,
     yellow900: "#4A300B",

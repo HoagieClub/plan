@@ -101,7 +101,7 @@ const CalendarSearch: FC = () => {
     levelFilter,
     gradingFilter,
     showPopup,
-    setTermFilter,
+    // setTermFilter, TODO: Not used
     setDistributionFilter,
     setLevelFilter,
     setGradingFilter,
@@ -138,7 +138,7 @@ const CalendarSearch: FC = () => {
           addRecentSearch(searchQuery);
           searchCache.set(searchQuery, data.courses);
         }
-      } catch (error: any) {
+      } catch (error) {
         setError(`There was an error fetching courses: ${error.message || ""}`);
       } finally {
         setLoading(false);

@@ -2,10 +2,10 @@ import withPWA from "next-pwa";
 
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true, // F it we ball
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true, // F it we ball
+    ignoreBuildErrors: false,
   },
   reactStrictMode: true,
   ...withPWA({

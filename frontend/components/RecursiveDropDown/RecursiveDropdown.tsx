@@ -22,6 +22,8 @@ import { Profile } from "@/types";
 import styles from "../InfoComponent/InfoComponent.module.css";
 
 interface Dictionary {
+  // TODO: Address this typing eventually.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -121,6 +123,9 @@ const Dropdown: FC<DropdownProps> = ({
 }) => {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [markedSatisfied, setMarkedSatisfied] = useState<boolean>(false);
+
+  // TODO: Address this typing eventually.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [explanation, setExplanation] = useState<{ [key: number]: any } | null>(
     null,
   );

@@ -1,6 +1,8 @@
 import { FC, CSSProperties } from "react";
+
 import { CalendarEvent } from "@/types";
-import "./Calendar.css";
+
+import "./Calendar.scss";
 import { departmentColors } from "@/utils/departmentColors";
 
 interface CalendarCardProps {
@@ -27,38 +29,41 @@ const CalendarCard: FC<CalendarCardProps> = ({
     dept: string,
     needsChoice: boolean,
     isChosen: boolean,
-  ): string {
-    const baseGradient =
-      departmentColors[dept] || "linear-gradient(135deg, #3498db, #2980b9)";
+  ) {
+    const baseColor =
+      departmentColors[dept] || "linear-gradient(135deg, #3498db, #2980b9)"; // Fallback gradient
 
     if (!needsChoice || isChosen) {
-      return baseGradient;
+      return {
+        backgroundImage: baseColor,
+      };
     }
-
-    return `
-      ${baseGradient},
-      repeating-linear-gradient(
-        45deg,
-        rgba(255, 255, 255, 0.1) 0px,
-        rgba(255, 255, 255, 0.1) 8px,
-        rgba(0, 0, 0, 0.05) 8px,
-        rgba(0, 0, 0, 0.05) 16px
-      )
-    `;
+    return {
+      backgroundImage: `
+        ${baseColor}, 
+        repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.1) 0px,
+          rgba(255, 255, 255, 0.1) 7px,
+          rgba(0, 0, 0, 0.05) 7px,
+          rgba(0, 0, 0, 0.05) 13px
+        )
+      `,
+      backgroundBlendMode: "overlay",
+    };
   }
 
   return (
     <div
       className={`calendar-card ${event.textColor}`}
       style={{
-        background: getGradientStyle(dept, event.needsChoice, event.isChosen),
+        ...getGradientStyle(dept, event.needsChoice, event.isChosen),
         opacity: event.needsChoice && !event.isChosen ? 0.5 : 1,
         gridRow: `${startIndex} / ${endIndex}`,
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
         width: `calc(100% * ${width})`,
         marginLeft: `calc(100% * ${offsetLeft})`,
         overflow: "hidden",
-        position: "relative",
       }}
       onClick={onSectionClick}
     >
@@ -71,9 +76,8 @@ const CalendarCard: FC<CalendarCardProps> = ({
         {event.startTime} – {event.endTime}
       </div>
 
-      <div className="flex justify-between items-center text-sm text-white/80 mt-1">
-        <span>{event.section.class_meetings[0].building_name}</span>
-        <span>
+      <div className="flex items-center text-sm text-white/80 mt-1 capacity-container">
+        <span className="capacity">
           {event.section.enrollment} / {event.section.capacity}
         </span>
       </div>

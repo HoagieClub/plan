@@ -28,20 +28,27 @@ def manually_settle(request):
     net_id = request.headers.get("X-NetId")
     user_inst = CustomUser.objects.get(username=net_id)
     course_inst = (
-        Course.objects.select_related("department").filter(crosslistings__iexact=crosslistings).order_by("-guid")[0]
+        Course.objects.select_related("department")
+        .filter(crosslistings__iexact=crosslistings, usercourses__user=user_inst)
+        .order_by("-guid")
+        .first()
     )
+    if not course_inst:
+        course_inst = (
+            Course.objects.select_related("department")
+            .filter(crosslistings__iexact=crosslistings)
+            .order_by("-guid")
+            .first()
+        )
 
     user_course_inst = UserCourses.objects.get(user_id=user_inst.id, course=course_inst)
     if user_course_inst.requirement_id is None:
         user_course_inst.requirement_id = req_id
         user_course_inst.save()
-
         return JsonResponse({"Manually settled": user_course_inst.id})
-
     else:
         user_course_inst.requirement_id = None
         user_course_inst.save()
-
         return JsonResponse({"Unsettled": user_course_inst.id})
 
 
@@ -522,17 +529,21 @@ def format_req_output(req, courses, manually_satisfied_reqs):
 
 @cumulative_time
 def check_requirements(user_inst, table, code, courses):
-    """Returns information about the requirements satisfied by the courses
-    given in course_ids.
+    """Determine whether the requirements for a given user and table are satisfied,
+    based on the provided courses.
 
-    :param table: the table containing the root of the requirement tree
-    :param id: primary key in table
-    :type req_file: string
-    :type courses: 2D array of dictionaries.
-    :returns: Whether the requirements are satisfied
-    :returns: The list of courses with info about the requirements they satisfy
-    :returns: A simplified json with info about how much of each requirement is satisfied
-    :rtype: (bool, dict, dict)
+    Args:
+        user_inst: The user instance associated with the requirements.
+        table: The table containing the root of the requirement tree.
+        code: The primary key or identifier in the table.
+        courses: A 2D array of dictionaries, where each dictionary represents a course.
+
+    Returns:
+        tuple:
+            - bool: Whether the requirements are satisfied.
+            - dict: A list of courses with details about the requirements they satisfy.
+            - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
+
     """
     req = cached_init_req(user_inst, table, code)
     manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
@@ -789,17 +800,25 @@ def update_courses(request):
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(username=net_id)
         class_year = user_inst.class_year
+
         course_inst = (
             Course.objects.select_related("department")
-            .filter(crosslistings__iexact=crosslistings)
-            .order_by("-guid")[0]
+            .filter(crosslistings__iexact=crosslistings, usercourses__user=user_inst)
+            .order_by("-guid")
+            .first()
         )
+        if not course_inst:
+            course_inst = (
+                Course.objects.select_related("department")
+                .filter(crosslistings__iexact=crosslistings)
+                .order_by("-guid")
+                .first()
+            )
 
         if container == "Search Results":
             user_course = UserCourses.objects.get(user=user_inst, course=course_inst)
             user_course.delete()
             message = f"User course deleted: {crosslistings}, {net_id}"
-
         else:
             semester = parse_semester(container, class_year)
 
@@ -814,8 +833,5 @@ def update_courses(request):
         return JsonResponse({"status": "success", "message": message})
 
     except Exception as e:
-        # Log the detailed error internally
         logger.error(f"An internal error occurred: {e}", exc_info=True)
-
-        # Return a generic error message to the user
         return JsonResponse({"status": "error", "message": "An internal error has occurred!"})

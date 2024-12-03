@@ -1,4 +1,3 @@
-// CalendarTime.tsx
 import { FC, useEffect, useState } from "react";
 
 interface CalendarTimeProps {

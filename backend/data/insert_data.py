@@ -1,9 +1,9 @@
 import argparse
 import csv
-import hoagieplan.logger import logger
 import os
 import sys
 import re
+from hoagieplan.logger import logger
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm

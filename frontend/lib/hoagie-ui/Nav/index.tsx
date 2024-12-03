@@ -86,7 +86,7 @@ function Nav({
       {HeaderComponent ? (
         <HeaderComponent />
       ) : (
-        <Pane width="100%" height={20} background={theme.colors.yellow400} />
+        <Pane width="100%" height={20} background={theme.title} />
       )}
       <Pane
         display="flex"
@@ -148,7 +148,6 @@ function Nav({
                   is="a"
                   id={tab.title}
                   isSelected={pathname === tab.href}
-                  appearance="navbar"
                   onSelect={() => router.push(tab.href)}
                 >
                   {tab.title}

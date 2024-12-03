@@ -28,10 +28,10 @@ dependencies = [
     "djangorestframework>=3.15.2",
     "django-cors-headers>=4.5.0",
     "colorama>=0.4.6",
-    "psycopg2>=2.9.10",
+    "postgres>=4.0",
     "tqdm>=4.67.1",
     "orjson>=3.10.12",
-    "postgres>=4.0",
+    "PyYAML>=6.0.2",
 ]
 
 # ===============================

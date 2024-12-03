@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button as JoyButton } from "@mui/joy";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { TutorialModal } from "../Modal";
 import styles from "./Tutorial.module.css";
 
@@ -13,10 +14,17 @@ interface TutorialProps {
   tutorialType: "dashboard" | "calendar";
 }
 
-const tutorialContents = {
-  dashboard: dashboardContent,
-  calendar: calendarContent,
-};
+interface TutorialContent {
+  headers: string[];
+  pages: string[];
+  photos: string[];
+}
+
+const tutorialContents: Record<TutorialProps["tutorialType"], TutorialContent> =
+  {
+    dashboard: dashboardContent,
+    calendar: calendarContent,
+  };
 
 const Tutorial: React.FC<TutorialProps> = ({
   isOpen,
@@ -49,11 +57,18 @@ const Tutorial: React.FC<TutorialProps> = ({
         <div className={styles.header}>{headers[currentPage]}</div>
         <div className={styles.pageContent}>{pages[currentPage]}</div>
         <div className={styles.pagePhoto}>
-          <img
-            src={photos[currentPage]}
-            alt={"Step ${currentPage + 1}"}
-            style={{ width: "65%", height: "auto" }}
-          />
+          <div
+            style={{ position: "relative", width: "65%", aspectRatio: "16/9" }}
+          >
+            <Image
+              src={photos[currentPage]}
+              alt={`Step ${currentPage + 1}`}
+              fill
+              style={{ objectFit: "contain" }}
+              priority={currentPage === 0}
+              sizes="(max-width: 768px) 100vw, 65vw"
+            />
+          </div>
         </div>
         <div className={styles.footer}>
           <JoyButton

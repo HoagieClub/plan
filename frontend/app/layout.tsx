@@ -57,7 +57,7 @@ export default async function RootLayout({
   const session = await fetchSession();
 
   return (
-    <html lang="en">
+    <html lang="en" className="bg-hoagieplan-dark-yellow">
       <UserProvider>
         <body className="antialiased">
           <Content user={session?.user}>{children}</Content>
