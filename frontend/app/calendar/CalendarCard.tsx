@@ -1,9 +1,9 @@
-import { FC, CSSProperties } from "react";
+import type { FC, CSSProperties } from 'react';
 
-import { CalendarEvent } from "@/types";
+import type { CalendarEvent } from '@/types';
 
-import "./Calendar.scss";
-import { departmentColors } from "@/utils/departmentColors";
+import './Calendar.scss';
+import { departmentColors } from '@/utils/departmentColors';
 
 interface CalendarCardProps {
   event: CalendarEvent;
@@ -25,13 +25,8 @@ const CalendarCard: FC<CalendarCardProps> = ({
   endIndex,
   dept,
 }) => {
-  function getGradientStyle(
-    dept: string,
-    needsChoice: boolean,
-    isChosen: boolean,
-  ) {
-    const baseColor =
-      departmentColors[dept] || "linear-gradient(135deg, #3498db, #2980b9)"; // Fallback gradient
+  function getGradientStyle(dept: string, needsChoice: boolean, isChosen: boolean) {
+    const baseColor = departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Fallback gradient
 
     if (!needsChoice || isChosen) {
       return {
@@ -49,7 +44,7 @@ const CalendarCard: FC<CalendarCardProps> = ({
           rgba(0, 0, 0, 0.05) 13px
         )
       `,
-      backgroundBlendMode: "overlay",
+      backgroundBlendMode: 'overlay',
     };
   }
 
@@ -63,24 +58,24 @@ const CalendarCard: FC<CalendarCardProps> = ({
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
         width: `calc(100% * ${width})`,
         marginLeft: `calc(100% * ${offsetLeft})`,
-        overflow: "hidden",
+        overflow: 'hidden',
       }}
       onClick={onSectionClick}
     >
       {/* Wrapper for header unit */}
-      <div className="event-header-unit flex flex-col items-start">
-        <div className="event-department">
-          {event.course.department_code} {event.course.catalog_number} -{" "}
+      <div className='event-header-unit flex flex-col items-start'>
+        <div className='event-department'>
+          {event.course.department_code} {event.course.catalog_number} -{' '}
           {event.section.class_section}
         </div>
 
-        <div className="text-sm text-white/80 mt-1">
+        <div className='mt-1 text-sm text-white/80'>
           {event.startTime} – {event.endTime}
         </div>
       </div>
 
-      <div className="flex items-center text-sm text-white/80 mt-1 capacity-container">
-        <span className="capacity">
+      <div className='capacity-container mt-1 flex items-center text-sm text-white/80'>
+        <span className='capacity'>
           {event.section.enrollment} / {event.section.capacity}
         </span>
       </div>

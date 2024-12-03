@@ -1,8 +1,8 @@
 // CalendarSearchItem.jsx
-import useCalendarStore from "@/store/calendarSlice";
-import { termsInverse } from "@/utils/terms";
+import useCalendarStore from '@/store/calendarSlice';
+import { termsInverse } from '@/utils/terms';
 
-import styles from "./CalendarSearchItem.module.css";
+import styles from './CalendarSearchItem.module.css';
 
 const CalendarSearchItem = ({ course }) => {
   const selectedCourses = useCalendarStore((state) => state.selectedCourses);
@@ -15,7 +15,7 @@ const CalendarSearchItem = ({ course }) => {
   const termCode = course.guid.slice(0, 4);
   const semester = termsInverse[termCode];
   const isCourseInSchedule = (selectedCourses[termCode] || []).some(
-    (event) => event.course.guid === course.guid,
+    (event) => event.course.guid === course.guid
   );
 
   return (
@@ -30,9 +30,7 @@ const CalendarSearchItem = ({ course }) => {
         <div className={styles.semester}>{semester}</div>
         <div className={styles.actions}>
           <button
-            className={`${styles.button} ${
-              isCourseInSchedule ? styles.disabled : ""
-            }`}
+            className={`${styles.button} ${isCourseInSchedule ? styles.disabled : ''}`}
             disabled={isCourseInSchedule}
           >
             Add

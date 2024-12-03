@@ -1,23 +1,24 @@
-"use client";
+'use client';
 
-import { useEffect, FC } from "react";
+import type { FC } from 'react';
+import { useEffect } from 'react';
 
-import SkeletonApp from "@/components/SkeletonApp";
-import { useModalStore } from "@/store/modalSlice";
-import { Canvas } from "@/app/dashboard/Canvas";
-import useUserSlice from "@/store/userSlice";
+import { Canvas } from '@/app/dashboard/Canvas';
+import SkeletonApp from '@/components/SkeletonApp';
+import { useModalStore } from '@/store/modalSlice';
+import useUserSlice from '@/store/userSlice';
 
 const Dashboard: FC = () => {
   const profile = useUserSlice((state) => state.profile);
 
   useEffect(() => {
-    useModalStore.setState({ currentPage: "dashboard" });
+    useModalStore.setState({ currentPage: 'dashboard' });
   }, []);
 
   return (
     <>
-      <main className="flex flex-grow z-10 rounded pt-0.5vh pb-0.5vh pl-0.5vw pr-0.5vw">
-        {profile && profile.netId !== "" ? (
+      <main className='z-10 flex flex-grow rounded pb-0.5vh pl-0.5vw pr-0.5vw pt-0.5vh'>
+        {profile && profile.netId !== '' ? (
           <Canvas profile={profile} columns={2} />
         ) : (
           <div>

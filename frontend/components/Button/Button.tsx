@@ -1,8 +1,8 @@
-import { HTMLAttributes, FC, ReactNode } from "react";
+import type { HTMLAttributes, FC, ReactNode } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import styles from "./Button.module.css";
+import styles from './Button.module.css';
 
 export type Props = HTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;

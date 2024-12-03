@@ -1,14 +1,8 @@
-import {
-  ChangeEvent,
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  FC,
-} from "react";
+import type { ChangeEvent, FC } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -16,22 +10,18 @@ import {
   FormLabel,
   AutocompleteOption,
   ListItemContent,
-} from "@mui/joy";
-import { LRUCache } from "typescript-lru-cache";
+} from '@mui/joy';
+import { LRUCache } from 'typescript-lru-cache';
 
-import { Course, Filter } from "@/types";
+import useFilterStore from '@/store/filterSlice';
+import useSearchStore from '@/store/searchSlice';
+import type { Course, Filter } from '@/types';
+import { distributionAreas, distributionAreasInverse } from '@/utils/distributionAreas';
+import { grading } from '@/utils/grading';
+import { levels } from '@/utils/levels';
+import { terms, termsInverse } from '@/utils/terms';
 
-import useFilterStore from "@/store/filterSlice";
-import useSearchStore from "@/store/searchSlice";
-import {
-  distributionAreas,
-  distributionAreasInverse,
-} from "@/utils/distributionAreas";
-import { grading } from "@/utils/grading";
-import { levels } from "@/utils/levels";
-import { terms, termsInverse } from "@/utils/terms";
-
-import { FilterModal } from "./Modal";
+import { FilterModal } from './Modal';
 
 const searchCache = new LRUCache<string, Course[]>({
   maxSize: 50,
@@ -39,7 +29,7 @@ const searchCache = new LRUCache<string, Course[]>({
 });
 
 const Search: FC = () => {
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>('');
   const timerRef = useRef<number>();
   const {
     setSearchResults,
@@ -73,18 +63,17 @@ const Search: FC = () => {
 
   const [showPopup, setShowPopup] = useState<boolean>(false);
 
-  const [localDistributionFilter, setLocalDistributionFilter] =
-    useState<string>("");
+  const [localDistributionFilter, setLocalDistributionFilter] = useState<string>('');
   const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
   const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
-  const [localTermFilter, setLocalTermFilter] = useState<string>("");
+  const [localTermFilter, setLocalTermFilter] = useState<string>('');
 
   const areFiltersActive = () => {
     return (
-      distributionFilter !== "" ||
+      distributionFilter !== '' ||
       levelFilter.length > 0 ||
       gradingFilter.length > 0 ||
-      termFilter !== ""
+      termFilter !== ''
     );
   };
 
@@ -105,10 +94,10 @@ const Search: FC = () => {
       queryString += `&distribution=${encodeURIComponent(filter.distributionFilter)}`;
     }
     if (filter.levelFilter.length > 0) {
-      queryString += `&level=${filter.levelFilter.map(encodeURIComponent).join(",")}`;
+      queryString += `&level=${filter.levelFilter.map(encodeURIComponent).join(',')}`;
     }
     if (filter.gradingFilter.length > 0) {
-      queryString += `&grading=${filter.gradingFilter.map(encodeURIComponent).join(",")}`;
+      queryString += `&grading=${filter.gradingFilter.map(encodeURIComponent).join(',')}`;
     }
     return queryString;
   }
@@ -127,17 +116,15 @@ const Search: FC = () => {
             searchCache.set(searchQuery, data.courses);
           }
         } else {
-          setError(
-            `Server returned ${response.status}: ${response.statusText}`,
-          );
+          setError(`Server returned ${response.status}: ${response.statusText}`);
         }
       } catch {
-        setError("There was an error fetching courses.");
+        setError('There was an error fetching courses.');
       } finally {
         setLoading(false);
       }
     },
-    [addRecentSearch, setError, setLoading, setSearchResults],
+    [addRecentSearch, setError, setLoading, setSearchResults]
   );
 
   function retrieveCachedSearch(search) {
@@ -154,16 +141,9 @@ const Search: FC = () => {
     if (query) {
       search(query, filters);
     } else {
-      search("", filters);
+      search('', filters);
     }
-  }, [
-    query,
-    termFilter,
-    distributionFilter,
-    levelFilter,
-    gradingFilter,
-    search,
-  ]);
+  }, [query, termFilter, distributionFilter, levelFilter, gradingFilter, search]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (timerRef.current) {
@@ -202,11 +182,11 @@ const Search: FC = () => {
   }, [setShowPopup]);
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === "Enter") {
+      if (event.key === 'Enter') {
         event.preventDefault();
         event.stopPropagation();
         handleSave();
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
         handleCancel();
@@ -214,12 +194,12 @@ const Search: FC = () => {
     };
 
     if (showPopup) {
-      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener('keydown', handleKeyDown);
     }
 
     // Remove event listener if showPopup is false, or on unmount.
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [showPopup, handleSave, handleCancel]);
 
@@ -238,9 +218,7 @@ const Search: FC = () => {
 
   const handleLocalGradingFilterChange = (grading) => {
     if (localGradingFilter.includes(grading)) {
-      setLocalGradingFilter(
-        localGradingFilter.filter((item) => item !== grading),
-      );
+      setLocalGradingFilter(localGradingFilter.filter((item) => item !== grading));
     } else {
       setLocalGradingFilter([...localGradingFilter, grading]);
     }
@@ -256,22 +234,20 @@ const Search: FC = () => {
       handleSave={handleSave}
       handleCancel={handleCancel}
     >
-      <div className="grid grid-cols-1 gap-6">
+      <div className='grid grid-cols-1 gap-6'>
         <div>
           <FormLabel>Semester</FormLabel>
           <Autocomplete
             multiple={false}
             autoHighlight
             options={Object.keys(terms)}
-            placeholder="Semester"
-            variant="soft"
+            placeholder='Semester'
+            variant='soft'
             value={termsInverse[localTermFilter]}
-            isOptionEqualToValue={(option, value) =>
-              value === "" || option === value
-            }
+            isOptionEqualToValue={(option, value) => value === '' || option === value}
             onChange={(event, newTermName: string | null) => {
               event.stopPropagation();
-              setLocalTermFilter(terms[newTermName ?? ""] ?? "");
+              setLocalTermFilter(terms[newTermName ?? ''] ?? '');
             }}
             getOptionLabel={(option) => option.toString()}
             renderOption={(props, option) => (
@@ -287,17 +263,13 @@ const Search: FC = () => {
             multiple={false}
             autoHighlight
             options={Object.keys(distributionAreas)}
-            placeholder="Distribution area"
-            variant="soft"
+            placeholder='Distribution area'
+            variant='soft'
             value={distributionAreasInverse[localDistributionFilter]}
-            isOptionEqualToValue={(option, value) =>
-              value === "" || option === value
-            }
+            isOptionEqualToValue={(option, value) => value === '' || option === value}
             onChange={(event, newDistributionName: string | null) => {
               event.stopPropagation();
-              setLocalDistributionFilter(
-                distributionAreas[newDistributionName ?? ""] ?? "",
-              );
+              setLocalDistributionFilter(distributionAreas[newDistributionName ?? ''] ?? '');
             }}
             getOptionLabel={(option) => option.toString()}
             renderOption={(props, option) => (
@@ -309,55 +281,45 @@ const Search: FC = () => {
         </div>
         <div>
           <FormLabel>Course level</FormLabel>
-          <div className="grid grid-cols-3">
+          <div className='grid grid-cols-3'>
             {Object.keys(levels).map((level) => (
-              <div key={level} className="flex items-center mb-2">
+              <div key={level} className='mb-2 flex items-center'>
                 <Checkbox
-                  size="sm"
+                  size='sm'
                   id={`level-${level}`}
-                  name="level"
+                  name='level'
                   checked={localLevelFilter.includes(levels[level])}
                   onChange={() => handleLocalLevelFilterChange(levels[level])}
                 />
-                <span className="ml-2 text-sm font-medium text-gray-800">
-                  {level}
-                </span>
+                <span className='ml-2 text-sm font-medium text-gray-800'>{level}</span>
               </div>
             ))}
           </div>
         </div>
         <div>
           <FormLabel>Allowed grading</FormLabel>
-          <div className="grid grid-cols-3">
+          <div className='grid grid-cols-3'>
             {grading.map((grading) => (
-              <div key={grading} className="flex items-center mb-2">
+              <div key={grading} className='mb-2 flex items-center'>
                 <Checkbox
-                  size="sm"
+                  size='sm'
                   id={`grading-${grading}`}
-                  name="grading"
+                  name='grading'
                   checked={localGradingFilter.includes(grading)}
                   onChange={() => handleLocalGradingFilterChange(grading)}
                 />
-                <span className="ml-2 text-sm font-medium text-gray-800">
-                  {grading}
-                </span>
+                <span className='ml-2 text-sm font-medium text-gray-800'>{grading}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
-      <footer className="mt-auto text-right">
-        <div className="mt-5 text-right">
-          <Button variant="soft" color="primary" onClick={handleSave} size="md">
+      <footer className='mt-auto text-right'>
+        <div className='mt-5 text-right'>
+          <Button variant='soft' color='primary' onClick={handleSave} size='md'>
             Save
           </Button>
-          <Button
-            variant="soft"
-            color="neutral"
-            onClick={handleCancel}
-            sx={{ ml: 2 }}
-            size="md"
-          >
+          <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
             Cancel
           </Button>
         </div>
@@ -367,56 +329,51 @@ const Search: FC = () => {
 
   return (
     <>
-      <div className="block w-full text-left pr-3">
-        <label htmlFor="search" className="sr-only">
+      <div className='block w-full pr-3 text-left'>
+        <label htmlFor='search' className='sr-only'>
           Search courses
         </label>
-        <div className="relative mt-2 rounded-lg shadow-sm">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <MagnifyingGlassIcon
-              className="h-5 w-5 text-gray-400"
-              aria-hidden="true"
-            />
+        <div className='relative mt-2 rounded-lg shadow-sm'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
+            <MagnifyingGlassIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
           </div>
           <input
-            type="text"
-            name="search"
-            id="search"
-            className="block w-full py-1.5 pl-10 pr-9 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-600 focus:border-indigo-600"
-            placeholder="Search courses"
-            autoComplete="off"
+            type='text'
+            name='search'
+            id='search'
+            className='block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-10 pr-9 text-sm text-gray-900 shadow-sm focus:border-indigo-600 focus:ring-indigo-600'
+            placeholder='Search courses'
+            autoComplete='off'
             onChange={handleInputChange}
           />
           <button
-            type="button"
-            className={`absolute inset-y-1 right-2 flex items-center justify-center px-1 rounded-md hover:bg-dnd-gray group`}
+            type='button'
+            className='group absolute inset-y-1 right-2 flex items-center justify-center rounded-md px-1 hover:bg-dnd-gray'
             onClick={handleAdjustmentsClick}
-            aria-label="Adjust search settings"
+            aria-label='Adjust search settings'
           >
             <AdjustmentsHorizontalIcon
-              className={`h-5 w-5 ${areFiltersActive() ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"}`}
-              aria-hidden="true"
+              className={`h-5 w-5 ${areFiltersActive() ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`}
+              aria-hidden='true'
             />
           </button>
         </div>
-        <div className="mt-3">
-          <div className="text-sm font-medium text-gray-500">
-            Recent searches:
-          </div>
-          <div className="flex overflow-x-auto py-2 px-1 space-x-2 flex-basis:100px">
+        <div className='mt-3'>
+          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
+          <div className='flex-basis:100px flex space-x-2 overflow-x-auto px-1 py-2'>
             {recentSearches.map((search, index) => (
               <button
                 key={index}
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-0.5 px-2 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+                className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300'
                 onClick={() => retrieveCachedSearch(search)}
               >
                 {search}
               </button>
             ))}
           </div>
-          <div className="overflow-x-auto py-1 px-1 space-x-1">
+          <div className='space-x-1 overflow-x-auto px-1 py-1'>
             <button
-              className="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-0.5 px-2 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-300"
+              className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
               onClick={() => clearRecentSearches()}
             >
               Clear

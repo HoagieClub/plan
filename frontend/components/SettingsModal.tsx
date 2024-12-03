@@ -1,7 +1,9 @@
-import { useState } from "react";
-import SettingsModal from "./Modal";
-import UserSettings from "./UserSettings";
-import useUserSlice from "../store/userSlice";
+import { useState } from 'react';
+
+import useUserSlice from '../store/userSlice';
+
+import SettingsModal from './Modal';
+import UserSettings from './UserSettings';
 
 /**
  * Opens the settings modal and manages its state.

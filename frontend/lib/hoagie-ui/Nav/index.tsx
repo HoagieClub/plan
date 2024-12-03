@@ -10,11 +10,11 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-"use client";
+'use client';
 
-import { ComponentType } from "react";
+import type { ComponentType } from 'react';
 
-import { UserProfile } from "@auth0/nextjs-auth0/client";
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {
   majorScale,
   Pane,
@@ -25,13 +25,14 @@ import {
   TabNavigation,
   Tab,
   useTheme,
-} from "evergreen-ui";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+} from 'evergreen-ui';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 
-import ProfileCard from "@/lib/hoagie-ui/ProfileCard";
-import { useTutorialModal } from "@/components/Tutorial/Tutorial";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useTutorialModal } from '@/components/Tutorial/Tutorial';
+import ProfileCard from '@/lib/hoagie-ui/ProfileCard';
+
+import type { UserProfile } from '@auth0/nextjs-auth0/client';
 
 export type Nav = {
   // The name of the app for generating the `hoagie{name}` title.
@@ -74,65 +75,51 @@ function Nav({
   const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const username = user?.name;
+  const username = user.name;
   const { openTutorialModal, tutorialModal } = useTutorialModal();
-  const tutorialType = pathname.includes("/dashboard")
-    ? "dashboard"
-    : pathname.includes("/calendar")
-      ? "calendar"
-      : "dashboard";
+  const tutorialType = pathname.includes('/dashboard')
+    ? 'dashboard'
+    : pathname.includes('/calendar')
+      ? 'calendar'
+      : 'dashboard';
   return (
     <Pane elevation={1}>
       {HeaderComponent ? (
         <HeaderComponent />
       ) : (
-        <Pane width="100%" height={20} background={theme.title} />
+        <Pane width='100%' height={20} background={theme.title} />
       )}
       <Pane
-        display="flex"
-        justifyContent="center"
-        width="100%"
+        display='flex'
+        justifyContent='center'
+        width='100%'
         height={majorScale(9)}
-        background="white"
+        background='white'
       >
         <Pane
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          width="100%"
-          height="100%"
+          display='flex'
+          alignItems='center'
+          justifyContent='space-between'
+          width='100%'
+          height='100%'
           maxWidth={1200}
           paddingX={majorScale(5)}
           fontSize={18}
         >
-          <Link href="/">
-            <Pane cursor="pointer" position="relative">
+          <Link href='/'>
+            <Pane cursor='pointer' position='relative'>
               {LogoComponent ? (
                 <LogoComponent />
               ) : (
                 <Pane>
-                  <Text
-                    is="h2"
-                    display="inline-block"
-                    className="hoagie logo"
-                    color="gray900"
-                  >
+                  <Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
                     hoagie
                   </Text>
-                  <Text
-                    is="h2"
-                    display="inline-block"
-                    className="hoagie logo"
-                    color="yellow400"
-                  >
+                  <Text is='h2' display='inline-block' className='hoagie logo' color='yellow400'>
                     {name}
                   </Text>
                   {beta && (
-                    <Text
-                      className="hoagie beta"
-                      position="absolute"
-                      color="gray900"
-                    >
+                    <Text className='hoagie beta' position='absolute' color='gray900'>
                       (BETA)
                     </Text>
                   )}
@@ -140,12 +127,12 @@ function Nav({
               )}
             </Pane>
           </Link>
-          <Pane display="flex" alignItems="center">
+          <Pane display='flex' alignItems='center'>
             <TabNavigation>
               {tabs.map((tab) => (
                 <Tab
                   key={tab.title}
-                  is="a"
+                  is='a'
                   id={tab.title}
                   isSelected={pathname === tab.href}
                   onSelect={() => router.push(tab.href)}
@@ -155,17 +142,17 @@ function Nav({
               ))}
             </TabNavigation>
             <Pane
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+              display='flex'
+              alignItems='center'
+              justifyContent='center'
               marginLeft={majorScale(4)}
-              cursor="pointer"
+              cursor='pointer'
               onClick={() => openTutorialModal(tutorialType)}
             >
               <HelpOutlineIcon
-                fontSize="medium"
+                fontSize='medium'
                 style={{ color: theme.colors.blue500 }}
-                titleAccess="Open Tutorial"
+                titleAccess='Open Tutorial'
               />
             </Pane>
             {user && (
@@ -181,7 +168,7 @@ function Nav({
               >
                 <Avatar
                   name={username}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: 'pointer' }}
                   backgroundColor={theme.colors.yellow100}
                   size={40}
                   marginLeft={majorScale(4)}

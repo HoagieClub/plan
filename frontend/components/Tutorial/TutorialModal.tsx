@@ -1,17 +1,19 @@
-import { useState } from "react";
-import { Button as JoyButton } from "@mui/joy";
-import { createPortal } from "react-dom";
-import Image from "next/image";
-import { TutorialModal } from "../Modal";
-import styles from "./Tutorial.module.css";
+import { useState } from 'react';
 
-import dashboardContent from "../../public/dashboard.json";
-import calendarContent from "../../public/calendar.json";
+import { Button as JoyButton } from '@mui/joy';
+import Image from 'next/image';
+import { createPortal } from 'react-dom';
+
+import calendarContent from '../../public/calendar.json';
+import dashboardContent from '../../public/dashboard.json';
+import { TutorialModal } from '../Modal';
+
+import styles from './Tutorial.module.css';
 
 interface TutorialProps {
   isOpen: boolean;
   onClose: () => void;
-  tutorialType: "dashboard" | "calendar";
+  tutorialType: 'dashboard' | 'calendar';
 }
 
 interface TutorialContent {
@@ -20,17 +22,12 @@ interface TutorialContent {
   photos: string[];
 }
 
-const tutorialContents: Record<TutorialProps["tutorialType"], TutorialContent> =
-  {
-    dashboard: dashboardContent,
-    calendar: calendarContent,
-  };
+const tutorialContents: Record<TutorialProps['tutorialType'], TutorialContent> = {
+  dashboard: dashboardContent,
+  calendar: calendarContent,
+};
 
-const Tutorial: React.FC<TutorialProps> = ({
-  isOpen,
-  onClose,
-  tutorialType,
-}) => {
+const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, tutorialType }) => {
   const [currentPage, setCurrentPage] = useState(0);
 
   const content = tutorialContents[tutorialType];
@@ -57,36 +54,28 @@ const Tutorial: React.FC<TutorialProps> = ({
         <div className={styles.header}>{headers[currentPage]}</div>
         <div className={styles.pageContent}>{pages[currentPage]}</div>
         <div className={styles.pagePhoto}>
-          <div
-            style={{ position: "relative", width: "65%", aspectRatio: "16/9" }}
-          >
+          <div style={{ position: 'relative', width: '65%', aspectRatio: '16/9' }}>
             <Image
               src={photos[currentPage]}
               alt={`Step ${currentPage + 1}`}
               fill
-              style={{ objectFit: "contain" }}
+              style={{ objectFit: 'contain' }}
               priority={currentPage === 0}
-              sizes="(max-width: 768px) 100vw, 65vw"
+              sizes='(max-width: 768px) 100vw, 65vw'
             />
           </div>
         </div>
         <div className={styles.footer}>
-          <JoyButton
-            variant="soft"
-            color="neutral"
-            onClick={onClose}
-            sx={{ ml: 2 }}
-            size="md"
-          >
+          <JoyButton variant='soft' color='neutral' onClick={onClose} sx={{ ml: 2 }} size='md'>
             Close
           </JoyButton>
           <div className={styles.pagination}>
             <JoyButton
-              variant="solid"
-              color="neutral"
+              variant='solid'
+              color='neutral'
               onClick={handlePrev}
               sx={{ ml: 2 }}
-              size="md"
+              size='md'
               disabled={currentPage === 0}
             >
               Prev
@@ -95,13 +84,13 @@ const Tutorial: React.FC<TutorialProps> = ({
               Page {currentPage + 1} of {totalPages}
             </span>
             <JoyButton
-              variant="solid"
-              color="neutral"
+              variant='solid'
+              color='neutral'
               onClick={handleNext}
               sx={{ ml: 2 }}
-              size="md"
+              size='md'
             >
-              {currentPage < totalPages - 1 ? "Next" : "Done"}
+              {currentPage < totalPages - 1 ? 'Next' : 'Done'}
             </JoyButton>
           </div>
         </div>

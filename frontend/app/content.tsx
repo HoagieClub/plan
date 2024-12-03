@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
-import { ReactNode } from "react";
-import { useSettingsModal } from "@/components/SettingsModal";
+import type { ReactNode } from 'react';
 
-import Layout from "@/lib/hoagie-ui/Layout";
-import Theme from "@/lib/hoagie-ui/Theme";
-import Nav from "@/lib/hoagie-ui/Nav";
-import { UserProfile } from "@auth0/nextjs-auth0/client";
-import { useFetchUserProfile } from "@/store/userSlice";
+import { useSettingsModal } from '@/components/SettingsModal';
+import Layout from '@/lib/hoagie-ui/Layout';
+import Nav from '@/lib/hoagie-ui/Nav';
+import Theme from '@/lib/hoagie-ui/Theme';
+import { useFetchUserProfile } from '@/store/userSlice';
+
+import type { UserProfile } from '@auth0/nextjs-auth0/client';
 
 /**
  * Content Component
@@ -16,28 +17,22 @@ import { useFetchUserProfile } from "@/store/userSlice";
  * @param children - The child components to render within the layout.
  * @returns JSX Element representing the content area.
  */
-export default function Content({
-  children,
-  user,
-}: {
-  children: ReactNode;
-  user: UserProfile;
-}) {
+export default function Content({ children, user }: { children: ReactNode; user: UserProfile }) {
   useFetchUserProfile(user);
   const { openSettingsModal, settingsModal } = useSettingsModal();
 
   const tabs = [
-    { title: "About", href: "/about" },
-    { title: "Dashboard", href: "/dashboard" },
-    { title: "Calendar", href: "/calendar" },
-    { title: "Contact", href: "/contact" },
+    { title: 'About', href: '/about' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Calendar', href: '/calendar' },
+    { title: 'Contact', href: '/contact' },
   ];
 
   return (
-    <Theme palette="yellow">
+    <Theme palette='yellow'>
       <Layout>
         <Nav
-          name="plan"
+          name='plan'
           tabs={tabs}
           user={user}
           showSettingsButton={true}

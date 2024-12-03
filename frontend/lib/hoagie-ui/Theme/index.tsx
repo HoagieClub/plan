@@ -10,11 +10,13 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-"use client";
+'use client';
 
-import { ThemeProvider } from "evergreen-ui";
-import { ReactNode } from "react";
-import { hoagieYellow, hoagieUI } from "./themes";
+import type { ReactNode } from 'react';
+
+import { ThemeProvider } from 'evergreen-ui';
+
+import { hoagieYellow, hoagieUI } from './themes';
 
 type ThemeProps = {
   // Options: "yellow"
@@ -29,10 +31,10 @@ type ThemeProps = {
  *
  * @returns {ThemeProvider} A Hoagie-paletted theme provider component.
  */
-function Theme({ palette = "yellow", children }: ThemeProps) {
+function Theme({ palette = 'yellow', children }: ThemeProps) {
   const colorTheme = (() => {
     switch (palette) {
-      case "yellow":
+      case 'yellow':
         return hoagieYellow;
       default:
         return hoagieUI;

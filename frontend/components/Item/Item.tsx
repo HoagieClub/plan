@@ -1,13 +1,15 @@
-import { CSSProperties, memo, forwardRef, ReactNode, useEffect } from "react";
+import type { CSSProperties, ReactNode } from 'react';
+import { memo, forwardRef, useEffect } from 'react';
 
-import type { DraggableSyntheticListeners } from "@dnd-kit/core";
-import type { Transform } from "@dnd-kit/utilities";
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import { InfoComponent } from "../InfoComponent";
+import { InfoComponent } from '../InfoComponent';
 
-import { Handle, Remove } from "./components";
-import styles from "./Item.module.css";
+import { Handle, Remove } from './components';
+import styles from './Item.module.css';
+
+import type { DraggableSyntheticListeners } from '@dnd-kit/core';
+import type { Transform } from '@dnd-kit/utilities';
 
 export type Props = {
   dragOverlay?: boolean;
@@ -54,16 +56,16 @@ export const Item = memo(
         wrapperStyle,
         ...props
       },
-      ref,
+      ref
     ) => {
       // Grabbing cursor style on overlay
       useEffect(() => {
         if (!dragOverlay) {
           return;
         }
-        document.body.style.cursor = "grabbing";
+        document.body.style.cursor = 'grabbing';
         return () => {
-          document.body.style.cursor = "";
+          document.body.style.cursor = '';
         };
       }, [dragOverlay]);
 
@@ -73,29 +75,19 @@ export const Item = memo(
             styles.Wrapper,
             fadeIn && styles.fadeIn,
             sorting && styles.sorting,
-            dragOverlay && styles.dragOverlay,
+            dragOverlay && styles.dragOverlay
           )}
           style={
             {
               ...wrapperStyle,
-              transition: [transition, wrapperStyle?.transition]
-                .filter(Boolean)
-                .join(", "),
-              "--translate-x": transform
-                ? `${Math.round(transform.x)}px`
-                : undefined,
-              "--translate-y": transform
-                ? `${Math.round(transform.y)}px`
-                : undefined,
-              "--scale-x": transform?.scaleX
-                ? `${transform.scaleX}`
-                : undefined,
-              "--scale-y": transform?.scaleY
-                ? `${transform.scaleY}`
-                : undefined,
-              "--index": index,
-              "--color_primary": color_primary,
-              "--color_secondary": color_secondary,
+              transition: [transition, wrapperStyle.transition].filter(Boolean).join(', '),
+              '--translate-x': transform ? `${Math.round(transform.x)}px` : undefined,
+              '--translate-y': transform ? `${Math.round(transform.y)}px` : undefined,
+              '--scale-x': transform.scaleX ? `${transform.scaleX}` : undefined,
+              '--scale-y': transform.scaleY ? `${transform.scaleY}` : undefined,
+              '--index': index,
+              '--color_primary': color_primary,
+              '--color_secondary': color_secondary,
             } as CSSProperties
           }
           ref={ref}
@@ -108,10 +100,10 @@ export const Item = memo(
               dragOverlay && styles.dragOverlay,
               disabled && styles.disabled,
               color_primary && styles.color_primary,
-              color_secondary && styles.color_secondary,
+              color_secondary && styles.color_secondary
             )}
             style={style}
-            data-cypress="draggable-item"
+            data-cypress='draggable-item'
             {...(!handle && !disabled ? listeners : undefined)}
             {...props}
             tabIndex={disabled ? -1 : !handle ? 0 : undefined}
@@ -119,18 +111,14 @@ export const Item = memo(
             {/* Text Container for InfoComponent */}
             <div className={styles.TextContainer}>
               {!disabled ? (
-                <InfoComponent value={value?.toString().split("|")[1] ?? ""} />
+                <InfoComponent value={value.toString().split('|')[1] ?? ''} />
               ) : (
-                (value?.toString().split("|")[1] ?? "")
+                (value.toString().split('|')[1] ?? '')
               )}
             </div>
 
             {!disabled && handle ? (
-              <Handle
-                {...handleProps}
-                {...listeners}
-                className={styles.Handle}
-              />
+              <Handle {...handleProps} {...listeners} className={styles.Handle} />
             ) : null}
 
             {/* Actions Container for the Remove button */}
@@ -142,6 +130,6 @@ export const Item = memo(
           </div>
         </li>
       );
-    },
-  ),
+    }
+  )
 );

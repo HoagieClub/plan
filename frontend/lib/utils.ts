@@ -12,8 +12,8 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Utility function to combine and merge Tailwind CSS class names.

@@ -24,7 +24,7 @@ __pycache__/
 *.py[cod]
 .Python
 build/
-dist/
+**/dist/
 **/*.egg
 **/*.egg-info/
 db.sqlite3

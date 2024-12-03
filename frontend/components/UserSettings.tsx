@@ -1,5 +1,5 @@
-import { FC, useState, useEffect, useCallback } from "react";
-import { smartSearch, isOptionEqual } from "./MajorMinorSearch";
+import type { FC } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import {
   Autocomplete,
@@ -10,13 +10,13 @@ import {
   Typography,
   FormLabel,
   Snackbar,
-} from "@mui/joy";
+} from '@mui/joy';
 
-import { MajorMinorType, ProfileProps } from "@/types";
+import useUserSlice from '@/store/userSlice';
+import type { MajorMinorType, ProfileProps } from '@/types';
+import { fetchCsrfToken } from '@/utils/csrf';
 
-import useUserSlice from "@/store/userSlice";
-
-import { fetchCsrfToken } from "@/utils/csrf";
+import { smartSearch, isOptionEqual } from './MajorMinorSearch';
 
 function generateClassYears() {
   const currentYear = new Date().getFullYear();
@@ -31,191 +31,185 @@ function generateClassYears() {
 }
 
 // Should probably id these corresponding to the ids in the database
-const undeclared = { code: "Undeclared", name: "Undeclared" };
+const undeclared = { code: 'Undeclared', name: 'Undeclared' };
 const defaultClassYear = new Date().getFullYear();
 
 // Should probably id these corresponding to the ids in the database
 const majorOptions = [
-  { code: "AAS", name: "African American Studies" },
-  { code: "ANT", name: "Anthropology" },
-  { code: "ARC", name: "Architecture" },
-  { code: "ART", name: "Art and Archaeology" },
-  { code: "AST", name: "Astrophysical Sciences" },
-  { code: "CBE", name: "Chemical and Biological Engineering" },
-  { code: "CEE", name: "Civil and Environmental Engineering" },
-  { code: "CHM", name: "Chemistry" },
-  { code: "CLA", name: "Classics" },
-  { code: "COM", name: "Comparative Literature" },
-  { code: "COS-AB", name: "Computer Science - A.B." },
-  { code: "COS-BSE", name: "Computer Science - B.S.E." },
-  { code: "EAS", name: "East Asian Studies" },
-  { code: "ECE", name: "Electrical and Computer Engineering" },
-  { code: "ECO", name: "Economics" },
-  { code: "EEB", name: "Ecology and Evolutionary Biology" },
-  { code: "ENG", name: "English" },
-  { code: "FIT", name: "French and Italian" },
-  { code: "GEO", name: "Geosciences" },
-  { code: "GER", name: "German" },
-  { code: "HIS", name: "History" },
-  { code: "MAE", name: "Mechanical and Aerospace Engineering" },
-  { code: "MAT", name: "Mathematics" },
-  { code: "MOL", name: "Molecular Biology" },
-  { code: "MUS", name: "Music" },
-  { code: "NES", name: "Near Eastern Studies" },
-  { code: "NEU", name: "Neuroscience" },
-  { code: "PER", name: "Persian Language" },
-  { code: "ORF", name: "Operations Research and Financial Engineering" },
-  { code: "PHI", name: "Philosophy" },
-  { code: "PHY", name: "Physics" },
-  { code: "POL", name: "Politics" },
-  { code: "PSY", name: "Psychology" },
-  { code: "REL", name: "Religion" },
-  { code: "SLA", name: "Slavic Languages and Literatures" },
-  { code: "SOC", name: "Sociology" },
-  { code: "SPA", name: "Spanish" },
-  { code: "POR", name: "Portuguese" },
-  { code: "SPI", name: "School of Public and International Affairs" },
+  { code: 'AAS', name: 'African American Studies' },
+  { code: 'ANT', name: 'Anthropology' },
+  { code: 'ARC', name: 'Architecture' },
+  { code: 'ART', name: 'Art and Archaeology' },
+  { code: 'AST', name: 'Astrophysical Sciences' },
+  { code: 'CBE', name: 'Chemical and Biological Engineering' },
+  { code: 'CEE', name: 'Civil and Environmental Engineering' },
+  { code: 'CHM', name: 'Chemistry' },
+  { code: 'CLA', name: 'Classics' },
+  { code: 'COM', name: 'Comparative Literature' },
+  { code: 'COS-AB', name: 'Computer Science - A.B.' },
+  { code: 'COS-BSE', name: 'Computer Science - B.S.E.' },
+  { code: 'EAS', name: 'East Asian Studies' },
+  { code: 'ECE', name: 'Electrical and Computer Engineering' },
+  { code: 'ECO', name: 'Economics' },
+  { code: 'EEB', name: 'Ecology and Evolutionary Biology' },
+  { code: 'ENG', name: 'English' },
+  { code: 'FIT', name: 'French and Italian' },
+  { code: 'GEO', name: 'Geosciences' },
+  { code: 'GER', name: 'German' },
+  { code: 'HIS', name: 'History' },
+  { code: 'MAE', name: 'Mechanical and Aerospace Engineering' },
+  { code: 'MAT', name: 'Mathematics' },
+  { code: 'MOL', name: 'Molecular Biology' },
+  { code: 'MUS', name: 'Music' },
+  { code: 'NES', name: 'Near Eastern Studies' },
+  { code: 'NEU', name: 'Neuroscience' },
+  { code: 'PER', name: 'Persian Language' },
+  { code: 'ORF', name: 'Operations Research and Financial Engineering' },
+  { code: 'PHI', name: 'Philosophy' },
+  { code: 'PHY', name: 'Physics' },
+  { code: 'POL', name: 'Politics' },
+  { code: 'PSY', name: 'Psychology' },
+  { code: 'REL', name: 'Religion' },
+  { code: 'SLA', name: 'Slavic Languages and Literatures' },
+  { code: 'SOC', name: 'Sociology' },
+  { code: 'SPA', name: 'Spanish' },
+  { code: 'POR', name: 'Portuguese' },
+  { code: 'SPI', name: 'School of Public and International Affairs' },
   // { code: 'Independent', name: 'Independent' }, TODO: This is an actual major here and should be added.
-  { code: "Undeclared", name: "Undeclared" },
+  { code: 'Undeclared', name: 'Undeclared' },
 ];
 
 const minorOptions = [
-  { code: "AAS", name: "African American Studies" },
-  { code: "AFS", name: "African Studies" },
-  { code: "APC", name: "Applied and Computational Mathematics" },
-  { code: "ARA", name: "Arabic Language" },
-  { code: "ASA", name: "Asian American Studies" },
-  { code: "ART", name: "Archaeology" },
-  { code: "BNG", name: "Bioengineering" },
-  { code: "CGS", name: "Cognitive Science" },
-  { code: "CHI", name: "Chinese Language" },
-  { code: "CLA", name: "Classics" },
-  { code: "COS", name: "Computer Science" },
-  { code: "CS", name: "Climate Science" },
-  { code: "CWR", name: "Creative Writing" },
-  { code: "DAN", name: "Dance" },
-  { code: "EAS", name: "East Asian Studies" },
-  { code: "ENE", name: "Sustainable Energy" },
-  { code: "ENG", name: "English" },
-  { code: "ENV", name: "Environmental Studies" },
-  { code: "EUS", name: "European Studies" },
-  { code: "FIN", name: "Finance" },
-  { code: "FRE", name: "French Language and Culture" },
-  { code: "GHP", name: "Global Health & Health Policy" },
-  { code: "GSS", name: "Gender and Sexuality Studies" },
-  { code: "HOA", name: "History of Art" },
-  { code: "HEB", name: "Hebrew Language and Culture" },
-  { code: "HIS", name: "History" },
-  { code: "HLS", name: "Hellenic Studies" },
-  { code: "HSTM", name: "History of Science, Technology, and Medicine" },
-  { code: "HUM", name: "Humanistic Studies" },
-  { code: "ITA", name: "Italian Language and Culture" },
-  { code: "JDS", name: "Judaic Studies" },
-  { code: "JPN", name: "Japanese Language" },
-  { code: "JRN", name: "Journalism" },
-  { code: "KOR", name: "Korean Language" },
-  { code: "LAO", name: "Latino Studies" },
-  { code: "LAS", name: "Latin American Studies" },
-  { code: "LIN", name: "Linguistics" },
-  { code: "MAT", name: "Mathematics" },
-  { code: "MED", name: "Medieval Studies" },
-  { code: "MPP", name: "Music Performance" },
-  { code: "MQE", name: "Quantitative Economics" },
-  { code: "MSE", name: "Materials Science and Engineering" },
-  { code: "MUS", name: "Music" },
-  { code: "NES", name: "Near Eastern Studies" },
-  { code: "NEU", name: "Neuroscience" },
-  { code: "PER", name: "Persian Language" },
-  { code: "PHI", name: "Philosophy" },
-  { code: "PHY", name: "Engineering Physics" },
-  { code: "POR", name: "Portuguese Language and Culture" },
-  { code: "REL", name: "Religion" },
-  { code: "RES", name: "Russian, East European and Eurasian Studies" },
-  { code: "ROB", name: "Robotics" },
-  { code: "SAS", name: "South Asian Studies" },
-  { code: "SLA", name: "Slavic Languages and Literatures" },
-  { code: "SML", name: "Statistics and Machine Learning" },
-  { code: "SPA", name: "Spanish Language and Culture" },
-  { code: "TMT", name: "Theater and Music Theater" },
-  { code: "TRA", name: "Translation and Intercultural Communication" },
-  { code: "TUR", name: "Turkish Language" },
-  { code: "VIS", name: "Visual Arts" },
-  { code: "VPL", name: "Values and Public Life" },
+  { code: 'AAS', name: 'African American Studies' },
+  { code: 'AFS', name: 'African Studies' },
+  { code: 'APC', name: 'Applied and Computational Mathematics' },
+  { code: 'ARA', name: 'Arabic Language' },
+  { code: 'ASA', name: 'Asian American Studies' },
+  { code: 'ART', name: 'Archaeology' },
+  { code: 'BNG', name: 'Bioengineering' },
+  { code: 'CGS', name: 'Cognitive Science' },
+  { code: 'CHI', name: 'Chinese Language' },
+  { code: 'CLA', name: 'Classics' },
+  { code: 'COS', name: 'Computer Science' },
+  { code: 'CS', name: 'Climate Science' },
+  { code: 'CWR', name: 'Creative Writing' },
+  { code: 'DAN', name: 'Dance' },
+  { code: 'EAS', name: 'East Asian Studies' },
+  { code: 'ENE', name: 'Sustainable Energy' },
+  { code: 'ENG', name: 'English' },
+  { code: 'ENV', name: 'Environmental Studies' },
+  { code: 'EUS', name: 'European Studies' },
+  { code: 'FIN', name: 'Finance' },
+  { code: 'FRE', name: 'French Language and Culture' },
+  { code: 'GHP', name: 'Global Health & Health Policy' },
+  { code: 'GSS', name: 'Gender and Sexuality Studies' },
+  { code: 'HOA', name: 'History of Art' },
+  { code: 'HEB', name: 'Hebrew Language and Culture' },
+  { code: 'HIS', name: 'History' },
+  { code: 'HLS', name: 'Hellenic Studies' },
+  { code: 'HSTM', name: 'History of Science, Technology, and Medicine' },
+  { code: 'HUM', name: 'Humanistic Studies' },
+  { code: 'ITA', name: 'Italian Language and Culture' },
+  { code: 'JDS', name: 'Judaic Studies' },
+  { code: 'JPN', name: 'Japanese Language' },
+  { code: 'JRN', name: 'Journalism' },
+  { code: 'KOR', name: 'Korean Language' },
+  { code: 'LAO', name: 'Latino Studies' },
+  { code: 'LAS', name: 'Latin American Studies' },
+  { code: 'LIN', name: 'Linguistics' },
+  { code: 'MAT', name: 'Mathematics' },
+  { code: 'MED', name: 'Medieval Studies' },
+  { code: 'MPP', name: 'Music Performance' },
+  { code: 'MQE', name: 'Quantitative Economics' },
+  { code: 'MSE', name: 'Materials Science and Engineering' },
+  { code: 'MUS', name: 'Music' },
+  { code: 'NES', name: 'Near Eastern Studies' },
+  { code: 'NEU', name: 'Neuroscience' },
+  { code: 'PER', name: 'Persian Language' },
+  { code: 'PHI', name: 'Philosophy' },
+  { code: 'PHY', name: 'Engineering Physics' },
+  { code: 'POR', name: 'Portuguese Language and Culture' },
+  { code: 'REL', name: 'Religion' },
+  { code: 'RES', name: 'Russian, East European and Eurasian Studies' },
+  { code: 'ROB', name: 'Robotics' },
+  { code: 'SAS', name: 'South Asian Studies' },
+  { code: 'SLA', name: 'Slavic Languages and Literatures' },
+  { code: 'SML', name: 'Statistics and Machine Learning' },
+  { code: 'SPA', name: 'Spanish Language and Culture' },
+  { code: 'TMT', name: 'Theater and Music Theater' },
+  { code: 'TRA', name: 'Translation and Intercultural Communication' },
+  { code: 'TUR', name: 'Turkish Language' },
+  { code: 'VIS', name: 'Visual Arts' },
+  { code: 'VPL', name: 'Values and Public Life' },
 ];
 
 const certificateOptions = [
-  { code: "AAS", name: "African American Studies - Open to Class of 25 only" },
+  { code: 'AAS', name: 'African American Studies - Open to Class of 25 only' },
   {
-    code: "ACE",
-    name: "Architecture and Engineering - Open to all class years",
+    code: 'ACE',
+    name: 'Architecture and Engineering - Open to all class years',
   },
-  { code: "AMS", name: "American Studies - Open to all class years" },
-  { code: "AST", name: "Planets and Life - Open to all class years" },
-  { code: "ENT", name: "Entrepreneurship - Open to all class years" },
-  { code: "GEO", name: "Geological Engineering - Open to all class years" },
-  { code: "GER", name: "German - Open to all class years" },
+  { code: 'AMS', name: 'American Studies - Open to all class years' },
+  { code: 'AST', name: 'Planets and Life - Open to all class years' },
+  { code: 'ENT', name: 'Entrepreneurship - Open to all class years' },
+  { code: 'GEO', name: 'Geological Engineering - Open to all class years' },
+  { code: 'GER', name: 'German - Open to all class years' },
   {
-    code: "HPD",
-    name: "History and the Practice of Diplomacy - Open to all class years",
-  },
-  {
-    code: "LAC-CLA",
-    name: "Language and Culture: Classics - Open to Class of 25 only",
+    code: 'HPD',
+    name: 'History and the Practice of Diplomacy - Open to all class years',
   },
   {
-    code: "LAC-POR",
-    name: "Portuguese Language and Culture - Open to Class of 25 only",
+    code: 'LAC-CLA',
+    name: 'Language and Culture: Classics - Open to Class of 25 only',
   },
   {
-    code: "LAC-SPA",
-    name: "Spanish Language and Culture - Open to Class of 25 only",
+    code: 'LAC-POR',
+    name: 'Portuguese Language and Culture - Open to Class of 25 only',
   },
   {
-    code: "OQDS",
-    name: "Optimization and Quantitative Decision Science - Open to all class years",
+    code: 'LAC-SPA',
+    name: 'Spanish Language and Culture - Open to Class of 25 only',
   },
   {
-    code: "QCB",
-    name: "Quantitative and Computational Biology - Open to all class years",
+    code: 'OQDS',
+    name: 'Optimization and Quantitative Decision Science - Open to all class years',
   },
   {
-    code: "RIS",
-    name: "Robotics and Intelligent Systems - Open to Class of 25 only",
+    code: 'QCB',
+    name: 'Quantitative and Computational Biology - Open to all class years',
   },
   {
-    code: "TAS-E",
-    name: "Technology and Society - Energy Track - Open to all class years",
+    code: 'RIS',
+    name: 'Robotics and Intelligent Systems - Open to Class of 25 only',
   },
   {
-    code: "TAS-IT",
-    name: "Technology and Society - IT Track - Open to all class years",
+    code: 'TAS-E',
+    name: 'Technology and Society - Energy Track - Open to all class years',
   },
-  { code: "TPP", name: "Teacher Preparation - Open to all class years" },
-  { code: "URB", name: "Urban Studies - Open to all class years" },
+  {
+    code: 'TAS-IT',
+    name: 'Technology and Society - IT Track - Open to all class years',
+  },
+  { code: 'TPP', name: 'Teacher Preparation - Open to all class years' },
+  { code: 'URB', name: 'Urban Studies - Open to all class years' },
 ];
 
 const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
   const updateProfile = useUserSlice((state) => state.updateProfile);
   const [firstName, setFirstName] = useState<string>(profile.firstName);
   const [lastName, setLastName] = useState<string>(profile.lastName);
-  const [classYear, setClassYear] = useState(
-    profile.classYear || defaultClassYear,
-  );
-  const [major, setMajor] = useState<MajorMinorType>(
-    profile.major ?? undeclared,
-  );
+  const [classYear, setClassYear] = useState(profile.classYear || defaultClassYear);
+  const [major, setMajor] = useState<MajorMinorType>(profile.major ?? undeclared);
   const [minors, setMinors] = useState<MajorMinorType[]>(profile.minors || []);
-  const [certificates, setCertificates] = useState<MajorMinorType[]>(
-    profile.certificates || [],
-  );
+  const [certificates, setCertificates] = useState<MajorMinorType[]>(profile.certificates || []);
   // const [timeFormat24h, setTimeFormat24h] = useState<boolean>(profile.timeFormat24h);
   // const [themeDarkMode, setThemeDarkMode] = useState<boolean>(profile.themeDarkMode);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   let csrfToken: string;
 
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     // Server-side or during pre-rendering/build time
-    csrfToken = "";
+    csrfToken = '';
   } else {
     // Client-side
     (async () => {
@@ -224,9 +218,9 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
   }
 
   const handleMinorsChange = (_, newMinors: MajorMinorType[]) => {
-    const uniqueMinors = Array.from(
-      new Set(newMinors.map((minor) => minor.code)),
-    ).map((code) => newMinors.find((minor) => minor.code === code));
+    const uniqueMinors = Array.from(new Set(newMinors.map((minor) => minor.code))).map((code) =>
+      newMinors.find((minor) => minor.code === code)
+    );
     if (uniqueMinors.length > 3) {
       setOpenSnackbar(true);
     } else {
@@ -236,10 +230,8 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
 
   const handleCertificatesChange = (_, newCertificates: MajorMinorType[]) => {
     const uniqueCertificates = Array.from(
-      new Set(newCertificates.map((certificate) => certificate.code)),
-    ).map((code) =>
-      newCertificates.find((certificate) => certificate.code === code),
-    );
+      new Set(newCertificates.map((certificate) => certificate.code))
+    ).map((code) => newCertificates.find((certificate) => certificate.code === code));
     if (uniqueCertificates.length > 3) {
       setOpenSnackbar(true);
     } else {
@@ -264,17 +256,17 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
     };
 
     fetch(`${process.env.BACKEND}/profile/update/`, {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
       headers: {
-        "Content-Type": "application/json",
-        "X-NetId": profile.netId,
-        "X-CSRFToken": csrfToken,
+        'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
+        'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify(profile),
     }).then((response) => {
       if (!response.ok) {
-        throw new Error("POST request to update profile failed.");
+        throw new Error('POST request to update profile failed.');
       }
       updateProfile(profile);
       onSave(profile);
@@ -293,33 +285,33 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
+      if (event.key === 'Enter') {
         event.preventDefault();
         event.stopPropagation();
         handleSave();
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [onClose, handleSave]);
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className='grid grid-cols-2 gap-6'>
         <div>
           <FormLabel>First name</FormLabel>
           <Input
-            placeholder="First name"
-            variant="soft"
-            autoComplete="off"
+            placeholder='First name'
+            variant='soft'
+            autoComplete='off'
             value={firstName}
             onChange={(event) => {
               event.stopPropagation();
@@ -330,9 +322,9 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
         <div>
           <FormLabel>Last name</FormLabel>
           <Input
-            placeholder="Last name"
-            variant="soft"
-            autoComplete="off"
+            placeholder='Last name'
+            variant='soft'
+            autoComplete='off'
             value={lastName}
             onChange={(event) => {
               event.stopPropagation();
@@ -347,11 +339,9 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             autoHighlight
             options={majorOptions}
             // Call smartSearch to search through all majors and determine matches for inputValue.
-            filterOptions={(options, { inputValue }) =>
-              smartSearch(inputValue, options)
-            }
-            placeholder="Select your major"
-            variant="soft"
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your major'
+            variant='soft'
             value={major}
             // inputValue={major.code === undeclared.code ? '' : major.code}
             isOptionEqualToValue={isOptionEqual}
@@ -364,7 +354,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
               <AutocompleteOption {...props} key={option.name}>
                 <ListItemContent>
                   {option.code}
-                  <Typography level="body-sm">{option.name}</Typography>
+                  <Typography level='body-sm'>{option.name}</Typography>
                 </ListItemContent>
               </AutocompleteOption>
             )}
@@ -377,11 +367,9 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             autoHighlight
             options={minorOptions}
             // Call smartSearch to search through all minors and determine matches for inputValue.
-            filterOptions={(options, { inputValue }) =>
-              smartSearch(inputValue, options)
-            }
-            placeholder={"Select your minor(s)"}
-            variant="soft"
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your minor(s)'
+            variant='soft'
             value={minors}
             isOptionEqualToValue={isOptionEqual}
             onChange={(event, newMinors: MajorMinorType[]) => {
@@ -393,7 +381,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
               <AutocompleteOption {...props} key={option.name}>
                 <ListItemContent>
                   {option.code}
-                  <Typography level="body-sm">{option.name}</Typography>
+                  <Typography level='body-sm'>{option.name}</Typography>
                 </ListItemContent>
               </AutocompleteOption>
             )}
@@ -406,11 +394,9 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             autoHighlight
             options={certificateOptions}
             // Call smartSearch to search through all certificates and determine matches for inputValue.
-            filterOptions={(options, { inputValue }) =>
-              smartSearch(inputValue, options)
-            }
-            placeholder={"Select your certificate(s)"}
-            variant="soft"
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your certificate(s)'
+            variant='soft'
             value={certificates}
             isOptionEqualToValue={isOptionEqual}
             onChange={(event, newCertificates: MajorMinorType[]) => {
@@ -422,7 +408,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
               <AutocompleteOption {...props} key={option.name}>
                 <ListItemContent>
                   {option.code}
-                  <Typography level="body-sm">{option.name}</Typography>
+                  <Typography level='body-sm'>{option.name}</Typography>
                 </ListItemContent>
               </AutocompleteOption>
             )}
@@ -430,19 +416,19 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
         </div>
         <Snackbar
           open={openSnackbar}
-          color={"primary"}
-          variant={"soft"}
+          color='primary'
+          variant='soft'
           onClose={handleCloseSnackbar}
           autoHideDuration={6000}
           sx={{
-            ".MuiSnackbar-root": {
-              borderRadius: "16px", // Roundedness
+            '.MuiSnackbar-root': {
+              borderRadius: '16px', // Roundedness
             },
-            backgroundColor: "#0F1E2F", // Hoagie Plan Blue
-            color: "#f6f6f6", // Hoagie Plan Gray
+            backgroundColor: '#0F1E2F', // Hoagie Plan Blue
+            color: '#f6f6f6', // Hoagie Plan Gray
           }}
         >
-          <div className="text-center">
+          <div className='text-center'>
             You can only minor in two programs and plan up to three.
           </div>
         </Snackbar>
@@ -473,12 +459,10 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             multiple={false}
             autoHighlight
             options={generateClassYears()}
-            placeholder="Class year"
-            variant="soft"
+            placeholder='Class year'
+            variant='soft'
             value={classYear}
-            isOptionEqualToValue={(option, value) =>
-              value === undefined || option === value
-            }
+            isOptionEqualToValue={(option, value) => value === undefined || option === value}
             onChange={(event, newClassYear: number | undefined) => {
               event.stopPropagation();
               setClassYear(newClassYear ?? undefined);
@@ -525,22 +509,11 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             />
           </FormControl> */}
       </div>
-      <div className="mt-5 text-right">
-        <JoyButton
-          variant="soft"
-          color="primary"
-          onClick={handleSave}
-          size="md"
-        >
+      <div className='mt-5 text-right'>
+        <JoyButton variant='soft' color='primary' onClick={handleSave} size='md'>
           Save
         </JoyButton>
-        <JoyButton
-          variant="soft"
-          color="neutral"
-          onClick={onClose}
-          sx={{ ml: 2 }}
-          size="md"
-        >
+        <JoyButton variant='soft' color='neutral' onClick={onClose} sx={{ ml: 2 }} size='md'>
           Cancel
         </JoyButton>
       </div>

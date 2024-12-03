@@ -25,7 +25,7 @@ from django.contrib import admin
 from django.urls import path
 
 from hoagieplan.api import details, search, tutorial
-from hoagieplan.api.auth import cas, csrf
+from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
 from hoagieplan.api.profile import info

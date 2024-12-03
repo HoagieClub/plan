@@ -33,7 +33,9 @@
 
 /* Semester pagination */
 .carouselTab {
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .carouselTab:hover {
@@ -81,7 +83,10 @@
   padding: 8px;
   margin: -1px;
   box-sizing: border-box;
-  transition: transform var(--hover-transition), box-shadow var(--hover-transition), opacity var(--hover-transition);
+  transition:
+    transform var(--hover-transition),
+    box-shadow var(--hover-transition),
+    opacity var(--hover-transition);
   overflow: hidden;
   cursor: pointer;
   position: relative;
@@ -174,7 +179,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color var(--hover-transition), transform var(--hover-transition);
+  transition:
+    background-color var(--hover-transition),
+    transform var(--hover-transition);
   opacity: 0;
 }
 
@@ -229,7 +236,9 @@
 .calendar-container {
   position: relative;
   display: grid;
-  grid-template-columns: [time-col-start] auto [time-col-end grid-start] repeat(var(--days-length), 1fr) [grid-end];
+  grid-template-columns:
+    [time-col-start] auto [time-col-end grid-start] repeat(var(--days-length), 1fr)
+    [grid-end];
   overflow: hidden;
   height: 100vh;
 }

@@ -1,34 +1,34 @@
-import { FC } from "react";
+import type { FC } from 'react';
 
-import { createPortal } from "react-dom";
+import { createPortal } from 'react-dom';
 
-import { ModalProps } from "@/types";
+import type { ModalProps } from '@/types';
 
 const Modal: FC<ModalProps> = ({ children }) => {
   return createPortal(
     <>
-      <div className="modal-backdrop fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30 z-50"></div>
-      <div className="modal-entrance fixed inset-0 flex justify-center items-center z-50">
-        <div className="bg-white p-8 rounded-xl max-w-2xl w-2/3 shadow-2xl border border-gray-400">
+      <div className='modal-backdrop fixed inset-0 z-50 bg-black bg-opacity-30 backdrop-blur-sm' />
+      <div className='modal-entrance fixed inset-0 z-50 flex items-center justify-center'>
+        <div className='w-2/3 max-w-2xl rounded-xl border border-gray-400 bg-white p-8 shadow-2xl'>
           {children}
         </div>
       </div>
     </>,
-    document.body,
+    document.body
   );
 };
 
 export const FilterModal: FC<ModalProps> = ({ children }) => {
   return createPortal(
     <>
-      <div className="modal-backdrop fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30 z-50"></div>
-      <div className="modal-entrance fixed inset-0 flex justify-center items-center z-50">
-        <div className="bg-white p-8 rounded-xl max-w-2xl w-1/4 shadow-2xl border border-gray-400">
+      <div className='modal-backdrop fixed inset-0 z-50 bg-black bg-opacity-30 backdrop-blur-sm' />
+      <div className='modal-entrance fixed inset-0 z-50 flex items-center justify-center'>
+        <div className='w-1/4 max-w-2xl rounded-xl border border-gray-400 bg-white p-8 shadow-2xl'>
           {children}
         </div>
       </div>
     </>,
-    document.body,
+    document.body
   );
 };
 
@@ -36,12 +36,12 @@ export const TutorialModal: FC<ModalProps> = ({ children }) => {
   return createPortal(
     <>
       {/* TODO: Need an equivalent fade out animation when 'Close' is pressed */}
-      <div className="modal-backdrop fixed inset-0 backdrop-blur-sm bg-black bg-opacity-30 z-50"></div>
-      <div className="modal-entrance fixed inset-0 flex justify-center items-center z-50">
+      <div className='modal-backdrop fixed inset-0 z-50 bg-black bg-opacity-30 backdrop-blur-sm' />
+      <div className='modal-entrance fixed inset-0 z-50 flex items-center justify-center'>
         {children}
       </div>
     </>,
-    document.body,
+    document.body
   );
 };
 

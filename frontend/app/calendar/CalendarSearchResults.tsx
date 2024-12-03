@@ -1,19 +1,19 @@
-import { FC } from "react";
+import type { FC } from 'react';
 
-import { Virtuoso } from "react-virtuoso";
+import { Virtuoso } from 'react-virtuoso';
 
-import { SearchResults } from "@/types";
+import type { SearchResults } from '@/types';
 
-import CalendarSearchItem from "./CalendarSearchItem";
+import CalendarSearchItem from './CalendarSearchItem';
 
 const CalendarSearchResults: FC<SearchResults> = ({ courses = [] }) => {
   return (
     <Virtuoso
-      style={{ height: "400px" }}
+      style={{ height: '400px' }}
       data={courses}
       itemContent={(_, course) => (
         // Padding between course cards
-        <div className="mb-4">
+        <div className='mb-4'>
           <CalendarSearchItem course={course} />
         </div>
       )}

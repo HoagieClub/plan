@@ -10,7 +10,7 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-import { defaultTheme } from "evergreen-ui";
+import { defaultTheme } from 'evergreen-ui';
 
 const Tab = {
   ...defaultTheme.components.Tab,
@@ -18,7 +18,7 @@ const Tab = {
     ...defaultTheme.components.Tab.appearances,
     navbar: {
       ...defaultTheme.components.Tab.appearances.primary,
-      fontSize: "14px",
+      fontSize: '14px',
     },
   },
 };

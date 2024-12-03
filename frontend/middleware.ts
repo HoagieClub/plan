@@ -15,35 +15,69 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// As an example, we will use middleware to implement protected routes.
-// Docs: https://nextjs.org/docs/app/building-your-application/authentication#defining-protected-routes
-const protectedRoutes = ["/dashboard", "/calendar"];
+// Protected routes requiring authentication
+const protectedRoutes = ['/dashboard', '/calendar'];
+
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',                              // Local development
+  'http://localhost:8000',                              // Local Django development
+  process.env.HOAGIE,                                   // Frontend URL
+  process.env.BACKEND,                                  // Backend URL
+  process.env.HOAGIE?.replace('https://', 'http://'),   // HTTP variants
+  process.env.BACKEND?.replace('https://', 'http://')
+].filter(Boolean); // Remove any undefined values
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+    const { pathname } = req.nextUrl;
+    
+    // Handle CORS for API routes
+    if (pathname.startsWith('/api')) {
+        const origin = req.headers.get("origin");
+        const res = NextResponse.next();
 
-  // Check if the user is trying to access one of the protected routes
-  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    // The Auth0 session is stored in a cookie called 'appSession' by default
-    const token = req.cookies.get("appSession");
+        // Set CORS headers for allowed origins
+        if (origin && allowedOrigins.includes(origin)) {
+            res.headers.set('Access-Control-Allow-Origin', origin);
+        }
 
-    // If no session token exists, redirect to login
-    if (!token) {
-      // Login and redirect to nextUrl
-      const loginUrl = new URL("/api/auth/login", req.url);
-      loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
+        res.headers.set('Access-Control-Allow-Credentials', 'true');
+        res.headers.set('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT,OPTIONS');
+        res.headers.set(
+            'Access-Control-Allow-Headers',
+            'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+        );
+
+        // Handle preflight OPTIONS request
+        if (req.method === 'OPTIONS') {
+            return new NextResponse(null, { status: 200, headers: res.headers });
+        }
+
+        return res;
     }
-  }
 
-  // Continue processing if the user is authenticated or not on a protected route
-  return NextResponse.next();
+    // Handle protected routes authentication
+    if (protectedRoutes.some((route) => pathname.startsWith(route))) {
+        const token = req.cookies.get('appSession');
+
+        if (!token) {
+            const loginUrl = new URL('/api/auth/login', req.url);
+            loginUrl.searchParams.set('callbackUrl', req.nextUrl.pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
+
+    return NextResponse.next();
 }
 
-// Apply this middleware to the protected routes
+// Update matcher to include both API and protected routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/calendar/:path*"],
+    matcher: [
+        '/api/:path*',
+        '/dashboard/:path*', 
+        '/calendar/:path*'
+    ],
 };

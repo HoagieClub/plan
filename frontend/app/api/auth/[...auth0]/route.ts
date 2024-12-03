@@ -14,7 +14,7 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-import { handleAuth } from "@auth0/nextjs-auth0";
+import { handleAuth } from '@auth0/nextjs-auth0';
 
 /**
  * Handles authentication requests.

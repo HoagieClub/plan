@@ -1,4 +1,5 @@
-import { FC, useEffect, useState } from "react";
+import type { FC } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CalendarTimeProps {
   startHour: number;
@@ -33,27 +34,27 @@ const CalendarTime: FC<CalendarTimeProps> = ({ startHour, endHour }) => {
 
   return (
     <div
-      className="time-indicator"
+      className='time-indicator'
       style={{
-        position: "absolute",
+        position: 'absolute',
         top: `${position}%`,
-        left: "calc(10% + 1px)",
+        left: 'calc(10% + 1px)',
         right: 0,
-        height: "2px",
-        backgroundColor: "red",
+        height: '2px',
+        backgroundColor: 'red',
         zIndex: 1,
       }}
     >
       <div
-        className="time-indicator-ball"
+        className='time-indicator-ball'
         style={{
-          position: "absolute",
-          left: "-6px",
-          top: "-4px",
-          width: "10px",
-          height: "10px",
-          borderRadius: "50%",
-          backgroundColor: "red",
+          position: 'absolute',
+          left: '-6px',
+          top: '-4px',
+          width: '10px',
+          height: '10px',
+          borderRadius: '50%',
+          backgroundColor: 'red',
         }}
       />
     </div>

@@ -1,9 +1,10 @@
 // TODO: Check all of these with Cmd + Shift + F and delete any unused ones
-import { CSSProperties, ReactNode } from "react";
-import "evergreen-ui";
-import { UserProfile } from "@auth0/nextjs-auth0/client";
+import type { CSSProperties, ReactNode } from 'react';
 
-declare module "evergreen-ui" {
+import 'evergreen-ui';
+import type { UserProfile } from '@auth0/nextjs-auth0/client';
+
+declare module 'evergreen-ui' {
   interface DefaultTheme {
     title: string;
   }
@@ -117,11 +118,7 @@ export type DroppableProps = {
 export type DndState = {
   semesters: Semester[];
   addCourseToSemester: (course: Course, semesterId: string) => void;
-  moveCourseWithinSemester: (
-    courseID: string,
-    oldIndex: number,
-    newIndex: number,
-  ) => void;
+  moveCourseWithinSemester: (courseID: string, oldIndex: number, newIndex: number) => void;
 };
 
 export type SearchResults = {

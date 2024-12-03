@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-import { CalendarEvent, ClassMeeting, Course, Section } from "@/types";
+import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
   calendarSearchResults: Course[];
@@ -41,13 +41,13 @@ const dayToStartColumnIndex: Record<string, number> = {
 
 const headerRows = 2; // Rows taken up by the header
 const calculateGridRow = (timeString: string) => {
-  const [time, period] = timeString.split(" ");
-  const [hour, minute] = time.split(":").map(Number);
+  const [time, period] = timeString.split(' ');
+  const [hour, minute] = time.split(':').map(Number);
 
   let adjustedHour = hour;
-  if (period === "PM" && hour !== 12) {
+  if (period === 'PM' && hour !== 12) {
     adjustedHour += 12;
-  } else if (period === "AM" && hour === 12) {
+  } else if (period === 'AM' && hour === 12) {
     adjustedHour = 0;
   }
 
@@ -58,7 +58,7 @@ const calculateGridRow = (timeString: string) => {
 };
 
 const getStartColumnIndexForDays = (daysString: string): number[] => {
-  const daysArray = daysString.split(",");
+  const daysArray = daysString.split(',');
   return daysArray.map((day) => dayToStartColumnIndex[day.trim()] || 0);
 };
 
@@ -72,8 +72,7 @@ const useCalendarStore = create<CalendarStore>()(
       error: null,
       loading: false,
 
-      setCalendarSearchResults: (results) =>
-        set({ calendarSearchResults: results }),
+      setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
       addRecentSearch: (search) =>
         set((state) => ({ recentSearches: [...state.recentSearches, search] })),
       setError: (error) => set({ error }),
@@ -85,9 +84,7 @@ const useCalendarStore = create<CalendarStore>()(
         const selectedCourses = get().getSelectedCourses(term);
 
         // console.log('Attempting to add course:', course);
-        if (
-          selectedCourses.some((event) => event.course.guid === course.guid)
-        ) {
+        if (selectedCourses.some((event) => event.course.guid === course.guid)) {
           // console.log('Course already added:', course);
           // TODO: Return a snackbar/toast or something nice if the course is already added
           return;
@@ -98,58 +95,49 @@ const useCalendarStore = create<CalendarStore>()(
           const term = course.guid.substring(0, 4);
           const course_id = course.guid.substring(4);
           // console.log(`Fetching course details from backend for ${term}-${course_id}`);
-          const response = await fetch(`${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`);
+          const response = await fetch(
+            `${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`
+          );
           if (!response.ok) {
-            throw new Error("Failed to fetch course details");
+            throw new Error('Failed to fetch course details');
           }
 
           const sections = await response.json();
           // console.log('Fetched sections:', sections.length);
 
-          const uniqueSections = new Set(
-            sections.map((section) => section.class_section),
-          );
+          const uniqueSections = new Set(sections.map((section) => section.class_section));
 
           const uniqueCount = uniqueSections.size;
 
-          const exceptions = ["Seminar", "Lecture"];
+          const exceptions = ['Seminar', 'Lecture'];
 
           const lectureSections = sections.filter(
-            (section) =>
-              section.class_type === "Lecture" &&
-              /^L0\d+/.test(section.class_section),
+            (section) => section.class_type === 'Lecture' && /^L0\d+/.test(section.class_section)
           );
 
           const uniqueLectureNumbers = new Set(
-            lectureSections.map(
-              (section) => section.class_section.match(/^L0(\d+)/)?.[1],
-            ),
+            lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
           );
 
-          const calendarEvents: CalendarEvent[] = sections.flatMap(
-            (section: Section) =>
-              section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
-                const startColumnIndices = getStartColumnIndexForDays(
-                  classMeeting.days,
-                );
-                return startColumnIndices.map((startColumnIndex) => ({
-                  key: `guid: ${course.guid}, section id: ${section.id}, class meeting id: ${classMeeting.id}, column: ${startColumnIndex}`,
-                  course: course,
-                  section: section,
-                  startTime: classMeeting.start_time,
-                  endTime: classMeeting.end_time,
-                  startColumnIndex,
-                  startRowIndex: calculateGridRow(classMeeting.start_time),
-                  endRowIndex: calculateGridRow(classMeeting.end_time),
-                  isActive: true,
-                  needsChoice:
-                    (!exceptions.includes(section.class_type) &&
-                      uniqueCount > 1) ||
-                    (uniqueLectureNumbers.size > 1 &&
-                      section.class_type === "Lecture"),
-                  isChosen: false,
-                }));
-              }),
+          const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
+            section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
+              const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
+              return startColumnIndices.map((startColumnIndex) => ({
+                key: `guid: ${course.guid}, section id: ${section.id}, class meeting id: ${classMeeting.id}, column: ${startColumnIndex}`,
+                course: course,
+                section: section,
+                startTime: classMeeting.start_time,
+                endTime: classMeeting.end_time,
+                startColumnIndex,
+                startRowIndex: calculateGridRow(classMeeting.start_time),
+                endRowIndex: calculateGridRow(classMeeting.end_time),
+                isActive: true,
+                needsChoice:
+                  (!exceptions.includes(section.class_type) && uniqueCount > 1) ||
+                  (uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture'),
+                isChosen: false,
+              }));
+            })
           );
 
           // console.log('Prepared calendar events to add:', calendarEvents);
@@ -175,7 +163,7 @@ const useCalendarStore = create<CalendarStore>()(
           // );
         } catch {
           set({
-            error: "Failed to add course. Please try again.",
+            error: 'Failed to add course. Please try again.',
             loading: false,
           });
         }
@@ -184,20 +172,20 @@ const useCalendarStore = create<CalendarStore>()(
         set((state) => {
           const term = clickedSection.course.guid.substring(0, 4);
           const selectedCourses = state.selectedCourses[term] || [];
-          const typeExceptions = ["Seminar"];
+          const typeExceptions = ['Seminar'];
 
           const sectionsPerGroupping = selectedCourses.filter(
             (section) =>
               section.course.guid === clickedSection.course.guid &&
-              section.section.id === clickedSection.section.id,
+              section.section.id === clickedSection.section.id
           ).length;
 
           // Determine if this is a special exception
           const isException =
             typeExceptions.includes(clickedSection.section.class_type) &&
             !(
-              clickedSection.section.class_type === "Seminar" &&
-              clickedSection.course.title.includes("Independent Work")
+              clickedSection.section.class_type === 'Seminar' &&
+              clickedSection.course.title.includes('Independent Work')
             );
 
           // If the clicked section is an exception, do nothing and return the existing state unchanged
@@ -210,8 +198,7 @@ const useCalendarStore = create<CalendarStore>()(
               (section) =>
                 section.course.guid === clickedSection.course.guid &&
                 section.isActive &&
-                section.section.class_type ===
-                  clickedSection.section.class_type,
+                section.section.class_type === clickedSection.section.class_type
             ).length <= sectionsPerGroupping;
 
           const updatedSections = selectedCourses.map((section) => {
@@ -228,13 +215,11 @@ const useCalendarStore = create<CalendarStore>()(
             }
 
             if (isActiveSingle && clickedSection.isActive) {
-              return section.section.class_type ===
-                clickedSection.section.class_type
+              return section.section.class_type === clickedSection.section.class_type
                 ? { ...section, isActive: true, isChosen: false }
                 : section;
             } else {
-              return section.section.class_type ===
-                clickedSection.section.class_type
+              return section.section.class_type === clickedSection.section.class_type
                 ? {
                     ...section,
                     isActive: section.key === clickedSection.key,
@@ -256,9 +241,7 @@ const useCalendarStore = create<CalendarStore>()(
       removeCourse: (sectionKey) => {
         set((state) => {
           const term = Object.keys(state.selectedCourses).find((semester) =>
-            state.selectedCourses[semester].some(
-              (course) => course.key === sectionKey,
-            ),
+            state.selectedCourses[semester].some((course) => course.key === sectionKey)
           );
 
           if (!term) {
@@ -266,12 +249,11 @@ const useCalendarStore = create<CalendarStore>()(
           }
 
           const selectedCourses = state.selectedCourses[term];
-          const courseToRemove = selectedCourses.find(
-            (course) => course.key === sectionKey,
-          )?.course.guid;
+          const courseToRemove = selectedCourses.find((course) => course.key === sectionKey).course
+            .guid;
 
           const updatedCourses = selectedCourses.filter(
-            (course) => course.course.guid !== courseToRemove,
+            (course) => course.course.guid !== courseToRemove
           );
 
           return {
@@ -287,10 +269,10 @@ const useCalendarStore = create<CalendarStore>()(
       getSelectedCourses: (semester) => get().selectedCourses[semester] || [],
     }),
     {
-      name: "calendar-store",
+      name: 'calendar-store',
       partialize: (state) => ({ selectedCourses: state.selectedCourses }),
-    },
-  ),
+    }
+  )
 );
 
 export default useCalendarStore;

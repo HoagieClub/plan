@@ -1,15 +1,16 @@
-import { CSSProperties, forwardRef, HTMLAttributes } from "react";
+import type { CSSProperties, HTMLAttributes } from 'react';
+import { forwardRef } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import styles from "./Action.module.css";
+import styles from './Action.module.css';
 
 export type ActionProps = HTMLAttributes<HTMLButtonElement> & {
   active?: {
     fill: string;
     background: string;
   };
-  cursor?: CSSProperties["cursor"];
+  cursor?: CSSProperties['cursor'];
 };
 
 export const Action = forwardRef<HTMLButtonElement, ActionProps>(
@@ -24,13 +25,13 @@ export const Action = forwardRef<HTMLButtonElement, ActionProps>(
           {
             ...style,
             cursor,
-            "--fill": active?.fill,
-            "--background": active?.background,
+            '--fill': active.fill,
+            '--background': active.background,
           } as CSSProperties
         }
       />
     );
-  },
+  }
 );
 
-Action.displayName = "Action";
+Action.displayName = 'Action';

@@ -1,12 +1,11 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.2.2
-    hooks:
-      # Run the linter.
-      - id: ruff
-        args: [ --fix ]
-        types_or: [ python, pyi, jupyter ]
-      # Run the formatter.
-      - id: ruff-format
-        types_or: [ python, pyi, jupyter ]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.8.1
+  hooks:
+    # Run the linter.
+    - id: ruff
+      types_or: [ python, pyi ] # Don't lint Jupyter notebooks
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format

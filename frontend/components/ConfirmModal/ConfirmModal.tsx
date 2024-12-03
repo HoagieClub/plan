@@ -1,17 +1,13 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from 'react';
 
-import styles from "./ConfirmModal.module.css";
+import styles from './ConfirmModal.module.css';
 
 type ConfirmProps = {
   onConfirm(): void;
   onDeny(): void;
 };
 
-export const ConfirmModal = ({
-  onConfirm,
-  onDeny,
-  children,
-}: PropsWithChildren<ConfirmProps>) => (
+export const ConfirmModal = ({ onConfirm, onDeny, children }: PropsWithChildren<ConfirmProps>) => (
   <div className={styles.ConfirmModal}>
     <h1>{children}</h1>
     <div>
