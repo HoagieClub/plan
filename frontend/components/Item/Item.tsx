@@ -121,7 +121,7 @@ export const Item = memo(
               {!disabled ? (
                 <InfoComponent value={value?.toString().split("|")[1] ?? ""} />
               ) : (
-                value?.toString().split("|")[1] ?? ""
+                (value?.toString().split("|")[1] ?? "")
               )}
             </div>
 

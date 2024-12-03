@@ -13,9 +13,7 @@ const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 
   useEffect(() => {
     if (dept && coursenum) {
-      const url = new URL(
-        `${process.env.NEXT_PUBLIC_BACKEND}/course/comments/`,
-      );
+      const url = new URL(`${process.env.BACKEND}/course/comments/`);
       url.searchParams.append("dept", dept);
       url.searchParams.append("coursenum", coursenum);
 

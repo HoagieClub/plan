@@ -120,7 +120,7 @@ const Search: FC = () => {
         const queryString = buildQuery(searchQuery, filter);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND}/search/?${queryString}`,
+          `${process.env.BACKEND}/search/?${queryString}`,
         );
 
         if (response.ok) {

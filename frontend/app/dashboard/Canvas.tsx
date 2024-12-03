@@ -330,16 +330,13 @@ export function Canvas({
 
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND}/fetch_courses/`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "X-NetId": profile.netId,
-          },
+      const response = await fetch(`${process.env.BACKEND}/fetch_courses/`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "X-NetId": profile.netId,
         },
-      );
+      });
       const data = await response.json();
       return data;
     } catch {
@@ -348,7 +345,7 @@ export function Canvas({
   }, [profile.netId]);
 
   const updateRequirements = useCallback(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_requirements/`, {
+    fetch(`${process.env.BACKEND}/update_requirements/`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -588,7 +585,7 @@ export function Canvas({
           if (overContainerId) {
             if (activeContainerId !== overContainerId) {
               csrfToken = await fetchCsrfToken();
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_courses/`, {
+              fetch(`${process.env.BACKEND}/update_courses/`, {
                 method: "POST",
                 credentials: "include",
                 headers: {
@@ -842,7 +839,7 @@ export function Canvas({
       return updatedCourses;
     });
 
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_courses/`, {
+    fetch(`${process.env.BACKEND}/update_courses/`, {
       method: "POST",
       credentials: "include",
       headers: {

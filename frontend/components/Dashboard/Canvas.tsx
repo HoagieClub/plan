@@ -195,7 +195,7 @@
 //       return updatedCourses;
 //     });
 
-//     fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_courses/`, {
+//     fetch(`${process.env.BACKEND}/update_courses/`, {
 //       method: "POST",
 //       credentials: "include",
 //       headers: {
@@ -237,7 +237,7 @@
 //   });
 
 //   const updateRequirements = () => {
-//     fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_requirements/`, {
+//     fetch(`${process.env.BACKEND}/update_requirements/`, {
 //       method: "GET",
 //       credentials: "include",
 //       headers: {
@@ -253,7 +253,7 @@
 //   const fetchCourses = async () => {
 //     try {
 //       const response = await fetch(
-//         `${process.env.NEXT_PUBLIC_BACKEND}/fetch_courses/`,
+//         `${process.env.BACKEND}/fetch_courses/`,
 //         {
 //           method: "GET",
 //           credentials: "include",
@@ -373,7 +373,7 @@
 //     const activeContainer = findContainer(active.id);
 
 //     if (overContainer && activeContainer !== overContainer) {
-//       await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/update_courses/`, {
+//       await fetch(`${process.env.BACKEND}/update_courses/`, {
 //         method: "POST",
 //         credentials: "include",
 //         headers: {

@@ -29,6 +29,7 @@ dependencies = [
     "django-cors-headers>=4.5.0",
     "colorama>=0.4.6",
     "postgres>=4.0",
+    "gunicorn>=23.0.0",
     "tqdm>=4.67.1",
     "orjson>=3.10.12",
     "PyYAML>=6.0.2",

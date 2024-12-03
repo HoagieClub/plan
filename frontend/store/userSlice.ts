@@ -14,23 +14,20 @@ async function fetchCustomUser(
   try {
     const csrfToken = await fetchCsrfToken();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND}/profile/get_user/`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({
-          netId,
-          firstName,
-          lastName,
-          email,
-        }),
+    const response = await fetch(`${process.env.BACKEND}/profile/get_user/`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
       },
-    );
+      body: JSON.stringify({
+        netId,
+        firstName,
+        lastName,
+        email,
+      }),
+    });
 
     if (!response.ok) {
       if (response.status === 401) {

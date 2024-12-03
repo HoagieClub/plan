@@ -263,7 +263,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
       classYear: classYear,
     };
 
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/profile/update/`, {
+    fetch(`${process.env.BACKEND}/profile/update/`, {
       method: "POST",
       credentials: "include",
       headers: {

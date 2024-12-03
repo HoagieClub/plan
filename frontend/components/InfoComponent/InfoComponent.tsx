@@ -28,7 +28,7 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
   useEffect(() => {
     if (showPopup && value) {
-      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND}/course/details/`);
+      const url = new URL(`${process.env.BACKEND}/course/details/`);
       url.searchParams.append("crosslistings", value);
 
       fetch(url.toString(), {

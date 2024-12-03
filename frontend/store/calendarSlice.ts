@@ -99,7 +99,7 @@ const useCalendarStore = create<CalendarStore>()(
           const course_id = course.guid.substring(4);
           // console.log(`Fetching course details from backend for ${term}-${course_id}`);
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND}/fetch_calendar_classes/${term}/${course_id}`,
+            `${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`,
           );
           if (!response.ok) {
             throw new Error("Failed to fetch course details");

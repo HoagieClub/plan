@@ -154,7 +154,7 @@ const Dropdown: FC<DropdownProps> = ({
 
   const handleExplanationClick = (event, reqId) => {
     setIsLoading(true);
-    const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND}/requirement_info/`);
+    const url = new URL(`${process.env.BACKEND}/requirement_info/`);
     url.searchParams.append("reqId", reqId);
 
     fetch(url.toString(), {
@@ -211,7 +211,7 @@ const Dropdown: FC<DropdownProps> = ({
     if (explanation === null) {
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/mark_satisfied/`, {
+    fetch(`${process.env.BACKEND}/mark_satisfied/`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -233,7 +233,7 @@ const Dropdown: FC<DropdownProps> = ({
     if (explanation === null) {
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/mark_satisfied/`, {
+    fetch(`${process.env.BACKEND}/mark_satisfied/`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -415,7 +415,7 @@ const Dropdown: FC<DropdownProps> = ({
   ) : null;
 
   const handleClick = (crosslistings, reqId) => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND}/manually_settle/`, {
+    fetch(`${process.env.BACKEND}/manually_settle/`, {
       method: "POST",
       credentials: "include",
       headers: {

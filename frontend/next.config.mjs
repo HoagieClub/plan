@@ -7,6 +7,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  env: {
+    HOAGIEPLAN: process.env.HOAGIEPLAN,
+    BACKEND: process.env.BACKEND,
+  },
   reactStrictMode: true,
   ...withPWA({
     dest: "public",
