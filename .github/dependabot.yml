@@ -9,11 +9,8 @@ updates:
     commit-message:
       prefix: "deps"
     labels:
-      - "typescript"
       - "dependencies"
-      - "frontend"
     reviewers:
-      - "HoagieClub/hoagie-plan"
       - "issacli-0821"
       - "G-Marin"
       - "windsornguyen"
@@ -29,11 +26,8 @@ updates:
     commit-message:
       prefix: "deps"
     labels:
-      - "python"
       - "dependencies"
-      - "backend"
     reviewers:
-      - "HoagieClub/hoagie-plan"
       - "issacli-0821"
       - "G-Marin"
       - "windsornguyen"
