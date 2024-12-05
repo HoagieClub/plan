@@ -797,15 +797,34 @@ export function Canvas({
 
 function getPrimaryColor(id: UniqueIdentifier) {
   const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+  console.log('Department:', dept); // Log department
   const gradient = getDepartmentGradient(dept, 90);
-  return gradient.match(/#[0-9a-fA-F]{6}/)?.[0] ?? '#000000'; // Extract the first color
+  console.log('Gradient:', gradient); // Log gradient
+
+  // Extract the first color
+  const colors = gradient.split(',');
+  const firstColor = colors[1]?.trim(); 
+  console.log('Primary Color:', firstColor);
+
+  return firstColor;
 }
+
 
 function getSecondaryColor(id: UniqueIdentifier) {
   const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+  console.log('Department:', dept); // Log department
   const gradient = getDepartmentGradient(dept, 90);
-  return gradient.match(/#[0-9a-fA-F]{6}/g)?.[1] ?? '#FFFFFF'; // Extract the second color
+  console.log('Gradient:', gradient); // Log gradient
+
+  // Extract the second color
+  const colors = gradient.split(',');
+  const secondColor = colors[2]?.trim().split(')')[0]
+  console.log('Secondary Color:', secondColor);
+
+  return secondColor;
 }
+
+
 
 type SortableItemProps = {
   containerId: UniqueIdentifier;
