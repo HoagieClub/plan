@@ -98,7 +98,7 @@ $box-shadow-hover:
   justify-content: space-between;
   border-radius: 8px;
   @include box-shadow($box-shadow-base);
-  padding: 8px;
+  padding: 4px 8px;
   margin: -1px;
   box-sizing: border-box;
   @include transition;
