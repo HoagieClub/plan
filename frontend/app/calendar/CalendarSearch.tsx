@@ -341,8 +341,8 @@ const CalendarSearch: FC = () => {
           </div>
             <button 
               type='button'
-              className="p-4 text-base font-medium font-semibold text-center text-hoagie-plan-gray font-medium text-gray-500 bg-yellow-50 
-              rounded-lg shadow-lg hover:bg-yellow-100 transition-all duration-300 ease-in-out focus:ring-yellow-300"
+              className="p-2.5 font-semibold font-medium text-center text-gray-700 bg-yellow-400 
+              rounded-lg shadow-xl hover:bg-yellow-100 transition-all duration-300 ease-in-out w-auto"
               >
               Export Calendar
             </button>
