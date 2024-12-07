@@ -11,28 +11,28 @@ import UserSettings from './UserSettings';
  * @returns An object containing a function to open the modal and the modal itself.
  */
 export function useSettingsModal() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const userProfile = useUserSlice((state) => state.profile);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const userProfile = useUserSlice((state) => state.profile);
 
-  const openSettingsModal = () => setIsModalOpen(true);
+	const openSettingsModal = () => setIsModalOpen(true);
 
-  const settingsModal = isModalOpen ? (
-    <SettingsModal>
-      <UserSettings
-        profile={userProfile}
-        onClose={() => setIsModalOpen(false)}
-        onSave={(newProfileData) => {
-          // Update the Zustand store with new profile data
-          useUserSlice.setState((state) => ({
-            profile: { ...state.profile, ...newProfileData },
-          }));
-        
-          // Close the modal
-          setIsModalOpen(false);
-        }}
-      />
-    </SettingsModal>
-  ) : null;
+	const settingsModal = isModalOpen ? (
+		<SettingsModal>
+			<UserSettings
+				profile={userProfile}
+				onClose={() => setIsModalOpen(false)}
+				onSave={(newProfileData) => {
+					// Update the Zustand store with new profile data
+					useUserSlice.setState((state) => ({
+						profile: { ...state.profile, ...newProfileData },
+					}));
 
-  return { openSettingsModal, settingsModal };
+					// Close the modal
+					setIsModalOpen(false);
+				}}
+			/>
+		</SettingsModal>
+	) : null;
+
+	return { openSettingsModal, settingsModal };
 }
