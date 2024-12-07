@@ -54,8 +54,8 @@
     "ts-node": "^10.9.2",
     "typescript": "5.7.2",
     "typescript-lru-cache": "^2.0.0",
-    "undici": "^7.0.0",
-    "vercel": "^32.3.0",
+    "undici": "^7.1.0",
+    "vercel": "^32.7.2",
     "webpack": "^5.96.1",
     "zustand": "4.5.5"
   },
