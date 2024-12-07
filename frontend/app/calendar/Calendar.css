@@ -278,3 +278,7 @@
   position: relative;
   z-index: 1;
 }
+
+.margin {
+  margin: 1vh 0;
+}
