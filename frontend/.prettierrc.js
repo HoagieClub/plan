@@ -2,7 +2,7 @@
 export default {
   printWidth: 100,
   tabWidth: 2,
-  useTabs: false,
+  useTabs: true,
   semi: true,
   singleQuote: true,
   quoteProps: 'as-needed',

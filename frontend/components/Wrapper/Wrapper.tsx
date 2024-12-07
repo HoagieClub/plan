@@ -1,19 +1,19 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 
-import classNames from 'classnames';
+import { cn } from '@/lib/utils';
 
 import styles from './Wrapper.module.css';
 
 type Props = {
-  children: ReactNode;
-  center?: boolean;
-  style?: CSSProperties;
+	children: ReactNode;
+	center?: boolean;
+	style?: CSSProperties;
 };
 
 export function Wrapper({ children, center, style }: Props) {
-  return (
-    <div className={classNames(styles.Wrapper, center && styles.center)} style={style}>
-      {children}
-    </div>
-  );
+	return (
+		<div className={cn(styles.Wrapper, center && styles.center)} style={style}>
+			{children}
+		</div>
+	);
 }
