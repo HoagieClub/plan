@@ -27,7 +27,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^6.1.9",
     "@mui/joy": "^5.0.0-beta.48",
-    "@mui/material": "^6.1.9",
+    "@mui/material": "^6.1.10",
     "@mui/system": "^6.1.9",
     "@next/bundle-analyzer": "^15.0.3",
     "@radix-ui/react-toast": "^1.2.2",
