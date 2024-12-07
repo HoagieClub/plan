@@ -13,6 +13,7 @@ node_modules/
 # next.js
 .next/
 /out/
+.heapprofile
 
 # course data
 [f,s][0-9][0-9][0-9][0-9].csv

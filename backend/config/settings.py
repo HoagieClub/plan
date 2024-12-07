@@ -84,12 +84,12 @@ CORS_ALLOW_HEADERS = [
 
 CORS_ALLOWED_ORIGINS = [
     os.getenv("HOAGIEPLAN"),
-    os.getenv("AUTH0_ISSUER_BASE_URL")
+    os.getenv("AUTH0_DOMAIN")
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     os.getenv("HOAGIEPLAN"),
-    os.getenv("AUTH0_ISSUER_BASE_URL")
+    os.getenv("AUTH0_DOMAIN")
 ]
 
 LOGGING = {
