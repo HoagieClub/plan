@@ -1,8 +1,9 @@
-import { CSSProperties, forwardRef, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from 'react';
+import { forwardRef } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import styles from "./List.module.css";
+import styles from './List.module.css';
 
 export type Props = {
   children: ReactNode;
@@ -19,7 +20,7 @@ export const List = forwardRef<HTMLUListElement, Props>(
         style={
           {
             ...style,
-            "--columns": columns,
+            '--columns': columns,
           } as CSSProperties
         }
         className={classNames(styles.List, horizontal && styles.horizontal)}
@@ -27,7 +28,7 @@ export const List = forwardRef<HTMLUListElement, Props>(
         {children}
       </ul>
     );
-  },
+  }
 );
 
-List.displayName = "List";
+List.displayName = 'List';

@@ -56,7 +56,7 @@
 //   useEffect(() => {
 //     const fetchProfile = async () => {
 //       const response = await fetch(
-//         `${process.env.NEXT_PUBLIC_BACKEND}/profile`,
+//         `${process.env.BACKEND}/profile`,
 //         {
 //           method: "GET",
 //           headers: {

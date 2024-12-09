@@ -1,6 +1,19 @@
 // TODO: Check all of these with Cmd + Shift + F and delete any unused ones
-import { CSSProperties, ReactNode } from "react";
-import { UserProfile } from "@auth0/nextjs-auth0/client";
+import type { CSSProperties, ReactNode } from 'react';
+
+import 'evergreen-ui';
+import type { UserProfile } from '@auth0/nextjs-auth0/client';
+
+declare module 'evergreen-ui' {
+  interface DefaultTheme {
+    title: string;
+  }
+}
+
+export type HoagieUser = {
+  name?: string;
+  email?: string;
+};
 
 export type AuthState = {
   user?: Profile;
@@ -22,11 +35,13 @@ export type MajorMinorType = {
   name: string;
 };
 
+export type CertificateType = MajorMinorType & {};
+
 export type Profile = {
   firstName: string;
   lastName: string;
   classYear: number;
-  major: MajorMinorType;
+  major: MajorMinorType | string;
   minors?: MajorMinorType[];
   certificates?: MajorMinorType[];
   netId: string;
@@ -105,11 +120,7 @@ export type DroppableProps = {
 export type DndState = {
   semesters: Semester[];
   addCourseToSemester: (course: Course, semesterId: string) => void;
-  moveCourseWithinSemester: (
-    courseID: string,
-    oldIndex: number,
-    newIndex: number,
-  ) => void;
+  moveCourseWithinSemester: (courseID: string, oldIndex: number, newIndex: number) => void;
 };
 
 export type SearchResults = {

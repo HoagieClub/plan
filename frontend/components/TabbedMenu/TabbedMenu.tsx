@@ -1,10 +1,12 @@
-import { useState, useEffect, FC } from "react";
+import type { FC } from 'react';
+import { useState, useEffect } from 'react';
 
-import LoadingComponent from "../LoadingComponent";
-import { RecursiveDropdown } from "../RecursiveDropDown";
+import type { Profile } from '@/types';
 
-import styles from "./TabbedMenu.module.css";
-import { Profile } from "@/types";
+import LoadingComponent from '../LoadingComponent';
+import { RecursiveDropdown } from '../RecursiveDropDown';
+
+import styles from './TabbedMenu.module.css';
 
 interface TabbedMenuProps {
   tabsData: { [key: string]: object };
@@ -13,12 +15,7 @@ interface TabbedMenuProps {
   updateRequirements: () => void;
 }
 
-const TabbedMenu: FC<TabbedMenuProps> = ({
-  tabsData,
-  profile,
-  csrfToken,
-  updateRequirements,
-}) => {
+const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, profile, csrfToken, updateRequirements }) => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +40,7 @@ const TabbedMenu: FC<TabbedMenuProps> = ({
         {Object.keys(tabsData).map((tabKey) => (
           <li
             key={tabKey}
-            className={tabKey === activeTab ? styles.active : ""}
+            className={tabKey === activeTab ? styles.active : ''}
             onClick={() => handleTabClick(tabKey)}
             // style={{
             //   fontWeight: tabsData[tabKey]['satisfied'] ? '500' : 'normal',
@@ -55,8 +52,8 @@ const TabbedMenu: FC<TabbedMenuProps> = ({
         ))}
       </ul>
       <div className={styles.tabContent}>
-        {activeTab === "Undeclared" ? (
-          <div className="text-sm font-medium text-gray-500">
+        {activeTab === 'Undeclared' ? (
+          <div className='text-sm font-medium text-gray-500'>
             To choose your major and minor(s), select
             <strong> Account Settings </strong>
             within your profile in the top right-hand corner.

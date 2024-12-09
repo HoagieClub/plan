@@ -1,7 +1,9 @@
-import { useState } from "react";
-import SettingsModal from "./Modal";
-import UserSettings from "./UserSettings";
-import useUserSlice from "../store/userSlice";
+import { useState } from 'react';
+
+import useUserSlice from '@/store/userSlice';
+
+import SettingsModal from './Modal';
+import UserSettings from './UserSettings';
 
 /**
  * Opens the settings modal and manages its state.
@@ -21,6 +23,9 @@ export function useSettingsModal() {
         onClose={() => setIsModalOpen(false)}
         onSave={() => {
           window.location.reload(); // Refresh page on save
+          // TODO: eventually just refresh only necessary components
+          // updateProfile(newProfileData); // Update the Zustand store with new profile data
+          // setIsModalOpen(false);
         }}
       />
     </SettingsModal>

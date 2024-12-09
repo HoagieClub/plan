@@ -10,6 +10,7 @@ from hoagieplan.logger import logger
 from hoagieplan.models import Certificate, Course, CustomUser, Major, Minor
 from hoagieplan.serializers import CourseSerializer
 
+
 UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 VALID_CLASS_YEAR_RANGE = range(2023, 2031)
 
@@ -18,29 +19,33 @@ VALID_CLASS_YEAR_RANGE = range(2023, 2031)
 def get_user(request):
     """Create or fetch a user based on email prefix (NetID)."""
     user = oj.loads(request.body)
-    email = user.get("email")
+    net_id = user.get("netId")
     first_name = user.get("firstName")
     last_name = user.get("lastName")
-    net_id = email.split("@")[0]
+    email = user.get("email")
 
     try:
-        # Get or create user based on the email prefix (NetID)
         user_inst, created = CustomUser.objects.get_or_create(
-            username=net_id,  # Let username be the user's NetID
+            email=email,
             defaults={
-                "email": email,
-                "first_name": first_name,
-                "last_name": last_name,
                 "role": "student",
+                "net_id": "",
+                "first_name": "",
+                "last_name": "",
                 "class_year": datetime.now().year + 1,
             },
         )
-
-        # TODO: For debugging, remove once confirmed correct.
         if created:
-            logger.info(f"New user created: {net_id}")
+            user_inst.first_name = first_name
+            user_inst.last_name = last_name
+            user_inst.net_id = net_id
+            user_inst.username = net_id
+            user_inst.save()
         else:
-            logger.info(f"Existing user fetched: {net_id}")
+            email_prefix = email.split("@")[0]
+            user_inst.net_id = email_prefix
+            user_inst.username = email_prefix
+            user_inst.save()
 
         return JsonResponse(format_user_data(user_inst))
 
@@ -52,7 +57,7 @@ def get_user(request):
 def format_user_data(user_inst):
     """Format user data for API response."""
     return {
-        "netId": user_inst.username,
+        "netId": user_inst.net_id,
         "email": user_inst.email,
         "firstName": user_inst.first_name,
         "lastName": user_inst.last_name,
@@ -67,7 +72,7 @@ def fetch_user_info(net_id):
     """Fetch database user information."""
     try:
         user_inst, _ = CustomUser.objects.get_or_create(
-            username=net_id,
+            net_id=net_id,
             defaults={
                 "role": "student",
                 "email": "",
@@ -91,7 +96,7 @@ def get_user_courses(request):
         return JsonResponse({})
 
     try:
-        user_inst = CustomUser.objects.get(username=net_id)
+        user_inst = CustomUser.objects.get(net_id=net_id)
         user_course_dict = {}
 
         for semester in range(1, 9):
@@ -117,7 +122,8 @@ def profile(request):
         user_info = fetch_user_info(net_id)
         return JsonResponse(user_info)
     except UserProfileNotFoundError as e:
-        return JsonResponse({"error": str(e)}, status=404)
+        logger.error(f"UserProfileNotFoundError: {e}")
+        return JsonResponse({"error": "User profile not found"}, status=404)
     except Exception as e:
         logger.error(f"Error in profile view: {e}")
         return JsonResponse({"error": "Internal server error"}, status=500)
@@ -137,7 +143,7 @@ def update_profile(request):
 
     try:
         with transaction.atomic():
-            user_inst = CustomUser.objects.get(username=net_id)
+            user_inst = CustomUser.objects.get(net_id=net_id)
 
             # Update basic info
             user_inst.username = net_id
@@ -190,7 +196,7 @@ def update_class_year(request):
                 status=400,
             )
 
-        user_inst = CustomUser.objects.get(username=net_id)
+        user_inst = CustomUser.objects.get(net_id=net_id)
         user_inst.class_year = class_year
         user_inst.save()
 

@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface FilterState {
   termFilter: string;
@@ -25,16 +25,15 @@ interface FilterState {
 const useFilterStore = create<FilterState>()(
   persist(
     (set) => ({
-      termFilter: "",
-      distributionFilter: "",
+      termFilter: '',
+      distributionFilter: '',
       levelFilter: [],
       gradingFilter: [],
       showPopup: false,
       setTermFilter: (term) => {
         set({ termFilter: term });
       },
-      setDistributionFilter: (distribution) =>
-        set({ distributionFilter: distribution }),
+      setDistributionFilter: (distribution) => set({ distributionFilter: distribution }),
       setLevelFilter: (level) => set({ levelFilter: level }),
       setGradingFilter: (grading) => set({ gradingFilter: grading }),
       setFilters: (filter) =>
@@ -48,21 +47,21 @@ const useFilterStore = create<FilterState>()(
       // TODO: Do we need a reset filters function?
       resetFilters: () =>
         set({
-          termFilter: "",
-          distributionFilter: "",
+          termFilter: '',
+          distributionFilter: '',
           levelFilter: [],
           gradingFilter: [],
         }),
       areFiltersEmpty: (filter) =>
-        filter.termFilter === "" &&
-        filter.distributionFilter === "" &&
+        filter.termFilter === '' &&
+        filter.distributionFilter === '' &&
         filter.levelFilter.length === 0 &&
         filter.gradingFilter.length === 0,
     }),
     {
-      name: "filter-settings",
-    },
-  ),
+      name: 'filter-settings',
+    }
+  )
 );
 
 export default useFilterStore;

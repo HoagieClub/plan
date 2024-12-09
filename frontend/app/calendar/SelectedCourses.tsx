@@ -1,19 +1,18 @@
 // SelectedCourses.jsx
-import { FC, useMemo } from "react";
+import type { FC } from 'react';
+import { useMemo } from 'react';
 
-import { Virtuoso } from "react-virtuoso";
+import { Virtuoso } from 'react-virtuoso';
 
-import tabStyles from "@/components/TabbedMenu/TabbedMenu.module.css";
-import useCalendarStore from "@/store/calendarSlice";
-import useFilterStore from "@/store/filterSlice";
+import tabStyles from '@/components/TabbedMenu/TabbedMenu.module.css';
+import useCalendarStore from '@/store/calendarSlice';
+import useFilterStore from '@/store/filterSlice';
 
-import styles from "./SelectedCourses.module.css";
+import styles from './SelectedCourses.module.css';
 
 const SelectedCourses: FC = () => {
   const { termFilter } = useFilterStore((state) => state);
-  const selectedCourses = useCalendarStore((state) =>
-    state.getSelectedCourses(termFilter),
-  );
+  const selectedCourses = useCalendarStore((state) => state.getSelectedCourses(termFilter));
   const removeCourse = useCalendarStore((state) => state.removeCourse);
 
   const uniqueCourses = useMemo(() => {
@@ -38,13 +37,11 @@ const SelectedCourses: FC = () => {
       <div className={styles.content}>
         {uniqueCourses.length === 0 ? (
           <div className={`${tabStyles.tabContent}`}>
-            <div className="text-sm font-medium text-gray-500">
-              No courses selected.
-            </div>
+            <div className='text-sm font-medium text-gray-500'>No courses selected.</div>
           </div>
         ) : (
           <Virtuoso
-            style={{ height: "400px" }}
+            style={{ height: '400px' }}
             data={uniqueCourses}
             itemContent={(_, course) => (
               <div key={course.course.guid} className={styles.item}>
@@ -52,9 +49,7 @@ const SelectedCourses: FC = () => {
                   {`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
                 </div>
                 <div className={styles.actions}>
-                  <button onClick={() => removeCourse(course.key)}>
-                    Remove
-                  </button>
+                  <button onClick={() => removeCourse(course.key)}>Remove</button>
                 </div>
               </div>
             )}

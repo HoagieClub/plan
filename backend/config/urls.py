@@ -25,7 +25,7 @@ from django.contrib import admin
 from django.urls import path
 
 from hoagieplan.api import details, search, tutorial
-from hoagieplan.api.auth import cas, csrf
+from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
 from hoagieplan.api.profile import info
@@ -33,8 +33,6 @@ from hoagieplan.api.profile import info
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
-    # CAS Authentication
-    path("cas/", cas.dispatch, name="cas"),
     # CSRF Token for approving POST requests
     path("csrf/", csrf.csrf_token_view, name="csrf"),
     # Tutorial

@@ -2,7 +2,7 @@ import argparse
 import csv
 import os
 import re
-import sys
+from hoagieplan.logger import logger
 from datetime import datetime
 from pathlib import Path
 

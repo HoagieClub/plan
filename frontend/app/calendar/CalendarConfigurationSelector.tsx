@@ -1,4 +1,5 @@
-import { useState, FC } from "react";
+import type { FC } from 'react';
+import { useState } from 'react';
 
 import {
   Pane,
@@ -11,7 +12,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EditIcon,
-} from "evergreen-ui";
+} from 'evergreen-ui';
 
 interface ConfigurationSelectorProps {
   configurations: Array<{ id: string; name: string }>;
@@ -32,32 +33,32 @@ const ConfigurationSelector: FC<ConfigurationSelectorProps> = ({
   onConfigurationRename,
   getTermSuffix,
 }) => {
-  const [editingConfiguration, setEditingConfiguration] = useState("");
-  const [configurationName, setConfigurationName] = useState("");
+  const [editingConfiguration, setEditingConfiguration] = useState('');
+  const [configurationName, setConfigurationName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const configurationsPerPage = 5;
   const totalPages = Math.ceil(configurations.length / configurationsPerPage);
 
   const handleConfigurationClick = (configurationId: string) => {
     onConfigurationChange(configurationId);
-    setEditingConfiguration("");
+    setEditingConfiguration('');
   };
 
   const handleConfigurationRename = (configurationId: string) => {
     onConfigurationRename(configurationId, configurationName);
-    setEditingConfiguration("");
-    setConfigurationName("");
+    setEditingConfiguration('');
+    setConfigurationName('');
   };
 
   const handleConfigurationCreate = async () => {
     const termSuffix = getTermSuffix(activeConfiguration);
-    setConfigurationName("");
+    setConfigurationName('');
     await onConfigurationCreate(termSuffix);
   };
 
   const handleConfigurationDelete = async (configurationId: string) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this configuration? This action cannot be undone.",
+      'Are you sure you want to delete this configuration? This action cannot be undone.'
     );
     if (confirmDelete) {
       await onConfigurationDelete(configurationId);
@@ -69,10 +70,10 @@ const ConfigurationSelector: FC<ConfigurationSelectorProps> = ({
   const displayedConfigurations = configurations.slice(startIndex, endIndex);
 
   return (
-    <Pane display="flex" alignItems="center">
+    <Pane display='flex' alignItems='center'>
       <IconButton
         icon={ChevronLeftIcon}
-        appearance="minimal"
+        appearance='minimal'
         onClick={() => setCurrentPage(currentPage - 1)}
         disabled={currentPage === 1}
         marginRight={8}
@@ -96,20 +97,20 @@ const ConfigurationSelector: FC<ConfigurationSelectorProps> = ({
                 }
                 onBlur={() => handleConfigurationRename(configuration.id)}
                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     handleConfigurationRename(configuration.id);
                   }
                 }}
                 maxLength={20}
               />
             ) : (
-              <Pane display="flex" alignItems="center">
+              <Pane display='flex' alignItems='center'>
                 <span onClick={() => setEditingConfiguration(configuration.id)}>
                   {configuration.name}
                 </span>
                 <IconButton
                   icon={EditIcon}
-                  appearance="minimal"
+                  appearance='minimal'
                   marginLeft={4}
                   onClick={() => setEditingConfiguration(configuration.id)}
                 />
@@ -121,23 +122,19 @@ const ConfigurationSelector: FC<ConfigurationSelectorProps> = ({
 
       <IconButton
         icon={ChevronRightIcon}
-        appearance="minimal"
+        appearance='minimal'
         onClick={() => setCurrentPage(currentPage + 1)}
         disabled={currentPage === totalPages}
         marginLeft={8}
       />
 
-      <IconButton
-        icon={PlusIcon}
-        appearance="minimal"
-        onClick={handleConfigurationCreate}
-      />
+      <IconButton icon={PlusIcon} appearance='minimal' onClick={handleConfigurationCreate} />
 
       {activeConfiguration && (
         <IconButton
           icon={TrashIcon}
-          appearance="minimal"
-          intent="danger"
+          appearance='minimal'
+          intent='danger'
           onClick={() => handleConfigurationDelete(activeConfiguration)}
         />
       )}

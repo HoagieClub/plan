@@ -1,15 +1,9 @@
-import {
-  CSSProperties,
-  forwardRef,
-  HTMLAttributes,
-  ReactNode,
-  Ref,
-  RefCallback,
-} from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode, Ref, RefCallback } from 'react';
+import { forwardRef } from 'react';
 
-import classNames from "classnames";
+import classNames from 'classnames';
 
-import styles from "./Container.module.css";
+import styles from './Container.module.css';
 
 export type ContainerProps = {
   children: ReactNode;
@@ -28,10 +22,7 @@ export type ContainerProps = {
   onRemove?(): void;
 };
 
-export const Container = forwardRef<
-  HTMLDivElement | HTMLButtonElement,
-  ContainerProps
->(
+export const Container = forwardRef<HTMLDivElement | HTMLButtonElement, ContainerProps>(
   (
     {
       children,
@@ -50,13 +41,11 @@ export const Container = forwardRef<
       height,
       ...props
     }: ContainerProps,
-    ref: Ref<HTMLDivElement | HTMLButtonElement>,
+    ref: Ref<HTMLDivElement | HTMLButtonElement>
   ) => {
-    const Component = onClick ? "button" : "div";
-    const setRef: RefCallback<HTMLDivElement | HTMLButtonElement> = (
-      instance,
-    ) => {
-      if (typeof ref === "function") {
+    const Component = onClick ? 'button' : 'div';
+    const setRef: RefCallback<HTMLDivElement | HTMLButtonElement> = (instance) => {
+      if (typeof ref === 'function') {
         ref(instance);
       }
     };
@@ -68,7 +57,7 @@ export const Container = forwardRef<
         style={
           {
             ...style,
-            "--columns": columns,
+            '--columns': columns,
             height: height,
           } as CSSProperties
         }
@@ -79,7 +68,7 @@ export const Container = forwardRef<
           hover && styles.hover,
           placeholder && styles.placeholder,
           scrollable && styles.scrollable,
-          shadow && styles.shadow,
+          shadow && styles.shadow
         )}
         onClick={onClick}
         tabIndex={onClick ? 0 : undefined}
@@ -88,7 +77,7 @@ export const Container = forwardRef<
         {placeholder ? children : <ul>{children}</ul>}
       </Component>
     );
-  },
+  }
 );
 
-Container.displayName = "Container";
+Container.displayName = 'Container';
