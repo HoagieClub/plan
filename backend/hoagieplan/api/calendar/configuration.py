@@ -188,7 +188,8 @@ class CalendarConfigurationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error("An error occurred: %s", str(e))
+            return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SemesterConfigurationView(APIView):
