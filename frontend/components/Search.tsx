@@ -3,6 +3,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -360,24 +361,30 @@ const Search: FC = () => {
         </div>
         <div className='mt-3'>
           <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
-          <div className='flex-basis:100px flex space-x-2 overflow-x-auto px-1 py-2'>
+          <div className='flex justify-between items-center mb-2'>
+            <div className='text-sm font-medium text-gray-500'>Upload transcript</div>
+            <button 
+              type='button'
+              className='p-1.5 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600'
+              onClick={() => {
+                // Modal trigger logic would go here
+                console.log('Upload transcript clicked');
+              }}
+              aria-label='Upload transcript'
+            >
+              <ArrowUpTrayIcon className='w-4 h-4 text-gray-500' aria-hidden='true' />
+            </button>
+          </div>
+          <div className='flex overflow-x-auto py-2 space-x-2'>
             {recentSearches.map((search, index) => (
               <button
                 key={index}
-                className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300'
+                className='bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-0.5 px-2 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300'
                 onClick={() => retrieveCachedSearch(search)}
               >
                 {search}
               </button>
             ))}
-          </div>
-          <div className='space-x-1 overflow-x-auto px-1 py-1'>
-            <button
-              className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-              onClick={() => clearRecentSearches()}
-            >
-              Clear
-            </button>
           </div>
         </div>
       </div>
