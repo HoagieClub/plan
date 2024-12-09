@@ -31,7 +31,7 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 });
 
-export default [
+const eslintConfig = [
   {
     ignores: [
       '**/node_modules/**',
@@ -192,3 +192,5 @@ export default [
     },
   },
 ];
+
+export default eslintConfig
