@@ -339,6 +339,13 @@ const CalendarSearch: FC = () => {
               />
             </button>
           </div>
+            <button 
+              type='button'
+              className="p-2.5 font-semibold font-medium text-center text-gray-700 bg-yellow-400 
+              rounded-lg shadow-xl hover:bg-yellow-100 transition-all duration-300 ease-in-out w-auto"
+              >
+              Export Calendar
+            </button>
           <div className='recent-searches'>
             <div className='recent-searches-label'>Recent searches:</div>
             <div className='recent-searches-list'>
