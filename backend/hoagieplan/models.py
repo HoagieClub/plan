@@ -309,12 +309,6 @@ class CustomUser(AbstractUser):
 
 
 class UserCourses(models.Model):
-    STATUS_CHOICES = (
-        ("planned", "Planned"),
-        ("in-progress", "In Progress"),
-        ("completed", "Completed"),
-    )
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
     semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)

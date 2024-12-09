@@ -114,7 +114,6 @@ def _init_courses(courses):
     for sem in courses:
         for course in sem:
             course["possible_reqs"] = []
-            course["reqs_satisfied"] = []
             course["reqs_double_counted"] = []  # reqs satisfied for which double counting allowed
             course["num_settleable"] = 0  # number of reqs to which can be settled. autosettled if 1
             if "settled" not in course or course["settled"] is None:
@@ -266,9 +265,7 @@ def prefetch_req_inst(table, code):
 
 @cumulative_time
 def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
-    """Assigns only settled courses and those that can only satify one requirement,
-    and updates the appropriate counts.
-    """
+    """Assign only settled courses and those that can only satify one requirement, and update the appropriate counts."""
     old_deficit = req["min_needed"] - req["count"]
     if req["max_counted"]:
         old_available = req["max_counted"] - req["count"]
@@ -284,11 +281,9 @@ def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
                 newly_satisfied_added = sub_req["max_counted"]
             newly_satisfied += newly_satisfied_added
     elif req["double_counting_allowed"]:
-        newly_satisfied = mark_all(req, courses)
-    elif ("course_list" in req) or req["dept_list"]:
-        newly_satisfied = mark_settled(req, courses)
-    elif req["dist_req"]:
-        newly_satisfied = mark_settled(req, courses)
+        newly_satisfied = settle_double_counting_reqs(req, courses)
+    elif ("course_list" in req) or req["dept_list"] or req["dist_req"]:
+        newly_satisfied = settle_reqs(req, courses)
     elif req["num_courses"]:
         newly_satisfied = check_degree_progress(req, courses)
     else:
@@ -313,33 +308,29 @@ def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
 
 @cumulative_time
 def mark_possible_reqs(req, courses):
-    """Finds all the requirements that each course can satisfy."""
+    """Find all the requirements that each course can satisfy."""
     if "req_list" in req:
         for sub_req in req["req_list"]:
             mark_possible_reqs(sub_req, courses)
     else:
         if ("course_list" in req) or req["dept_list"]:
-            mark_courses(req, courses)
+            mark_possible_course_list_reqs(req, courses)
         if req["dist_req"]:
-            mark_dist(req, courses)
+            mark_possible_dist_reqs(req, courses)
 
 
-# This could be done in SQL
-# In UserCourses, get courses where distribution_area_short in oj.loads(req["inst"].dist_req)
-# Do operations on search hits
 @cumulative_time
-def mark_dist(req, courses):
-    num_marked = 0
+def mark_possible_dist_reqs(req, courses):
+    """Assign settleable requirements to courses (but not the other way around)."""
     for sem in courses:
         for course in sem:
-            if req["id"] in course["possible_reqs"]:  # already used
+            if req["id"] in course["possible_reqs"]:
                 continue
             course_dist = course["distribution_area_short"]
             if not course_dist:
                 continue
 
             course_dist = course_dist.split(" or ")
-            dist_req = req["dist_req"]
             ok = 0
 
             for area in course_dist:
@@ -348,23 +339,19 @@ def mark_dist(req, courses):
                     break
 
             if ok == 1:
-                num_marked += 1
                 course["possible_reqs"].append(req["id"])
             if not req["double_counting_allowed"]:
                 course["num_settleable"] += 1
-    return num_marked
 
 
-# This only assigns settleable requirements to courses, and not the
-# other way around.
 @cumulative_time
-def mark_courses(req, courses):
-    num_marked = 0
+def mark_possible_course_list_reqs(req, courses):
+    """Assign settleable requirements to courses (but not the other way around)."""
     for sem_num, sem in enumerate(courses):
         if sem_num + 1 > req["completed_by_semester"]:
             continue
         for course in sem:
-            if req["id"] in course["possible_reqs"]:  # already used
+            if req["id"] in course["possible_reqs"]:
                 continue
             if "excluded_course_list" in req:
                 if course["id"] in req["excluded_course_list"]:
@@ -372,25 +359,20 @@ def mark_courses(req, courses):
             if req["dept_list"]:
                 for code in req["dept_list"]:
                     if code == course["dept_code"]:
-                        num_marked += 1
                         course["possible_reqs"].append(req["id"])
                         if not req["double_counting_allowed"]:
                             course["num_settleable"] += 1
                         break
             if "course_list" in req:
                 if course["id"] in req["course_list"]:
-                    num_marked += 1
                     course["possible_reqs"].append(req["id"])
                     if not req["double_counting_allowed"]:
                         course["num_settleable"] += 1
-    return num_marked
 
 
 @cumulative_time
-def mark_all(req, courses):
-    """Finds and marks all courses in 'courses' that satisfy a requirement where
-    double counting is allowed.
-    """
+def settle_double_counting_reqs(req, courses):
+    """Find and mark all courses in 'courses' that satisfy a requirement where double counting is allowed."""
     num_marked = 0
     for sem in courses:
         for course in sem:
@@ -401,34 +383,27 @@ def mark_all(req, courses):
 
 
 @cumulative_time
-def mark_settled(req, courses):
-    """Finds and marks all courses in 'courses' that have been settled to
-    this requirement.
-    """
+def settle_reqs(req, courses):
+    """Find and mark all courses in 'courses' that have been settled to 'req'."""
     num_marked = 0
     for sem in courses:
         for course in sem:
-            if len(course["reqs_satisfied"]) > 0:  # already used in some subreq
-                continue
             if len(course["settled"]) > 0:
-                for p in course["settled"]:  # go through the settled requirement ids
-                    if (p == req["id"]) and (p in course["possible_reqs"]):  # course was settled into this requirement
+                for p in course["settled"]:  # go through the requirements this course was manually settled into
+                    if (p == req["id"]) and (p in course["possible_reqs"]):
                         num_marked += 1
-                        course["reqs_satisfied"].append(p)
                         break
-            # or course is manually settled to this req...
-            elif (course["num_settleable"] == 1) and (req["id"] in course["possible_reqs"]):
+            elif (course["num_settleable"] == 1) and (
+                req["id"] in course["possible_reqs"]
+            ):  # if course can only fall into the currrent requirement, settle it
                 num_marked += 1
-                course["reqs_satisfied"].append(req["id"])
                 course["settled"].append(req["id"])
     return num_marked
 
 
 @cumulative_time
 def check_degree_progress(req, courses):
-    """Checks whether the correct number of courses have been completed by the
-    end of semester number 'by_semester' (1-8)
-    """
+    """Check whether the correct number of courses have been completed by the end of semester number (1-8)."""
     by_semester = req["completed_by_semester"]
     num_courses = 0
     if by_semester is None or by_semester > len(courses):
@@ -440,10 +415,7 @@ def check_degree_progress(req, courses):
 
 @cumulative_time
 def add_course_lists_to_req(req, courses):
-    """Add course lists for each requirement that either
-    (a) has no subrequirements, or
-    (b) has hidden subrequirements
-    """
+    """Add course lists for each requirement that either (a) has no subrequirements, or (b) has hidden subrequirements."""
     if "req_list" in req:
         for sub_req in req["req_list"]:
             add_course_lists_to_req(sub_req, courses)
@@ -456,8 +428,6 @@ def add_course_lists_to_req(req, courses):
                     for req_id in course["reqs_double_counted"]:
                         if req_id == req["id"]:
                             req["settled"].append(course["id"])
-                            ## add to reqs_satisfied because couldn't be added in _assign_settled_courses_to_reqs()
-                            course["reqs_satisfied"].append(req["id"])
             elif len(course["settled"]) > 0:
                 for req_id in course["settled"]:
                     if req_id == req["id"]:
@@ -529,8 +499,7 @@ def format_req_output(req, courses, manually_satisfied_reqs):
 
 @cumulative_time
 def check_requirements(user_inst, table, code, courses):
-    """Determine whether the requirements for a given user and table are satisfied,
-    based on the provided courses.
+    """Determine whether requirements for 'user_inst' and 'table' are satisfied, based on the 'courses'.
 
     Args:
     ----
@@ -545,7 +514,6 @@ def check_requirements(user_inst, table, code, courses):
             - bool: Whether the requirements are satisfied.
             - dict: A list of courses with details about the requirements they satisfy.
             - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
-
     """
     req = cached_init_req(user_inst, table, code)
     manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
@@ -606,10 +574,10 @@ def check_user(net_id, major, minors, certificates):
     # print(f"_init_req: {_init_req.total_time} seconds")
     # print(f"assign_settled_courses_to_reqs: {assign_settled_courses_to_reqs.total_time} seconds")
     # print(f"mark_possible_reqs: {mark_possible_reqs.total_time} seconds")
-    # print(f"mark_dist: {mark_dist.total_time} seconds")
-    # print(f"mark_courses: {mark_courses.total_time} seconds")
-    # print(f"mark_all: {mark_all.total_time} seconds")
-    # print(f"mark_settled: {mark_settled.total_time} seconds")
+    # print(f"mark_possible_dist_reqs: {mark_possible_dist_reqs.total_time} seconds")
+    # print(f"mark_possible_course_list_reqs: {mark_possible_course_list_reqs.total_time} seconds")
+    # print(f"settle_double_counting_reqs: {settle_double_counting_reqs.total_time} seconds")
+    # print(f"settle_reqs: {settle_reqs.total_time} seconds")
     # print(f"add_course_lists_to_req: {add_course_lists_to_req.total_time} seconds")
     # print(f"format_req_output: {format_req_output.total_time} seconds")
 
@@ -762,16 +730,6 @@ def requirement_info(request):
 
     except Requirement.DoesNotExist:
         pass
-
-    # mapping:
-    # 3 -> 0
-    # 0 -> 1
-    # 1 -> 2
-    # 7 -> 3
-    # 5 -> 4
-    # 2 -> 5
-    # 6 -> 6
-    # 4 -> 7
 
     info = {}
     info[0] = req_id
