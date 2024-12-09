@@ -1,13 +1,13 @@
 import collections
 import copy
-import orjson as oj
 
+import orjson as oj
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 
-from hoagieplan.logger import logger
 from hoagieplan.api.dashboard.utils import cumulative_time
 from hoagieplan.api.profile.info import fetch_user_info
+from hoagieplan.logger import logger
 from hoagieplan.models import (
     Certificate,
     Course,
@@ -533,12 +533,14 @@ def check_requirements(user_inst, table, code, courses):
     based on the provided courses.
 
     Args:
+    ----
         user_inst: The user instance associated with the requirements.
         table: The table containing the root of the requirement tree.
         code: The primary key or identifier in the table.
         courses: A 2D array of dictionaries, where each dictionary represents a course.
 
     Returns:
+    -------
         tuple:
             - bool: Whether the requirements are satisfied.
             - dict: A list of courses with details about the requirements they satisfy.

@@ -516,7 +516,7 @@ export function Canvas({
           setClonedItems(items);
         }}
         onDragOver={({ active, over }) => {
-          const overId = over.id;
+          const overId = over?.id;
           if (overId === null || overId === undefined || active.id in items) {
             return;
           }
@@ -550,7 +550,7 @@ export function Canvas({
             return;
           }
 
-          const overId = over.id;
+          const overId = over?.id;
 
           if (overId === null || overId === undefined) {
             setActiveId(null);

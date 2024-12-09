@@ -90,6 +90,9 @@ select = ["E4", "E7", "E9", "F", "B", "Q", "D"] # Flake8 rules, Bugbear, Quotes,
 ignore = [
     "D203",  # Ignore conflicts for one-liner docstring style
     "D213",  # Allow Google-style multi-line docstrings with different line breaks
+    "D100", # Allow public modules without docstrings
+    "D103", # Allow public functions without docstrings
+    "E402", # Allow arbitrary import order to support django.setup() flow
 ]
 
 # Define fixable and unfixable rules
