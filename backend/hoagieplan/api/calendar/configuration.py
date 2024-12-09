@@ -169,7 +169,7 @@ class CalendarConfigurationView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
-            logger.error("An error occurred: %s", str(e))
+            logger.error("An error occurred while fetching calendar configuration: %s", str(e))
             return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
@@ -188,7 +188,7 @@ class CalendarConfigurationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            logger.error("An error occurred: %s", str(e))
+            logger.error("An error occurred while creating calendar configuration: %s", str(e))
             return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
