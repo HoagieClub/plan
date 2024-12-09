@@ -91,7 +91,7 @@ const CalendarUI: FC = () => {
             <SelectedCourses />
           </div>
 
-          <div className='flex-grow margin'>
+          <div className='margin flex-grow'>
             {!isLoading && userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
           </div>
         </div>
