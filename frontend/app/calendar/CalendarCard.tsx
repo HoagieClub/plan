@@ -69,12 +69,12 @@ const CalendarCard: FC<CalendarCardProps> = ({
           {event.section.class_section}
         </div>
 
-        <div className='mt-1 text-sm text-white/80'>
+        <div className='text-xs text-white/80'>
           {event.startTime} – {event.endTime}
         </div>
       </div>
 
-      <div className='capacity-container mt-1 flex items-center text-sm text-white/80'>
+      <div className='capacity-container flex items-center text-xs text-white/80'>
         <span className='capacity'>
           {event.section.enrollment} / {event.section.capacity}
         </span>
