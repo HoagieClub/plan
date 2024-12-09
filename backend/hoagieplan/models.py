@@ -282,7 +282,7 @@ class CustomUser(AbstractUser):
         blank=True,
     )  # for manually marked requirements
     req_dict = models.JSONField(null=True)
-    
+
     # TODO: This field is deprecated (Django's default username serves the same purpose)
     net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     # TODO: Refactor backend code to use username instead of net_id
@@ -297,15 +297,10 @@ class CustomUser(AbstractUser):
 
     class Meta:
         db_table = "CustomUser"
-        
+
         # Hacky way to prevent alias bugs
         # TODO: Find a more controlled/deterministic way to identify username/NetID from Auth0
-        constraints = [
-            models.UniqueConstraint(
-                fields=["email", "username"],
-                name="unique_email_username_combination"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["email", "username"], name="unique_email_username_combination")]
 
 
 class UserCourses(models.Model):

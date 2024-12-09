@@ -256,15 +256,16 @@ def create_courses(user_inst):
     for course_inst in course_insts:
         course = {
             "id": course_inst.course.id,
-            "manually_settled": False,
+            "manually_settled": None,
             "distribution_area_short": course_inst.course.distribution_area_short,
             "crosslistings": course_inst.course.crosslistings,
             "dept_code": course_inst.course.department.code,
             "cat_num": course_inst.course.catalog_number,
         }
-        if course_inst.requirement_id is not None:
-            course["settled"] = [course_inst.requirement_id]
-            course["manually_settled"] = True
+        req_id = course_inst.requirement_id
+        if req_id is not None:
+            course["settled"] = [req_id]
+            course["manually_settled"] = req_id
         courses[course_inst.semester - 1].append(course)
     return courses
 
@@ -531,20 +532,14 @@ def format_req_output(req, courses, manually_satisfied_reqs):
 
 
 def transform_requirements(requirements):
-    # Base case: If there's no 'subrequirements', return the requirements as is
     if "subrequirements" not in requirements:
         return requirements
 
-    # Recursively transform each subrequirement
     transformed = {}
     for key, subreq in requirements["subrequirements"].items():
         transformed[key] = transform_requirements(subreq)
-
-    # After transformation, remove 'subrequirements' key
     requirements.pop("subrequirements")
 
-    # Merge the 'satisfied' status and the transformed subrequirements
-    # print(f"requirements: {requirements}, transformed: {transformed}\n")
     return {**requirements, **transformed}
 
 
@@ -554,14 +549,9 @@ def transform_data(data):
     # Go through each major/minor and transform accordingly
     for _, value in data.items():
         if "requirements" in value:
-            # Extract 'code' and 'satisfied' from 'requirements'
             code = value["requirements"].pop("code")
             satisfied = value["requirements"].pop("satisfied")
-
-            # Transform the rest of the requirements
             transformed_reqs = transform_requirements(value["requirements"])
-
-            # Combine 'satisfied' status and transformed requirements
             transformed_data[code] = {"satisfied": satisfied, **transformed_reqs}
 
     return transformed_data
@@ -754,7 +744,7 @@ def parse_semester(semester_id, class_year):
 def update_courses(request):
     try:
         data = oj.loads(request.body)
-        crosslistings = data.get("crosslistings")  # might have to adjust this, print
+        crosslistings = data.get("crosslistings")
         container = data.get("semesterId")
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)

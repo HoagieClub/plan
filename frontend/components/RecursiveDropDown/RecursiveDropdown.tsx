@@ -385,9 +385,19 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
-    }).then((response) => response.json());
-
-    updateRequirements();
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(() => {
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error('Error during manual settling:', error);
+      });
   };
 
   const renderContent = (data: Dictionary) => {
@@ -410,7 +420,7 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
             <Button
               key={index}
               variant='contained'
-              disabled={!item['manually_settled']}
+              disabled={item['manually_settled'] !== value[1]}
               style={{
                 margin: '5px',
                 color: '#4b5563',
