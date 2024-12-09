@@ -21,104 +21,90 @@ from hoagieplan.models import (
 from hoagieplan.serializers import CourseSerializer
 
 
-def manually_settle(request):
-    data = oj.loads(request.body)
-    crosslistings = data.get("crosslistings")
-    req_id = int(data.get("reqId"))
-    net_id = request.headers.get("X-NetId")
-    user_inst = CustomUser.objects.get(net_id=net_id)
-    course_inst = (
-        Course.objects.select_related("department")
-        .filter(crosslistings__iexact=crosslistings, usercourses__user=user_inst)
-        .order_by("-guid")
-        .first()
-    )
-    if not course_inst:
-        course_inst = (
-            Course.objects.select_related("department")
-            .filter(crosslistings__iexact=crosslistings)
-            .order_by("-guid")
-            .first()
-        )
-
-    user_course_inst = UserCourses.objects.get(user_id=user_inst.id, course=course_inst)
-    if user_course_inst.requirement_id is None:
-        user_course_inst.requirement_id = req_id
-        user_course_inst.save()
-        return JsonResponse({"Manually settled": user_course_inst.id})
-    else:
-        user_course_inst.requirement_id = None
-        user_course_inst.save()
-        return JsonResponse({"Unsettled": user_course_inst.id})
-
-
-def mark_satisfied(request):
-    data = oj.loads(request.body)
-    req_id = int(data.get("reqId"))
-    marked_satisfied = data.get("markedSatisfied")
-    net_id = request.headers.get("X-NetId")
+@cumulative_time
+def check_user(net_id, major, minors, certificates):
+    output = {}
 
     user_inst = CustomUser.objects.get(net_id=net_id)
-    req_inst = Requirement.objects.get(id=req_id)
+    user_courses = create_courses(user_inst)
 
-    if marked_satisfied == "true":
-        user_inst.requirements.add(req_inst)
-        action = "Marked satisfied"
-    elif marked_satisfied == "false":
-        if user_inst.requirements.filter(id=req_id).exists():
-            user_inst.requirements.remove(req_inst)
-            action = "Unmarked satisfied"
+    if major is not None:
+        major_code = major["code"]
+        major_obj = Major.objects.get(code=major_code)
+
+        # Check for degree
+        degrees = major_obj.degree.all()
+        for degree in degrees:
+            output[degree.code] = {}
+            formatted_req = check_requirements(user_inst, "Degree", degree.code, user_courses)
+            output[degree.code]["requirements"] = formatted_req
+
+        # Check for major
+        output[major_code] = {}
+        if major_code != "Undeclared":
+            formatted_req = check_requirements(user_inst, "Major", major_code, user_courses)
         else:
-            return JsonResponse({"error": "Requirement not found in user requirements."})
+            formatted_req = {"code": "Undeclared", "satisfied": True}
+        output[major_code]["requirements"] = formatted_req
 
-    return JsonResponse({"Manually satisfied": req_id, "action": action})
+    # Check for minors
+    output["Minors"] = {}
+    for minor in minors:
+        minor_code = minor["code"]
+        output["Minors"][minor_code] = {}
+        formatted_req = check_requirements(user_inst, "Minor", minor_code, user_courses)
+        output["Minors"][minor_code]["requirements"] = formatted_req
+
+    # Check for certificates
+    output["Certificates"] = {}
+    for certificate in certificates:
+        certificate_code = certificate["code"]
+        output["Certificates"][certificate_code] = {}
+        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, user_courses)
+        output["Certificates"][certificate_code]["requirements"] = formatted_req
+
+    # print(f"create_courses: {create_courses.total_time} seconds")
+    # print(f"check_requirements: {check_requirements.total_time} seconds")
+    # print(f"_init_courses: {_init_courses.total_time} seconds")
+    # print(f"_init_req: {_init_req.total_time} seconds")
+    # print(f"assign_settled_courses_to_reqs: {assign_settled_courses_to_reqs.total_time} seconds")
+    # print(f"mark_possible_reqs: {mark_possible_reqs.total_time} seconds")
+    # print(f"mark_possible_dist_reqs: {mark_possible_dist_reqs.total_time} seconds")
+    # print(f"mark_possible_course_list_reqs: {mark_possible_course_list_reqs.total_time} seconds")
+    # print(f"settle_double_counting_reqs: {settle_double_counting_reqs.total_time} seconds")
+    # print(f"settle_reqs: {settle_reqs.total_time} seconds")
+    # print(f"add_course_lists_to_req: {add_course_lists_to_req.total_time} seconds")
+    # print(f"format_req_output: {format_req_output.total_time} seconds")
+
+    return output
 
 
 @cumulative_time
-def create_courses(user_inst):
-    courses = [[] for i in range(8)]
-    course_insts = UserCourses.objects.select_related("user").filter(user=user_inst)
-    for course_inst in course_insts:
-        course = {
-            "id": course_inst.course.id,
-            "manually_settled": False,
-            "distribution_area_short": course_inst.course.distribution_area_short,
-            "crosslistings": course_inst.course.crosslistings,
-            "dept_code": course_inst.course.department.code,
-            "cat_num": course_inst.course.catalog_number,
-        }
-        if course_inst.requirement_id is not None:
-            course["settled"] = [course_inst.requirement_id]
-            course["manually_settled"] = True
-        courses[course_inst.semester - 1].append(course)
-    return courses
+def check_requirements(user_inst, table, code, courses):
+    """Determine whether requirements for 'user_inst' and 'table' are satisfied, based on the 'courses'.
 
+    Args:
+    ----
+        user_inst: The user instance associated with the requirements.
+        table: The table containing the root of the requirement tree.
+        code: The primary key or identifier in the table.
+        courses: A 2D array of dictionaries, where each dictionary represents a course.
 
-def ensure_list(x):
-    if isinstance(x, list):
-        return x
-    elif isinstance(x, str):
-        return [x]
-    else:
-        return []
-
-
-# These fields could be in the UserCourses table by default
-# possible_reqs, reqs_satisfied, reqs_double_counted would be ManyToManyFields
-@cumulative_time
-def _init_courses(courses):
-    if not courses:
-        courses = [[] for i in range(8)]
-    else:
-        courses = copy.deepcopy(courses)
-    for sem in courses:
-        for course in sem:
-            course["possible_reqs"] = []
-            course["reqs_double_counted"] = []  # reqs satisfied for which double counting allowed
-            course["num_settleable"] = 0  # number of reqs to which can be settled. autosettled if 1
-            if "settled" not in course or course["settled"] is None:
-                course["settled"] = []
-    return courses
+    Returns:
+    -------
+        tuple:
+            - bool: Whether the requirements are satisfied.
+            - dict: A list of courses with details about the requirements they satisfy.
+            - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
+    """
+    req = cached_init_req(user_inst, table, code)
+    manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
+    courses = _init_courses(courses)
+    mark_possible_reqs(req, courses)
+    assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
+    add_course_lists_to_req(req, courses)
+    formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
+    return formatted_req
 
 
 # cache this: -2.5s. Also, do this at start up.
@@ -264,46 +250,50 @@ def prefetch_req_inst(table, code):
 
 
 @cumulative_time
-def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
-    """Assign only settled courses and those that can only satify one requirement, and update the appropriate counts."""
-    old_deficit = req["min_needed"] - req["count"]
-    if req["max_counted"]:
-        old_available = req["max_counted"] - req["count"]
-    else:
-        old_available = 0
+def create_courses(user_inst):
+    courses = [[] for i in range(8)]
+    course_insts = UserCourses.objects.select_related("user").filter(user=user_inst)
+    for course_inst in course_insts:
+        course = {
+            "id": course_inst.course.id,
+            "manually_settled": False,
+            "distribution_area_short": course_inst.course.distribution_area_short,
+            "crosslistings": course_inst.course.crosslistings,
+            "dept_code": course_inst.course.department.code,
+            "cat_num": course_inst.course.catalog_number,
+        }
+        if course_inst.requirement_id is not None:
+            course["settled"] = [course_inst.requirement_id]
+            course["manually_settled"] = True
+        courses[course_inst.semester - 1].append(course)
+    return courses
 
-    was_satisfied = old_deficit <= 0
-    newly_satisfied = 0
-    if "req_list" in req:
-        for sub_req in req["req_list"]:
-            newly_satisfied_added = assign_settled_courses_to_reqs(sub_req, courses, manually_satisfied_reqs)
-            if sub_req["id"] in manually_satisfied_reqs:
-                newly_satisfied_added = sub_req["max_counted"]
-            newly_satisfied += newly_satisfied_added
-    elif req["double_counting_allowed"]:
-        newly_satisfied = settle_double_counting_reqs(req, courses)
-    elif ("course_list" in req) or req["dept_list"] or req["dist_req"]:
-        newly_satisfied = settle_reqs(req, courses)
-    elif req["num_courses"]:
-        newly_satisfied = check_degree_progress(req, courses)
-    else:
-        # for papers, IW, where there are no leaf nodes
-        newly_satisfied = 1
 
-    req["count"] += newly_satisfied
-    new_deficit = req["min_needed"] - req["count"]
-    if (not was_satisfied) and (new_deficit <= 0):
-        if req["max_counted"] is None:
-            return req["count"]
-        else:
-            return min(req["max_counted"], req["count"])
-    elif was_satisfied and (new_deficit <= 0):
-        if req["max_counted"] is None:
-            return newly_satisfied
-        else:
-            return min(old_available, newly_satisfied)
+def ensure_list(x):
+    if isinstance(x, list):
+        return x
+    elif isinstance(x, str):
+        return [x]
     else:
-        return 0
+        return []
+
+
+# These fields could be in the UserCourses table by default
+# possible_reqs, reqs_satisfied, reqs_double_counted would be ManyToManyFields
+@cumulative_time
+def _init_courses(courses):
+    if not courses:
+        courses = [[] for i in range(8)]
+    else:
+        courses = copy.deepcopy(courses)
+    for sem in courses:
+        for course in sem:
+            course["possible_reqs"] = []
+            course["reqs_double_counted"] = []  # reqs satisfied for which double counting allowed
+            course["num_settleable"] = 0  # number of reqs to which can be settled. autosettled if 1
+            if "settled" not in course or course["settled"] is None:
+                course["settled"] = []
+    return courses
 
 
 @cumulative_time
@@ -368,6 +358,49 @@ def mark_possible_course_list_reqs(req, courses):
                     course["possible_reqs"].append(req["id"])
                     if not req["double_counting_allowed"]:
                         course["num_settleable"] += 1
+
+
+@cumulative_time
+def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
+    """Assign only settled courses and those that can only satify one requirement, and update the appropriate counts."""
+    old_deficit = req["min_needed"] - req["count"]
+    if req["max_counted"]:
+        old_available = req["max_counted"] - req["count"]
+    else:
+        old_available = 0
+
+    was_satisfied = old_deficit <= 0
+    newly_satisfied = 0
+    if "req_list" in req:
+        for sub_req in req["req_list"]:
+            newly_satisfied_added = assign_settled_courses_to_reqs(sub_req, courses, manually_satisfied_reqs)
+            if sub_req["id"] in manually_satisfied_reqs:
+                newly_satisfied_added = sub_req["max_counted"]
+            newly_satisfied += newly_satisfied_added
+    elif req["double_counting_allowed"]:
+        newly_satisfied = settle_double_counting_reqs(req, courses)
+    elif ("course_list" in req) or req["dept_list"] or req["dist_req"]:
+        newly_satisfied = settle_reqs(req, courses)
+    elif req["num_courses"]:
+        newly_satisfied = check_degree_progress(req, courses)
+    else:
+        # for papers, IW, where there are no leaf nodes
+        newly_satisfied = 1
+
+    req["count"] += newly_satisfied
+    new_deficit = req["min_needed"] - req["count"]
+    if (not was_satisfied) and (new_deficit <= 0):
+        if req["max_counted"] is None:
+            return req["count"]
+        else:
+            return min(req["max_counted"], req["count"])
+    elif was_satisfied and (new_deficit <= 0):
+        if req["max_counted"] is None:
+            return newly_satisfied
+        else:
+            return min(old_available, newly_satisfied)
+    else:
+        return 0
 
 
 @cumulative_time
@@ -497,93 +530,6 @@ def format_req_output(req, courses, manually_satisfied_reqs):
     return output
 
 
-@cumulative_time
-def check_requirements(user_inst, table, code, courses):
-    """Determine whether requirements for 'user_inst' and 'table' are satisfied, based on the 'courses'.
-
-    Args:
-    ----
-        user_inst: The user instance associated with the requirements.
-        table: The table containing the root of the requirement tree.
-        code: The primary key or identifier in the table.
-        courses: A 2D array of dictionaries, where each dictionary represents a course.
-
-    Returns:
-    -------
-        tuple:
-            - bool: Whether the requirements are satisfied.
-            - dict: A list of courses with details about the requirements they satisfy.
-            - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
-    """
-    req = cached_init_req(user_inst, table, code)
-    manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
-    courses = _init_courses(courses)
-    mark_possible_reqs(req, courses)
-    assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
-    add_course_lists_to_req(req, courses)
-    # formatted_courses = format_courses_output(courses)
-    formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
-    return formatted_req
-
-
-@cumulative_time
-def check_user(net_id, major, minors, certificates):
-    output = {}
-
-    user_inst = CustomUser.objects.get(net_id=net_id)
-    user_courses = create_courses(user_inst)
-
-    if major is not None:
-        major_code = major["code"]
-        major_obj = Major.objects.get(code=major_code)
-
-        # Check for degree
-        degrees = major_obj.degree.all()
-        for degree in degrees:
-            output[degree.code] = {}
-            formatted_req = check_requirements(user_inst, "Degree", degree.code, user_courses)
-            output[degree.code]["requirements"] = formatted_req
-
-        # Check for major
-        output[major_code] = {}
-        if major_code != "Undeclared":
-            formatted_req = check_requirements(user_inst, "Major", major_code, user_courses)
-        else:
-            formatted_req = {"code": "Undeclared", "satisfied": True}
-        output[major_code]["requirements"] = formatted_req
-
-    # Check for minors
-    output["Minors"] = {}
-    for minor in minors:
-        minor_code = minor["code"]
-        output["Minors"][minor_code] = {}
-        formatted_req = check_requirements(user_inst, "Minor", minor_code, user_courses)
-        output["Minors"][minor_code]["requirements"] = formatted_req
-
-    # Check for certificates
-    output["Certificates"] = {}
-    for certificate in certificates:
-        certificate_code = certificate["code"]
-        output["Certificates"][certificate_code] = {}
-        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, user_courses)
-        output["Certificates"][certificate_code]["requirements"] = formatted_req
-
-    # print(f"create_courses: {create_courses.total_time} seconds")
-    # print(f"check_requirements: {check_requirements.total_time} seconds")
-    # print(f"_init_courses: {_init_courses.total_time} seconds")
-    # print(f"_init_req: {_init_req.total_time} seconds")
-    # print(f"assign_settled_courses_to_reqs: {assign_settled_courses_to_reqs.total_time} seconds")
-    # print(f"mark_possible_reqs: {mark_possible_reqs.total_time} seconds")
-    # print(f"mark_possible_dist_reqs: {mark_possible_dist_reqs.total_time} seconds")
-    # print(f"mark_possible_course_list_reqs: {mark_possible_course_list_reqs.total_time} seconds")
-    # print(f"settle_double_counting_reqs: {settle_double_counting_reqs.total_time} seconds")
-    # print(f"settle_reqs: {settle_reqs.total_time} seconds")
-    # print(f"add_course_lists_to_req: {add_course_lists_to_req.total_time} seconds")
-    # print(f"format_req_output: {format_req_output.total_time} seconds")
-
-    return output
-
-
 def transform_requirements(requirements):
     # Base case: If there's no 'subrequirements', return the requirements as is
     if "subrequirements" not in requirements:
@@ -619,6 +565,59 @@ def transform_data(data):
             transformed_data[code] = {"satisfied": satisfied, **transformed_reqs}
 
     return transformed_data
+
+
+def manually_settle(request):
+    data = oj.loads(request.body)
+    crosslistings = data.get("crosslistings")
+    req_id = int(data.get("reqId"))
+    net_id = request.headers.get("X-NetId")
+    user_inst = CustomUser.objects.get(net_id=net_id)
+    course_inst = (
+        Course.objects.select_related("department")
+        .filter(crosslistings__iexact=crosslistings, usercourses__user=user_inst)
+        .order_by("-guid")
+        .first()
+    )
+    if not course_inst:
+        course_inst = (
+            Course.objects.select_related("department")
+            .filter(crosslistings__iexact=crosslistings)
+            .order_by("-guid")
+            .first()
+        )
+
+    user_course_inst = UserCourses.objects.get(user_id=user_inst.id, course=course_inst)
+    if user_course_inst.requirement_id is None:
+        user_course_inst.requirement_id = req_id
+        user_course_inst.save()
+        return JsonResponse({"Manually settled": user_course_inst.id})
+    else:
+        user_course_inst.requirement_id = None
+        user_course_inst.save()
+        return JsonResponse({"Unsettled": user_course_inst.id})
+
+
+def mark_satisfied(request):
+    data = oj.loads(request.body)
+    req_id = int(data.get("reqId"))
+    marked_satisfied = data.get("markedSatisfied")
+    net_id = request.headers.get("X-NetId")
+
+    user_inst = CustomUser.objects.get(net_id=net_id)
+    req_inst = Requirement.objects.get(id=req_id)
+
+    if marked_satisfied == "true":
+        user_inst.requirements.add(req_inst)
+        action = "Marked satisfied"
+    elif marked_satisfied == "false":
+        if user_inst.requirements.filter(id=req_id).exists():
+            user_inst.requirements.remove(req_inst)
+            action = "Unmarked satisfied"
+        else:
+            return JsonResponse({"error": "Requirement not found in user requirements."})
+
+    return JsonResponse({"Manually satisfied": req_id, "action": action})
 
 
 def update_requirements(request):
