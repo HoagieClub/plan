@@ -58,7 +58,8 @@ const CalendarCard: FC<CalendarCardProps> = ({
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
         width: `calc(100% * ${width})`,
         marginLeft: `calc(100% * ${offsetLeft})`,
-        overflow: 'hidden',
+        overflow: 'auto',
+        maxHeight: '300px',
       }}
       onClick={onSectionClick}
     >
