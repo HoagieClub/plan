@@ -1,14 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from 'react';
+//import { useState } from 'react';
 
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
 
 import { TutorialModal } from '../Modal';
 
-import styles from './calendartutorial.module.scss';
+import styles from './UploadModal.module.css';
 
-interface Calendartutorial {
+interface Upload {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -25,7 +25,7 @@ const photos =
     style={{ width: '80%', height: 'auto' }}
   />;
 
-const Calendartutorial: React.FC<Calendartutorial> = ({ isOpen, onClose }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
   const modalContent = (
     <TutorialModal>
       <div className={styles.modal}>
@@ -47,4 +47,4 @@ const Calendartutorial: React.FC<Calendartutorial> = ({ isOpen, onClose }) => {
   return isOpen ? createPortal(modalContent, document.body) : null;
 }
 
-export default Calendartutorial;
+export default Upload;

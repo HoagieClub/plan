@@ -32,6 +32,7 @@ import { useRouter, usePathname } from 'next/navigation';
 
 import { useSettingsModal } from '@/components/SettingsModal';
 import { useTutorialModal } from '@/components/Tutorial/Tutorial';
+import { useUploadModal } from '@/components/UploadModal/Upload';
 import ProfileCard from '@/lib/hoagie-ui/ProfileCard';
 import { useFetchUserProfile } from '@/store/userSlice';
 
@@ -63,6 +64,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
   const router = useRouter();
   const pathname = usePathname();
   const { openTutorialModal, tutorialModal } = useTutorialModal();
+  const { openUploadModal, uploadModal } = useUploadModal();
 
   useFetchUserProfile(user);
 
@@ -145,6 +147,20 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
                 titleAccess='Open Tutorial'
               />
             </Pane>
+            <Pane
+              display='flex'
+              alignItems='center'
+              justifyContent='center'
+              marginLeft={majorScale(4)}
+              cursor='pointer'
+              onClick={() => openUploadModal()}
+            >
+              <HelpOutlineIcon
+                fontSize='medium'
+                style={{ color: theme.colors.blue500 }}
+                titleAccess='Open Tutorial'
+              />
+            </Pane>
             {user && (
               <Popover
                 content={<ProfileCard user={user} onSettingsClick={openSettingsModal} />}
@@ -159,6 +175,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
                 />
               </Popover>
             )}
+            {uploadModal}
             {tutorialModal}
           </Pane>
         </Pane>
