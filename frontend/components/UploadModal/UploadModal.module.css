@@ -46,23 +46,40 @@
     color: #333;
     margin-bottom: 20px;
   }
-  
-  .pageContent {
-    font-size: 16px;
-    color: #333;
-    min-height: 90px;
-  }
-  
-  .pagePhoto {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+  .fileInputContainer {
     margin-bottom: 20px;
   }
-  
-  .imageContainer {
-    width: 10%; 
-    height: 20%;
+
+  .dropZone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 700px;
+    height: 380px;
+    border: 8px dashed #a09f9f;
+    border-radius: 2px;
+    background-color: #ffffff;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 28px;
+    font-weight: bold;
+    color: #9a9696;
+  }
+
+  .fileContainer {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .closeButton {
+    color: red;
+    cursor: pointer;
+    font-size: 18px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 10px;
   }
   
   .footer {
@@ -70,15 +87,3 @@
     justify-content: space-between;
     margin-top: auto;
   }
-  
-  .pagination {
-    display: flex;
-    align-items: center;
-    
-  span {
-    margin: 0 10px;
-    margin-left: 20px;
-    font-size: 14px;
-    color: #555;
-    }
-  }  
