@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -31,23 +31,15 @@ const searchCache = new LRUCache<string, Course[]>({
 const Search: FC = () => {
   const [query, setQuery] = useState<string>('');
   const timerRef = useRef<number>();
-  const {
-    setSearchResults,
-    searchResults,
-    addRecentSearch,
-    recentSearches,
-    clearRecentSearches,
-    setError,
-    setLoading,
-  } = useSearchStore((state) => ({
-    setSearchResults: state.setSearchResults,
-    searchResults: state.searchResults,
-    addRecentSearch: state.addRecentSearch,
-    recentSearches: state.recentSearches,
-    clearRecentSearches: state.clearRecentSearches,
-    setError: state.setError,
-    setLoading: state.setLoading,
-  }));
+  const { setSearchResults, searchResults, addRecentSearch, recentSearches, setError, setLoading } =
+    useSearchStore((state) => ({
+      setSearchResults: state.setSearchResults,
+      searchResults: state.searchResults,
+      addRecentSearch: state.addRecentSearch,
+      recentSearches: state.recentSearches,
+      setError: state.setError,
+      setLoading: state.setLoading,
+    }));
 
   const {
     distributionFilter,
@@ -107,7 +99,9 @@ const Search: FC = () => {
       setLoading(true);
       try {
         const queryString = buildQuery(searchQuery, filter);
+
         const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+
         if (response.ok) {
           const data: { courses: Course[] } = await response.json();
           setSearchResults(data.courses);
@@ -118,7 +112,7 @@ const Search: FC = () => {
         } else {
           setError(`Server returned ${response.status}: ${response.statusText}`);
         }
-      } catch {
+      } catch (error) {
         setError('There was an error fetching courses.');
       } finally {
         setLoading(false);
@@ -197,7 +191,6 @@ const Search: FC = () => {
       document.addEventListener('keydown', handleKeyDown);
     }
 
-    // Remove event listener if showPopup is false, or on unmount.
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -348,7 +341,7 @@ const Search: FC = () => {
           />
           <button
             type='button'
-            className='group absolute inset-y-1 right-2 flex items-center justify-center rounded-md px-1 hover:bg-dnd-gray'
+            className='group absolute inset-y-1 right-2 flex items-center justify-center rounded-md px-1 hover:bg-gray-100'
             onClick={handleAdjustmentsClick}
             aria-label='Adjust search settings'
           >
@@ -359,8 +352,28 @@ const Search: FC = () => {
           </button>
         </div>
         <div className='mt-3'>
-          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
-          <div className='flex-basis:100px flex space-x-2 overflow-x-auto px-1 py-2'>
+          <div className='mb-2 flex items-center justify-between'>
+            <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
+            <div className='flex items-center space-x-2'>
+              <button
+                className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
+                onClick={() => clearRecentSearches()}
+              >
+                Clear
+              </button>
+              <button
+                type='button'
+                className='rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-sm hover:bg-gray-50 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600'
+                onClick={() => {
+                  console.log('Upload transcript clicked');
+                }}
+                aria-label='Upload transcript'
+              >
+                <ArrowUpTrayIcon className='h-4 w-4 text-gray-500' aria-hidden='true' />
+              </button>
+            </div>
+          </div>
+          <div className='flex space-x-2 overflow-x-auto py-2'>
             {recentSearches.map((search, index) => (
               <button
                 key={index}
@@ -370,14 +383,6 @@ const Search: FC = () => {
                 {search}
               </button>
             ))}
-          </div>
-          <div className='space-x-1 overflow-x-auto px-1 py-1'>
-            <button
-              className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-              onClick={() => clearRecentSearches()}
-            >
-              Clear
-            </button>
           </div>
         </div>
       </div>
