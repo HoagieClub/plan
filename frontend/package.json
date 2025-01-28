@@ -64,7 +64,7 @@
     "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.1",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
-    "@typescript-eslint/parser": "^8.17.0",
+    "@typescript-eslint/parser": "^8.22.0",
     "@vercel/analytics": "^1.4.1",
     "autoprefixer": "^10.4.20",
     "classnames": "^2.5.1",
