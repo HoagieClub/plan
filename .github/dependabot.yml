@@ -3,6 +3,7 @@ updates:
   # TypeScript dependencies managed by npm
   - package-ecosystem: "npm"
     directory: "frontend/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "tuesday"
@@ -20,6 +21,7 @@ updates:
   # Python dependencies managed by pip
   - package-ecosystem: "pip"
     directory: "backend/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "thursday"
