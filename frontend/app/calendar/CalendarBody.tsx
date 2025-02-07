@@ -1,8 +1,8 @@
-import { CSSProperties, FC, RefObject } from 'react';
+import type { CSSProperties, FC, RefObject } from 'react';
 
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 
-import { CalendarEvent } from '@/types';
+import type { CalendarEvent } from '@/types';
 
 import CalendarGrid from './CalendarGrid';
 
@@ -39,9 +39,9 @@ const CalendarBody: FC<CalendarBodyProps> = ({
     <div className='calendar-container' style={{ '--days-length': days.length } as CSSProperties}>
       <div className='calendar-main' ref={calendarRef}>
         <div className='grid grid-cols-[auto_1fr]'>
-          <div className='col-start-0 row-start-0'></div>
+          <div className='col-start-0 row-start-0' />
           <div className='col-start-0 row-start-1 row-end-2'>
-            <div className='calendar-time-column bg-white border-r border-gray-200'></div>
+            <div className='calendar-time-column border-r border-gray-200 bg-white' />
           </div>
           <div className='col-start-1 col-end-[-1] row-start-1 row-end-[-1]'>
             <CalendarGrid

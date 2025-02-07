@@ -1,4 +1,6 @@
-import { Action, ActionProps } from '../Action';
+import { Action } from '../Action';
+
+import type { ActionProps } from '../Action';
 
 export function Remove(props: ActionProps) {
   return (

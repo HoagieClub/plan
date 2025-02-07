@@ -1,18 +1,21 @@
-import { useState, useEffect, FC } from 'react';
+import type { FC } from 'react';
+import { useState, useEffect } from 'react';
+
+import type { Profile } from '@/types';
 
 import LoadingComponent from '../LoadingComponent';
 import { RecursiveDropdown } from '../RecursiveDropDown';
 
-import styles from './TabbedMenu.module.scss';
+import styles from './TabbedMenu.module.css';
 
 interface TabbedMenuProps {
   tabsData: { [key: string]: object };
+  profile: Profile;
   csrfToken: string;
-  checkRequirements: any;
+  updateRequirements: () => void;
 }
 
-const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, csrfToken, checkRequirements }) => {
-  // console.log(tabsData);
+const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, profile, csrfToken, updateRequirements }) => {
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,8 +63,9 @@ const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, csrfToken, checkRequirement
             <RecursiveDropdown
               key={activeTab}
               dictionary={tabsData[activeTab]}
+              profile={profile}
               csrfToken={csrfToken}
-              checkRequirements={checkRequirements}
+              updateRequirements={updateRequirements}
             />
           )
         )}

@@ -1,4 +1,5 @@
-import { FC, useState, useEffect } from 'react';
+import type { FC } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Rating } from '@mui/material';
 
@@ -13,7 +14,7 @@ const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 
   useEffect(() => {
     if (dept && coursenum) {
-      const url = new URL(`${process.env.BACKEND}/course_comments/`);
+      const url = new URL(`${process.env.BACKEND}/course/comments/`);
       url.searchParams.append('dept', dept);
       url.searchParams.append('coursenum', coursenum);
 
@@ -51,7 +52,7 @@ const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
           <td>
             <strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
           </td>
-          <td width='120px'></td>
+          <td width='120px' />
           <td>{rating}</td>
           <td>
             {' '}

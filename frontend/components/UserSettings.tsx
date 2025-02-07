@@ -1,5 +1,5 @@
-import { FC, useState, useEffect, useCallback } from 'react';
-import { smartSearch, isOptionEqual } from './MajorMinorSearch';
+import type { FC } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import {
   Autocomplete,
@@ -12,24 +12,11 @@ import {
   Snackbar,
 } from '@mui/joy';
 
-import { MajorMinorType, ProfileProps } from '@/types';
-
 import useUserSlice from '@/store/userSlice';
+import type { MajorMinorType, ProfileProps } from '@/types';
+import { fetchCsrfToken } from '@/utils/csrf';
 
-async function fetchCsrfToken() {
-  try {
-    const response = await fetch(`${process.env.BACKEND}/csrf`, {
-      credentials: 'include',
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.csrfToken ? String(data.csrfToken) : '';
-  } catch (error) {
-    return 'Error fetching CSRF token!';
-  }
-}
+import { smartSearch, isOptionEqual } from './MajorMinorSearch';
 
 function generateClassYears() {
   const currentYear = new Date().getFullYear();
@@ -43,11 +30,11 @@ function generateClassYears() {
   return classYears;
 }
 
-// Should probably id these corresponding to the ids in the database
+// TODO: Should probably id these corresponding to the ids in the database
 const undeclared = { code: 'Undeclared', name: 'Undeclared' };
 const defaultClassYear = new Date().getFullYear();
 
-// Should probably id these corresponding to the ids in the database
+// TODO: Should probably id these corresponding to the ids in the database, may be used in other files
 const majorOptions = [
   { code: 'AAS', name: 'African American Studies' },
   { code: 'ANT', name: 'Anthropology' },
@@ -158,30 +145,57 @@ const minorOptions = [
 
 const certificateOptions = [
   { code: 'AAS', name: 'African American Studies - Open to Class of 25 only' },
-  { code: 'ACE', name: 'Architecture and Engineering - Open to all class years' },
+  {
+    code: 'ACE',
+    name: 'Architecture and Engineering - Open to all class years',
+  },
   { code: 'AMS', name: 'American Studies - Open to all class years' },
   { code: 'AST', name: 'Planets and Life - Open to all class years' },
   { code: 'ENT', name: 'Entrepreneurship - Open to all class years' },
   { code: 'GEO', name: 'Geological Engineering - Open to all class years' },
   { code: 'GER', name: 'German - Open to all class years' },
-  { code: 'HPD', name: 'History and the Practice of Diplomacy - Open to all class years' },
-  { code: 'LAC-CLA', name: 'Language and Culture: Classics - Open to Class of 25 only' },
-  { code: 'LAC-POR', name: 'Portuguese Language and Culture - Open to Class of 25 only' },
-  { code: 'LAC-SPA', name: 'Spanish Language and Culture - Open to Class of 25 only' },
+  {
+    code: 'HPD',
+    name: 'History and the Practice of Diplomacy - Open to all class years',
+  },
+  {
+    code: 'LAC-CLA',
+    name: 'Language and Culture: Classics - Open to Class of 25 only',
+  },
+  {
+    code: 'LAC-POR',
+    name: 'Portuguese Language and Culture - Open to Class of 25 only',
+  },
+  {
+    code: 'LAC-SPA',
+    name: 'Spanish Language and Culture - Open to Class of 25 only',
+  },
   {
     code: 'OQDS',
     name: 'Optimization and Quantitative Decision Science - Open to all class years',
   },
-  { code: 'QCB', name: 'Quantitative and Computational Biology - Open to all class years' },
-  { code: 'RIS', name: 'Robotics and Intelligent Systems - Open to Class of 25 only' },
-  { code: 'TAS-E', name: 'Technology and Society - Energy Track - Open to all class years' },
-  { code: 'TAS-IT', name: 'Technology and Society - IT Track - Open to all class years' },
+  {
+    code: 'QCB',
+    name: 'Quantitative and Computational Biology - Open to all class years',
+  },
+  {
+    code: 'RIS',
+    name: 'Robotics and Intelligent Systems - Open to Class of 25 only',
+  },
+  {
+    code: 'TAS-E',
+    name: 'Technology and Society - Energy Track - Open to all class years',
+  },
+  {
+    code: 'TAS-IT',
+    name: 'Technology and Society - IT Track - Open to all class years',
+  },
   { code: 'TPP', name: 'Teacher Preparation - Open to all class years' },
   { code: 'URB', name: 'Urban Studies - Open to all class years' },
 ];
 
 const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
-  const { updateProfile } = useUserSlice((state) => state);
+  const updateProfile = useUserSlice((state) => state.updateProfile);
   const [firstName, setFirstName] = useState<string>(profile.firstName);
   const [lastName, setLastName] = useState<string>(profile.lastName);
   const [classYear, setClassYear] = useState(profile.classYear || defaultClassYear);
@@ -191,6 +205,17 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
   // const [timeFormat24h, setTimeFormat24h] = useState<boolean>(profile.timeFormat24h);
   // const [themeDarkMode, setThemeDarkMode] = useState<boolean>(profile.themeDarkMode);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  let csrfToken: string;
+
+  if (typeof window === 'undefined') {
+    // Server-side or during pre-rendering/build time
+    csrfToken = '';
+  } else {
+    // Client-side
+    (async () => {
+      csrfToken = await fetchCsrfToken();
+    })();
+  }
 
   const handleMinorsChange = (_, newMinors: MajorMinorType[]) => {
     const uniqueMinors = Array.from(new Set(newMinors.map((minor) => minor.code))).map((code) =>
@@ -229,13 +254,13 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
       certificates: certificates,
       classYear: classYear,
     };
-    const csrfToken = await fetchCsrfToken();
 
-    fetch(`${process.env.BACKEND}/update_profile/`, {
+    fetch(`${process.env.BACKEND}/profile/update/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
         'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify(profile),
@@ -246,7 +271,17 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
       updateProfile(profile);
       onSave(profile);
     });
-  }, [updateProfile, firstName, lastName, major, minors, certificates, classYear, onSave]);
+  }, [
+    updateProfile,
+    firstName,
+    lastName,
+    major,
+    minors,
+    certificates,
+    classYear,
+    csrfToken,
+    onSave,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -272,6 +307,7 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
     <div>
       <div className='grid grid-cols-2 gap-6'>
         <div>
+          {/* TODO: Names are now fixed due to Auth0 migration. Either see if we can change Auth0 data directly or deprecate this. */}
           <FormLabel>First name</FormLabel>
           <Input
             placeholder='First name'
@@ -332,8 +368,8 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             autoHighlight
             options={minorOptions}
             // Call smartSearch to search through all minors and determine matches for inputValue.
-            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
-            placeholder={'Select your minor(s)'}
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your minor(s)'
             variant='soft'
             value={minors}
             isOptionEqualToValue={isOptionEqual}
@@ -359,8 +395,8 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
             autoHighlight
             options={certificateOptions}
             // Call smartSearch to search through all certificates and determine matches for inputValue.
-            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)} 
-            placeholder={'Select your certificate(s)'}
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your certificate(s)'
             variant='soft'
             value={certificates}
             isOptionEqualToValue={isOptionEqual}
@@ -381,16 +417,16 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
         </div>
         <Snackbar
           open={openSnackbar}
-          color={'primary'}
-          variant={'soft'}
+          color='primary'
+          variant='soft'
           onClose={handleCloseSnackbar}
           autoHideDuration={6000}
           sx={{
             '.MuiSnackbar-root': {
               borderRadius: '16px', // Roundedness
             },
-            backgroundColor: '#0F1E2F', // Compass Blue
-            color: '#f6f6f6', // Compass Gray
+            backgroundColor: '#0F1E2F', // Hoagie Plan Blue
+            color: '#f6f6f6', // Hoagie Plan Gray
           }}
         >
           <div className='text-center'>
@@ -485,4 +521,5 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
     </div>
   );
 };
+
 export default UserSettings;

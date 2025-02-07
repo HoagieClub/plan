@@ -1,6 +1,6 @@
-import { FC, CSSProperties } from 'react';
+import type { FC, CSSProperties } from 'react';
 
-import { CalendarEvent } from '@/types';
+import type { CalendarEvent } from '@/types';
 
 import './Calendar.scss';
 import { departmentColors } from '@/utils/departmentColors';
@@ -25,15 +25,34 @@ const CalendarCard: FC<CalendarCardProps> = ({
   endIndex,
   dept,
 }) => {
-  const getGradientStyle = (dept: string) => {
-    return departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Default color
-  };
+  function getGradientStyle(dept: string, needsChoice: boolean, isChosen: boolean) {
+    const baseColor = departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Fallback gradient
+
+    if (!needsChoice || isChosen) {
+      return {
+        backgroundImage: baseColor,
+      };
+    }
+    return {
+      backgroundImage: `
+        ${baseColor}, 
+        repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.1) 0px,
+          rgba(255, 255, 255, 0.1) 7px,
+          rgba(0, 0, 0, 0.05) 7px,
+          rgba(0, 0, 0, 0.05) 13px
+        )
+      `,
+      backgroundBlendMode: 'overlay',
+    };
+  }
 
   return (
     <div
       className={`calendar-card ${event.textColor}`}
       style={{
-        background: getGradientStyle(dept),
+        ...getGradientStyle(dept, event.needsChoice, event.isChosen),
         opacity: event.needsChoice && !event.isChosen ? 0.5 : 1,
         gridRow: `${startIndex} / ${endIndex}`,
         gridColumn: `${event.startColumnIndex + 1} / span 1`,
@@ -43,26 +62,23 @@ const CalendarCard: FC<CalendarCardProps> = ({
       }}
       onClick={onSectionClick}
     >
-      {/* <div className='card-header'></div>
-      <div className='card-body'>
-        {relevantMeetings.map((classMeeting, index) => (
-          <div key={index} className='event-details'>
-            <div className='event-department'>
-              <span className='department-code'>{event.course.department_code}</span>
-              <span className='catalog-number'>{event.course.catalog_number}</span>
-            </div>
-            <div className='event-location'>
-              <span className='building-name'>{classMeeting.building_name}</span>
-            </div>
-          </div>
-        ))}
-      </div> */}
-      <div className='event-department'>
-        {event.course.department_code} {event.course.catalog_number}
+      {/* Wrapper for header unit */}
+      <div className='event-header-unit flex flex-col items-start'>
+        <div className='event-department'>
+          {event.course.department_code} {event.course.catalog_number} -{' '}
+          {event.section.class_section}
+        </div>
+
+        <div className='mt-1 text-sm text-white/80'>
+          {event.startTime} – {event.endTime}
+        </div>
       </div>
-      {/* TODO: Add start time, end time, building name, room number*/}
-      <div className='text-xs event-department'>{event.section.class_section}</div>
-      {/* Button */}
+
+      <div className='capacity-container mt-1 flex items-center text-sm text-white/80'>
+        <span className='capacity'>
+          {event.section.enrollment} / {event.section.capacity}
+        </span>
+      </div>
     </div>
   );
 };

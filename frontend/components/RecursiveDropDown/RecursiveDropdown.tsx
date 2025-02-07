@@ -1,4 +1,5 @@
-import { FC, useEffect, useState, useCallback } from 'react';
+import type { FC } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -14,20 +15,23 @@ import Typography from '@mui/material/Typography';
 import classNames from 'classnames';
 
 import useSearchStore from '@/store/searchSlice';
+import type { Profile } from '@/types';
 
+import styles from '../InfoComponent/InfoComponent.module.css';
 import LoadingComponent from '../LoadingComponent';
 import SettingsModal from '../Modal';
 
-import styles from '../InfoComponent/InfoComponent.module.scss';
-
 interface Dictionary {
+  // TODO: Address this typing eventually.
+
   [key: string]: any;
 }
 
 interface DropdownProps {
   data: Dictionary;
+  profile: Profile;
   csrfToken: string;
-  checkRequirements: any;
+  updateRequirements: () => void;
 }
 
 interface SatisfactionStatusProps {
@@ -101,9 +105,12 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
 };
 
 // Dropdown component with refined styling
-const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => {
+const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequirements }) => {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [markedSatisfied, setMarkedSatisfied] = useState<boolean>(false);
+
+  // TODO: Address this typing eventually.
+
   const [explanation, setExplanation] = useState<{ [key: number]: any } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expanded, setExpanded] = useState(new Set());
@@ -135,6 +142,7 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
       },
     })
       .then((response) => response.json())
@@ -188,13 +196,17 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
         'X-CSRFToken': csrfToken,
       },
-      body: JSON.stringify({ reqId: explanation ? explanation[0] : null, markedSatisfied: 'true' }),
+      body: JSON.stringify({
+        reqId: explanation ? explanation[0] : null,
+        markedSatisfied: 'true',
+      }),
     }).then((response) => response.json());
 
     setMarkedSatisfied(true);
-    checkRequirements();
+    updateRequirements();
   };
 
   const handleUnmarkSatisfied = () => {
@@ -206,6 +218,7 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
         'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify({
@@ -215,7 +228,7 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
     }).then((response) => response.json());
 
     setMarkedSatisfied(false);
-    checkRequirements();
+    updateRequirements();
   };
 
   useEffect(() => {
@@ -258,15 +271,15 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
                 if (value) {
                   return (
                     <div key={index} className={styles.section}>
-                      <strong className={styles.strong}>{'Explanation'}: </strong>
+                      <strong className={styles.strong}>Explanation: </strong>
                       <span dangerouslySetInnerHTML={{ __html: value }} />
                     </div>
                   );
                 } else {
                   return (
                     <div key={index} className={styles.section}>
-                      <strong className={styles.strong}>{'Explanation'}: </strong>
-                      {'No explanation available'}
+                      <strong className={styles.strong}>Explanation: </strong>
+                      No explanation available
                     </div>
                   );
                 }
@@ -274,7 +287,7 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
               if (index === '2' && value !== 8) {
                 return (
                   <div key={index} className={styles.section}>
-                    <strong className={styles.strong}>{'Complete by'}: </strong>
+                    <strong className={styles.strong}>Complete by: </strong>
                     {semesterMap[value]}
                   </div>
                 );
@@ -297,7 +310,7 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
               if (index === '5' && !explanation[3][0]) {
                 return value[0] || explanation[4][0] ? (
                   <div key={index} className={styles.section}>
-                    <strong className={styles.strong}>{'Course list'}: </strong>
+                    <strong className={styles.strong}>Course list: </strong>
                     {explanation[4][0]
                       ? explanation[4]
                           .map((department) => {
@@ -368,12 +381,13 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-NetId': profile.netId,
         'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
     }).then((response) => response.json());
 
-    checkRequirements();
+    updateRequirements();
   };
 
   const renderContent = (data: Dictionary) => {
@@ -464,7 +478,12 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
       return (
         <Accordion
           key={key}
-          style={{ margin: '0', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}
+          style={{
+            margin: '0',
+            boxShadow: 'none',
+            borderTop: '1px solid #e0e0e0',
+            // borderBottom: "1px solid #e0e0e0",
+          }}
           expanded={!expanded.has(key)}
           onChange={(event) => handleChange(event, key)} // TODO: disable propagation in modals
         >
@@ -472,9 +491,15 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
             expandIcon={hasNestedItems && !hasItems ? <ExpandMoreIcon /> : null}
             aria-controls={`${key}-content`}
             id={`${key}-header`}
-            style={{ backgroundColor: '#f6f6f6' }} // subtle background color
+            style={{ backgroundColor: '#fff' }} // subtle background color
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
               <div
                 className={classNames(styles.Action)}
                 onClick={(event) => handleExplanationClick(event, data[key]['req_id'])}
@@ -505,16 +530,25 @@ const Dropdown: FC<DropdownProps> = ({ data, csrfToken, checkRequirements }) => 
 // Recursive dropdown component
 interface RecursiveDropdownProps {
   dictionary: Dictionary;
+  profile: Profile;
   csrfToken: string;
-  checkRequirements: any;
+  updateRequirements: () => void;
 }
 
 const RecursiveDropdown: FC<RecursiveDropdownProps> = ({
   dictionary,
+  profile,
   csrfToken,
-  checkRequirements,
+  updateRequirements,
 }) => {
-  return <Dropdown data={dictionary} csrfToken={csrfToken} checkRequirements={checkRequirements} />;
+  return (
+    <Dropdown
+      data={dictionary}
+      profile={profile}
+      csrfToken={csrfToken}
+      updateRequirements={updateRequirements}
+    />
+  );
 };
 
 export default RecursiveDropdown;

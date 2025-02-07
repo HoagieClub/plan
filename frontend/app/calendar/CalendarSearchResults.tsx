@@ -1,8 +1,8 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
-import { SearchResults } from '@/types';
+import type { SearchResults } from '@/types';
 
 import CalendarSearchItem from './CalendarSearchItem';
 

@@ -1,21 +1,21 @@
 import argparse
 import csv
-import logging
 import os
 import sys
 import re
+from hoagieplan.logger import logger
 from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
 
-sys.path.append(str(Path('../').resolve()))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+sys.path.append(str(Path("../").resolve()))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 import django
 
 django.setup()
 from django.db import transaction
-from compass.models import (
+from hoagieplan.models import (
     Department,
     AcademicTerm,
     Course,
@@ -28,14 +28,11 @@ from compass.models import (
 
 # -------------------------------------------------------------------------------------#
 
-
-logging.basicConfig(level=logging.INFO)
-
-CLASS_YEAR_ENROLLMENT_PATTERN = re.compile(r'Year (\d+): (\d+) students')
+CLASS_YEAR_ENROLLMENT_PATTERN = re.compile(r"Year (\d+): (\d+) students")
 
 
 def _parse_class_year_enrollments(str, pattern):
-    if str == 'Class year demographics unavailable':
+    if str == "Class year demographics unavailable":
         return []
     return pattern.findall(str)
 
@@ -50,19 +47,19 @@ def _format_duration(start_time, end_time):
     # Building a formatted string
     formatted_duration = []
     if hours:
-        formatted_duration.append(f'{int(hours)} hours')
+        formatted_duration.append(f"{int(hours)} hours")
     if minutes:
-        formatted_duration.append(f'{int(minutes)} minutes')
+        formatted_duration.append(f"{int(minutes)} minutes")
     if seconds or not formatted_duration:
         # Rounds seconds to the nearest thousandth
-        formatted_duration.append(f'{seconds:.3f} seconds')
+        formatted_duration.append(f"{seconds:.3f} seconds")
 
-    return ', '.join(formatted_duration)
+    return ", ".join(formatted_duration)
 
 
 def _parse_time(time_str):
     try:
-        return datetime.strptime(time_str, '%I:%M %p').strftime('%H:%M')
+        return datetime.strptime(time_str, "%I:%M %p").strftime("%H:%M")
     except ValueError:
         return None
 
@@ -71,10 +68,10 @@ def _parse_time(time_str):
 
 
 def insert_departments(rows):
-    logging.info('Starting Department insertions and updates...')
+    logger.info("Starting Department insertions and updates...")
 
     # Create a set of unique departments from the input rows
-    unique_departments = {(row['Subject Code'], row['Subject Name']) for row in rows}
+    unique_departments = {(row["Subject Code"], row["Subject Name"]) for row in rows}
 
     # Fetch existing departments into a dictionary for quick access
     existing_departments_dict = {
@@ -103,45 +100,45 @@ def insert_departments(rows):
             if departments_to_create:
                 Department.objects.bulk_create(departments_to_create)
             if departments_to_update:
-                Department.objects.bulk_update(departments_to_update, ['name'])
+                Department.objects.bulk_update(departments_to_update, ["name"])
     except Exception as e:
-        logging.error(f'Error in inserting departments: {e}')
+        logger.error(f"Error in inserting departments: {e}")
 
-    logging.info(
-        f'Inserted {len(departments_to_create)} new departments and updated {len(departments_to_update)} departments.'
+    logger.info(
+        f"Inserted {len(departments_to_create)} new departments and updated {len(departments_to_update)} departments."
     )
-    logging.info('Department insertions and updates completed!')
+    logger.info("Department insertions and updates completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_academic_terms(rows):
-    logging.info('Starting AcademicTerm insertions and updates...')
+    logger.info("Starting AcademicTerm insertions and updates...")
 
     def parse_date(date_str):
         """Parse a date string into a date object, return None if empty."""
-        return datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else None
+        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else None
 
     first_row = rows[0]
 
     # Prepare new term details
-    term_code = first_row['Term Code'].strip()
+    term_code = first_row["Term Code"].strip()
     new_details = (
-        first_row['Term Name'],
-        parse_date(first_row.get('Course Start Date')),
-        parse_date(first_row.get('Course End Date')),
+        first_row["Term Name"],
+        parse_date(first_row.get("Course Start Date")),
+        parse_date(first_row.get("Course End Date")),
     )
 
     try:
         with transaction.atomic():
             term, created = AcademicTerm.objects.get_or_create(
                 term_code=term_code,
-                defaults=dict(zip(('suffix', 'start_date', 'end_date'), new_details)),
+                defaults=dict(zip(("suffix", "start_date", "end_date"), new_details, strict=False)),
             )
 
             if created:
-                logging.info('Inserted 1 new academic term.')
+                logger.info("Inserted 1 new academic term.")
             else:
                 # Extract existing term details
                 existing_details = (term.suffix, term.start_date, term.end_date)
@@ -153,68 +150,68 @@ def insert_academic_terms(rows):
                         start_date=new_details[1],
                         end_date=new_details[2],
                     )
-                    logging.info('Updated 1 academic term.')
+                    logger.info("Updated 1 academic term.")
                 else:
-                    logging.info('No changes detected; no update performed.')
+                    logger.info("No changes detected; no update performed.")
 
     except Exception as e:
-        logging.error(f'Error in inserting/updating academic terms: {e}')
+        logger.error(f"Error in inserting/updating academic terms: {e}")
 
-    logging.info('AcademicTerm insertions and updates completed!')
+    logger.info("AcademicTerm insertions and updates completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_courses(rows):
-    logging.info('Starting Course insertions and updates...')
+    logger.info("Starting Course insertions and updates...")
 
     departments = {dept.code: dept for dept in Department.objects.all()}
     existing_courses = {course.guid: course for course in Course.objects.all()}
     new_courses = []
     updated_courses = []
 
-    for row_index, row in enumerate(tqdm(rows, desc='Processing Courses')):
-        guid = row.get('Course GUID')
-        dept_code = row['Subject Code']
+    for row_index, row in enumerate(tqdm(rows, desc="Processing Courses")):
+        guid = row.get("Course GUID")
+        dept_code = row["Subject Code"]
         department = departments.get(dept_code)
 
         if not guid:
-            logging.warning(f'Course GUID not found on row {row_index + 1}')
+            logger.warning(f"Course GUID not found on row {row_index + 1}")
             continue
 
-        crosslistings = row.get('Crosslistings')
+        crosslistings = row.get("Crosslistings")
         if crosslistings is None:
             crosslistings = f"{row['Subject Code']} {row['Catalog Number']}"
 
         # Handle CHI1001, FRE1027, GER1025...
-        crosslistings = re.sub(r'([a-zA-Z])([0-9])', r'\1 \2', crosslistings)
+        crosslistings = re.sub(r"([a-zA-Z])([0-9])", r"\1 \2", crosslistings)
 
         reading_list_entries = [
             f"{row[f'Reading List Title {i}']}//{row[f'Reading List Author {i}']}"
             for i in range(1, 7)
-            if row.get(f'Reading List Author {i}')
-            and row.get(f'Reading List Title {i}')
+            if row.get(f"Reading List Author {i}")
+            and row.get(f"Reading List Title {i}")
         ]
-        reading_list = ';'.join(reading_list_entries)
+        reading_list = ";".join(reading_list_entries)
 
         defaults = {
-            'course_id': row['Course ID'],
-            'department': department,
-            'title': row['Course Title'],
-            'catalog_number': row['Catalog Number'],
-            'description': row.get('Course Description'),
-            'drop_consent': row.get('Drop Consent'),
-            'add_consent': row.get('Add Consent'),
-            'web_address': row.get('Web Address'),
-            'transcript_title': row.get('Transcript Title'),
-            'long_title': row.get('Long Title'),
-            'distribution_area_long': row.get('Distribution Area Long'),
-            'distribution_area_short': row.get('Distribution Area Short'),
-            'reading_writing_assignment': row.get('Reading Writing Assignment'),
-            'grading_basis': row.get('Grading Basis'),
-            'reading_list': reading_list,
-            'crosslistings': crosslistings,
+            "course_id": row["Course ID"],
+            "department": department,
+            "title": row["Course Title"],
+            "catalog_number": row["Catalog Number"],
+            "description": row.get("Course Description"),
+            "drop_consent": row.get("Drop Consent"),
+            "add_consent": row.get("Add Consent"),
+            "web_address": row.get("Web Address"),
+            "transcript_title": row.get("Transcript Title"),
+            "long_title": row.get("Long Title"),
+            "distribution_area_long": row.get("Distribution Area Long"),
+            "distribution_area_short": row.get("Distribution Area Short"),
+            "reading_writing_assignment": row.get("Reading Writing Assignment"),
+            "grading_basis": row.get("Grading Basis"),
+            "reading_list": reading_list,
+            "crosslistings": crosslistings,
         }
 
         course = existing_courses.get(guid)
@@ -239,7 +236,7 @@ def insert_courses(rows):
                 new_course = Course(guid=guid, **defaults)
                 new_courses.append(new_course)
 
-    update_fields = [field.name for field in Course._meta.fields if field.name != 'id']
+    update_fields = [field.name for field in Course._meta.fields if field.name != "id"]
 
     try:
         with transaction.atomic():
@@ -249,21 +246,21 @@ def insert_courses(rows):
             if updated_courses:
                 Course.objects.bulk_update(updated_courses, update_fields)
     except Exception as e:
-        logging.error(f'Error in inserting/updating courses: {e}')
+        logger.error(f"Error in inserting/updating courses: {e}")
 
-    logging.info(
-        f'Inserted {len(new_courses)} new courses, updated {len(updated_courses)} existing courses.'
+    logger.info(
+        f"Inserted {len(new_courses)} new courses, updated {len(updated_courses)} existing courses."
     )
-    logging.info('Course insertions and updates completed!')
+    logger.info("Course insertions and updates completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_instructors(rows):
-    logging.info('Starting instructor insertions and updates...')
+    logger.info("Starting instructor insertions and updates...")
 
-    update_fields = ['first_name', 'last_name', 'full_name']
+    update_fields = ["first_name", "last_name", "full_name"]
     new_instructors = []
     updated_instructors = []
     marked = []
@@ -273,15 +270,15 @@ def insert_instructors(rows):
         instructor.emplid: instructor for instructor in Instructor.objects.all()
     }
 
-    for row in tqdm(rows, desc='Processing Instructors...'):
-        instructor_emplid = row.get('Instructor EmplID', '').strip()
+    for row in tqdm(rows, desc="Processing Instructors..."):
+        instructor_emplid = row.get("Instructor EmplID", "").strip()
         if not instructor_emplid:
-            logging.warning('Skipping row with missing Instructor EmplID')
+            logger.warning("Skipping row with missing Instructor EmplID")
             continue
 
-        first_name = row.get('Instructor First Name', '').strip()
-        last_name = row.get('Instructor Last Name', '').strip()
-        full_name = row.get('Instructor Full Name', f'{first_name} {last_name}').strip()
+        first_name = row.get("Instructor First Name", "").strip()
+        last_name = row.get("Instructor Last Name", "").strip()
+        full_name = row.get("Instructor Full Name", f"{first_name} {last_name}").strip()
 
         instructor = existing_instructors.get(instructor_emplid)
         if instructor:
@@ -319,18 +316,18 @@ def insert_instructors(rows):
                 Instructor.objects.bulk_update(updated_instructors, update_fields)
 
     except Exception as e:
-        logging.error(f'Error in processing instructors: {e}')
-    logging.info(
-        f'Created {len(new_instructors)} new instructors, updated {len(updated_instructors)} existing instructors.'
+        logger.error(f"Error in processing instructors: {e}")
+    logger.info(
+        f"Created {len(new_instructors)} new instructors, updated {len(updated_instructors)} existing instructors."
     )
-    logging.info('Instructor processing completed!')
+    logger.info("Instructor processing completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_sections(rows):
-    logging.info('Starting Section insertions and updates...')
+    logger.info("Starting Section insertions and updates...")
     # Load caches for terms and courses
     term_cache = {term.term_code: term for term in AcademicTerm.objects.all()}
     course_cache = {course.guid: course for course in Course.objects.all()}
@@ -339,7 +336,7 @@ def insert_sections(rows):
     existing_sections = {
         (section.course.guid, section.class_number, section.instructor.emplid): section
         for section in Section.objects.select_related(
-            'course', 'term', 'instructor'
+            "course", "term", "instructor"
         ).all()
     }
     existing_instructors = {
@@ -349,11 +346,11 @@ def insert_sections(rows):
     new_sections = []
     updated_sections = []
 
-    for row in tqdm(rows, desc='Processing Sections...'):
-        class_number = int(row['Class Number'].strip())
-        term_code = row['Term Code'].strip()
-        course_guid = row['Course GUID'].strip()
-        instructor_emplid = row.get('Instructor EmplID', '').strip()
+    for row in tqdm(rows, desc="Processing Sections..."):
+        class_number = int(row["Class Number"].strip())
+        term_code = row["Term Code"].strip()
+        course_guid = row["Course GUID"].strip()
+        instructor_emplid = row.get("Instructor EmplID", "").strip()
         course = (
             course_cache.get(course_guid)
             if course_cache
@@ -371,17 +368,17 @@ def insert_sections(rows):
 
         section_key = (course_guid, class_number, instructor_emplid)
         section_data = {
-            'class_number': class_number,
-            'class_type': row.get('Class Type', ''),
-            'class_section': row.get('Class Section', ''),
-            'track': row.get('Course Track', '').strip(),
-            'seat_reservations': row.get('Has Seat Reservations', '').strip(),
-            'capacity': int(row.get('Class Capacity', 0)),
-            'status': row.get('Class Status', ''),
-            'enrollment': int(row.get('Class Enrollment', 0)),
-            'course': course,
-            'term': term,
-            'instructor': instructor,
+            "class_number": class_number,
+            "class_type": row.get("Class Type", ""),
+            "class_section": row.get("Class Section", ""),
+            "track": row.get("Course Track", "").strip(),
+            "seat_reservations": row.get("Has Seat Reservations", "").strip(),
+            "capacity": int(row.get("Class Capacity", 0)),
+            "status": row.get("Class Status", ""),
+            "enrollment": int(row.get("Class Enrollment", 0)),
+            "course": course,
+            "term": term,
+            "instructor": instructor,
         }
 
         section = existing_sections.get(section_key)
@@ -399,7 +396,7 @@ def insert_sections(rows):
             new_section = Section(**section_data)
             new_sections.append(new_section)
 
-    update_fields = [field.name for field in Section._meta.fields if field.name != 'id']
+    update_fields = [field.name for field in Section._meta.fields if field.name != "id"]
 
     try:
         with transaction.atomic():
@@ -408,24 +405,24 @@ def insert_sections(rows):
             if updated_sections:
                 Section.objects.bulk_update(updated_sections, update_fields)
     except Exception as e:
-        logging.error(f'Error in section insertion and update process: {e}')
+        logger.error(f"Error in section insertion and update process: {e}")
 
-    logging.info(
-        f'Inserted {len(new_sections)} new sections, updated {len(updated_sections)} sections.'
+    logger.info(
+        f"Inserted {len(new_sections)} new sections, updated {len(updated_sections)} sections."
     )
-    logging.info('Section processing completed!')
+    logger.info("Section processing completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_class_meetings(rows):
-    logging.info('Starting ClassMeeting insertions and updates...')
+    logger.info("Starting ClassMeeting insertions and updates...")
 
     section_cache = {
         (section.course.guid, section.class_number, section.instructor.emplid): section
         for section in Section.objects.select_related(
-            'course', 'term', 'instructor'
+            "course", "term", "instructor"
         ).all()
     }
 
@@ -440,12 +437,12 @@ def insert_class_meetings(rows):
     new_meetings = []
     updated_meetings = []
 
-    for row in tqdm(rows, desc='Processing Class Meetings...'):
-        course_guid = row['Course GUID'].strip()
+    for row in tqdm(rows, desc="Processing Class Meetings..."):
+        course_guid = row["Course GUID"].strip()
         term_code = int(course_guid[:4])
-        class_number = int(row['Class Number'].strip())
-        meeting_number = int(row['Meeting Number'].strip())
-        instructor_emplid = row.get('Instructor EmplID', '').strip()
+        class_number = int(row["Class Number"].strip())
+        meeting_number = int(row["Meeting Number"].strip())
+        instructor_emplid = row.get("Instructor EmplID", "").strip()
         section_key = (course_guid, class_number, instructor_emplid)
         section = section_cache.get(section_key)
 
@@ -453,20 +450,20 @@ def insert_class_meetings(rows):
             # Class is (likely) canceled and has no sections.
             continue
 
-        start_time = _parse_time(row.get('Meeting Start Time', ''))
-        end_time = _parse_time(row.get('Meeting End Time', ''))
+        start_time = _parse_time(row.get("Meeting Start Time", ""))
+        end_time = _parse_time(row.get("Meeting End Time", ""))
 
         if not start_time:
-            logging.error(
-                f'Invalid start_time format for Class {class_number} '
-                f'in Term {term_code} on row {row}.'
+            logger.error(
+                f"Invalid start_time format for Class {class_number} "
+                f"in Term {term_code} on row {row}."
             )
             continue
 
         if not end_time:
-            logging.error(
-                f'Invalid end_time for Class {class_number} '
-                f'in Term {term_code} on row {row}.'
+            logger.error(
+                f"Invalid end_time for Class {class_number} "
+                f"in Term {term_code} on row {row}."
             )
             continue
 
@@ -475,11 +472,11 @@ def insert_class_meetings(rows):
         if meeting:
             update_required = False
             fields_to_update = {
-                'start_time': start_time,
-                'end_time': end_time,
-                'room': row.get('Meeting Room', '').strip(),
-                'days': row.get('Meeting Days', '').strip(),
-                'building_name': row.get('Building Name', '').strip(),
+                "start_time": start_time,
+                "end_time": end_time,
+                "room": row.get("Meeting Room", "").strip(),
+                "days": row.get("Meeting Days", "").strip(),
+                "building_name": row.get("Building Name", "").strip(),
             }
 
             for field, new_value in fields_to_update.items():
@@ -503,9 +500,9 @@ def insert_class_meetings(rows):
                 # Update the existing new class meeting instance
                 new_meeting.start_time = start_time
                 new_meeting.end_time = end_time
-                new_meeting.room = row.get('Meeting Room', '').strip()
-                new_meeting.days = row.get('Meeting Days', '').strip()
-                new_meeting.building_name = row.get('Building Name', '').strip()
+                new_meeting.room = row.get("Meeting Room", "").strip()
+                new_meeting.days = row.get("Meeting Days", "").strip()
+                new_meeting.building_name = row.get("Building Name", "").strip()
             else:
                 # Create a new class meeting instance
                 new_meeting = ClassMeeting(
@@ -513,19 +510,19 @@ def insert_class_meetings(rows):
                     meeting_number=meeting_number,
                     start_time=start_time,
                     end_time=end_time,
-                    room=row.get('Meeting Room', '').strip(),
-                    days=row.get('Meeting Days', '').strip(),
-                    building_name=row.get('Building Name', '').strip(),
+                    room=row.get("Meeting Room", "").strip(),
+                    days=row.get("Meeting Days", "").strip(),
+                    building_name=row.get("Building Name", "").strip(),
                 )
                 new_meetings.append(new_meeting)
 
     update_fields = [
-        'meeting_number',
-        'start_time',
-        'end_time',
-        'room',
-        'days',
-        'building_name',
+        "meeting_number",
+        "start_time",
+        "end_time",
+        "room",
+        "days",
+        "building_name",
     ]
 
     try:
@@ -536,24 +533,24 @@ def insert_class_meetings(rows):
             # we insert the same semester data twice in a row. Bug?
             ClassMeeting.objects.bulk_update(updated_meetings, update_fields)
     except Exception as e:
-        logging.error(f'Error in bulk operation: {e}')
+        logger.error(f"Error in bulk operation: {e}")
 
-    logging.info(
-        f'Created {len(new_meetings)} new class meetings and updated {len(updated_meetings)} existing class meetings.'
+    logger.info(
+        f"Created {len(new_meetings)} new class meetings and updated {len(updated_meetings)} existing class meetings."
     )
-    logging.info('ClassMeeting insertions and updates completed!')
+    logger.info("ClassMeeting insertions and updates completed!")
 
 
 # -------------------------------------------------------------------------------------#
 
 
 def insert_class_year_enrollments(rows):
-    logging.info('Starting ClassYearEnrollment insertions and updates...')
+    logger.info("Starting ClassYearEnrollment insertions and updates...")
 
     # Initial cache of Section IDs to minimize database queries.
     section_cache = {
         (section.course.guid, section.class_number): section.id
-        for section in Section.objects.select_related('course', 'term').all()
+        for section in Section.objects.select_related("course", "term").all()
     }
 
     # Fetch existing enrollments in bulk and create a dictionary for faster lookup
@@ -567,21 +564,21 @@ def insert_class_year_enrollments(rows):
     new_enrollments = []
     updated_enrollment_data = []
 
-    for row in tqdm(rows, desc='Processing Class Year Enrollments...'):
-        course_guid = row['Course GUID'].strip()
-        class_number = int(row['Class Number'].strip())
+    for row in tqdm(rows, desc="Processing Class Year Enrollments..."):
+        course_guid = row["Course GUID"].strip()
+        class_number = int(row["Class Number"].strip())
         section_key = (course_guid, class_number)
         section_id = section_cache.get(section_key)
 
         if section_id:
             enrollment_info = _parse_class_year_enrollments(
-                row['Class Year Enrollments'], CLASS_YEAR_ENROLLMENT_PATTERN
+                row["Class Year Enrollments"], CLASS_YEAR_ENROLLMENT_PATTERN
             )
             for class_year, enrl_seats in enrollment_info:
                 try:
                     class_year = int(class_year) if class_year else None
                 except ValueError:
-                    logging.error(f'Invalid class year: {class_year}')
+                    logger.error(f"Invalid class year: {class_year}")
                     continue
 
                 enrollment_key = (section_id, class_year)
@@ -611,15 +608,15 @@ def insert_class_year_enrollments(rows):
                         ClassYearEnrollment(id=id, enrl_seats=enrl_seats)
                         for id, enrl_seats in updated_enrollment_data
                     ],
-                    ['enrl_seats'],
+                    ["enrl_seats"],
                 )
     except Exception as e:
-        logging.error(f'Error in bulk operation: {e}')
+        logger.error(f"Error in bulk operation: {e}")
 
-    logging.info(
-        f'Created {len(new_enrollments)} new class year enrollments and updated {len(updated_enrollment_data)} existing ones.'
+    logger.info(
+        f"Created {len(new_enrollments)} new class year enrollments and updated {len(updated_enrollment_data)} existing ones."
     )
-    logging.info('ClassYearEnrollment insertions and updates completed!')
+    logger.info("ClassYearEnrollment insertions and updates completed!")
 
 
 # -------------------------------------------------------------------------------------#
@@ -627,20 +624,20 @@ def insert_class_year_enrollments(rows):
 
 def get_semesters_from_args():
     parser = argparse.ArgumentParser(
-        description='Fetch academic course data for specified semesters.'
+        description="Fetch academic course data for specified semesters."
     )
     parser.add_argument(
-        'semesters',
-        nargs='*',
-        help='Semesters to generate CSVs for, e.g., f2019 s2022.',
+        "semesters",
+        nargs="*",
+        help="Semesters to generate CSVs for, e.g., f2019 s2022.",
     )
     args = parser.parse_args()
 
     if not args.semesters:
         print(
-            'No semesters provided as arguments. Please enter the semesters separated by spaces:'
+            "No semesters provided as arguments. Please enter the semesters separated by spaces:"
         )
-        args.semesters = input().strip().split(' ')
+        args.semesters = input().strip().split(" ")
 
     return args.semesters
 
@@ -655,13 +652,13 @@ def insert_course_data(semester):
     # It has also been observed that all-semesters-as-args takes about 2m28s
     # whereas individual semesters takes about ~7s x 9 semesters = 1 minute or so.
 
-    data = Path(f'{semester}.csv')
+    data = Path(f"{semester}.csv")
 
     if not data.exists():
-        print(f'The file {data} does not exist in the data directory. Skipping.')
+        print(f"The file {data} does not exist in the data directory. Skipping.")
         return
 
-    with data.open('r') as file:
+    with data.open("r") as file:
         reader = csv.DictReader(file)
         rows = [row for row in reader]
 
@@ -693,7 +690,7 @@ def insert_course_data(semester):
                 insert_class_year_enrollments(formatted_rows)
 
     except Exception as e:
-        logging.error(f'Transaction failed: {e}')
+        logger.error(f"Transaction failed: {e}")
 
 
 # -------------------------------------------------------------------------------------#
@@ -706,11 +703,11 @@ def main():
         insert_course_data(semester)
     end_time = datetime.now()
 
-    print(f'Finished in {_format_duration(start_time, end_time)}.')
+    print(f"Finished in {_format_duration(start_time, end_time)}.")
 
 
 # -------------------------------------------------------------------------------------#
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

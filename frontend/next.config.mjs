@@ -1,25 +1,33 @@
 import withPWA from 'next-pwa';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig = {
-  reactStrictMode: true,
-  sassOptions: {
-    includePaths: [path.join(__dirname, 'styles')],
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   env: {
-    PUCOMPASS: process.env.PUCOMPASS,
+    // TODO: This can be done in a more modern/better way (Hooks -> Route Handlers)
+    HOAGIEPLAN: process.env.HOAGIEPLAN,
     BACKEND: process.env.BACKEND,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.BACKEND}/:path*`,
-      },
-    ];
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['icon-library'],
+    turbo: {
+      resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
+      moduleIdStrategy: 'deterministic',
+      useSwcCss: true,
+      treeShaking: true,
+      memoryLimit: 1024 * 1024 * 512, // 512 MB memory limit
+    },
   },
   ...withPWA({
     dest: 'public',
@@ -28,4 +36,4 @@ const nextConfig = {
   }),
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

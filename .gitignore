@@ -24,18 +24,15 @@ __pycache__/
 *.py[cod]
 .Python
 build/
-dist/
-*.egg
-*.egg-info/
+**/dist/
+**/*.egg
+**/*.egg-info/
 db.sqlite3
 .env
 
 # Editor settings
 .vscode/
 .zed/
-
-# CAS folder
-backend/cas/
 
 # Virtual environment
 env/

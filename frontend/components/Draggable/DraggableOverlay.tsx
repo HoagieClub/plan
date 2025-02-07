@@ -1,11 +1,12 @@
-import { ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 
 import { DragOverlay, useDndContext } from '@dnd-kit/core';
-import type { DropAnimation } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
 
 import { Draggable } from './Draggable';
+
+import type { DropAnimation } from '@dnd-kit/core';
 
 const dropAnimationConfig: DropAnimation = {
   keyframes({ transform }) {

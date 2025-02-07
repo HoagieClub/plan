@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { SearchStoreState } from '../types';
+import type { SearchStoreState } from '../types';
 
 const useSearchStore = create<SearchStoreState>((set) => ({
   searchResults: [],
@@ -8,6 +8,7 @@ const useSearchStore = create<SearchStoreState>((set) => ({
   error: null,
   loading: false,
   setSearchResults: (results) => set({ searchResults: results }),
+  clearRecentSearches: () => set({ recentSearches: [] }),
   addRecentSearch: (query) => {
     let trimmedQuery = query.trim();
     if (trimmedQuery.length === 0) {

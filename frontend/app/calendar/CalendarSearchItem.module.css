@@ -1,0 +1,85 @@
+.card {
+  display: flex;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+.content {
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+
+.header {
+  margin-bottom: 0.5rem;
+}
+
+.crosslistings {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #093e70;
+}
+
+.title {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+
+.semester {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 0.45rem 1rem;
+  margin-top: 0.6rem; /* Added margin-top to push the button down */
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #093e70;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.button:hover {
+  background-color: #0f1e2f;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(9, 62, 112, 0.3);
+}
+
+.disabled {
+  background-color: grey;
+
+  &:hover {
+    background-color: grey;
+  }
+}

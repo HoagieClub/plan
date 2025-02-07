@@ -1,0 +1,42 @@
+.recursiveDropdownContainer {
+  background-color: transparent;
+}
+
+.dropdown {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category {
+  margin: 2px 0;
+  padding-left: 10px;
+}
+
+.categoryTitle {
+  padding: 5px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: #fff; /* Grey background for categories */
+}
+
+.item {
+  padding: 5px 10px;
+  background-color: #fff; /* Lighter grey background for items */
+}
+
+.indicator {
+  margin-right: 5px;
+  font-size: 0.8em; /* Smaller font size for the indicator */
+}
+
+.nested {
+  display: none;
+  padding-left: 3px;
+}
+
+.nested.active {
+  display: block;
+}

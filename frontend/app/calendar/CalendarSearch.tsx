@@ -1,4 +1,5 @@
-import { ChangeEvent, useCallback, useRef, useState, useEffect, FC } from 'react';
+import type { ChangeEvent, FC } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
@@ -12,18 +13,17 @@ import {
 } from '@mui/joy';
 import { LRUCache } from 'typescript-lru-cache';
 
-import { Course, Filter } from '@/types';
-
 import { FilterModal } from '@/components/Modal';
 import useCalendarStore from '@/store/calendarSlice';
 import useFilterStore from '@/store/filterSlice';
+import type { Course, Filter } from '@/types';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
 
 import CalendarSearchResults from './CalendarSearchResults';
 
-import './CalendarSearch.scss';
+import './CalendarSearch.css';
 
 interface TermMap {
   [key: string]: string;
@@ -86,10 +86,12 @@ const CalendarSearch: FC = () => {
   }));
 
   const {
+    termFilter,
     distributionFilter,
     levelFilter,
     gradingFilter,
     showPopup,
+    // setTermFilter, TODO: Not used
     setDistributionFilter,
     setLevelFilter,
     setGradingFilter,
@@ -118,7 +120,7 @@ const CalendarSearch: FC = () => {
           addRecentSearch(searchQuery);
           searchCache.set(searchQuery, data.courses);
         }
-      } catch (error: any) {
+      } catch (error) {
         setError(`There was an error fetching courses: ${error.message || ''}`);
       } finally {
         setLoading(false);
@@ -143,7 +145,7 @@ const CalendarSearch: FC = () => {
     } else {
       search('', filters);
     }
-  }, [query, distributionFilter, levelFilter, gradingFilter, search]);
+  }, [query, distributionFilter, levelFilter, gradingFilter, search, termFilter]);
 
   function retrieveCachedSearch(search: string) {
     setCalendarSearchResults(searchCache.get(search) || []);
@@ -260,14 +262,16 @@ const CalendarSearch: FC = () => {
             <FormLabel>Course level</FormLabel>
             <div className='grid grid-cols-3'>
               {Object.keys(levels).map((level) => (
-                <div key={level} className='flex items-center mb-2'>
+                <div key={level} className='mb-2 flex items-center'>
                   <Checkbox
                     size='sm'
                     id={`level-${level}`}
                     name='level'
-                    checked={localLevelFilter.includes(levels[level])}
+                    checked={localLevelFilter.includes(levels[level] ?? '')}
                     onChange={() => {
-                      handleLocalLevelFilterChange(levels[level]);
+                      if (levels[level]) {
+                        handleLocalLevelFilterChange(levels[level]);
+                      }
                     }}
                   />
                   <span className='ml-2 text-sm font-medium text-gray-800'>{level}</span>
@@ -279,7 +283,7 @@ const CalendarSearch: FC = () => {
             <FormLabel>Allowed grading</FormLabel>
             <div className='grid grid-cols-3'>
               {grading.map((grading) => (
-                <div key={grading} className='flex items-center mb-2'>
+                <div key={grading} className='mb-2 flex items-center'>
                   <Checkbox
                     size='sm'
                     id={`grading-${grading}`}

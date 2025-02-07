@@ -1,13 +1,15 @@
-import { CSSProperties, memo, forwardRef, ReactNode, useEffect } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
+import { memo, forwardRef, useEffect } from 'react';
 
-import type { DraggableSyntheticListeners } from '@dnd-kit/core';
-import type { Transform } from '@dnd-kit/utilities';
 import classNames from 'classnames';
 
 import { InfoComponent } from '../InfoComponent';
 
 import { Handle, Remove } from './components';
-import styles from './Item.module.scss';
+import styles from './Item.module.css';
+
+import type { DraggableSyntheticListeners } from '@dnd-kit/core';
+import type { Transform } from '@dnd-kit/utilities';
 
 export type Props = {
   dragOverlay?: boolean;
@@ -78,11 +80,11 @@ export const Item = memo(
           style={
             {
               ...wrapperStyle,
-              transition: [transition, wrapperStyle?.transition].filter(Boolean).join(', '),
-              '--translate-x': transform ? `${Math.round(transform.x)}px` : undefined,
-              '--translate-y': transform ? `${Math.round(transform.y)}px` : undefined,
-              '--scale-x': transform?.scaleX ? `${transform.scaleX}` : undefined,
-              '--scale-y': transform?.scaleY ? `${transform.scaleY}` : undefined,
+              transition: [transition, wrapperStyle.transition].filter(Boolean).join(', '),
+              '--translate-x': transform?.x != null ? `${Math.round(transform?.x)}px` : undefined,
+              '--translate-y': transform?.y != null ? `${Math.round(transform?.y)}px` : undefined,
+              '--scale-x': transform?.scaleX != null ? `${transform?.scaleX}` : undefined,
+              '--scale-y': transform?.scaleY != null ? `${transform?.scaleY}` : undefined,
               '--index': index,
               '--color_primary': color_primary,
               '--color_secondary': color_secondary,
@@ -109,9 +111,9 @@ export const Item = memo(
             {/* Text Container for InfoComponent */}
             <div className={styles.TextContainer}>
               {!disabled ? (
-                <InfoComponent value={value?.toString().split('|')[1] ?? ''} />
+                <InfoComponent value={value.toString().split('|')[1] ?? ''} />
               ) : (
-                value?.toString().split('|')[1] ?? ''
+                (value.toString().split('|')[1] ?? '')
               )}
             </div>
 

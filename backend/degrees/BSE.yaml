@@ -155,7 +155,6 @@ req_list:
   explanation: |-
     All students in the B.S.E. program must complete at least seven courses in the humanities and social sciences during their eight terms of study. Humanities and social science courses are defined as courses that fulfill the following University distribution areas: Culture and Difference (CD) Epistemology and Cognition (EC); Ethical Thought and Moral Values (EM); Historical Analysis (HA); Literature and the Arts (LA); and Social Analysis (SA).
   pdfs_allowed: true
-  double_counting_allowed: true
   req_list:
   - name: Four Areas
     max_counted: 1
@@ -164,6 +163,7 @@ req_list:
     - name: Culture and Difference
       max_counted: 1
       min_needed: 1
+      double_counting_allowed: true
       explanation: |-
         The requirement in Culture and Difference begins with the premise that human beings experience the world through their respective cultures — the ideas, meanings, norms, and habituations — that are represented in the arts and literature, laws and institutions, and social practices of human societies whose histories and power relationships often differ from one another.  Found across a wide range of disciplines, these courses use cultural analysis to trace the ways in which human beings construct meaning both within and across groups. Culture and Difference courses offer students a lens through which other forms of disciplinary inquiry are enhanced, critiqued, and clarified, often paying close attention to the experiences and perspectives of groups who have historically been excluded from dominant cultural narratives or structures of social power. The requirement in Culture and Difference is the only requirement that may be satisfied either independently or concurrently with another distribution area.
       dist_req: CD

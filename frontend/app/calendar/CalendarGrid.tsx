@@ -1,9 +1,10 @@
-import { FC, memo } from 'react';
+import type { FC } from 'react';
+import { memo } from 'react';
 
-import { CalendarEvent } from '@/types';
+import type { CalendarEvent } from '@/types';
 
 import CalendarCard from './CalendarCard';
-// import CalendarTime from './CalendarTime';
+// import CalendarTime from "./CalendarTime";
 
 interface CalendarGridProps {
   days: string[];
@@ -21,7 +22,7 @@ const formatHour = (hour: number): string => {
 
 const calendarColors = {
   gridBorder: '#e0e0e0',
-  dayLabelBg: '#f5f5f5',
+  dayLabelBg: '#f4f6fa',
   timeLabelText: '#757575',
 };
 
@@ -34,10 +35,10 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
     const headerRows = 2; // Rows taken up by the header
 
     return (
-      <div className='grid calendar-container' style={{ gridTemplateColumns, gridTemplateRows }}>
+      <div className='calendar-container grid' style={{ gridTemplateColumns, gridTemplateRows }}>
         {/* Filled-in top left cell */}
         <div
-          className='bg-gray-100'
+          className='bg-[#F7F7F7]'
           style={{
             gridColumn: 1,
             gridRow: 1,
@@ -47,14 +48,14 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
             borderLeft: `1px solid ${calendarColors.gridBorder}`,
             borderTopLeftRadius: '10px',
           }}
-        ></div>
+        />
 
         {/* Day labels */}
         {/* TODO: Add the colored circle back to denote the current day. */}
         {days.map((day, index) => (
           <div
             key={`day-label-${index}`}
-            className='text-center font-medium border-b border-r border-t'
+            className='border-b border-r border-t text-center font-medium'
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -75,7 +76,7 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
         {Array.from({ length: endHour - startHour + 1 }, (_, rowIndex) => (
           <div
             key={`time-${rowIndex}`}
-            className='calendar-time bg-white border-l border-r flex items-center justify-end pr-2'
+            className='calendar-time flex items-center justify-end border-l border-r bg-white pr-2'
             style={{
               fontSize: '0.75rem',
               gridRow: `${rowIndex * 6 + headerRows} / span 6`,
@@ -138,5 +139,5 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
   }
 );
 
-CalendarGrid.displayName = 'CalendarGrid';
+CalendarGrid.displayName = 'CalendarGrid' as const;
 export default CalendarGrid;

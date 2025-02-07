@@ -42,26 +42,40 @@ req_list:
           - PSY 254
           - PSY 255
           - PSY 258
-  - name: Core
-    min_needed: ALL
+          - NEU 200
+          - NEU 201
+  - name: Prerequisites
+    min_needed: 2
+    max_counted: 1
+    explanation: |-
+      If a student did not complete them as prerequisites, the following courses must be taken
+      as one or more of the eight departmental courses. <br><br>
+      
+      PSY 252 (Social Psychology), PSY 255 (Cognitive Psychology), and NEU 200/PSY 200
+      (Functional Neuroanatomy) or NEU 201/PSY 258 (Fundamentals of Neuroscience)
+    req_list:
+      - name: Social & Cognitive Psychology
+        min_needed: 2
+        max_counted: 1
+        course_list:
+          - PSY 252
+          - PSY 255
+      - name: Neuroscience Courses
+        min_needed: 2
+        max_counted: 1
+        course_list:
+          - NEU 200
+          - NEU 201
+  - name: Research Methods
+    min_needed: 1
     max_counted: 1
     completed_by_semester: 6
     explanation: |-
-      Students must complete PSY 300 (Research Methods) by the end of their junior year, and it is recommended that students complete the other three courses (PSY 252, PSY 255, and PSY 258/NEU200) by this time as well.
-    req_list:
-      - name: Social and Cognitive Psychology
-        min_needed: ALL
-        max_counted: 1
-        course_list:
-          - PSY 300
-          - PSY 252
-          - PSY 255
-      - name: Neuroscience or Neuroanatomy
-        min_needed: 1
-        max_counted: 1
-        course_list:
-          - PSY 258
-          - NEU 200
+      One departmental course must be PSY 300 (Research Methods). This course must be
+      completed junior year. It is usually offered once per academic year, typically
+      during the fall semester.
+    course_list:
+      - PSY 300
   - name: Departmental Courses
     max_counted: 1
     min_needed: 8
@@ -76,6 +90,8 @@ req_list:
           - PSY 3**
           - PSY 4**
           - PSY 5**
+        excluded_course_list:
+          - PSY 300
       - name: 200-Level
         max_counted: 4
         min_needed: 1

@@ -1,13 +1,14 @@
 // SelectedCourses.jsx
-import { FC, useMemo } from 'react';
+import type { FC } from 'react';
+import { useMemo } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
-import tabStyles from '@/components/TabbedMenu/TabbedMenu.module.scss';
+import tabStyles from '@/components/TabbedMenu/TabbedMenu.module.css';
 import useCalendarStore from '@/store/calendarSlice';
 import useFilterStore from '@/store/filterSlice';
 
-import styles from './SelectedCourses.module.scss';
+import styles from './SelectedCourses.module.css';
 
 const SelectedCourses: FC = () => {
   const { termFilter } = useFilterStore((state) => state);

@@ -3,12 +3,20 @@ export async function fetchCsrfToken() {
     const response = await fetch(`${process.env.BACKEND}/csrf`, {
       credentials: 'include',
     });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`Failed to fetch CSRF token. HTTP status: ${response.status}`);
     }
+
     const data = await response.json();
-    return data.csrfToken ? String(data.csrfToken) : '';
+
+    if (!data.csrfToken) {
+      throw new Error('CSRF token missing in response.');
+    }
+
+    return data.csrfToken;
   } catch (error) {
-    return 'Error fetching CSRF token!';
+    console.error('Error fetching CSRF token:', error);
+    throw error; // Let the caller handle the error
   }
 }

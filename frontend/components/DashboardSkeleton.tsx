@@ -8,10 +8,10 @@ export default function DashboardSkeleton() {
   };
 
   return (
-    <div className='flex w-screen h-screen'>
-      <div className='flex w-full h-full'>
+    <div className='flex h-screen w-screen'>
+      <div className='flex h-full w-full'>
         {/* Left sidebar with search bar */}
-        <div className='flex flex-col w-29% mx-3'>
+        <div className='w-29% mx-3 flex flex-col'>
           <Skeleton variant='rectangular' height='98px' sx={{ mt: '10px', ...skeletonStyle }} />
           <Skeleton
             variant='rectangular'
@@ -21,7 +21,7 @@ export default function DashboardSkeleton() {
         </div>
 
         {/* Middle 2x4 grid */}
-        <div className='grid grid-cols-2 auto-rows-minmax[155px_auto] gap-6 w-53% mt-2.5 ml-2.5'>
+        <div className='auto-rows-minmax[155px_auto] w-53% ml-2.5 mt-2.5 grid grid-cols-2 gap-6'>
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} variant='rectangular' height='155px' sx={skeletonStyle} />
           ))}

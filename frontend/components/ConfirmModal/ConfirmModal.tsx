@@ -1,6 +1,6 @@
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
-import styles from './ConfirmModal.module.scss';
+import styles from './ConfirmModal.module.css';
 
 type ConfirmProps = {
   onConfirm(): void;

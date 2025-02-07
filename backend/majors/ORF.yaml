@@ -61,7 +61,7 @@ req_list:
   min_needed: 10
   explanation: |-
     The departmental electives represent courses that further develop a 
-    student’s skills in mathematical modeling either by a more in-depth
+    student's skills in mathematical modeling either by a more in-depth
     investigation of core methodologies, applying these skills in specific
     areas of application, or learning about closely related technologies.
     Students must choose ten courses from the following list, with the
@@ -75,7 +75,7 @@ req_list:
   req_list:
     - name: ORFE Departmentals
       max_counted: 10
-      min_needed: 1
+      min_needed: 4
       explanation: There must be at least four courses from ORFE.
       course_list:
       - ORF 311
@@ -116,15 +116,23 @@ req_list:
         course_list:
         - CHM 301
         - CHM 302
+        - CHM 304
       - name: Computer Science
         max_counted: 3
         min_needed: 1
         course_list:
         - COS 217
         - COS 226
-        - COS 323
         - COS 423
         - COS 485
+      - name: Electrical and Computer Engineering
+        max_counted: 3
+        min_needed: 1
+        course_list:
+        - ECE 301
+        - ECE 381
+        - ECE 473
+        - ECE 486
       - name: Economics
         max_counted: 3
         min_needed: 1
@@ -149,14 +157,7 @@ req_list:
         min_needed: 1
         course_list:
         - EEB 324
-      - name: Electrical and Computer Engineering
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - ECE 301
-        - ECE 381
-        - ECE 473
-        - ECE 486
+        - EEB 325
       - name: Environmental Studies
         max_counted: 3
         min_needed: 1
@@ -165,26 +166,29 @@ req_list:
       - name: Mechanical and Aerospace Engineering
         max_counted: 3
         min_needed: 1
+        explanation: |-
+          <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
         course_list:
         - MAE 206
+        - MAE 305
+        - MAE 306
         - MAE 345
         - MAE 433
         - MAE 434
       - name: Mathematics
         max_counted: 3
         min_needed: 1
+        explanation: |-
+          <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
         course_list:
         - MAT 320
-        - MAT 322
         - MAT 375
         - MAT 377
         - MAT 378
         - MAT 385
-        - MAT 392
+        - MAT 427
         - MAT 486
         - MAT 522
-        - MAT 391
-        - MAT 427
       - name: Molecular Biology
         max_counted: 3
         min_needed: 1
@@ -201,11 +205,6 @@ req_list:
         min_needed: 1
         course_list:
         - PSY 360
-      - name: Restrictions
-        max_counted: 0
-        min_needed: 1
-        explanation: |-
-          MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar.
 - name: Senior Independent Research
   max_counted: 1
   min_needed: 1
@@ -218,7 +217,7 @@ req_list:
 
     OR<br><br>
 
-    Senior Independent Project - ORF 479 (Spring semester only) - A short progress report will be due in January, (Dean’s Date) to make sure that the students have chosen a suitable topic and matched up with their advisor. The final outcome will be a report due at the end of the spring semester. The report will fully describe the research project and its results. Typically projects will take approximately 30 to 50 pages. (Also, students who take the independent project will need to take an additional 4XX ORFE departmental elective.)
+    Senior Independent Project - ORF 479 (Spring semester only) - A short progress report will be due in January, (Dean's Date) to make sure that the students have chosen a suitable topic and matched up with their advisor. The final outcome will be a report due at the end of the spring semester. The report will fully describe the research project and its results. Typically projects will take approximately 30 to 50 pages. (Also, students who take the independent project will need to take an additional 4XX ORFE departmental elective.)
   req_list:
     - name: Senior Thesis
       max_counted: 1
@@ -233,7 +232,7 @@ req_list:
       min_needed: ALL
       explanation:
         Senior Independent Project - ORF 479 (Spring semester only) - A short
-        progress report will be due in January, (Dean’s Date) to make sure that the
+        progress report will be due in January, (Dean's Date) to make sure that the
         students have chosen a suitable topic and matched up with their advisor. The
         final outcome will be a report due at the end of the spring semester. The report
         will fully describe the research project and its results. Typically projects
@@ -242,7 +241,7 @@ req_list:
       req_list:
         - name: Project
           max_counted: 1
-          min_needed: ALL
+          min_needed: 1
           explanation:
           course_list:
             - ORF 479

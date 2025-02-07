@@ -1,18 +1,19 @@
-import { FC, useEffect, useRef } from 'react';
+import type { FC } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 
-import './Calendar.scss';
-import { CalendarEvent } from '@/types';
+import './Calendar.css';
 
 import useCalendarStore from '@/store/calendarSlice';
 import useFilterStore from '@/store/filterSlice';
 import { useModalStore } from '@/store/modalSlice';
+import type { CalendarEvent } from '@/types';
 
 import CalendarBody from './CalendarBody';
 
 const START_HOUR: number = 9;
-const END_HOUR: number = 21;
+const END_HOUR: number = 23;
 
 const Calendar: FC = () => {
   const calendarElementRef = useRef<HTMLDivElement>(null);
@@ -105,20 +106,18 @@ const Calendar: FC = () => {
 
   useEffect(() => {
     useModalStore.getState().setCurrentPage('calendar');
-  });
+  }, []);
 
   return (
     <div>
-      <div className='calendar-main'>
-        <CalendarBody
-          calendarRef={calendarElementRef}
-          days={formattedDays.map((day) => day.name)}
-          startHour={START_HOUR}
-          endHour={END_HOUR}
-          events={events}
-          onEventClick={handleClick}
-        />
-      </div>
+      <CalendarBody
+        calendarRef={calendarElementRef}
+        days={formattedDays.map((day) => day.name)}
+        startHour={START_HOUR}
+        endHour={END_HOUR}
+        events={events}
+        onEventClick={handleClick}
+      />
     </div>
   );
 };

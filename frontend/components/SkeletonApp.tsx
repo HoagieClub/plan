@@ -56,7 +56,12 @@ function SkeletonApp() {
             <Skeleton
               variant='rectangular'
               height='calc(100vh - 20px)'
-              sx={{ mt: '10px', bgcolor: 'red', backgroundColor: '#f6f6f6', animation: 'none' }}
+              sx={{
+                mt: '10px',
+                bgcolor: 'red',
+                backgroundColor: '#f6f6f6',
+                animation: 'none',
+              }}
             />
           </div>
         </div>

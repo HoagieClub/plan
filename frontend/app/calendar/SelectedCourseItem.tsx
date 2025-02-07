@@ -1,10 +1,9 @@
 // SelectedCourseItem.tsx
-import { FC, CSSProperties } from 'react';
+import type { FC, CSSProperties } from 'react';
 
-import { CalendarEvent } from '@/types';
-
-import styles from '@/components/Item/Item.module.scss';
+import styles from '@/components/Item/Item.module.css';
 import useCalendarStore from '@/store/calendarSlice';
+import type { CalendarEvent } from '@/types';
 import { departmentColors } from '@/utils/departmentColors';
 
 interface SelectedCourseItemProps {

@@ -1,0 +1,115 @@
+.Container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  appearance: none;
+  outline: none;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  margin-left: 0.5vw;
+  margin-right: 0.5vw;
+  border-radius: 8px;
+  transition: background-color 350ms ease;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 1em;
+  width: 24vw;
+  overflow: hidden; /* IMPORTANT: prevents dynamic resizing of container + makes scrollbars cleaner */
+}
+
+.Container ul {
+  display: grid;
+  gap: 0.5vw;
+  grid-template-columns: repeat(var(--columns, 1), 1fr);
+  align-content: start; /* Starts aligning the content from the beginning of the container */
+  padding-top: 0.8vh;
+  padding-left: 0.4vw;
+  padding-right: 0.4vw;
+  width: 100%;
+  height: 100%; /* IMPORTANT: This prevents the unnecessary scrollbars */
+  overflow-x: auto;
+}
+
+.Container.scrollable ul {
+  overflow-y: auto; /* Adds vertical scrollbar to ul */
+}
+
+.Container.placeholder {
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.5);
+  background-color: transparent;
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.Container.placeholder:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.Container.hover {
+  background-color: rgb(235, 235, 235, 1);
+}
+
+.Container.unstyled {
+  overflow: visible;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.Container.horizontal {
+  width: 100%;
+}
+
+.Container.horizontal ul {
+  grid-auto-flow: column;
+}
+
+.Container.shadow {
+  box-shadow:
+    0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.Container:focus-visible {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0),
+    0 0px 0px 2px #4c9ffe;
+}
+
+.CenteringWrapper {
+  display: flex !important;
+  justify-content: center !important; /* Center horizontally */
+  width: 100%; /* Take the full width of the container */
+  height: 100%; /* Take the full height of the container */
+}
+
+.Header {
+  display: flex;
+  padding: 5px 20px;
+  padding-right: 8px;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f4f6fa;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.Header:hover .Actions > * {
+  opacity: 1 !important;
+}
+
+.Actions {
+  display: flex;
+}
+
+.Actions > *:first-child:not(:last-child) {
+  opacity: 0;
+}
+
+.Actions > *:first-child:not(:last-child):focus-visible {
+  opacity: 1;
+}

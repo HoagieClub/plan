@@ -1,88 +1,55 @@
-# Build system configuration
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-# Project metadata
+# ===============================
+# Project Metadata
+# ===============================
 [project]
-name = "hoagieplan-backend"
-version = "1.1"
-description = "Dependency manager for the hoagieplan backend"
-authors = [{ name = "Hoagie Club", email = "hoagie@princeton.edu" }]
+name = "hoagie-plan"
+version = "2.0.0"
+description = "Dependency manager for the Hoagie Plan repository."
 license = "MIT"
-requires-python = ">=3.10"
-keywords = ["django", "backend", "student", "planner", "app", "hoagieplan"]
+readme = "README.md"
+requires-python = ">=3.12"
 
-# Main dependencies
-dependencies = [
-    "django>=5.1",
-    "aniso8601",
-    "asgiref",
-    "build",
-    "certifi",
-    "charset-normalizer",
-    "dj-database-url",
-    "django-cors-headers",
-    "djangorestframework",
-    "idna",
-    "lxml",
-    "numpy",
-    "packaging",
-    "pandas",
-    "promise",
-    "psycopg2-binary",
-    "psycopg2-pool",
-    "pydeps",
-    "pyproject-hooks",
-    "python-cas",
-    "python-dateutil",
-    "python-dotenv",
-    "pytz",
-    "pyyaml",
-    "requests",
-    "ruff",
-    "six",
-    "sqlparse",
-    "stdlib-list",
-    "terminaltables",
-    "typing-extensions",
-    "tzdata",
-    "ujson",
-    "urllib3",
-    "pre-commit",
-    "gunicorn",
-    "whitenoise",
-    "django-heroku",
-    "tqdm",
-    "bs4",
-    "beautifulsoup4",
-    "selenium",
-    "webdriver-manager",
-    "thefuzz",
-    "psycopg[pool]>=3.2.1",
+authors = [
+    { name = "Hoagie Club", email = "hoagie@princeton.edu" },
 ]
 
-# Optional dependencies for development
-[project.optional-dependencies]
-dev = ["ruff", "pre-commit"]
+maintainers = [
+    { name = "Hoagie Club", email = "hoagie@princeton.edu" },
+]
 
+# Project dependencies
+dependencies = [
+    "requests>=2.32.3",
+    "ruff>=0.7.0",
+    "django>=5.1",
+    "dj_database_url>=2.3.0",
+    "django_heroku>=0.3.1",
+    "python-dotenv>=1.0.1",
+    "djangorestframework>=3.15.2",
+    "django-cors-headers>=4.5.0",
+    "colorama>=0.4.6",
+    "postgres>=4.0",
+    "gunicorn>=23.0.0",
+    "tqdm>=4.67.1",
+    "orjson>=3.10.12",
+    "PyYAML>=6.0.2",
+]
+
+# ===============================
 # Project URLs
+# ===============================
 [project.urls]
-Repository = "https://github.com/hoagieclub/plan"
-# Documentation = "https://docs.astral.sh/uv" TODO: Write up docs on Mintlify
+Homepage = "https://plan.hoagie.io/"
+Repository = "https://github.com/hoagieclub/plan/"
 
-# Hatch build configuration for Django project
-# This tells Hatch how to handle the project during build and installation
-[tool.hatch.build]
-artifacts = ["*.py", "*/"]
-exclude = ["tests/"]
+# ===============================
+# Ruff Configuration
+# ===============================
 
-[tool.hatch.build.targets.wheel]
-packages = ["."]
+# Adopting Google-style docstrings for consistency across the project.
 
-# Ruff configuration (a Python linter and formatter)
 [tool.ruff]
-# Exclude a variety of commonly ignored directories.
+# Exclude commonly ignored directories from linting
 exclude = [
     ".bzr",
     ".direnv",
@@ -107,36 +74,53 @@ exclude = [
     "venv",
 ]
 
-line-length = 119
+# General Ruff settings
+line-length = 119 # Slight deviation from Google style since we are using Django.
 indent-width = 4
+target-version = "py312"
 
-# Assuming Python 3.10+.
-target-version = "py310"
-
+# -------------------------------
+# Ruff Linting Rules
+# -------------------------------
 [tool.ruff.lint]
-# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
-# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
-# McCabe complexity (`C901`) by default.
-select = ["E4", "E7", "E9", "F", "B", "Q"]
-ignore = []
 
-# Allow fix for all enabled rules (when `--fix`) is provided.
+# Enable pydocstyle rules for Google-style docstrings
+select = ["E4", "E7", "E9", "F", "B", "Q", "D"] # Flake8 rules, Bugbear, Quotes, etc.
+
+ignore = [
+    "D203",  # Ignore conflicts for one-liner docstring style
+    "D213",  # Allow Google-style multi-line docstrings with different line breaks
+    "D100", # Allow public modules without docstrings
+    "D103", # Allow public functions without docstrings
+    "E402", # Allow arbitrary import order to support django.setup() flow
+]
+
+# Define fixable and unfixable rules
 fixable = ["ALL"]
 unfixable = []
 
-# This is the (only) correct way to style strings (all my homies hate PEP 8)
+# -------------------------------
+# Ruff Flake8-Quotes Settings
+# -------------------------------
 [tool.ruff.lint.flake8-quotes]
-docstring-quotes = "double" # Enforce double quotes for docstrings
-inline-quotes = "single"    # Enforce single quotes for inline strings
+docstring-quotes = "double"  # Enforce double quotes for docstrings
+inline-quotes = "double"     # Enforce double quotes for inline strings
 
+# -------------------------------
+# Ruff Formatting Settings
+# -------------------------------
 [tool.ruff.format]
-quote-style = "single" # Default to single quotes for auto-formatting
+quote-style = "double"                  # Use double quotes for auto-formatting
+indent-style = "space"                  # Indent with spaces instead of tabs
+skip-magic-trailing-comma = false       # Respect magic trailing commas
+line-ending = "auto"                    # Automatically detect line endings
 
-# Like Black, indent with spaces, rather than tabs.
-indent-style = "space"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-# Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = false
+[tool.hatch.build.targets.wheel]
+packages = ["."]
 
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
+[tool.uv.workspace]
+members = ["hoagie-plan", "uv-env"]

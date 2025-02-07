@@ -1,0 +1,67 @@
+# Dependabot configuration file
+version: 2
+updates:
+  # TypeScript dependencies managed by npm
+  - package-ecosystem: "npm"
+    directory: "frontend/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "typescript"
+      - "dependencies"
+      - "frontend"
+    reviewers:
+      - "HoagieClub/hoagie-plan"
+      - "issacli-0821"
+      - "G-Marin"
+      - "windsornguyen"
+      - "ggchiriac"
+    open-pull-requests-limit: 5
+
+  # TypeScript dependencies managed by Bun
+  - package-ecosystem: "bun"
+    directory: "frontend/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "typescript"
+      - "dependencies"
+      - "frontend"
+    reviewers:
+      - "HoagieClub/hoagie-plan"
+      - "issacli-0821"
+      - "G-Marin"
+      - "windsornguyen"
+      - "ggchiriac"
+    open-pull-requests-limit: 5
+
+  # Python dependencies managed by pip
+  - package-ecosystem: "pip"
+    directory: "backend/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "python"
+      - "dependencies"
+      - "backend"
+    reviewers:
+      - "HoagieClub/hoagie-plan"
+      - "issacli-0821"
+      - "G-Marin"
+      - "windsornguyen"
+      - "ggchiriac"
+    open-pull-requests-limit: 5
+
+  # Notifications and branch naming
+  pull-request-branch-name:
+    separator: "_"
+  versioning-strategy: "auto" # Keeps dependencies within compatibility constraints

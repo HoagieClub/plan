@@ -21,74 +21,69 @@ req_list:
     completed_by_semester: 4
     pdfs_allowed: 0
     req_list:
-      - name: Physics
+      - name: Physics-Related Prerequisites
         max_counted: 1
         min_needed: ALL
         explanation:
-          "Prerequisites for concentration in physics are the following five
-          courses: PHY 103-104, PHY 205, and MAT 203-204. PHY 103 may be replaced by ISC
-          231-232 (the first term of Integrated Science Sequence), or EGR 191-192 (Engineering-Math-Physics),
-          or PHY 105. PHY 104 may be replaced by ISC 233-234 or PHY 106. PHY 205 may be
-          replaced by PHY 207."
         req_list:
-          - name:
+          - name: Mechanics
             max_counted: 1
             min_needed: 1
-            explanation:
+            explanation: PHY 103 may be replaced by ISC 231-232 (the first term of Integrated Science Sequence) or PHY 105.
             req_list:
-              - name:
+              - name: PHY Track
                 max_counted: 1
                 min_needed: 1
                 explanation:
                 course_list:
                   - PHY 103
                   - PHY 105
-              - name:
+              - name: ISC Track
                 max_counted: 1
                 min_needed: ALL
                 explanation:
                 course_list:
                   - ISC 231
                   - ISC 232
-          - name:
+          - name: E&M
             max_counted: 1
             min_needed: 1
-            explanation:
+            explanation: PHY 104 may be replaced by ISC 233-234 or PHY 106. The PHY 109/110 (spring/summer) sequence is fully equivalent to PHY 104.
             req_list:
-              - name:
+              - name: PHY Track
                 max_counted: 1
                 min_needed: 1
                 explanation:
                 course_list:
                   - PHY 104
                   - PHY 106
-              - name:
+              - name: ISC Track
                 max_counted: 1
                 min_needed: ALL
                 explanation:
                 course_list:
                   - ISC 233
                   - ISC 234
-              - name:
+              - name: PHY 109/110 Sequence
                 max_counted: 1
                 min_needed: 2
                 course_list:
                   - PHY 109
                   - PHY 110
-          - name:
+          - name: PHY 207 Requirement
             max_counted: 1
             min_needed: 1
             explanation:
             course_list:
               - PHY 207
-      - name: Math
+      - name: Math Prerequisite
         max_counted: 1
         min_needed: ALL
         explanation: |-
           MAT 203 may be replaced by MAT 201 or MAT 218. MAT 204 may be 
           replaced by MAT 202 or MAT 217.
         req_list:
-          - name:
+          - name: Multivariable Calculus Requirement
             max_counted: 1
             min_needed: 1
             explanation:
@@ -96,7 +91,7 @@ req_list:
               - MAT 201
               - MAT 203
               - MAT 218
-          - name:
+          - name: Linear Algebra Requirement
             max_counted: 1
             min_needed: 1
             explanation:
@@ -132,7 +127,7 @@ req_list:
           One semester of experimental physics: PHY 312.
         course_list:
           - PHY 312
-      - name: Complex Analysis
+      - name: Complex Analysis/Differential Equations
         max_counted: 1
         min_needed: 1
         explanation: |-

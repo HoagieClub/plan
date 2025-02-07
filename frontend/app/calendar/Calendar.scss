@@ -1,6 +1,5 @@
-@use '../../components/Container/Container.module.scss' as container;
+@use '../../components/Container/Container.module.css' as container;
 
-// Variables
 $primary-color: #666;
 $font-size-base: 0.9rem;
 $hover-transition: 0.3s ease;
@@ -11,7 +10,6 @@ $box-shadow-hover:
   0 6px 12px rgba(0, 0, 0, 0.2),
   0 12px 24px rgba(0, 0, 0, 0.2);
 
-// Mixins
 @mixin box-shadow($shadow) {
   box-shadow: $shadow;
 }
@@ -53,7 +51,7 @@ $box-shadow-hover:
     overflow-y: auto;
   }
 }
-// Semester pagination
+
 .carouselTab {
   transition:
     background-color 0.2s ease,
@@ -93,8 +91,8 @@ $box-shadow-hover:
   }
 }
 
-// Calendar Card
 .calendar-card {
+  font-size: clamp(0.7rem, 1vw, 1rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -134,6 +132,12 @@ $box-shadow-hover:
     @include transition(opacity, $hover-transition);
   }
 
+  .card-header,
+  .event-details,
+  .event-time {
+    font-size: clamp(0.6rem, 0.8vw, 0.9rem);
+  }
+
   .card-header {
     display: flex;
     align-items: center;
@@ -144,7 +148,7 @@ $box-shadow-hover:
   .course-title,
   .time,
   .location {
-    font-size: 14px;
+    font-size: clamp(0.6rem, 0.8vw, 0.9rem);
     @include ellipsis;
   }
 
@@ -190,9 +194,19 @@ $box-shadow-hover:
   .options-icon {
     color: #fff;
   }
+
+  .capacity-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .capacity {
+    text-align: left;
+    width: 100%;
+    @include ellipsis;
+  }
 }
 
-// Media Queries
 @include media-query(768px) {
   .SearchContainer {
     width: 100%;
@@ -212,7 +226,11 @@ $box-shadow-hover:
     .course-title,
     .time,
     .location {
-      font-size: 12px;
+      font-size: clamp(0.5rem, 0.7vw, 0.8rem);
+    }
+
+    .capacity-container {
+      font-size: clamp(0.5rem, 0.7vw, 0.8rem);
     }
   }
 

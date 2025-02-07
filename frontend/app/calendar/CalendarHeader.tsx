@@ -1,4 +1,5 @@
-import { CSSProperties, memo, FC } from 'react';
+import type { CSSProperties, FC } from 'react';
+import { memo } from 'react';
 
 interface Day {
   name: string;
@@ -15,7 +16,7 @@ const DayCell: FC<{ day: Day; index: number }> = memo(({ day, index }) => {
   // Adjusting the styling to match the CalendarGrid day labels
   return (
     <div
-      className='text-center border-b border-r border-gray-200'
+      className='border-b border-r border-gray-200 text-center'
       style={{
         backgroundColor: 'lightgray', // Consistent background color
         padding: '8px 0', // Uniform padding
@@ -39,7 +40,7 @@ const CalendarHeader: FC<CalendarHeaderProps> = ({ days, style }) => {
   const gridTemplateColumns: string = `minmax(60px, 100px) repeat(${days.length}, 1fr)`;
 
   return (
-    <header className='sticky top-0 z-30 shadow-lg bg-white w-full' style={style}>
+    <header className='sticky top-0 z-30 w-full bg-white shadow-lg' style={style}>
       <div
         className='grid'
         style={{
