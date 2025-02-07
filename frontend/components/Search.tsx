@@ -128,7 +128,7 @@ const Search: FC = () => {
     [addRecentSearch, setError, setLoading, setSearchResults]
   );
 
-  function retrieveCachedSearch(search) {
+  function retrieveCachedSearch(search: string) {
     setSearchResults(searchCache.get(search) ?? []);
   }
 
@@ -181,6 +181,7 @@ const Search: FC = () => {
     setLocalDistributionFilter(useFilterStore.getState().distributionFilter);
     setShowPopup(false);
   }, [setShowPopup]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Enter') {
@@ -360,7 +361,6 @@ const Search: FC = () => {
           </button>
         </div>
         <div className='mt-3'>
-          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
           <div className='flex justify-between items-center mb-2'>
             <div className='text-sm font-medium text-gray-500'>Upload transcript</div>
             <button 
@@ -375,6 +375,7 @@ const Search: FC = () => {
               <ArrowUpTrayIcon className='w-4 h-4 text-gray-500' aria-hidden='true' />
             </button>
           </div>
+          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
           <div className='flex overflow-x-auto py-2 space-x-2'>
             {recentSearches.map((search, index) => (
               <button
