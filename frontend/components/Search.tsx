@@ -319,7 +319,7 @@ const Search: FC = () => {
       </footer>
     </FilterModal>
   ) : null;
-
+  
   return (
     <>
       <div className='block w-full pr-3 text-left'>
