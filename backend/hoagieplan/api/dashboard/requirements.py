@@ -104,6 +104,7 @@ def check_requirements(user_inst, table, code, courses):
     assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
     add_course_lists_to_req(req, courses)
     formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
+    print(courses)
     return formatted_req
 
 
@@ -279,8 +280,6 @@ def ensure_list(x):
         return []
 
 
-# These fields could be in the UserCourses table by default
-# possible_reqs, reqs_satisfied, reqs_double_counted would be ManyToManyFields
 @cumulative_time
 def _init_courses(courses):
     if not courses:
@@ -331,8 +330,8 @@ def mark_possible_dist_reqs(req, courses):
 
             if ok == 1:
                 course["possible_reqs"].append(req["id"])
-            if not req["double_counting_allowed"]:
-                course["num_settleable"] += 1
+                if not req["double_counting_allowed"]:
+                    course["num_settleable"] += 1
 
 
 @cumulative_time
@@ -406,7 +405,7 @@ def assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs):
 
 @cumulative_time
 def settle_double_counting_reqs(req, courses):
-    """Find and mark all courses in 'courses' that satisfy a requirement where double counting is allowed."""
+    """Find and settle all courses in 'courses' that satisfy 'req', where double counting is allowed."""
     num_marked = 0
     for sem in courses:
         for course in sem:
@@ -418,7 +417,7 @@ def settle_double_counting_reqs(req, courses):
 
 @cumulative_time
 def settle_reqs(req, courses):
-    """Find and mark all courses in 'courses' that have been settled to 'req'."""
+    """Find and settle all courses in 'courses' that satisfy 'req', where double counting is not allowed."""
     num_marked = 0
     for sem in courses:
         for course in sem:

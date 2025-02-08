@@ -393,6 +393,7 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         return response.json();
       })
       .then(() => {
+        console.log(data);
         updateRequirements();
       })
       .catch((error) => {
