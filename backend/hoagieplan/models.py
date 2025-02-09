@@ -307,7 +307,7 @@ class UserCourses(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
     semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)
-    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, db_index=True, null=True)
+    requirements = models.ManyToManyField(Requirement, blank=True)
 
     class Meta:
         db_table = "UserCourses"

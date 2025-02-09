@@ -36,13 +36,13 @@ def check_user(net_id, major, minors, certificates):
         degrees = major_obj.degree.all()
         for degree in degrees:
             output[degree.code] = {}
-            formatted_req = check_requirements(user_inst, "Degree", degree.code, user_courses)
+            formatted_req = check_requirements(user_inst, "Degree", degree.code, copy.deepcopy(user_courses))
             output[degree.code]["requirements"] = formatted_req
 
         # Check for major
         output[major_code] = {}
         if major_code != "Undeclared":
-            formatted_req = check_requirements(user_inst, "Major", major_code, user_courses)
+            formatted_req = check_requirements(user_inst, "Major", major_code, copy.deepcopy(user_courses))
         else:
             formatted_req = {"code": "Undeclared", "satisfied": True}
         output[major_code]["requirements"] = formatted_req
@@ -52,7 +52,7 @@ def check_user(net_id, major, minors, certificates):
     for minor in minors:
         minor_code = minor["code"]
         output["Minors"][minor_code] = {}
-        formatted_req = check_requirements(user_inst, "Minor", minor_code, user_courses)
+        formatted_req = check_requirements(user_inst, "Minor", minor_code, copy.deepcopy(user_courses))
         output["Minors"][minor_code]["requirements"] = formatted_req
 
     # Check for certificates
@@ -60,7 +60,7 @@ def check_user(net_id, major, minors, certificates):
     for certificate in certificates:
         certificate_code = certificate["code"]
         output["Certificates"][certificate_code] = {}
-        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, user_courses)
+        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, copy.deepcopy(user_courses))
         output["Certificates"][certificate_code]["requirements"] = formatted_req
 
     # print(f"create_courses: {create_courses.total_time} seconds")
@@ -263,10 +263,8 @@ def create_courses(user_inst):
             "dept_code": course_inst.course.department.code,
             "cat_num": course_inst.course.catalog_number,
         }
-        req_id = course_inst.requirement_id
-        if req_id is not None:
-            course["settled"] = [req_id]
-            course["manually_settled"] = req_id
+        req_ids = list(course_inst.requirements.values_list('id', flat=True))
+        course["manually_settled"] = req_ids
         courses[course_inst.semester - 1].append(course)
     return courses
 
@@ -291,8 +289,7 @@ def _init_courses(courses):
             course["possible_reqs"] = []
             course["reqs_double_counted"] = []  # reqs satisfied for which double counting allowed
             course["num_settleable"] = 0  # number of reqs to which can be settled. autosettled if 1
-            if "settled" not in course or course["settled"] is None:
-                course["settled"] = []
+            course["settled"] = []
     return courses
 
 
@@ -421,14 +418,13 @@ def settle_reqs(req, courses):
     num_marked = 0
     for sem in courses:
         for course in sem:
-            if len(course["settled"]) > 0:
-                for p in course["settled"]:  # go through the requirements this course was manually settled into
+            if len(course["manually_settled"]) > 0:
+                for p in course["manually_settled"]:  # go through the requirements this course was manually settled into
                     if (p == req["id"]) and (p in course["possible_reqs"]):
+                        course["settled"].append(req["id"])
                         num_marked += 1
                         break
-            elif (course["num_settleable"] == 1) and (
-                req["id"] in course["possible_reqs"]
-            ):  # if course can only fall into the currrent requirement, settle it
+            if (course["num_settleable"] == 1) and (req["id"] in course["possible_reqs"]) and (req["id"] not in course["settled"]):  # if course can only fall into the currrent requirement, settle it
                 num_marked += 1
                 course["settled"].append(req["id"])
     return num_marked
@@ -577,14 +573,12 @@ def manually_settle(request):
         )
 
     user_course_inst = UserCourses.objects.get(user_id=user_inst.id, course=course_inst)
-    if user_course_inst.requirement_id is None:
-        user_course_inst.requirement_id = req_id
-        user_course_inst.save()
-        return JsonResponse({"Manually settled": user_course_inst.id})
-    else:
-        user_course_inst.requirement_id = None
-        user_course_inst.save()
+    if user_course_inst.requirements.filter(id=req_id).exists():
+        user_course_inst.requirements.remove(req_id)
         return JsonResponse({"Unsettled": user_course_inst.id})
+    else:
+        user_course_inst.requirements.add(req_id)
+        return JsonResponse({"Manually settled": user_course_inst.id})
 
 
 def mark_satisfied(request):

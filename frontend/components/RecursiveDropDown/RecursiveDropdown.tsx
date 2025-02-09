@@ -433,7 +433,7 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
             <Button
               key={index}
               variant='contained'
-              disabled={item['manually_settled'] !== value[1]}
+              disabled={!item['manually_settled'].includes(value[1])}
               style={{
                 margin: '5px',
                 color: '#4b5563',
