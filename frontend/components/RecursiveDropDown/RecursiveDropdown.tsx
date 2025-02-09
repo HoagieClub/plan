@@ -152,7 +152,10 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
           setMarkedSatisfied(data[7]);
         }
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoading(false))
+      .catch((error) => {
+        console.error(error);
+      });
     event.stopPropagation();
     setShowPopup(true);
   };
@@ -203,10 +206,15 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         reqId: explanation ? explanation[0] : null,
         markedSatisfied: 'true',
       }),
-    }).then((response) => response.json());
-
-    setMarkedSatisfied(true);
-    updateRequirements();
+    })
+      .then((response) => response.json())
+      .then(() => {
+        setMarkedSatisfied(true);
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleUnmarkSatisfied = () => {
@@ -225,10 +233,15 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         reqId: explanation ? explanation[0] : null,
         markedSatisfied: 'false',
       }),
-    }).then((response) => response.json());
-
-    setMarkedSatisfied(false);
-    updateRequirements();
+    })
+      .then((response) => response.json())
+      .then(() => {
+        setMarkedSatisfied(true);
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   useEffect(() => {
@@ -393,7 +406,6 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         return response.json();
       })
       .then(() => {
-        console.log(data);
         updateRequirements();
       })
       .catch((error) => {

@@ -178,17 +178,6 @@ const eslintConfig = [
       'no-nested-ternary': 'warn',
       'no-unneeded-ternary': 'error',
       'spaced-comment': ['error', 'always', { markers: ['/'] }],
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['../*'],
-              message: 'Please use absolute imports instead',
-            },
-          ],
-        },
-      ],
     },
   },
 ];
