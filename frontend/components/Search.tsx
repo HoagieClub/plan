@@ -173,6 +173,14 @@ const Search: FC = () => {
     setTermFilter,
   ]);
 
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setLocalTermFilter('');
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   const handleCancel = useCallback(() => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalTermFilter(useFilterStore.getState().termFilter);
@@ -243,7 +251,8 @@ const Search: FC = () => {
             options={Object.keys(terms)}
             placeholder='Semester'
             variant='soft'
-            value={termsInverse[localTermFilter]}
+            value={termsInverse[localTermFilter] || null}
+            inputValue={localTermFilter}
             isOptionEqualToValue={(option, value) => value === '' || option === value}
             onChange={(event, newTermName: string | null) => {
               event.stopPropagation();
@@ -265,7 +274,8 @@ const Search: FC = () => {
             options={Object.keys(distributionAreas)}
             placeholder='Distribution area'
             variant='soft'
-            value={distributionAreasInverse[localDistributionFilter]}
+            value={distributionAreasInverse[localDistributionFilter] || null}
+            inputValue={localDistributionFilter}
             isOptionEqualToValue={(option, value) => value === '' || option === value}
             onChange={(event, newDistributionName: string | null) => {
               event.stopPropagation();
@@ -319,6 +329,9 @@ const Search: FC = () => {
           <Button variant='soft' color='primary' onClick={handleSave} size='md'>
             Save
           </Button>
+          <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+              Reset
+            </Button>
           <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
             Cancel
           </Button>

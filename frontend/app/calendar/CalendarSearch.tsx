@@ -183,6 +183,13 @@ const CalendarSearch: FC = () => {
     setShowPopup(false);
   }, [setShowPopup]);
 
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Enter') {
@@ -246,6 +253,7 @@ const CalendarSearch: FC = () => {
               variant='soft'
               value={invert(distributionAreas)[localDistributionFilter]}
               isOptionEqualToValue={(option, value) => value === '' || option === value}
+              inputValue={localDistributionFilter}
               onChange={(event, newDistributionName: string | null) => {
                 event.stopPropagation();
                 setLocalDistributionFilter(distributionAreas[newDistributionName ?? ''] ?? '');
@@ -301,6 +309,9 @@ const CalendarSearch: FC = () => {
           <div className='mt-5 text-right'>
             <Button variant='soft' color='primary' onClick={handleSave} size='md'>
               Save
+            </Button>
+            <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+              Reset
             </Button>
             <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
               Cancel
