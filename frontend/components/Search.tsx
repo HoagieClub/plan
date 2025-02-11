@@ -167,6 +167,14 @@ const Search: FC = () => {
     setTermFilter,
   ]);
 
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setLocalTermFilter('');
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   const handleCancel = useCallback(() => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalTermFilter(useFilterStore.getState().termFilter);
@@ -258,6 +266,7 @@ const Search: FC = () => {
             options={Object.keys(distributionAreas)}
             placeholder='Distribution area'
             variant='soft'
+            inputValue={localDistributionFilter}
             value={distributionAreasInverse[localDistributionFilter]}
             isOptionEqualToValue={(option, value) => value === '' || option === value}
             onChange={(event, newDistributionName: string | null) => {
@@ -312,6 +321,9 @@ const Search: FC = () => {
           <Button variant='soft' color='primary' onClick={handleSave} size='md'>
             Save
           </Button>
+          <Button variant='soft' color='danger' onClick={handleReset} sx={{ ml: 2 }} size='md'>
+            Reset
+          </Button>
           <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
             Cancel
           </Button>
@@ -319,7 +331,6 @@ const Search: FC = () => {
       </footer>
     </FilterModal>
   ) : null;
-  
   return (
     <>
       <div className='block w-full pr-3 text-left'>

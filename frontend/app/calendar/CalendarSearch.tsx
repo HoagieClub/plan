@@ -176,6 +176,13 @@ const CalendarSearch: FC = () => {
     setShowPopup,
   ]);
 
+  const handleReset = useCallback(() => {
+    setLocalDistributionFilter('');
+    setLocalGradingFilter([]);
+    setLocalLevelFilter([]);
+    setShowPopup(true);
+  }, [setShowPopup]);
+
   const handleCancel = useCallback(() => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalGradingFilter(useFilterStore.getState().gradingFilter);
@@ -301,6 +308,9 @@ const CalendarSearch: FC = () => {
           <div className='mt-5 text-right'>
             <Button variant='soft' color='primary' onClick={handleSave} size='md'>
               Save
+            </Button>
+            <Button variant='soft' color='danger' onClick={handleReset} sx ={{ ml: 2}}size='md'>
+              Reset
             </Button>
             <Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
               Cancel
