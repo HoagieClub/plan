@@ -102,10 +102,24 @@ $box-shadow-hover:
   margin: -1px;
   box-sizing: border-box;
   @include transition;
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 300px;
   cursor: pointer;
   position: relative;
   width: 100%;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+  }
 
   &:hover {
     transform: translateY(-4px);
