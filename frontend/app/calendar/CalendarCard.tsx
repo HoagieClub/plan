@@ -69,17 +69,13 @@ const CalendarCard: FC<CalendarCardProps> = ({
           {event.course.department_code} {event.course.catalog_number} -{' '}
           {event.section.class_section}
         </div>
-
-        <div className='text-xs text-white/80'>
-          {event.startTime} – {event.endTime}
-        </div>
       </div>
 
-      <div className='capacity-container flex items-center text-xs text-white/80'>
-        <span className='capacity'>
-          {event.section.enrollment} / {event.section.capacity}
-        </span>
+      <div className="flex justify-between text-[0.65rem] text-white/80">
+        <span>{event.startTime} – {event.endTime}</span>
+        <span>{event.section.enrollment}/{event.section.capacity}</span>
       </div>
+
     </div>
   );
 };
