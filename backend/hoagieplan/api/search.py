@@ -82,7 +82,11 @@ def search_courses(request):
         query_conditions &= Q(guid__startswith=term)
 
     if distribution:
-        query_conditions &= Q(distribution_area_short__icontains=distribution)
+        distributions = distribution.split(",")
+        distribution_query = Q()
+        for distribution in distributions:
+            distribution_query |= Q(distribution_area_short__icontains=distribution)
+        query_conditions &= distribution_query
 
     if levels:
         levels = levels.split(",")
