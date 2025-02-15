@@ -7,6 +7,8 @@ import { TutorialModal } from '../Modal';
 
 import styles from './UploadModal.module.css';
 
+import LoadingComponent from '../LoadingComponent';
+
 interface Upload {
   isOpen: boolean;
   onClose: () => void;
@@ -15,34 +17,66 @@ interface Upload {
 const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  // Handle file selection from "Choose file" button
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setSelectedFiles([...selectedFiles, ...Array.from(event.target.files)]);
     }
   };
 
-  // Handle drop event (files dropped into the drop zone)
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault(); // Prevent default browser behavior
+    event.preventDefault();
     event.stopPropagation();
 
-    // Extract files from the drop event
     const droppedFiles = event.dataTransfer.files;
     if (droppedFiles && droppedFiles.length > 0) {
       setSelectedFiles([...selectedFiles, ...Array.from(droppedFiles)]);
     }
   };
 
-  // Prevent default behavior for drag over (allows dropping)
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
   };
 
-  // Remove a specific file from the list
   const removeFile = (fileName: string) => {
     setSelectedFiles(selectedFiles.filter(file => file.name !== fileName));
   };
+
+const [isLoading, setIsLoading] = useState(false);
+
+const handleSave = async () => {
+  if (selectedFiles.length === 0) {
+    alert("No files selected");
+    return;
+  }
+
+  setIsLoading(true);
+
+  const formData = new FormData();
+  selectedFiles.forEach(file => {
+    formData.append("files", file);
+  });
+
+  try {
+    const response = await fetch("https://your-backend.com/upload", {
+      method: "POST",
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    alert("Files uploaded successfully!");
+    setSelectedFiles([]);
+    onClose();
+  } catch (error) {
+    console.error("Upload error:", error);
+    alert("Error uploading files.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+  
 
   const modalContent = (
     <TutorialModal>
@@ -67,13 +101,11 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
           Drop files here
         </div>
 
-        {/* Display selected files */}
         {selectedFiles.length > 0 && (
           <div className={styles.fileContainer}>
             {selectedFiles.map((file, index) => (
               <div key={index}>
                 <span>{file.name}</span>
-                {/* Close button (X) */}
                 <button
                   className={styles.closeButton}
                   onClick={() => removeFile(file.name)}
@@ -86,12 +118,18 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
         )}
 
         <div className={styles.footer}>
-          <JoyButton variant='soft' color='neutral' onClick={onClose} sx={{ ml: 2 }} size='md'>
+          {isLoading ? (
+            <LoadingComponent />
+          ) : (
+            <>
+          <JoyButton variant='soft' color='neutral' onClick={handleSave} sx={{ ml: 2 }} size='md' disabled={isLoading}>
             Save
           </JoyButton>
-          <JoyButton variant='soft' color='neutral' onClick={onClose} sx={{ ml: 2 }} size='md'>
+          <JoyButton variant='soft' color='neutral' onClick={onClose} sx={{ ml: 2 }} size='md' disabled={isLoading}>
             Cancel
           </JoyButton>
+          </>
+          )}
         </div>
 
       </div>
