@@ -31,11 +31,12 @@ const searchCache = new LRUCache<string, Course[]>({
 const Search: FC = () => {
   const [query, setQuery] = useState<string>('');
   const timerRef = useRef<number>();
-  const { setSearchResults, searchResults, addRecentSearch, recentSearches, setError, setLoading } =
+  const { setSearchResults, searchResults, addRecentSearch, recentSearches, setError, setLoading, clearRecentSearches } =
     useSearchStore((state) => ({
       setSearchResults: state.setSearchResults,
       searchResults: state.searchResults,
       addRecentSearch: state.addRecentSearch,
+      clearRecentSearches: state.clearRecentSearches,
       recentSearches: state.recentSearches,
       setError: state.setError,
       setLoading: state.setLoading,
