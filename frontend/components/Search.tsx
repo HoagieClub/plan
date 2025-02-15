@@ -22,6 +22,7 @@ import { levels } from '@/utils/levels';
 import { terms, termsInverse } from '@/utils/terms';
 
 import { FilterModal } from './Modal';
+import { set } from 'date-fns';
 
 const searchCache = new LRUCache<string, Course[]>({
   maxSize: 50,
@@ -42,11 +43,11 @@ const Search: FC = () => {
     }));
 
   const {
-    distributionFilter,
+    distributionFilters,
     gradingFilter,
     levelFilter,
     termFilter,
-    setDistributionFilter,
+    setDistributionFilters,
     setGradingFilter,
     setLevelFilter,
     setTermFilter,
@@ -54,15 +55,14 @@ const Search: FC = () => {
   } = useFilterStore();
 
   const [showPopup, setShowPopup] = useState<boolean>(false);
-
-  const [localDistributionFilter, setLocalDistributionFilter] = useState<string>('');
+  const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
   const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
   const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
   const [localTermFilter, setLocalTermFilter] = useState<string>('');
 
   const areFiltersActive = () => {
     return (
-      distributionFilter !== '' ||
+      distributionFilters.length > 0 ||
       levelFilter.length > 0 ||
       gradingFilter.length > 0 ||
       termFilter !== ''
@@ -82,8 +82,8 @@ const Search: FC = () => {
     if (filter.termFilter) {
       queryString += `&term=${encodeURIComponent(filter.termFilter)}`;
     }
-    if (filter.distributionFilter) {
-      queryString += `&distribution=${encodeURIComponent(filter.distributionFilter)}`;
+    if (filter.distributionFilters.length > 0) { 
+      queryString += `&distribution=${filter.distributionFilters.join(',')}`;
     }
     if (filter.levelFilter.length > 0) {
       queryString += `&level=${filter.levelFilter.map(encodeURIComponent).join(',')}`;
@@ -101,6 +101,9 @@ const Search: FC = () => {
         const queryString = buildQuery(searchQuery, filter);
 
         const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+
+        console.log("response sent");
+        console.log(filter);
 
         if (response.ok) {
           const data: { courses: Course[] } = await response.json();
@@ -128,7 +131,7 @@ const Search: FC = () => {
   useEffect(() => {
     const filters = {
       termFilter,
-      distributionFilter,
+      distributionFilters,
       levelFilter,
       gradingFilter,
     };
@@ -137,7 +140,7 @@ const Search: FC = () => {
     } else {
       search('', filters);
     }
-  }, [query, termFilter, distributionFilter, levelFilter, gradingFilter, search]);
+  }, [query, termFilter, distributionFilters, levelFilter, gradingFilter, search]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (timerRef.current) {
@@ -150,17 +153,17 @@ const Search: FC = () => {
   };
 
   const handleSave = useCallback(() => {
-    setDistributionFilter(localDistributionFilter);
+    setDistributionFilters(localDistributionFilters);
     setLevelFilter(localLevelFilter);
     setGradingFilter(localGradingFilter);
     setTermFilter(localTermFilter);
     setShowPopup(false);
   }, [
-    localDistributionFilter,
+    localDistributionFilters,
     localLevelFilter,
     localGradingFilter,
     localTermFilter,
-    setDistributionFilter,
+    setDistributionFilters,
     setLevelFilter,
     setGradingFilter,
     setShowPopup,
@@ -171,7 +174,7 @@ const Search: FC = () => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalTermFilter(useFilterStore.getState().termFilter);
     setLocalGradingFilter(useFilterStore.getState().gradingFilter);
-    setLocalDistributionFilter(useFilterStore.getState().distributionFilter);
+    setLocalDistributionFilters(useFilterStore.getState().distributionFilters);
     setShowPopup(false);
   }, [setShowPopup]);
   useEffect(() => {
@@ -217,11 +220,28 @@ const Search: FC = () => {
     }
   };
 
+  const handleDistributionChange = (_: any, newDistribution: string[] | null) => {
+    if (!newDistribution) {
+      setLocalDistributionFilters([]);
+      return;
+    }
+
+    const uniqueDistributions = newDistribution.filter(
+      (distribution) => distributionAreas[distribution] !== undefined
+    ).map(
+      (distribution) => distributionAreas[distribution ?? ''] ?? ''
+    );
+
+    console.log(uniqueDistributions);
+
+    setLocalDistributionFilters(uniqueDistributions);
+  };
+
   const modalContent = showPopup ? (
     <FilterModal
       setShowPopup={setShowPopup}
       setTermFilter={setLocalTermFilter}
-      setDistributionFilter={setLocalDistributionFilter}
+      setDistributionFilters={setLocalDistributionFilters}
       setLevelFilter={setLocalLevelFilter}
       setGradingFilter={setLocalGradingFilter}
       handleSave={handleSave}
@@ -253,18 +273,19 @@ const Search: FC = () => {
         <div>
           <FormLabel>Distribution area</FormLabel>
           <Autocomplete
-            multiple={false}
+            multiple={true}
             autoHighlight
             options={Object.keys(distributionAreas)}
             placeholder='Distribution area'
             variant='soft'
-            value={distributionAreasInverse[localDistributionFilter]}
+            value={localDistributionFilters.map((distribution) => distributionAreasInverse[distribution])}
             isOptionEqualToValue={(option, value) => value === '' || option === value}
-            onChange={(event, newDistributionName: string | null) => {
+            onChange={(event, newDistributions: string[] | null) => {
               event.stopPropagation();
-              setLocalDistributionFilter(distributionAreas[newDistributionName ?? ''] ?? '');
+              handleDistributionChange(event, newDistributions);
             }}
-            getOptionLabel={(option) => option.toString()}
+            getOptionLabel={(option) => {
+              return option ? option.toString() : '';}}
             renderOption={(props, option) => (
               <AutocompleteOption {...props} key={option}>
                 <ListItemContent>{option}</ListItemContent>
