@@ -28,6 +28,7 @@ from hoagieplan.api import details, search, tutorial
 from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
+from hoagieplan.api.dashboard.windsor_approach import api
 from hoagieplan.api.profile import info
 
 urlpatterns = [
@@ -48,10 +49,10 @@ urlpatterns = [
     # Canvas
     path("search/", search.search_courses, name="search"),
     path("fetch_courses/", info.get_user_courses, name="fetch_courses"),
-    path("update_courses/", requirements.update_courses, name="update_courses"),
-    path("manually_settle/", requirements.manually_settle, name="manually_settle"),
-    path("mark_satisfied/", requirements.mark_satisfied, name="mark_satisfied"),
-    path("update_requirements/", requirements.update_requirements, name="update_requirements"),
+    path("update_courses/", api.update_courses, name="update_courses"),
+    path("manually_settle/", api.manually_settle, name="manually_settle"),
+    path("mark_satisfied/", api.mark_satisfied, name="mark_satisfied"),
+    path("update_requirements/", api.update_requirements, name="update_requirements"),
     path("requirement_info/", requirements.requirement_info, name="requirement_info"),
     # Calendar
     path(

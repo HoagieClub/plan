@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from urllib.parse import urljoin
+import sys
 
 import dj_database_url
 import django_heroku
@@ -131,11 +132,22 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-
 # Select the appropriate database URL based on DEBUG setting
 os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") if DEBUG else os.getenv("DATABASE_URL")
-DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"), ssl_require=False)}
-DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
+# For test environment, use SQLite
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:'
+        }
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(default=os.getenv("DATABASE_URL"), ssl_require=False)
+    }
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 AUTH_USER_MODEL = "hoagieplan.CustomUser"
 

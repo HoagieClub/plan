@@ -2,7 +2,7 @@
 # Project Metadata
 # ===============================
 [project]
-name = "hoagie-plan"
+name = "hoagieplan"
 version = "2.0.0"
 description = "Dependency manager for the Hoagie Plan repository."
 license = "MIT"
@@ -33,6 +33,9 @@ dependencies = [
     "tqdm>=4.67.1",
     "orjson>=3.10.12",
     "PyYAML>=6.0.2",
+    "numpy>=2.2.3",
+    "scipy>=1.15.1",
+    "pytest-django>=4.10.0",
 ]
 
 # ===============================
@@ -125,6 +128,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
-
-[tool.uv.workspace]
-members = ["hoagie-plan", "uv-env"]
