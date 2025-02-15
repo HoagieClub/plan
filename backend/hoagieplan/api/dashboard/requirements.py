@@ -104,7 +104,6 @@ def check_requirements(user_inst, table, code, courses):
     assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
     add_course_lists_to_req(req, courses)
     formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
-    print(courses)
     return formatted_req
 
 
@@ -263,7 +262,7 @@ def create_courses(user_inst):
             "dept_code": course_inst.course.department.code,
             "cat_num": course_inst.course.catalog_number,
         }
-        req_ids = list(course_inst.requirements.values_list('id', flat=True))
+        req_ids = list(course_inst.requirements.values_list("id", flat=True))
         course["manually_settled"] = req_ids
         courses[course_inst.semester - 1].append(course)
     return courses
@@ -419,12 +418,18 @@ def settle_reqs(req, courses):
     for sem in courses:
         for course in sem:
             if len(course["manually_settled"]) > 0:
-                for p in course["manually_settled"]:  # go through the requirements this course was manually settled into
+                for p in course[
+                    "manually_settled"
+                ]:  # go through the requirements this course was manually settled into
                     if (p == req["id"]) and (p in course["possible_reqs"]):
                         course["settled"].append(req["id"])
                         num_marked += 1
                         break
-            if (course["num_settleable"] == 1) and (req["id"] in course["possible_reqs"]) and (req["id"] not in course["settled"]):  # if course can only fall into the currrent requirement, settle it
+            if (
+                (course["num_settleable"] == 1)
+                and (req["id"] in course["possible_reqs"])
+                and (req["id"] not in course["settled"])
+            ):  # if course can only fall into the currrent requirement, settle it
                 num_marked += 1
                 course["settled"].append(req["id"])
     return num_marked
