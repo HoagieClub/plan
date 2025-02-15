@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -22,6 +22,7 @@ import { levels } from '@/utils/levels';
 import { terms, termsInverse } from '@/utils/terms';
 
 import { FilterModal } from './Modal';
+import { set } from 'date-fns';
 
 const searchCache = new LRUCache<string, Course[]>({
   maxSize: 50,
@@ -31,30 +32,23 @@ const searchCache = new LRUCache<string, Course[]>({
 const Search: FC = () => {
   const [query, setQuery] = useState<string>('');
   const timerRef = useRef<number>();
-  const {
-    setSearchResults,
-    searchResults,
-    addRecentSearch,
-    recentSearches,
-    clearRecentSearches,
-    setError,
-    setLoading,
-  } = useSearchStore((state) => ({
-    setSearchResults: state.setSearchResults,
-    searchResults: state.searchResults,
-    addRecentSearch: state.addRecentSearch,
-    recentSearches: state.recentSearches,
-    clearRecentSearches: state.clearRecentSearches,
-    setError: state.setError,
-    setLoading: state.setLoading,
-  }));
+  const { setSearchResults, searchResults, addRecentSearch, recentSearches, setError, setLoading, clearRecentSearches } =
+    useSearchStore((state) => ({
+      setSearchResults: state.setSearchResults,
+      searchResults: state.searchResults,
+      addRecentSearch: state.addRecentSearch,
+      clearRecentSearches: state.clearRecentSearches,
+      recentSearches: state.recentSearches,
+      setError: state.setError,
+      setLoading: state.setLoading,
+    }));
 
   const {
-    distributionFilter,
+    distributionFilters,
     gradingFilter,
     levelFilter,
     termFilter,
-    setDistributionFilter,
+    setDistributionFilters,
     setGradingFilter,
     setLevelFilter,
     setTermFilter,
@@ -62,15 +56,14 @@ const Search: FC = () => {
   } = useFilterStore();
 
   const [showPopup, setShowPopup] = useState<boolean>(false);
-
-  const [localDistributionFilter, setLocalDistributionFilter] = useState<string>('');
+  const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
   const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
   const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
   const [localTermFilter, setLocalTermFilter] = useState<string>('');
 
   const areFiltersActive = () => {
     return (
-      distributionFilter !== '' ||
+      distributionFilters.length > 0 ||
       levelFilter.length > 0 ||
       gradingFilter.length > 0 ||
       termFilter !== ''
@@ -90,8 +83,8 @@ const Search: FC = () => {
     if (filter.termFilter) {
       queryString += `&term=${encodeURIComponent(filter.termFilter)}`;
     }
-    if (filter.distributionFilter) {
-      queryString += `&distribution=${encodeURIComponent(filter.distributionFilter)}`;
+    if (filter.distributionFilters.length > 0) { 
+      queryString += `&distribution=${filter.distributionFilters.join(',')}`;
     }
     if (filter.levelFilter.length > 0) {
       queryString += `&level=${filter.levelFilter.map(encodeURIComponent).join(',')}`;
@@ -107,7 +100,12 @@ const Search: FC = () => {
       setLoading(true);
       try {
         const queryString = buildQuery(searchQuery, filter);
+
         const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+
+        console.log("response sent");
+        console.log(filter);
+
         if (response.ok) {
           const data: { courses: Course[] } = await response.json();
           setSearchResults(data.courses);
@@ -118,7 +116,7 @@ const Search: FC = () => {
         } else {
           setError(`Server returned ${response.status}: ${response.statusText}`);
         }
-      } catch {
+      } catch (error) {
         setError('There was an error fetching courses.');
       } finally {
         setLoading(false);
@@ -134,7 +132,7 @@ const Search: FC = () => {
   useEffect(() => {
     const filters = {
       termFilter,
-      distributionFilter,
+      distributionFilters,
       levelFilter,
       gradingFilter,
     };
@@ -143,7 +141,7 @@ const Search: FC = () => {
     } else {
       search('', filters);
     }
-  }, [query, termFilter, distributionFilter, levelFilter, gradingFilter, search]);
+  }, [query, termFilter, distributionFilters, levelFilter, gradingFilter, search]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (timerRef.current) {
@@ -156,17 +154,17 @@ const Search: FC = () => {
   };
 
   const handleSave = useCallback(() => {
-    setDistributionFilter(localDistributionFilter);
+    setDistributionFilters(localDistributionFilters);
     setLevelFilter(localLevelFilter);
     setGradingFilter(localGradingFilter);
     setTermFilter(localTermFilter);
     setShowPopup(false);
   }, [
-    localDistributionFilter,
+    localDistributionFilters,
     localLevelFilter,
     localGradingFilter,
     localTermFilter,
-    setDistributionFilter,
+    setDistributionFilters,
     setLevelFilter,
     setGradingFilter,
     setShowPopup,
@@ -177,7 +175,7 @@ const Search: FC = () => {
     setLocalLevelFilter(useFilterStore.getState().levelFilter);
     setLocalTermFilter(useFilterStore.getState().termFilter);
     setLocalGradingFilter(useFilterStore.getState().gradingFilter);
-    setLocalDistributionFilter(useFilterStore.getState().distributionFilter);
+    setLocalDistributionFilters(useFilterStore.getState().distributionFilters);
     setShowPopup(false);
   }, [setShowPopup]);
   useEffect(() => {
@@ -197,7 +195,6 @@ const Search: FC = () => {
       document.addEventListener('keydown', handleKeyDown);
     }
 
-    // Remove event listener if showPopup is false, or on unmount.
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -224,11 +221,28 @@ const Search: FC = () => {
     }
   };
 
+  const handleDistributionChange = (_: any, newDistribution: string[] | null) => {
+    if (!newDistribution) {
+      setLocalDistributionFilters([]);
+      return;
+    }
+
+    const uniqueDistributions = newDistribution.filter(
+      (distribution) => distributionAreas[distribution] !== undefined
+    ).map(
+      (distribution) => distributionAreas[distribution ?? ''] ?? ''
+    );
+
+    console.log(uniqueDistributions);
+
+    setLocalDistributionFilters(uniqueDistributions);
+  };
+
   const modalContent = showPopup ? (
     <FilterModal
       setShowPopup={setShowPopup}
       setTermFilter={setLocalTermFilter}
-      setDistributionFilter={setLocalDistributionFilter}
+      setDistributionFilters={setLocalDistributionFilters}
       setLevelFilter={setLocalLevelFilter}
       setGradingFilter={setLocalGradingFilter}
       handleSave={handleSave}
@@ -260,18 +274,19 @@ const Search: FC = () => {
         <div>
           <FormLabel>Distribution area</FormLabel>
           <Autocomplete
-            multiple={false}
+            multiple={true}
             autoHighlight
             options={Object.keys(distributionAreas)}
             placeholder='Distribution area'
             variant='soft'
-            value={distributionAreasInverse[localDistributionFilter]}
+            value={localDistributionFilters.map((distribution) => distributionAreasInverse[distribution])}
             isOptionEqualToValue={(option, value) => value === '' || option === value}
-            onChange={(event, newDistributionName: string | null) => {
+            onChange={(event, newDistributions: string[] | null) => {
               event.stopPropagation();
-              setLocalDistributionFilter(distributionAreas[newDistributionName ?? ''] ?? '');
+              handleDistributionChange(event, newDistributions);
             }}
-            getOptionLabel={(option) => option.toString()}
+            getOptionLabel={(option) => {
+              return option ? option.toString() : '';}}
             renderOption={(props, option) => (
               <AutocompleteOption {...props} key={option}>
                 <ListItemContent>{option}</ListItemContent>
@@ -326,7 +341,7 @@ const Search: FC = () => {
       </footer>
     </FilterModal>
   ) : null;
-
+  
   return (
     <>
       <div className='block w-full pr-3 text-left'>
@@ -348,7 +363,7 @@ const Search: FC = () => {
           />
           <button
             type='button'
-            className='group absolute inset-y-1 right-2 flex items-center justify-center rounded-md px-1 hover:bg-dnd-gray'
+            className='group absolute inset-y-1 right-2 flex items-center justify-center rounded-md px-1 hover:bg-gray-100'
             onClick={handleAdjustmentsClick}
             aria-label='Adjust search settings'
           >
@@ -359,8 +374,28 @@ const Search: FC = () => {
           </button>
         </div>
         <div className='mt-3'>
-          <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
-          <div className='flex-basis:100px flex space-x-2 overflow-x-auto px-1 py-2'>
+          <div className='mb-2 flex items-center justify-between'>
+            <div className='text-sm font-medium text-gray-500'>Recent searches:</div>
+            <div className='flex items-center space-x-2'>
+              <button
+                className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
+                onClick={() => clearRecentSearches()}
+              >
+                Clear
+              </button>
+              <button
+                type='button'
+                className='rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-sm hover:bg-gray-50 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600'
+                onClick={() => {
+                  console.log('Upload transcript clicked');
+                }}
+                aria-label='Upload transcript'
+              >
+                <ArrowUpTrayIcon className='h-4 w-4 text-gray-500' aria-hidden='true' />
+              </button>
+            </div>
+          </div>
+          <div className='flex space-x-2 overflow-x-auto py-2'>
             {recentSearches.map((search, index) => (
               <button
                 key={index}
@@ -370,14 +405,6 @@ const Search: FC = () => {
                 {search}
               </button>
             ))}
-          </div>
-          <div className='space-x-1 overflow-x-auto px-1 py-1'>
-            <button
-              className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-              onClick={() => clearRecentSearches()}
-            >
-              Clear
-            </button>
           </div>
         </div>
       </div>

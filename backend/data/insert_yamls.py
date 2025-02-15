@@ -378,7 +378,8 @@ def clear_user_req_dict():
 
 def clear_requirement_ids():
     logging.info("Clearing requirement_id column in UserCourses...")
-    UserCourses.objects.update(requirement=None)
+    for user_course in UserCourses.objects.all():
+        user_course.requirements.clear()
     logging.info("requirement_id column cleared!")
 
 

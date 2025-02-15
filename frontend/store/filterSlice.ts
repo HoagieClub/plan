@@ -3,12 +3,12 @@ import { persist } from 'zustand/middleware';
 
 interface FilterState {
   termFilter: string;
-  distributionFilter: string;
+  distributionFilters: string[];
   levelFilter: string[];
   gradingFilter: string[];
   showPopup: boolean;
   setTermFilter: (term: string) => void;
-  setDistributionFilter: (distribution: string) => void;
+  setDistributionFilters: (distribution: string[]) => void;
   setLevelFilter: (level: string[]) => void;
   setGradingFilter: (grading: string[]) => void;
   setFilters: (filter: {
@@ -26,20 +26,20 @@ const useFilterStore = create<FilterState>()(
   persist(
     (set) => ({
       termFilter: '',
-      distributionFilter: '',
+      distributionFilters: [],
       levelFilter: [],
       gradingFilter: [],
       showPopup: false,
       setTermFilter: (term) => {
         set({ termFilter: term });
       },
-      setDistributionFilter: (distribution) => set({ distributionFilter: distribution }),
+      setDistributionFilters: (distribution) => set({ distributionFilters: distribution }),
       setLevelFilter: (level) => set({ levelFilter: level }),
       setGradingFilter: (grading) => set({ gradingFilter: grading }),
       setFilters: (filter) =>
         set({
           termFilter: filter.termFilter,
-          distributionFilter: filter.distributionFilter,
+          distributionFilters: filter.distributionFilters,
           levelFilter: filter.levelFilter,
           gradingFilter: filter.gradingFilter,
         }),
@@ -48,13 +48,13 @@ const useFilterStore = create<FilterState>()(
       resetFilters: () =>
         set({
           termFilter: '',
-          distributionFilter: '',
+          distributionFilters: [],
           levelFilter: [],
           gradingFilter: [],
         }),
       areFiltersEmpty: (filter) =>
         filter.termFilter === '' &&
-        filter.distributionFilter === '' &&
+        filter.distributionFilters.length === 0 &&
         filter.levelFilter.length === 0 &&
         filter.gradingFilter.length === 0,
     }),

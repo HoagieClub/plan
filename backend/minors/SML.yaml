@@ -39,11 +39,17 @@ req_list:
   max_counted: 1
   min_needed: 3
   course_list:
+  - POL 245
+  - SML 201
+  - SML 301
+  - SML 310
+  - SML 312
   - COS 429
   - COS 484
   - COS 485
   - ORF 418
   - SOC 306
+  - SML 354
   - ECE 434
   - MAT 385
   - ORF 309
@@ -70,8 +76,12 @@ req_list:
 - name: Independent Work
   max_counted: 1
   min_needed: 1
-  explanation: Students are required to complete at least one semester of independent work in their junior or senior year on a topic that 
+  explanation: |- 
+    <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so hoagieplan does not check it.</i><br><br>
+
+    Students are required to complete at least one semester of independent work in their junior or senior year on a topic that 
     applies SML methods or investigates these methods. This work may be used to satisfy the IW requirement of the SML minor and the student's 
     major. All work will be reviewed by the Statistics and Machine Learning Minor committee. In May, there will be an (online) poster session in 
     which students must present their independent work to other students, researchers, and the faculty. Students must adhere to submission due 
     dates for independent work papers and poster requirements.
+  no_req:

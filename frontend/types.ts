@@ -62,7 +62,7 @@ export type ModalProps = {
   children?: ReactNode;
   setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
   setTermFilter?: (term: string) => void;
-  setDistributionFilter?: (distribution: string) => void;
+  setDistributionFilters?: (distribution: string[]) => void;
   setLevelFilter?: (level: string[]) => void;
   setGradingFilter?: (grading: string[]) => void;
   handleCancel?: () => void;
@@ -71,7 +71,7 @@ export type ModalProps = {
 
 export type Filter = {
   termFilter: string;
-  distributionFilter: string;
+  distributionFilters: string[];
   levelFilter: string[];
   gradingFilter: string[];
 };

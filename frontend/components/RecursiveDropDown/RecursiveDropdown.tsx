@@ -152,7 +152,10 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
           setMarkedSatisfied(data[7]);
         }
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoading(false))
+      .catch((error) => {
+        console.error(error);
+      });
     event.stopPropagation();
     setShowPopup(true);
   };
@@ -203,10 +206,15 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         reqId: explanation ? explanation[0] : null,
         markedSatisfied: 'true',
       }),
-    }).then((response) => response.json());
-
-    setMarkedSatisfied(true);
-    updateRequirements();
+    })
+      .then((response) => response.json())
+      .then(() => {
+        setMarkedSatisfied(true);
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleUnmarkSatisfied = () => {
@@ -225,10 +233,15 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         reqId: explanation ? explanation[0] : null,
         markedSatisfied: 'false',
       }),
-    }).then((response) => response.json());
-
-    setMarkedSatisfied(false);
-    updateRequirements();
+    })
+      .then((response) => response.json())
+      .then(() => {
+        setMarkedSatisfied(true);
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   useEffect(() => {
@@ -385,9 +398,19 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
         'X-CSRFToken': csrfToken,
       },
       body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
-    }).then((response) => response.json());
-
-    updateRequirements();
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(() => {
+        updateRequirements();
+      })
+      .catch((error) => {
+        console.error('Error during manual settling:', error);
+      });
   };
 
   const renderContent = (data: Dictionary) => {
@@ -410,7 +433,7 @@ const Dropdown: FC<DropdownProps> = ({ data, profile, csrfToken, updateRequireme
             <Button
               key={index}
               variant='contained'
-              disabled={!item['manually_settled']}
+              disabled={!item['manually_settled'].includes(value[1])}
               style={{
                 margin: '5px',
                 color: '#4b5563',

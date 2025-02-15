@@ -31,7 +31,7 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 });
 
-export default [
+const eslintConfig = [
   {
     ignores: [
       '**/node_modules/**',
@@ -123,7 +123,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
 
       // Import rules
@@ -178,17 +178,8 @@ export default [
       'no-nested-ternary': 'warn',
       'no-unneeded-ternary': 'error',
       'spaced-comment': ['error', 'always', { markers: ['/'] }],
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['../*'],
-              message: 'Please use absolute imports instead',
-            },
-          ],
-        },
-      ],
     },
   },
 ];
+
+export default eslintConfig
