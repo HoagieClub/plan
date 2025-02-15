@@ -95,10 +95,10 @@ def generate_class_ical(cal, calendar_event, semester_code):
     else:
         print('No description')
     
-    # if location:
-    #     event.add('location', location)
-    # else:
-    #     print('No location')
+    if location:
+        event.add('location', location)
+    else:
+        print('No location')
     
     if instructor:
         event.add('organizer', instructor)
@@ -202,7 +202,7 @@ def main():
                 'class_meetings':
                 [
                     {
-                        'building_name': "Canceled",
+                        'building_name': "ComSciBldg 104",
                         'days': "M,W",
                         'end_time': "10:50",
                         'id': 63680,
@@ -219,7 +219,7 @@ def main():
                 },
                 'enrollment': 81,
                 'id': 87114,
-                'instructor': {'name': 'Micahel J. Freedman'},
+                'instructor': {'name': 'Michael J. Freedman'},
                 'startColumnIndex': 1,
                 'startRowIndex': 14,
                 'startTime': "10:00"
@@ -266,7 +266,7 @@ def main():
                 'class_meetings':
                 [
                     {
-                        'building_name': "Canceled",
+                        'building_name': "Sherrerd Hall 104",
                         'days': "T, Th",
                         'end_time': "12:20",
                         'id': 61373,
