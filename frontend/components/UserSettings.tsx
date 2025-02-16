@@ -57,6 +57,7 @@ const majorOptions = [
   { code: 'GEO', name: 'Geosciences' },
   { code: 'GER', name: 'German' },
   { code: 'HIS', name: 'History' },
+  { code: 'LIN', name: 'Linguistics' },
   { code: 'MAE', name: 'Mechanical and Aerospace Engineering' },
   { code: 'MAT', name: 'Mathematics' },
   { code: 'MOL', name: 'Molecular Biology' },
