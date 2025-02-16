@@ -104,7 +104,6 @@ def check_requirements(user_inst, table, code, courses):
     assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
     add_course_lists_to_req(req, courses)
     formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
-    print(courses)
     return formatted_req
 
 
