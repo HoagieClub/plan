@@ -355,7 +355,9 @@ const CalendarSearch: FC = () => {
                   className='recent-search-item'
                   onClick={() => retrieveCachedSearch(search)}
                 >
-                  {search}
+                  {search.length > 20
+                      ? search.slice(0, 20) + '...'
+                      : search}
                 </button>
               ))}
             </div>

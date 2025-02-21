@@ -367,7 +367,9 @@ const Search: FC = () => {
                 className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300'
                 onClick={() => retrieveCachedSearch(search)}
               >
-                {search}
+                {search.length > 20
+                  ? search.slice(0, 20) + '...'
+                  : search}
               </button>
             ))}
           </div>
