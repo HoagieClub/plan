@@ -1,11 +1,12 @@
 version: 2
 updates:
+
   # TypeScript dependencies managed by npm
   - package-ecosystem: "npm"
     directory: "frontend/"
     target-branch: "dev"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "tuesday"
     commit-message:
       prefix: "deps"
@@ -23,7 +24,7 @@ updates:
     directory: "backend/"
     target-branch: "dev"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "thursday"
     commit-message:
       prefix: "deps"
@@ -35,4 +36,3 @@ updates:
       - "windsornguyen"
       - "ggchiriac"
     open-pull-requests-limit: 5
-  

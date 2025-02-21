@@ -4,9 +4,9 @@ colorama==0.4.6
     # via hoagie-plan (pyproject.toml)
 dj-database-url==2.3.0
     # via hoagie-plan (pyproject.toml)
-django==5.1.1
+django==5.1.4
     # via hoagie-plan (pyproject.toml)
-django-cors-headers==4.6.0
+django-cors-headers==4.7.0
     # via hoagie-plan (pyproject.toml)
 django-heroku==0.3.1
     # via hoagie-plan (pyproject.toml)
@@ -14,7 +14,7 @@ djangorestframework==3.15.2
     # via hoagie-plan (pyproject.toml)
 gunicorn==23.0.0
     # via hoagie-plan (pyproject.toml)
-orjson==3.10.12
+orjson==3.10.15
     # via hoagie-plan (pyproject.toml)
 postgres==4.0
     # via hoagie-plan (pyproject.toml)
@@ -24,7 +24,7 @@ pyyaml==6.0.2
     # via hoagie-plan (pyproject.toml)
 requests==2.32.3
     # via hoagie-plan (pyproject.toml)
-ruff==0.8.1
+ruff==0.9.6
     # via hoagie-plan (pyproject.toml)
 tqdm==4.67.1
     # via hoagie-plan (pyproject.toml)
