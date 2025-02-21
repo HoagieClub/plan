@@ -378,14 +378,28 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
               handleMinorsChange(event, newMinors);
             }}
             getOptionLabel={(option: MajorMinorType) => option.code}
-            renderOption={(props, option) => (
-              <AutocompleteOption {...props} key={option.name}>
-                <ListItemContent>
-                  {option.code}
-                  <Typography level='body-sm'>{option.name}</Typography>
-                </ListItemContent>
-              </AutocompleteOption>
-            )}
+            renderOption={(props, option) => {
+                // Determine if current minor 'option' is already selected by the user.
+                const isAlreadySelected = minors.some(minor => minor.code === option.code);
+                return (
+                    <AutocompleteOption {...props} 
+                        key={option.name}
+                        component="li"
+                        // Disable the selection of and add custom styling (i.e. darkened background) to already selected minors.
+                        sx={{
+                            ...(isAlreadySelected && {
+                                color: 'darkgray',
+                                pointerEvents: 'none',
+                            })
+                        }}
+                        >
+                        <ListItemContent>
+                            {option.code}
+                            <Typography level='body-sm'>{option.name}</Typography>
+                        </ListItemContent>
+                    </AutocompleteOption>
+                );
+            }}
           />
         </div>
         <div>
@@ -405,14 +419,28 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
               handleCertificatesChange(event, newCertificates);
             }}
             getOptionLabel={(option: MajorMinorType) => option.code}
-            renderOption={(props, option) => (
-              <AutocompleteOption {...props} key={option.name}>
-                <ListItemContent>
-                  {option.code}
-                  <Typography level='body-sm'>{option.name}</Typography>
-                </ListItemContent>
-              </AutocompleteOption>
-            )}
+            renderOption={(props, option) => {
+                // Determine if current certificate 'option' is already selected by the user.
+                const isAlreadySelected = certificates.some(certificate => certificate.code === option.code);
+                return (
+                    <AutocompleteOption {...props} 
+                        key={option.name}
+                        component="li"
+                        // Disable the selection of and add custom styling (i.e. darkened background) to already selected certificates.
+                        sx={{
+                            ...(isAlreadySelected && {
+                                color: 'darkgray',
+                                pointerEvents: 'none',
+                            })
+                        }}
+                        >
+                        <ListItemContent>
+                            {option.code}
+                            <Typography level='body-sm'>{option.name}</Typography>
+                        </ListItemContent>
+                    </AutocompleteOption>
+                );
+            }}
           />
         </div>
         <Snackbar
