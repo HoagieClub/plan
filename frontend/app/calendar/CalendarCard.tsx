@@ -70,8 +70,8 @@ const CalendarCard: FC<CalendarCardProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-between text-[0.65rem] text-white/80">
-        <span>{event.startTime} – {event.endTime}</span>
+      <div className="flex justify-between text-[0.7rem] text-white/80">
+        <span>{event.startTime} - {event.endTime}</span>
         <span>{event.section.enrollment}/{event.section.capacity}</span>
       </div>
     </div>
