@@ -80,8 +80,9 @@ const config: Config = {
         'hoagieplan-purple': '#663399',
       },
       backgroundColor: {
-        'hoagieplan-dark-yellow': '#FFB020',
-        'hoagieplan-light-yellow': '#FFEFD2',
+        white: '#FFFFFF',
+        'hoagieplan-dark-blue': '#3366FF',
+        'hoagieplan-light-blue': '#EBF0FF',
         'dnd-gray': 'rgba(0, 0, 0, 0.05)',
       },
       borderRadius: {

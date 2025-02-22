@@ -46,7 +46,7 @@ export default function Index() {
           <Button
             height={56}
             width={majorScale(35)}
-            backgroundColor={theme.colors.yellow100}
+            backgroundColor={theme.colors.red25}
             marginBottom={20}
             iconBefore={GridViewIcon}
           >
@@ -58,7 +58,7 @@ export default function Index() {
           <Button
             height={56}
             width={majorScale(35)}
-            backgroundColor={theme.colors.yellow100}
+            backgroundColor={theme.colors.red25}
             marginBottom={20}
             iconBefore={CalendarIcon}
           >

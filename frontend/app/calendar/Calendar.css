@@ -39,11 +39,11 @@
 }
 
 .carouselTab:hover {
-  background-color: #f4f6fa;
+  background-color: #F1F5F9;
 }
 
 .carouselTab:active {
-  background-color: #f4f6fa;
+  background-color: #F1F5F9;
 }
 
 .carouselTab.selected {
@@ -248,7 +248,7 @@
   font-weight: bold;
   display: flex;
   flex-direction: column;
-  background-color: #f4f6fa;
+  background-color: #F1F5F9;
   border-right: 1px solid #ccc;
   padding: 8px 0;
 }

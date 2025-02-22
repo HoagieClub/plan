@@ -31,7 +31,7 @@ export default function Content({ children, user }: { children: ReactNode; user:
   ];
 
   return (
-    <Theme palette='yellow'>
+    <Theme palette='plan'>
       <Layout>
         <Nav
           name='plan'

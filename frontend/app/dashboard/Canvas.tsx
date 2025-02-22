@@ -63,18 +63,6 @@ const staticRectSortingStrategy = () => {
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
 
-function simpleHash(str: string) {
-  if (str.length !== 3) {
-    return 0;
-  }
-
-  let sum = 0;
-  for (let i = 0; i < str.length; i++) {
-    sum += (i + 1) * str.charCodeAt(i);
-  }
-  return sum % 11;
-}
-
 let csrfToken: string;
 
 if (typeof window === 'undefined') {

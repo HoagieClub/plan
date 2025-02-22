@@ -64,10 +64,14 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
   isRestrictions,
 }) => {
   if (manuallySatisfied) {
-    return <CheckCircleOutlineIcon style={{ color: '#9ca3af', marginLeft: '10px' }} />;
+    return (
+      <CheckCircleOutlineIcon
+        style={{ color: '#9ca3af', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
+      />
+    );
   }
   if (isRestrictions) {
-    return <InfoOutlinedIcon style={{ color: 'blue', marginLeft: '10px' }} />;
+    return <InfoOutlinedIcon style={{ color: 'blue', marginLeft: '0.2em', fontSize: '1.3em' }} />;
   }
   if (maxCounted > 1) {
     return (
@@ -75,14 +79,16 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
         {satisfied === 'True' ? (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ fontWeight: 450, color: 'green' }}>{Math.floor(count / minNeeded)}</span>
-            <AddCircleOutlineOutlinedIcon style={{ color: 'green', marginLeft: '10px' }} />
+            <AddCircleOutlineOutlinedIcon
+              style={{ color: 'green', marginLeft: '0.2em', fontSize: '1.3em' }}
+            />
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontWeight: 450, color: 'red' }}>
+            <span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
               {count}/{minNeeded}
             </span>
-            <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
+            <HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
           </div>
         )}
       </>
@@ -91,13 +97,15 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
   return (
     <>
       {satisfied === 'True' ? (
-        <CheckCircleOutlineIcon style={{ color: 'green', marginLeft: '10px' }} />
+        <CheckCircleOutlineIcon
+          style={{ color: 'green', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
+        />
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontWeight: 450, color: 'red' }}>
+          <span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
             {count}/{minNeeded}
           </span>
-          <HighlightOffIcon style={{ color: 'red', marginLeft: '10px' }} />
+          <HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
         </div>
       )}
     </>

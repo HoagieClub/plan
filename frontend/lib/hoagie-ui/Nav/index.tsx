@@ -77,7 +77,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
       {HeaderComponent ? (
         <HeaderComponent />
       ) : (
-        <Pane width='100%' height={20} background={theme.title} />
+        <Pane width='100%' height={20} background={theme.colors.red600} />
       )}
       <Pane
         display='flex'
@@ -105,7 +105,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
                   <Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
                     hoagie
                   </Text>
-                  <Text is='h2' display='inline-block' className='hoagie logo' color='yellow400'>
+                  <Text is='h2' display='inline-block' className='hoagie logo' color='blue500'>
                     {name}
                   </Text>
                   {beta && (
@@ -121,6 +121,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
             <TabNavigation>
               {tabs.map((tab) => (
                 <Tab
+                  appearance='secondary'
                   key={tab.title}
                   is='a'
                   id={tab.title}
@@ -153,7 +154,7 @@ function Nav({ name, LogoComponent, HeaderComponent, tabs = [], beta = false }: 
                 <Avatar
                   name={user.name}
                   style={{ cursor: 'pointer' }}
-                  backgroundColor={theme.colors.yellow100}
+                  backgroundColor={theme.colors.red25}
                   size={40}
                   marginLeft={majorScale(4)}
                 />
