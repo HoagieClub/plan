@@ -103,9 +103,6 @@ const Search: FC = () => {
 
         const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
 
-        console.log("response sent");
-        console.log(filter);
-
         if (response.ok) {
           const data: { courses: Course[] } = await response.json();
           setSearchResults(data.courses);
