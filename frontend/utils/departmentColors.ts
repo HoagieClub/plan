@@ -116,7 +116,10 @@ function lightenColor(hex: string): string {
   let color = hex.startsWith('#') ? hex.slice(1) : hex;
 
   if (color.length === 3) {
-    color = color.split('').map(ch => ch + ch).join('');
+    color = color
+      .split('')
+      .map((ch) => ch + ch)
+      .join('');
   }
 
   const r = parseInt(color.substring(0, 2), 16);
@@ -134,9 +137,10 @@ function lightenColor(hex: string): string {
 }
 
 export const getDepartmentGradient = (departmentCode: string, angle: number) => {
-  const colors = [departmentColors[departmentCode], lightenColor(departmentColors[departmentCode])];
-  if (!colors) {
+  const color = departmentColors[departmentCode];
+  if (!color) {
     return 'linear-gradient(135deg, #000000, #FFFFFF)';
   }
+  const colors = [color, lightenColor(color)];
   return `linear-gradient(${angle}deg, ${colors[0]}, ${colors[1]})`;
 };

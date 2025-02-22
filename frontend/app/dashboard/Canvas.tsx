@@ -28,7 +28,6 @@ import TabbedMenu from '@/components/TabbedMenu/TabbedMenu';
 import useSearchStore from '@/store/searchSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
-import { departmentColors } from '@/utils/departmentColors';
 import { getDepartmentGradient } from '@/utils/departmentColors';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
@@ -797,34 +796,25 @@ export function Canvas({
 
 function getPrimaryColor(id: UniqueIdentifier) {
   const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-  console.log('Department:', dept); // Log department
   const gradient = getDepartmentGradient(dept, 90);
-  console.log('Gradient:', gradient); // Log gradient
 
   // Extract the first color
   const colors = gradient.split(',');
-  const firstColor = colors[1]?.trim(); 
-  console.log('Primary Color:', firstColor);
+  const firstColor = colors[1]?.trim();
 
   return firstColor;
 }
 
-
 function getSecondaryColor(id: UniqueIdentifier) {
   const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-  console.log('Department:', dept); // Log department
   const gradient = getDepartmentGradient(dept, 90);
-  console.log('Gradient:', gradient); // Log gradient
 
   // Extract the second color
   const colors = gradient.split(',');
-  const secondColor = colors[2]?.trim().split(')')[0]
-  console.log('Secondary Color:', secondColor);
+  const secondColor = colors[2]?.trim().split(')')[0];
 
   return secondColor;
 }
-
-
 
 type SortableItemProps = {
   containerId: UniqueIdentifier;
