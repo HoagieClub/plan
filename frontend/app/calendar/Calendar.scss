@@ -256,8 +256,10 @@ $box-shadow-hover:
   grid-template-columns:
     [time-col-start] auto [time-col-end grid-start] repeat(var(--days-length), 1fr)
     [grid-end];
+  grid-template-rows: repeat(24, 1fr);
   overflow: hidden;
   height: 100vh;
+  
 }
 
 .calendar-time {
@@ -265,9 +267,10 @@ $box-shadow-hover:
   font-weight: bold;
   display: flex;
   flex-direction: column;
-  background-color: #f7f7f7;
+  background-color: transparent;
   border-right: 1px solid #ccc;
   padding: 8px 0;
+
 }
 
 .time-slot {
