@@ -41,7 +41,7 @@ function ProfileCard({ user, onSettingsClick }: ProfileCardProps) {
       flexDirection='column'
       alignItems='center'
     >
-      <Avatar name={name} backgroundColor={theme.colors.yellow100} size={40} />
+      <Avatar name={name} backgroundColor={theme.colors.red25} size={40} />
       <Heading size={500} marginTop={majorScale(1)}>
         {name}
       </Heading>

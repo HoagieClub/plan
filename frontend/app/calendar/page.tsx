@@ -84,22 +84,14 @@ const CalendarUI: FC = () => {
         </Pane>
       </div>
 
-      <main className='flex flex-grow'>
+      <main className='flex flex-grow justify-center'>
         <div className='flex h-full w-full'>
           <div>
             <CalendarSearch />
             <SelectedCourses />
           </div>
-
-          <div className='margin flex-grow'>
+          <div className='margin flex-grow pr-2'>
             {!isLoading && userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
-          </div>
-        </div>
-        <div className={tabStyles.tabContainer} style={{ width: '20%' }}>
-          <div className={tabStyles.tabContent}>
-            <div className='text-sm font-medium text-gray-500'>
-              <strong>More calendar features</strong> will be available soon. Stay tuned!
-            </div>
           </div>
         </div>
       </main>

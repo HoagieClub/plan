@@ -22,7 +22,7 @@ const formatHour = (hour: number): string => {
 
 const calendarColors = {
   gridBorder: '#e0e0e0',
-  dayLabelBg: '#f4f6fa',
+  dayLabelBg: '#F1F5F9',
   timeLabelText: '#757575',
 };
 
@@ -86,9 +86,14 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
               borderTop: rowIndex === 0 ? `1px solid ${calendarColors.gridBorder}` : 'none',
               color: calendarColors.timeLabelText,
               borderBottomLeftRadius: rowIndex === endHour - startHour ? '10px' : '0',
+              height: '100%',
+              alignSelf: 'stretch', 
+              display: 'flex',
+              alignItems: 'center', 
+              justifyContent: 'flex-start',
             }}
           >
-            {formatHour(rowIndex + startHour)}
+            {formatHour(rowIndex + startHour -1)}
           </div>
         ))}
 

@@ -104,7 +104,6 @@ def check_requirements(user_inst, table, code, courses):
     assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
     add_course_lists_to_req(req, courses)
     formatted_req = format_req_output(req, courses, manually_satisfied_reqs)
-    print(courses)
     return formatted_req
 
 
@@ -263,7 +262,7 @@ def create_courses(user_inst):
             "dept_code": course_inst.course.department.code,
             "cat_num": course_inst.course.catalog_number,
         }
-        req_ids = list(course_inst.requirements.values_list('id', flat=True))
+        req_ids = list(course_inst.requirements.values_list("id", flat=True))
         course["manually_settled"] = req_ids
         courses[course_inst.semester - 1].append(course)
     return courses
@@ -419,12 +418,18 @@ def settle_reqs(req, courses):
     for sem in courses:
         for course in sem:
             if len(course["manually_settled"]) > 0:
-                for p in course["manually_settled"]:  # go through the requirements this course was manually settled into
+                for p in course[
+                    "manually_settled"
+                ]:  # go through the requirements this course was manually settled into
                     if (p == req["id"]) and (p in course["possible_reqs"]):
                         course["settled"].append(req["id"])
                         num_marked += 1
                         break
-            if (course["num_settleable"] == 1) and (req["id"] in course["possible_reqs"]) and (req["id"] not in course["settled"]):  # if course can only fall into the currrent requirement, settle it
+            if (
+                (course["num_settleable"] == 1)
+                and (req["id"] in course["possible_reqs"])
+                and (req["id"] not in course["settled"])
+            ):  # if course can only fall into the currrent requirement, settle it
                 num_marked += 1
                 course["settled"].append(req["id"])
     return num_marked
@@ -733,9 +738,74 @@ def parse_semester(semester_id, class_year):
 
     return semester_num
 
+def parse_transcript_semester(semester_name):
+    # transcript json for semester looks like `2021-2022 Fall` instead of `Fall 2021`
+    # likewise, convert `2021-2022 Spring` to `Spring 2022`
+    year, term = semester_name.split(' ')
+    start_year, end_year = year.split('-')
+    if (term == "Fall"):
+        return f"{term} {start_year}"
+    else:
+        return f"{term} {end_year}"
+
+
+def update_transcript_courses(request):
+    try:
+        data = oj.loads(request.body)
+        net_id = request.headers.get("X-NetId")
+        user_inst = CustomUser.objects.get(net_id=net_id)
+        class_year = user_inst.class_year
+
+        # for testing
+        # data = {
+        #     '2023-2024 Fall': ['COS 126', 'CWR 201', 'ECO 312', 'EGR 301'],
+        #     '2023-2024 Spring': ['COS 226', 'MAT 217', 'MAT 378', 'ORF 309', 'WRI 192'],
+        #     '2024-2025 Fall': ['COS 217', 'COS 511', 'MAT 320', 'ORF 405'],
+        #     '2024-2025 Spring': ['COS 240', 'GER 211', 'MAT 325', 'ORF 307', 'PHI 301'],
+        #     '2025-2026 Fall': ['COS 333', 'COS 514', 'ORF 526', 'POL 210'],
+        #     '2025-2026 Spring': ['COS 398', 'COS 418', 'ENG 319', 'ORF 515', 'ORF 523']
+        # }
+
+        for semester, courses in data.items():
+            # ex: convert `2021-2022 Fall` to `Fall 2021`
+            semester = parse_transcript_semester(semester)
+            # convert to bin number
+            semester = parse_semester(semester, class_year)
+
+            for course_name in courses:
+                course_inst = (
+                    Course.objects.select_related('department')
+                    # icontains and not iexact because ORF 309 not found with ORF 309 / EGR 309 / MAT 380
+                    .filter(crosslistings__icontains=course_name, usercourses__user=user_inst)
+                    .order_by('-guid')
+                    .first()
+                )
+                if not course_inst:
+                    course_inst = (
+                        Course.objects.select_related('department')
+                        .filter(crosslistings__icontains=course_name)
+                        .order_by('-guid')
+                        .first()
+                    )
+
+                user_course, created = UserCourses.objects.update_or_create(
+                    user=user_inst, course=course_inst, defaults={'semester': semester}
+                )
+                if created:
+                    message = f'User course added: {semester}, {course_name}, {net_id}'
+                else:
+                    message = f'User course updated: {semester}, {course_name}, {net_id}'
+
+        return JsonResponse({'status': 'success', 'message': message})
+
+
+    except Exception as e:
+        logger.error(f'An internal error occurred: {e}', exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'An internal error has occurred!'})
 
 def update_courses(request):
     try:
+        # update_transcript_courses(request)
         data = oj.loads(request.body)
         crosslistings = data.get("crosslistings")
         container = data.get("semesterId")

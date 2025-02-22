@@ -27,11 +27,9 @@ export const Container = forwardRef<HTMLDivElement | HTMLButtonElement, Containe
     {
       children,
       columns = 1,
-      // handleProps, // TODO: remove permanently?
       horizontal,
       hover,
       onClick,
-      // onRemove, // TODO: remove permanently?
       label,
       placeholder,
       style,

@@ -4,6 +4,7 @@ import type { CalendarEvent } from '@/types';
 
 import './Calendar.scss';
 import { departmentColors } from '@/utils/departmentColors';
+import { getDepartmentGradient } from '@/utils/departmentColors';
 
 interface CalendarCardProps {
   event: CalendarEvent;
@@ -26,7 +27,7 @@ const CalendarCard: FC<CalendarCardProps> = ({
   dept,
 }) => {
   function getGradientStyle(dept: string, needsChoice: boolean, isChosen: boolean) {
-    const baseColor = departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)'; // Fallback gradient
+    const baseColor = getDepartmentGradient(dept, 135);
 
     if (!needsChoice || isChosen) {
       return {
@@ -68,16 +69,11 @@ const CalendarCard: FC<CalendarCardProps> = ({
           {event.course.department_code} {event.course.catalog_number} -{' '}
           {event.section.class_section}
         </div>
-
-        <div className='mt-1 text-sm text-white/80'>
-          {event.startTime} – {event.endTime}
-        </div>
       </div>
 
-      <div className='capacity-container mt-1 flex items-center text-sm text-white/80'>
-        <span className='capacity'>
-          {event.section.enrollment} / {event.section.capacity}
-        </span>
+      <div className="flex justify-between text-[0.7rem] text-white/80">
+        <span>{event.startTime} - {event.endTime}</span>
+        <span>{event.section.enrollment}/{event.section.capacity}</span>
       </div>
     </div>
   );

@@ -64,7 +64,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
   ];
 
   return (
-    <Theme palette='yellow'>
+    <Theme palette='plan'>
       <Layout>
         <Nav name='plan' tabs={tabs} />
         {children}
@@ -84,7 +84,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en' className='bg-hoagieplan-dark-yellow'>
+    <html lang='en' className='bg-white'>
       <UserProvider>
         <body className='antialiased'>
           <Content>{children}</Content>
@@ -144,7 +144,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 //   const session = await fetchSession();
 
 //   return (
-//     <html lang='en' className='bg-hoagieplan-dark-yellow'>
+//     <html lang='en' className='bg-hoagieplan-dark-blue'>
 //       <UserProvider>
 //         <body className='antialiased'>
 //           <Content user={session.user}>{children}</Content>

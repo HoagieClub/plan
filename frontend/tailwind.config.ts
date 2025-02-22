@@ -18,7 +18,9 @@ const config: Config = {
         foreground: 'hsl(var(--foreground))',
         border: 'hsl(var(--border))',
       backgroundColor: {
-        'hoagieplan-dark-yellow': '#FFB020',
+        white: '#FFFFFF',
+        'hoagieplan-dark-blue': '#3366FF',
+        'hoagieplan-light-blue': '#EBF0FF',
         'dnd-gray': 'rgba(0, 0, 0, 0.05)',
       },
     },

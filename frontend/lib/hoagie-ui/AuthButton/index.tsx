@@ -42,7 +42,7 @@ function AuthButton({ variant = 'login', href = '' }: AuthButtonProps) {
       <Button
         height={56}
         width={majorScale(35)}
-        background={theme.colors.yellow100}
+        background={theme.colors.red25}
         appearance={isLogout ? 'default' : 'primary'}
       >
         {logo}
