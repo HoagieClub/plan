@@ -313,7 +313,7 @@ const CalendarSearch: FC = () => {
 
   return (
     <>
-      <div className='mx-[0.5vw] my-[1vh] mt-2 w-[24vw]'>
+      <div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
         <ButtonWidget
           href='/dashboard'
           text='Upload Transcript from TigerHub'
