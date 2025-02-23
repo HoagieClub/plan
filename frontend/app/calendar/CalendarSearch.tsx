@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -316,8 +316,8 @@ const CalendarSearch: FC = () => {
       <div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
         <ButtonWidget
           href='/dashboard'
-          text='Upload Transcript from TigerHub'
-          icon={<ArrowDownTrayIcon className='h-5 w-5' />}
+          text='Export Calendar'
+          icon={<ArrowUpTrayIcon className='h-5 w-5' />}
         />
       </div>
 

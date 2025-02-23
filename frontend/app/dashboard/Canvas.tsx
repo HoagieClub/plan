@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -564,8 +564,8 @@ export function Canvas({
                 <div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
                   <ButtonWidget
                     href='/dashboard'
-                    text='Export to Calendar'
-                    icon={<ArrowUpTrayIcon className='h-5 w-5' />}
+                    text='Upload Transcript from TigerHub'
+                    icon={<ArrowDownTrayIcon className='h-5 w-5' />}
                   />
                 </div>
                 <DroppableContainer
