@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -25,6 +26,7 @@ import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearc
 import { Item } from '@/components/Item';
 import Search from '@/components/Search';
 import TabbedMenu from '@/components/TabbedMenu/TabbedMenu';
+import ButtonWidget from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
@@ -559,6 +561,13 @@ export function Canvas({
               >
                 {/* issue here with resizing + with requirements dropdowns*/}
                 {/* Try to get this to fixed height*/}
+                <div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
+                  <ButtonWidget
+                    href='/dashboard'
+                    text='Upload Transcript from TigerHub'
+                    icon={<ArrowDownTrayIcon className='h-5 w-5' />}
+                  />
+                </div>
                 <DroppableContainer
                   key={SEARCH_RESULTS_ID}
                   id={SEARCH_RESULTS_ID}

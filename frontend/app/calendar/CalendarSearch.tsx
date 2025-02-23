@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
   Button,
   Checkbox,
@@ -14,6 +14,7 @@ import {
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
+import ButtonWidget from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import useFilterStore from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
@@ -312,12 +313,21 @@ const CalendarSearch: FC = () => {
 
   return (
     <>
+      <div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
+        <ButtonWidget
+          href='/dashboard'
+          text='Export Calendar'
+          icon={<ArrowUpTrayIcon className='h-5 w-5' />}
+        />
+      </div>
+
       <div className='calendar-search'>
         <div className='search-header'>
           <div className='search-input-container'>
             <div className='search-icon'>
               <MagnifyingGlassIcon className='icon' aria-hidden='true' />
             </div>
+
             <input
               type='text'
               name='search'
@@ -339,13 +349,6 @@ const CalendarSearch: FC = () => {
               />
             </button>
           </div>
-            <button 
-              type='button'
-              className="p-2.5 font-semibold font-medium text-center text-gray-700 bg-yellow-400 
-              rounded-lg shadow-xl hover:bg-yellow-100 transition-all duration-300 ease-in-out w-auto"
-              >
-              Export Calendar
-            </button>
           <div className='recent-searches'>
             <div className='recent-searches-label'>Recent searches:</div>
             <div className='recent-searches-list'>
