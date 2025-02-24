@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { type ModalProps } from '@/types';
 
-const Modal: FC<ModalProps> = ({ children }) => {
+export const Modal: FC<ModalProps> = ({ children }) => {
 	return createPortal(
 		<>
 			<div className='modal-backdrop fixed inset-0 z-50 bg-black bg-opacity-30 backdrop-blur-sm' />
@@ -44,5 +44,3 @@ export const TutorialModal: FC<ModalProps> = ({ children }) => {
 		document.body
 	);
 };
-
-export default Modal;

@@ -15,20 +15,39 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
+import { NextResponse, type NextRequest } from 'next/server';
+
 import { auth0 } from '@/lib/auth0';
 
-import type { NextRequest } from 'next/server';
-
 export async function middleware(request: NextRequest) {
-	return await auth0.middleware(request);
+	const authRes = await auth0.middleware(request);
+
+	// authentication routes — let the middleware handle it
+	if (request.nextUrl.pathname.startsWith('/auth')) {
+		return authRes;
+	}
+
+	const { origin } = new URL(request.url);
+	const session = await auth0.getSession();
+
+	// protect dashboard and calendar routes
+	if (
+		(request.nextUrl.pathname.startsWith('/dashboard') ||
+			request.nextUrl.pathname.startsWith('/calendar')) &&
+		!session
+	) {
+		return NextResponse.redirect(`${origin}/auth/login`);
+	}
+
+	return authRes;
 }
 
 export const config = {
 	/*
-	 * Match all request paths except:
-	 * - _next/static (Next.js internal static files)
-	 * - _next/image (Next.js image optimization)
-	 * - favicon.ico, sitemap.xml, robots.txt (common metadata files)
+	 * Match all request paths except for the ones starting with:
+	 * - _next/static (static files)
+	 * - _next/image (image optimization files)
+	 * - favicon.ico, sitemap.xml, robots.txt (metadata files)
 	 */
 	matcher: ['/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)'],
 };

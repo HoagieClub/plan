@@ -14,8 +14,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
 import styles from '@/components/InfoComponent/InfoComponent.module.css';
-import LoadingComponent from '@/components/LoadingComponent';
-import SettingsModal from '@/components/Modal';
+import { LoadingComponent } from '@/components/LoadingComponent';
+import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/utils';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
@@ -62,53 +62,53 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
 	maxCounted,
 	isRestrictions,
 }) => {
-  if (manuallySatisfied) {
-    return (
-      <CheckCircleOutlineIcon
-        style={{ color: '#9ca3af', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
-      />
-    );
-  }
-  if (isRestrictions) {
-    return <InfoOutlinedIcon style={{ color: 'blue', marginLeft: '0.2em', fontSize: '1.3em' }} />;
-  }
-  if (maxCounted > 1) {
-    return (
-      <>
-        {satisfied === 'True' ? (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontWeight: 450, color: 'green' }}>{Math.floor(count / minNeeded)}</span>
-            <AddCircleOutlineOutlinedIcon
-              style={{ color: 'green', marginLeft: '0.2em', fontSize: '1.3em' }}
-            />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
-              {count}/{minNeeded}
-            </span>
-            <HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
-          </div>
-        )}
-      </>
-    );
-  }
-  return (
-    <>
-      {satisfied === 'True' ? (
-        <CheckCircleOutlineIcon
-          style={{ color: 'green', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
-        />
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
-            {count}/{minNeeded}
-          </span>
-          <HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
-        </div>
-      )}
-    </>
-  );
+	if (manuallySatisfied) {
+		return (
+			<CheckCircleOutlineIcon
+				style={{ color: '#9ca3af', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
+			/>
+		);
+	}
+	if (isRestrictions) {
+		return <InfoOutlinedIcon style={{ color: 'blue', marginLeft: '0.2em', fontSize: '1.3em' }} />;
+	}
+	if (maxCounted > 1) {
+		return (
+			<>
+				{satisfied === 'True' ? (
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<span style={{ fontWeight: 450, color: 'green' }}>{Math.floor(count / minNeeded)}</span>
+						<AddCircleOutlineOutlinedIcon
+							style={{ color: 'green', marginLeft: '0.2em', fontSize: '1.3em' }}
+						/>
+					</div>
+				) : (
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
+							{count}/{minNeeded}
+						</span>
+						<HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
+					</div>
+				)}
+			</>
+		);
+	}
+	return (
+		<>
+			{satisfied === 'True' ? (
+				<CheckCircleOutlineIcon
+					style={{ color: 'green', marginLeft: '0.2em', marginTop: '0.1em', fontSize: '1.3em' }}
+				/>
+			) : (
+				<div style={{ display: 'flex', alignItems: 'center' }}>
+					<span style={{ fontWeight: 450, color: 'red', marginLeft: '0.2em' }}>
+						{count}/{minNeeded}
+					</span>
+					<HighlightOffIcon style={{ color: 'red', marginLeft: '0.2em', fontSize: '1.3em' }} />
+				</div>
+			)}
+		</>
+	);
 };
 
 // Dropdown component with refined styling
@@ -166,9 +166,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 				}
 			})
 			.finally(() => setIsLoading(false))
-      .catch((error) => {
-        console.error(error);
-      });
+			.catch((error) => {
+				console.error(error);
+			});
 		event.stopPropagation();
 		setShowPopup(true);
 	};
@@ -203,59 +203,59 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 		handleCancel();
 	}, [explanation, handleCancel]);
 
-  const handleMarkSatisfied = () => {
-    if (explanation === null) {
-      return;
-    }
-    fetch(`${process.env.BACKEND}/mark_satisfied/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-NetId': profile.netId,
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({
-        reqId: explanation ? explanation[0] : null,
-        markedSatisfied: 'true',
-      }),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        setMarkedSatisfied(true);
-        updateRequirements();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
+	const handleMarkSatisfied = () => {
+		if (explanation === null) {
+			return;
+		}
+		fetch(`${process.env.BACKEND}/mark_satisfied/`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-NetId': profile.netId,
+				'X-CSRFToken': csrfToken,
+			},
+			body: JSON.stringify({
+				reqId: explanation ? explanation[0] : null,
+				markedSatisfied: 'true',
+			}),
+		})
+			.then((response) => response.json())
+			.then(() => {
+				setMarkedSatisfied(true);
+				updateRequirements();
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	};
 
-  const handleUnmarkSatisfied = () => {
-    if (explanation === null) {
-      return;
-    }
-    fetch(`${process.env.BACKEND}/mark_satisfied/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-NetId': profile.netId,
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({
-        reqId: explanation ? explanation[0] : null,
-        markedSatisfied: 'false',
-      }),
-    })
-      .then((response) => response.json())
-      .then(() => {
-        setMarkedSatisfied(true);
-        updateRequirements();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
+	const handleUnmarkSatisfied = () => {
+		if (explanation === null) {
+			return;
+		}
+		fetch(`${process.env.BACKEND}/mark_satisfied/`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-NetId': profile.netId,
+				'X-CSRFToken': csrfToken,
+			},
+			body: JSON.stringify({
+				reqId: explanation ? explanation[0] : null,
+				markedSatisfied: 'false',
+			}),
+		})
+			.then((response) => response.json())
+			.then(() => {
+				setMarkedSatisfied(true);
+				updateRequirements();
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	};
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -281,7 +281,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 	}, [showPopup, handleCancel, handleSearch]);
 
 	const modalContent = showPopup ? (
-		<SettingsModal>
+		<Modal>
 			<div
 				style={{
 					overflowWrap: 'break-word',
@@ -398,33 +398,33 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 					Close
 				</JoyButton>
 			</footer>
-		</SettingsModal>
+		</Modal>
 	) : null;
 
-  const handleClick = (crosslistings, reqId) => {
-    fetch(`${process.env.BACKEND}/manually_settle/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-NetId': profile.netId,
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(() => {
-        updateRequirements();
-      })
-      .catch((error) => {
-        console.error('Error during manual settling:', error);
-      });
-  };
+	const handleClick = (crosslistings, reqId) => {
+		fetch(`${process.env.BACKEND}/manually_settle/`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-NetId': profile.netId,
+				'X-CSRFToken': csrfToken,
+			},
+			body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
+		})
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				return response.json();
+			})
+			.then(() => {
+				updateRequirements();
+			})
+			.catch((error) => {
+				console.error('Error during manual settling:', error);
+			});
+	};
 
 	const renderContent = (academicPlan: Dictionary) => {
 		if (!academicPlan || typeof academicPlan !== 'object') {
@@ -574,8 +574,10 @@ interface RecursiveDropdownProps {
 	csrfToken: string;
 }
 
-const RecursiveDropdown: FC<RecursiveDropdownProps> = ({ academicPlan, profile, csrfToken }) => {
+export const RecursiveDropdown: FC<RecursiveDropdownProps> = ({
+	academicPlan,
+	profile,
+	csrfToken,
+}) => {
 	return <Dropdown academicPlan={academicPlan} profile={profile} csrfToken={csrfToken} />;
 };
-
-export default RecursiveDropdown;

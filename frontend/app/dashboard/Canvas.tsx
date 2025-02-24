@@ -24,9 +24,9 @@ import { createPortal } from 'react-dom';
 import { Container, type ContainerProps } from '@/components/Container';
 import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearchItem.module.css';
 import { Item } from '@/components/Item';
-import Search from '@/components/Search';
-import TabbedMenu from '@/components/TabbedMenu/TabbedMenu';
-import ButtonWidget from '@/components/Widgets/Widget';
+import { Search } from '@/components/Search';
+import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
+import { ButtonWidget } from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
@@ -65,18 +65,6 @@ const staticRectSortingStrategy = () => {
 };
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
-
-let csrfToken: string;
-
-if (typeof window === 'undefined') {
-  // Server-side or during pre-rendering/build time
-  csrfToken = '';
-} else {
-  // Client-side
-  (async () => {
-    csrfToken = await fetchCsrfToken();
-  })();
-}
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
 	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -184,12 +172,19 @@ export function Canvas({
 	minimal = false,
 	scrollable,
 }: Props) {
-	const [csrfToken, setCsrfToken] = useState('');
+	const [csrfToken, setCsrfToken] = useState<string>('');
+
 	useEffect(() => {
-		(async () => {
-			const token = await fetchCsrfToken();
-			setCsrfToken(token);
-		})();
+		const fetchToken = async () => {
+			try {
+				const token = await fetchCsrfToken();
+				setCsrfToken(token);
+			} catch (err) {
+				console.error('Failed to fetch CSRF token:', err);
+			}
+		};
+
+		void fetchToken();
 	}, []);
 
 	// Subscribe to user slice to let Canvas and Nav/UserSettings sync academicPlan states
@@ -272,14 +267,21 @@ export function Canvas({
 
 	// Fetch user courses and check requirements on initial render
 	useEffect(() => {
-		fetchCourses().then((fetchedData) => {
-			if (fetchedData) {
-				setItems((prevItems) => ({
-					...updateSemesters(prevItems, classYear, fetchedData),
-				}));
+		const fetchAndUpdateData = async () => {
+			try {
+				const fetchedData = await fetchCourses();
+				if (fetchedData) {
+					setItems((prevItems) => ({
+						...updateSemesters(prevItems, classYear, fetchedData),
+					}));
+				}
+				await updateRequirements();
+			} catch (err) {
+				console.error('Error fetching courses:', err);
 			}
-		});
-		updateRequirements();
+		};
+
+		void fetchAndUpdateData();
 	}, [classYear, fetchCourses, updateRequirements]);
 
 	const staticSearchResults = useSearchStore((state) => state.searchResults);
@@ -415,16 +417,16 @@ export function Canvas({
 				onDragStart={({ active }) => {
 					const activeContainer = findContainer(active.id);
 
-          setActiveId(active.id);
-          setActiveContainerId(activeContainer ?? null);
-          setOverContainerId(activeContainer ?? null);
-          setClonedItems(items);
-        }}
-        onDragOver={({ active, over }) => {
-          const overId = over?.id;
-          if (overId === null || overId === undefined || active.id in items) {
-            return;
-          }
+					setActiveId(active.id);
+					setActiveContainerId(activeContainer ?? null);
+					setOverContainerId(activeContainer ?? null);
+					setClonedItems(items);
+				}}
+				onDragOver={({ active, over }) => {
+					const overId = over?.id;
+					if (overId === null || overId === undefined || active.id in items) {
+						return;
+					}
 
 					const overContainer = findContainer(overId);
 					const activeContainer = findContainer(active.id);
@@ -455,7 +457,7 @@ export function Canvas({
 						return;
 					}
 
-          const overId = over?.id;
+					const overId = over?.id;
 
 					if (overId === null || overId === undefined) {
 						setActiveId(null);
@@ -466,22 +468,25 @@ export function Canvas({
 					const overContainerId = findContainer(overId);
 
 					if (overContainerId && activeContainerId !== overContainerId) {
-						fetch(`${process.env.BACKEND}/update_courses/`, {
-							method: 'POST',
-							credentials: 'include',
-							headers: {
-								'Content-Type': 'application/json',
-								'X-NetId': profile.netId,
-								'X-CSRFToken': csrfToken,
-							},
-							body: JSON.stringify({
-								crosslistings: String(active.id).split('|')[1],
-								semesterId: overContainerId,
-							}),
-						}).then((response) => {
-							response.json();
-							updateRequirements();
-						});
+						try {
+							const response = await fetch(`${process.env.BACKEND}/update_courses/`, {
+								method: 'POST',
+								credentials: 'include',
+								headers: {
+									'Content-Type': 'application/json',
+									'X-NetId': profile.netId,
+									'X-CSRFToken': csrfToken,
+								},
+								body: JSON.stringify({
+									crosslistings: String(active.id).split('|')[1],
+									semesterId: overContainerId,
+								}),
+							});
+							await response.json();
+							await updateRequirements();
+						} catch (err) {
+							console.error('Error updating courses:', err);
+						}
 					}
 
 					setActiveId(null);
@@ -505,13 +510,13 @@ export function Canvas({
 							>
 								{/* issue here with resizing + with requirements dropdowns*/}
 								{/* Try to get this to fixed height*/}
-                <div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
-                  <ButtonWidget
-                    href='/dashboard'
-                    text='Upload Transcript from TigerHub'
-                    icon={<ArrowDownTrayIcon className='h-5 w-5' />}
-                  />
-                </div>
+								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
+									<ButtonWidget
+										href='/dashboard'
+										text='Upload Transcript from TigerHub'
+										icon={<ArrowDownTrayIcon className='h-5 w-5' />}
+									/>
+								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
 									id={SEARCH_RESULTS_ID}
@@ -710,45 +715,52 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		fetch(`${process.env.BACKEND}/update_courses/`, {
-			method: 'POST',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': csrfToken,
-				'X-NetId': profile.netId,
-			},
-			body: JSON.stringify({
-				crosslistings: value.toString().split('|')[1],
-				semesterId: 'Search Results',
-			}),
-		}).then((response) => {
-			response.json();
-			updateRequirements();
-		});
+		const updateBackend = async () => {
+			try {
+				const response = await fetch(`${process.env.BACKEND}/update_courses/`, {
+					method: 'POST',
+					credentials: 'include',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRFToken': csrfToken,
+						'X-NetId': profile.netId,
+					},
+					body: JSON.stringify({
+						crosslistings: value.toString().split('|')[1],
+						semesterId: 'Search Results',
+					}),
+				});
+				await response.json();
+				await updateRequirements();
+			} catch (err) {
+				console.error('Error updating courses:', err);
+			}
+		};
+
+		void updateBackend();
 	}
 }
 
 function getPrimaryColor(id: UniqueIdentifier) {
-  const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-  const gradient = getDepartmentGradient(dept, 90);
+	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+	const gradient = getDepartmentGradient(dept, 90);
 
-  // Extract the first color
-  const colors = gradient.split(',');
-  const firstColor = colors[1]?.trim();
+	// Extract the first color
+	const colors = gradient.split(',');
+	const firstColor = colors[1]?.trim();
 
-  return firstColor;
+	return firstColor;
 }
 
 function getSecondaryColor(id: UniqueIdentifier) {
-  const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-  const gradient = getDepartmentGradient(dept, 90);
+	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+	const gradient = getDepartmentGradient(dept, 90);
 
-  // Extract the second color
-  const colors = gradient.split(',');
-  const secondColor = colors[2]?.trim().split(')')[0];
+	// Extract the second color
+	const colors = gradient.split(',');
+	const secondColor = colors[2]?.trim().split(')')[0];
 
-  return secondColor;
+	return secondColor;
 }
 
 type SortableItemProps = {

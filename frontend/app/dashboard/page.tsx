@@ -4,7 +4,7 @@ import { type FC } from 'react';
 import { useEffect } from 'react';
 
 import { Canvas } from '@/app/dashboard/Canvas';
-import SkeletonApp from '@/components/SkeletonApp';
+import { SkeletonApp } from '@/components/SkeletonApp';
 import { useModalStore } from '@/store/modalSlice';
 import useUserSlice from '@/store/userSlice';
 

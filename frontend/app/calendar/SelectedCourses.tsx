@@ -5,11 +5,11 @@ import { Virtuoso } from 'react-virtuoso';
 
 import tabStyles from '@/components/TabbedMenu/TabbedMenu.module.css';
 import useCalendarStore from '@/store/calendarSlice';
-import useFilterStore from '@/store/filterSlice';
+import { useFilterStore } from '@/store/filterSlice';
 
 import styles from './SelectedCourses.module.css';
 
-const SelectedCourses: FC = () => {
+export const SelectedCourses: FC = () => {
 	const { termFilter } = useFilterStore((state) => state);
 	const selectedCourses = useCalendarStore((state) => state.getSelectedCourses(termFilter));
 	const removeCourse = useCalendarStore((state) => state.removeCourse);
@@ -58,5 +58,3 @@ const SelectedCourses: FC = () => {
 		</div>
 	);
 };
-
-export default SelectedCourses;

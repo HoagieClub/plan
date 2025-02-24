@@ -6,7 +6,7 @@ import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import './Calendar.css';
 
 import useCalendarStore from '@/store/calendarSlice';
-import useFilterStore from '@/store/filterSlice';
+import { useFilterStore } from '@/store/filterSlice';
 import { useModalStore } from '@/store/modalSlice';
 import type { CalendarEvent } from '@/types';
 
@@ -15,7 +15,7 @@ import CalendarBody from './CalendarBody';
 const START_HOUR: number = 9;
 const END_HOUR: number = 23;
 
-const Calendar: FC = () => {
+export const Calendar: FC = () => {
 	const calendarElementRef = useRef<HTMLDivElement>(null);
 	const { termFilter } = useFilterStore((state) => state);
 	const { selectedCourses } = useCalendarStore((state) => ({
@@ -121,5 +121,3 @@ const Calendar: FC = () => {
 		</div>
 	);
 };
-
-export default Calendar;

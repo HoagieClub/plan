@@ -25,14 +25,14 @@ import {
 	GridViewIcon,
 	ArrowLeftIcon,
 	Button,
-	useTheme,
 } from 'evergreen-ui';
 import Link from 'next/link';
 
-import AuthButton from '@/lib/hoagie-ui/AuthButton';
+import { AuthButton } from '@/lib/hoagie-ui/AuthButton';
+import { hoagiePlan } from '@/lib/hoagie-ui/Theme/themes';
 
 export default function Index() {
-	const theme = useTheme();
+	const theme = hoagiePlan;
 	const { user, error, isLoading } = useUser(); // todo: this gives annoying unauthorized console log
 
 	let Profile;

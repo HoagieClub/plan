@@ -8,32 +8,42 @@ interface ReviewMenuProps {
 	coursenum: string;
 }
 
-const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
+export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 	const [reviews, setReviews] = useState<string[]>([]);
 	const [rating, setRating] = useState<number>(0);
 
 	useEffect(() => {
 		if (dept && coursenum) {
-			const url = new URL(`${process.env.BACKEND}/course/comments/`);
-			url.searchParams.append('dept', dept);
-			url.searchParams.append('coursenum', coursenum);
+			const fetchReviews = async () => {
+				try {
+					const url = new URL(`${process.env.BACKEND}/course/comments/`);
+					url.searchParams.append('dept', dept);
+					url.searchParams.append('coursenum', coursenum);
 
-			fetch(url.toString(), {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			})
-				.then((response) => response.json())
-				.then((data) => {
+					const response = await fetch(url.toString(), {
+						method: 'GET',
+						credentials: 'include',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					});
+
+					const data = await response.json();
 					if (data && data.reviews) {
 						setReviews(data.reviews);
 					}
 					if (data && data.rating) {
 						setRating(data.rating);
 					}
-				});
+				} catch (err) {
+					console.error('Error fetching course reviews:', err);
+					// TODO: What should we do if error?
+					setReviews([]);
+					setRating(0);
+				}
+			};
+
+			void fetchReviews();
 		}
 	}, [dept, coursenum]);
 
@@ -87,5 +97,3 @@ const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 		</div>
 	);
 };
-
-export default ReviewMenu;

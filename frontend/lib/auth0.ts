@@ -37,6 +37,4 @@
 
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
 
-export const auth0 = new Auth0Client({
-	// Settings go here. See the docs from above for what's available.
-});
+export const auth0 = new Auth0Client();

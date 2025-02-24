@@ -26,7 +26,6 @@ type DraggableProps = {
 	transform?: Transform | null;
 	children?: ReactNode;
 };
-
 export const Draggable = forwardRef<HTMLButtonElement, DraggableProps>(function Draggable(
 	{
 		axis,
@@ -42,6 +41,18 @@ export const Draggable = forwardRef<HTMLButtonElement, DraggableProps>(function 
 	},
 	ref
 ) {
+	let draggableContent;
+	if (axis === Axis.Vertical) {
+		draggableContent = draggableVertical;
+	} else if (axis === Axis.Horizontal) {
+		draggableContent = draggableHorizontal;
+	} else {
+		draggableContent = draggable;
+	}
+
+	const buttonListeners = handle ? {} : listeners;
+	const tabIndex = handle ? -1 : undefined;
+
 	return (
 		<div
 			className={cn(
@@ -59,20 +70,16 @@ export const Draggable = forwardRef<HTMLButtonElement, DraggableProps>(function 
 				{...props}
 				aria-label='Draggable'
 				data-cypress='draggable-item'
-				{...(handle ? {} : listeners)}
-				tabIndex={handle ? -1 : undefined}
+				{...buttonListeners}
+				tabIndex={tabIndex}
 				ref={ref}
 				style={buttonStyle}
 				className='rounded border border-gray-200 bg-white p-2 shadow'
 			>
-				{axis === Axis.Vertical
-					? draggableVertical
-					: axis === Axis.Horizontal
-						? draggableHorizontal
-						: draggable}
-				{handle ? <Handle {...(handle ? listeners : {})} /> : null}
+				{draggableContent}
+				{handle && <Handle {...listeners} />}
 			</button>
-			{label ? <label className='ml-2 text-sm text-gray-700'>{label}</label> : null}
+			{label && <label className='ml-2 text-sm text-gray-700'>{label}</label>}
 		</div>
 	);
 });

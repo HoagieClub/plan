@@ -12,7 +12,7 @@
 
 import { defaultTheme } from 'evergreen-ui';
 
-const Tab = {
+export const Tab = {
 	...defaultTheme.components.Tab,
 	appearances: {
 		...defaultTheme.components.Tab.appearances,
@@ -22,5 +22,3 @@ const Tab = {
 		},
 	},
 };
-
-export default Tab;

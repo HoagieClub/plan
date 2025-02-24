@@ -11,7 +11,7 @@ import styles from './Tutorial.module.css';
 interface TutorialProps {
 	isOpen: boolean;
 	onClose: () => void;
-	tutorialType: 'dashboard' | 'calendar';
+	tutorialType: string;
 }
 
 interface TutorialContent {
@@ -20,15 +20,28 @@ interface TutorialContent {
 	photos: string[];
 }
 
-const Tutorial: FC<TutorialProps> = ({ isOpen, onClose, tutorialType }) => {
+export const Tutorial: FC<TutorialProps> = ({ isOpen, onClose, tutorialType }) => {
 	const [content, setContent] = useState<TutorialContent | null>(null);
 	const [currentPage, setCurrentPage] = useState(0);
 
 	useEffect(() => {
 		if (tutorialType) {
-			fetch(`/${tutorialType}.json`)
-				.then((response) => response.json())
-				.then((data) => setContent(data));
+			const fetchTutorialContent = async () => {
+				try {
+					const response = await fetch(`/${tutorialType}.json`);
+					if (!response.ok) {
+						throw new Error(`Failed to fetch tutorial content: ${response.statusText}`);
+					}
+					const data = await response.json();
+					setContent(data);
+				} catch (err) {
+					console.error('Error loading tutorial content:', err);
+					// Optionally, we could set an error state here to show to the user
+					setContent(null);
+				}
+			};
+
+			void fetchTutorialContent();
 		}
 	}, [tutorialType]);
 
@@ -105,5 +118,3 @@ const Tutorial: FC<TutorialProps> = ({ isOpen, onClose, tutorialType }) => {
 
 	return isOpen ? createPortal(modalContent, document.body) : null;
 };
-
-export default Tutorial;

@@ -1,6 +1,6 @@
 {
   "name": "hoagieplan",
-  "version": "2.0.0",
+  "version": "2.0.5",
   "license": "MIT",
   "private": false,
   "scripts": {
@@ -18,7 +18,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@auth0/nextjs-auth0": "4.0.0-beta.9",
+    "@auth0/nextjs-auth0": "4.0.2",
     "@dnd-kit/sortable": "^9.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.13.5",
@@ -35,18 +35,20 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.2",
     "@tailwindcss/forms": "^0.5.9",
-    "@types/react": "19.0.0",
-    "@types/react-dom": "19.0.0",
-    "babel-plugin-react-compiler": "^19.0.0-beta-df7b47d-20241124",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vercel/speed-insights": "^1.2.0",
+    "babel-plugin-react-compiler": "^19.0.0-beta-21e868a-20250216",
+    "caniuse-lite": "^1.0.30001700",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "daisyui": "^4.12.14",
     "date-fns": "^4.1.0",
-    "eslint-plugin-react-compiler": "^19.0.0-beta-df7b47d-20241124",
+    "eslint-plugin-react-compiler": "^19.0.0-beta-21e868a-20250216",
     "eslint-plugin-react-hooks": "^5.0.0",
     "evergreen-ui": "^7.1.9",
     "lucide-react": "^0.464.0",
-    "next": "15.0.4",
+    "next": "^15.2.0-canary.71",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "react": "^19.0.0",
@@ -90,10 +92,6 @@
     "sharp": "^0.33.5",
     "tailwindcss": "3.4.15",
     "typescript-eslint": "^8.20.0"
-  },
-  "overrides": {
-    "@types/react": "npm:types-react@rc",
-    "@types/react-dom": "npm:types-react-dom@rc"
   },
   "trustedDependencies": [
     "@vercel/speed-insights"

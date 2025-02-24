@@ -6,7 +6,7 @@ interface CalendarTimeProps {
 	endHour: number;
 }
 
-const CalendarTime: FC<CalendarTimeProps> = ({ startHour, endHour }) => {
+export const CalendarTime: FC<CalendarTimeProps> = ({ startHour, endHour }) => {
 	const [position, setPosition] = useState(0);
 
 	useEffect(() => {
@@ -60,5 +60,3 @@ const CalendarTime: FC<CalendarTimeProps> = ({ startHour, endHour }) => {
 		</div>
 	);
 };
-
-export default CalendarTime;

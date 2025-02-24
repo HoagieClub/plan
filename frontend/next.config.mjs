@@ -22,19 +22,11 @@ const nextConfig = {
   experimental: {
     webpackMemoryOptimizations: true,
     reactCompiler: true, // Enable the React 19 compiler!
-    // ppr: 'incremental', // Only available in canary for now
-    after: true,
+    ppr: 'incremental', // Only available in canary for now
     optimizePackageImports: ['icon-library'],
     staleTimes: {
       dynamic: 30,
     },
-    // turbo: {
-    //   resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
-    //   moduleIdStrategy: 'deterministic',
-    //   useSwcCss: true,
-    //   treeShaking: true,
-    //   memoryLimit: 1024 * 1024 * 512, // 512 MB memory limit
-    // },
   },
   ...withPWA({
     dest: 'public',

@@ -18,12 +18,20 @@ import { type ReactNode, type JSX } from 'react';
 import { Auth0Provider } from '@auth0/nextjs-auth0';
 import { type User } from '@auth0/nextjs-auth0/types';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Poppins } from 'next/font/google';
 
+import { hoagie } from '@/app/hoagie';
 import { Toaster } from '@/components/ui/toaster';
 import { auth0 } from '@/lib/auth0';
-import Layout from '@/lib/hoagie-ui/Layout';
-import Nav from '@/lib/hoagie-ui/Nav';
-import Theme from '@/lib/hoagie-ui/Theme';
+import { Layout } from '@/lib/hoagie-ui/Layout';
+import { Nav } from '@/lib/hoagie-ui/Nav';
+import { Theme } from '@/lib/hoagie-ui/Theme';
+
+const poppins = Poppins({
+	weight: ['400', '500', '600', '700'],
+	subsets: ['latin'],
+});
 
 import type { Metadata } from 'next';
 
@@ -75,13 +83,22 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang='en' className='bg-black'> {/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
+		<html lang='en' className={`bg-hoagieplan-dark-red ${poppins.className}`}>
+			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(${hoagie.toString()})();`,
+					}}
+				/>
+			</head>
+			{/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
 			<body className='antialiased'>
 				{/* Uncomment this to see components re-render. Used for debugging. */}
 				{/* <script src='https://unpkg.com/react-scan/dist/auto.global.js' /> */}
 
 				<Content>{children}</Content>
 				<Analytics />
+				<SpeedInsights />
 			</body>
 		</html>
 	);

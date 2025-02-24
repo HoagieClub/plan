@@ -1,13 +1,17 @@
 'use client';
 
-import { Pane, majorScale, useTheme } from 'evergreen-ui';
+import type { FC } from 'react';
+
+import { Pane, majorScale } from 'evergreen-ui';
+
+import { hoagiePlan } from '@/lib/hoagie-ui/Theme/themes';
 
 /**
  * Footer is a generic page footer meant for use throughout
  * different Hoagie applications.
  */
-function Footer() {
-	const theme = useTheme();
+export const Footer: FC = () => {
+	const theme = hoagiePlan;
 	const logo = (
 		<svg xmlns='http://www.w3.org/2000/svg' width='69' height='22' fill='none'>
 			<path
@@ -42,6 +46,4 @@ function Footer() {
 			</a>
 		</Pane>
 	);
-}
-
-export default Footer;
+};

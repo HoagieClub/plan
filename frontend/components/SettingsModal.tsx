@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
+import { Modal } from '@/components/Modal';
+import { UserSettings } from '@/components/UserSettings';
 import useUserSlice from '@/store/userSlice';
-
-import SettingsModal from './Modal';
-import UserSettings from './UserSettings';
 
 /**
  * Opens the settings modal and manages its state.
@@ -17,7 +16,7 @@ export function useSettingsModal() {
 	const openSettingsModal = () => setIsModalOpen(true);
 
 	const settingsModal = isModalOpen ? (
-		<SettingsModal>
+		<Modal>
 			<UserSettings
 				profile={userProfile}
 				onClose={() => setIsModalOpen(false)}
@@ -31,7 +30,7 @@ export function useSettingsModal() {
 					setIsModalOpen(false);
 				}}
 			/>
-		</SettingsModal>
+		</Modal>
 	) : null;
 
 	return { openSettingsModal, settingsModal };

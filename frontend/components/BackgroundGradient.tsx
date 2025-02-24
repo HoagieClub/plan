@@ -1,6 +1,4 @@
-import { type FC } from 'react';
-
-const BackgroundGradient: FC = () => {
+export const BackgroundGradient = () => {
 	return (
 		<div
 			className='absolute inset-x-0 -top-40 z-0 transform-gpu overflow-hidden blur-3xl sm:-top-80'
@@ -16,5 +14,3 @@ const BackgroundGradient: FC = () => {
 		</div>
 	);
 };
-
-export default BackgroundGradient;

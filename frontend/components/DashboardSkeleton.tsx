@@ -1,6 +1,6 @@
 import Skeleton from '@mui/joy/Skeleton';
 
-export default function DashboardSkeleton() {
+export const DashboardSkeleton = () => {
 	const skeletonStyle = {
 		backgroundColor: '#f6f6f6',
 		animation: 'none',
@@ -38,4 +38,4 @@ export default function DashboardSkeleton() {
 			</div>
 		</div>
 	);
-}
+};

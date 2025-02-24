@@ -32,8 +32,9 @@ db.sqlite3
 .env
 
 # Editor settings
-.vscode/
-.zed/
+**/.vscode/
+**/.zed/
+**/.cursor/
 
 # Virtual environment
 env/

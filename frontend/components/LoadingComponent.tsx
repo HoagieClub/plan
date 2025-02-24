@@ -1,4 +1,4 @@
-function LoadingComponent() {
+export const LoadingComponent = () => {
 	return (
 		<div
 			style={{
@@ -12,6 +12,4 @@ function LoadingComponent() {
 			<span className='loading loading-ring loading-lg' />
 		</div>
 	);
-}
-
-export default LoadingComponent;
+};

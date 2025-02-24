@@ -14,7 +14,7 @@ const getGradientStyle = (dept: string) => {
 	return departmentColors[dept] || 'linear-gradient(135deg, #3498db, #2980b9)';
 };
 
-const SelectedCourseItem: FC<SelectedCourseItemProps> = ({ event }) => {
+export const SelectedCourseItem: FC<SelectedCourseItemProps> = ({ event }) => {
 	const removeCourse = useCalendarStore((state) => state.removeCourse);
 
 	const handleRemove = () => {
@@ -54,5 +54,3 @@ const SelectedCourseItem: FC<SelectedCourseItemProps> = ({ event }) => {
 		</div>
 	);
 };
-
-export default SelectedCourseItem;

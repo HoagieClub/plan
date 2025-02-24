@@ -74,14 +74,16 @@ const config: Config = {
 				},
 			},
 			textColor: {
+				'hoagieplan-black': '#2C2C2C',
 				'hoagieplan-blue': '#0F1E2F',
 				'hoagieplan-gray': '#F6F6F6',
-				'hoagieplan-black': '#2C2C2C',
 				'hoagieplan-purple': '#663399',
+				'hoagieplan-dark-red': '#A73636',
 			},
 			backgroundColor: {
 				'hoagieplan-dark-blue': '#3366FF',
 				'hoagieplan-light-blue': '#EBF0FF',
+				'hoagieplan-dark-red': '#A73636',
 				'dnd-gray': 'rgba(0, 0, 0, 0.05)',
 			},
 			borderRadius: {

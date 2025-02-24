@@ -1,6 +1,6 @@
 import { type FC, useState, useEffect } from 'react';
 
-import LoadingComponent from '@/components/LoadingComponent';
+import { LoadingComponent } from '@/components/LoadingComponent';
 import { RecursiveDropdown } from '@/components/RecursiveDropDown';
 import useUserSlice from '@/store/userSlice';
 import type { Profile } from '@/types';
@@ -12,7 +12,7 @@ interface TabbedMenuProps {
 	csrfToken: string;
 }
 
-const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
+export const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
 	const { academicPlan } = useUserSlice((state) => ({ academicPlan: state.academicPlan }));
 	const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -76,5 +76,3 @@ const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
 		</div>
 	);
 };
-
-export default TabbedMenu;

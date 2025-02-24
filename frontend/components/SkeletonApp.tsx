@@ -1,3 +1,5 @@
+import type { FC } from 'react';
+
 import Skeleton from '@mui/joy/Skeleton';
 import { CssVarsProvider, extendTheme } from '@mui/joy/styles';
 
@@ -17,7 +19,7 @@ const theme = extendTheme({
 	},
 });
 
-function SkeletonApp() {
+export const SkeletonApp: FC = () => {
 	return (
 		<CssVarsProvider theme={theme}>
 			<div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
@@ -68,6 +70,4 @@ function SkeletonApp() {
 			</div>
 		</CssVarsProvider>
 	);
-}
-
-export default SkeletonApp;
+};

@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
 
-import LoadingComponent from '@/components/LoadingComponent';
-import SettingsModal from '@/components/Modal';
-import ReviewMenu from '@/components/ReviewMenu';
+import { LoadingComponent } from '@/components/LoadingComponent';
+import { Modal } from '@/components/Modal';
+import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
 
 import styles from './InfoComponent.module.css';
@@ -15,7 +15,7 @@ interface InfoComponentProps {
 	value: string;
 }
 
-const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
+export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const dept = value.split(' ')[0];
 	const coursenum = value.split(' ')[1];
 	const [showPopup, setShowPopup] = useState<boolean>(false);
@@ -74,7 +74,7 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	};
 
 	const modalContent = showPopup ? (
-		<SettingsModal>
+		<Modal>
 			<div
 				className={styles.modal}
 				style={{
@@ -160,7 +160,7 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 					</footer>
 				</div>
 			</div>
-		</SettingsModal>
+		</Modal>
 	) : null;
 
 	return (
@@ -184,5 +184,3 @@ const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 		</>
 	);
 };
-
-export default InfoComponent;

@@ -21,9 +21,9 @@ const formatHour = (hour: number): string => {
 };
 
 const calendarColors = {
-  gridBorder: '#e0e0e0',
-  dayLabelBg: '#F1F5F9',
-  timeLabelText: '#757575',
+	gridBorder: '#e0e0e0',
+	dayLabelBg: '#F1F5F9',
+	timeLabelText: '#757575',
 };
 
 const CalendarGrid: FC<CalendarGridProps> = memo(
@@ -72,30 +72,30 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
 					</div>
 				))}
 
-        {/* Time labels */}
-        {Array.from({ length: endHour - startHour + 1 }, (_, rowIndex) => (
-          <div
-            key={`time-${rowIndex}`}
-            className='calendar-time flex items-center justify-end border-l border-r bg-white pr-2'
-            style={{
-              fontSize: '0.75rem',
-              gridRow: `${rowIndex * 6 + headerRows} / span 6`,
-              gridColumn: '1',
-              borderColor: calendarColors.gridBorder,
-              borderBottom: `1px solid ${calendarColors.gridBorder}`,
-              borderTop: rowIndex === 0 ? `1px solid ${calendarColors.gridBorder}` : 'none',
-              color: calendarColors.timeLabelText,
-              borderBottomLeftRadius: rowIndex === endHour - startHour ? '10px' : '0',
-              height: '100%',
-              alignSelf: 'stretch', 
-              display: 'flex',
-              alignItems: 'center', 
-              justifyContent: 'flex-start',
-            }}
-          >
-            {formatHour(rowIndex + startHour -1)}
-          </div>
-        ))}
+				{/* Time labels */}
+				{Array.from({ length: endHour - startHour + 1 }, (_, rowIndex) => (
+					<div
+						key={`time-${rowIndex}`}
+						className='calendar-time flex items-center justify-end border-l border-r bg-white pr-2'
+						style={{
+							fontSize: '0.75rem',
+							gridRow: `${rowIndex * 6 + headerRows} / span 6`,
+							gridColumn: '1',
+							borderColor: calendarColors.gridBorder,
+							borderBottom: `1px solid ${calendarColors.gridBorder}`,
+							borderTop: rowIndex === 0 ? `1px solid ${calendarColors.gridBorder}` : 'none',
+							color: calendarColors.timeLabelText,
+							borderBottomLeftRadius: rowIndex === endHour - startHour ? '10px' : '0',
+							height: '100%',
+							alignSelf: 'stretch',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'flex-start',
+						}}
+					>
+						{formatHour(rowIndex + startHour - 1)}
+					</div>
+				))}
 
 				{/* Grid rows */}
 				{Array.from({ length: totalRows }, (_, rowIndex) => (
