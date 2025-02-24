@@ -16,7 +16,12 @@ import {
 	MeasuringStrategy,
 	defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
+import {
+	SortableContext,
+	useSortable,
+	defaultAnimateLayoutChanges,
+	arrayMove,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
@@ -440,14 +445,31 @@ export function Canvas({
 						setItems((items) => {
 							const activeItems = items[activeContainer];
 							const activeIndex = activeItems.indexOf(active.id);
+							const overItems = items[overContainer];
+							const overIndex = overItems.length;
+
 							recentlyMovedToNewContainer.current = true;
 
 							return {
 								...items,
 								[activeContainer]: items[activeContainer].filter((item) => item !== active.id),
-								[overContainer]: [...items[overContainer], items[activeContainer][activeIndex]],
+								[overContainer]: [
+									...items[overContainer].slice(0, overIndex),
+									items[activeContainer][activeIndex],
+									...items[overContainer].slice(overIndex),
+								],
 							};
 						});
+					} else {
+						const activeIndex = items[activeContainer].indexOf(active.id);
+						const overIndex = items[overContainer].indexOf(overId);
+
+						if (activeIndex !== overIndex) {
+							setItems((items) => ({
+								...items,
+								[overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
+							}));
+						}
 					}
 				}}
 				onDragEnd={async ({ active, over }) => {
@@ -602,14 +624,11 @@ export function Canvas({
 											unstyled={minimal}
 											height={`calc(${containerGridHeight} / 4)`}
 										>
-											<SortableContext
-												items={items[containerId] || []}
-												strategy={staticRectSortingStrategy}
-											>
+											<SortableContext items={items[containerId] || []}>
 												{items[containerId] &&
 													items[containerId].map((course, index) => (
 														<SortableItem
-															disabled={false} // isSortingContainer always false
+															disabled={false}
 															key={index}
 															id={course}
 															index={index}
