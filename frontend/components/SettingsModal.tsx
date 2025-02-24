@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
+import { Modal } from '@/components/Modal';
+import { UserSettings } from '@/components/UserSettings';
 import useUserSlice from '@/store/userSlice';
-
-import SettingsModal from './Modal';
-import UserSettings from './UserSettings';
 
 /**
  * Opens the settings modal and manages its state.
@@ -11,25 +10,28 @@ import UserSettings from './UserSettings';
  * @returns An object containing a function to open the modal and the modal itself.
  */
 export function useSettingsModal() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const userProfile = useUserSlice((state) => state.profile);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const userProfile = useUserSlice((state) => state.profile);
 
-  const openSettingsModal = () => setIsModalOpen(true);
+	const openSettingsModal = () => setIsModalOpen(true);
 
-  const settingsModal = isModalOpen ? (
-    <SettingsModal>
-      <UserSettings
-        profile={userProfile}
-        onClose={() => setIsModalOpen(false)}
-        onSave={() => {
-          window.location.reload(); // Refresh page on save
-          // TODO: eventually just refresh only necessary components
-          // updateProfile(newProfileData); // Update the Zustand store with new profile data
-          // setIsModalOpen(false);
-        }}
-      />
-    </SettingsModal>
-  ) : null;
+	const settingsModal = isModalOpen ? (
+		<Modal>
+			<UserSettings
+				profile={userProfile}
+				onClose={() => setIsModalOpen(false)}
+				onSave={(newProfileData) => {
+					// Update the Zustand store with new profile data
+					useUserSlice.setState((state) => ({
+						profile: { ...state.profile, ...newProfileData },
+					}));
 
-  return { openSettingsModal, settingsModal };
+					// Close the modal
+					setIsModalOpen(false);
+				}}
+			/>
+		</Modal>
+	) : null;
+
+	return { openSettingsModal, settingsModal };
 }

@@ -84,6 +84,7 @@ req_list:
   double_counting_allowed: false
   course_list:
   - MAT 3*
+  - MAT 4*
 - name: Junior Seminar
   max_counted: 1
   min_needed: 1

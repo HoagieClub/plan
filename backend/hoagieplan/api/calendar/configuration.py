@@ -1,3 +1,4 @@
+from hoagieplan.logger import logger
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models.query import Prefetch
@@ -33,7 +34,7 @@ class FetchCalendarClasses(APIView):
 
     def get(self, request, term, course_id):
         sections = self.get_unique_class_meetings(term, course_id)
-        print("term", term)
+        # print("term", term)
         if not sections:
             return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -51,27 +52,27 @@ class FetchCalendarClasses(APIView):
         selected_instructor = next(iter(sections_by_instructor.keys()))
         selected_sections_data = sections_by_instructor[selected_instructor]
 
-        for section_data in selected_sections_data:
-            print(f"ID: {section_data['id']}")
-            print(f"Class Section: {section_data['class_section']}")
-            print(f"Class Type: {section_data['class_type']}")
-            print(f"Course ID: {section_data['course']['course_id']}")
-            print(f"Course Title: {section_data['course']['title']}")
-            print(f"Instructor: {section_data['instructor']['name']}")
-            print(f"Capacity: {section_data['capacity']}")
-            print(f"Enrollment: {section_data['enrollment']}")
-            for meeting in section_data["class_meetings"]:
-                print(f"  Meeting ID: {meeting['id']}")
-                print(f"  Days: {meeting['days']}")
-                print(f"  Start Time: {meeting['start_time']}")
-                print(f"  End Time: {meeting['end_time']}")
-                print(f"  Building Name: {meeting['building_name']}")
-                print(f"  Room: {meeting['room']}")
+        # for section_data in selected_sections_data:
+        #     print(f"ID: {section_data['id']}")
+        #     print(f"Class Section: {section_data['class_section']}")
+        #     print(f"Class Type: {section_data['class_type']}")
+        #     print(f"Course ID: {section_data['course']['course_id']}")
+        #     print(f"Course Title: {section_data['course']['title']}")
+        #     print(f"Instructor: {section_data['instructor']['name']}")
+        #     print(f"Capacity: {section_data['capacity']}")
+        #     print(f"Enrollment: {section_data['enrollment']}")
+        #     for meeting in section_data["class_meetings"]:
+        #         print(f"  Meeting ID: {meeting['id']}")
+        #         print(f"  Days: {meeting['days']}")
+        #         print(f"  Start Time: {meeting['start_time']}")
+        #         print(f"  End Time: {meeting['end_time']}")
+        #         print(f"  Building Name: {meeting['building_name']}")
+        #         print(f"  Room: {meeting['room']}")
 
         return Response(selected_sections_data, status=status.HTTP_200_OK)
 
     def get_unique_class_meetings(self, term, course_id):
-        print(term)
+        # print(term)
         sections = Section.objects.filter(term__term_code=term, course__course_id=course_id)
 
         unique_sections = sections.select_related("course", "instructor").prefetch_related(
@@ -148,7 +149,8 @@ class CalendarConfigurationsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error("An error occurred: %s", str(e))
+            return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CalendarConfigurationView(APIView):
@@ -167,7 +169,8 @@ class CalendarConfigurationView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error("An error occurred while fetching calendar configuration: %s", str(e))
+            return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         user = request.user
@@ -185,7 +188,8 @@ class CalendarConfigurationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error("An error occurred while creating calendar configuration: %s", str(e))
+            return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SemesterConfigurationView(APIView):

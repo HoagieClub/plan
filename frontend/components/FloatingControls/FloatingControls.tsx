@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import classNames from 'classnames';
+import { cn } from '@/lib/utils';
 
 import styles from './FloatingControls.module.css';
 
 export type FloatingControlsProps = {
-  children: ReactNode;
+	children: ReactNode;
 };
 
 export function FloatingControls({ children }: FloatingControlsProps) {
-  return <div className={classNames(styles.FloatingControls)}>{children}</div>;
+	return <div className={cn(styles.FloatingControls)}>{children}</div>;
 }

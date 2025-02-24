@@ -122,7 +122,8 @@ def profile(request):
         user_info = fetch_user_info(net_id)
         return JsonResponse(user_info)
     except UserProfileNotFoundError as e:
-        return JsonResponse({"error": str(e)}, status=404)
+        logger.error(f"UserProfileNotFoundError: {e}")
+        return JsonResponse({"error": "User profile not found"}, status=404)
     except Exception as e:
         logger.error(f"Error in profile view: {e}")
         return JsonResponse({"error": "Internal server error"}, status=500)

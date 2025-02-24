@@ -4,11 +4,11 @@
   box-sizing: border-box;
   margin: 1vh 0.5vw;
   border-radius: 8px;
-  background-color: #f4f6fa;
+  background-color: #F1F5F9;
   border: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 1em;
   width: 24vw;
-  height: calc(46.5vh);
+  height: calc(46vh);
   overflow: hidden;
 }
 

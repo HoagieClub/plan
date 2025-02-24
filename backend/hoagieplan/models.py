@@ -282,7 +282,7 @@ class CustomUser(AbstractUser):
         blank=True,
     )  # for manually marked requirements
     req_dict = models.JSONField(null=True)
-    
+
     # TODO: This field is deprecated (Django's default username serves the same purpose)
     net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     # TODO: Refactor backend code to use username instead of net_id
@@ -297,28 +297,17 @@ class CustomUser(AbstractUser):
 
     class Meta:
         db_table = "CustomUser"
-        
+
         # Hacky way to prevent alias bugs
         # TODO: Find a more controlled/deterministic way to identify username/NetID from Auth0
-        constraints = [
-            models.UniqueConstraint(
-                fields=["email", "username"],
-                name="unique_email_username_combination"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["email", "username"], name="unique_email_username_combination")]
 
 
 class UserCourses(models.Model):
-    STATUS_CHOICES = (
-        ("planned", "Planned"),
-        ("in-progress", "In Progress"),
-        ("completed", "Completed"),
-    )
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
     semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)
-    requirement = models.ForeignKey(Requirement, on_delete=models.CASCADE, db_index=True, null=True)
+    requirements = models.ManyToManyField(Requirement, blank=True)
 
     class Meta:
         db_table = "UserCourses"

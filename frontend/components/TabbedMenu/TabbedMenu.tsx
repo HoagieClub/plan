@@ -1,77 +1,78 @@
-import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { type FC, useState, useEffect } from 'react';
 
+import { LoadingComponent } from '@/components/LoadingComponent';
+import { RecursiveDropdown } from '@/components/RecursiveDropDown';
+import useUserSlice from '@/store/userSlice';
 import type { Profile } from '@/types';
-
-import LoadingComponent from '../LoadingComponent';
-import { RecursiveDropdown } from '../RecursiveDropDown';
 
 import styles from './TabbedMenu.module.css';
 
 interface TabbedMenuProps {
-  tabsData: { [key: string]: object };
-  profile: Profile;
-  csrfToken: string;
-  updateRequirements: () => void;
+	profile: Profile;
+	csrfToken: string;
 }
 
-const TabbedMenu: FC<TabbedMenuProps> = ({ tabsData, profile, csrfToken, updateRequirements }) => {
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+export const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
+	const { academicPlan } = useUserSlice((state) => ({ academicPlan: state.academicPlan }));
+	const [activeTab, setActiveTab] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Only set the active tab if it's not already set
-    if (!activeTab && tabsData && Object.keys(tabsData).length > 0) {
-      setActiveTab(Object.keys(tabsData)[0]);
-    }
-  }, [tabsData, activeTab]);
+	useEffect(() => {
+		const keys = academicPlan && Object.keys(academicPlan);
 
-  const handleTabClick = (tabKey: string) => {
-    setActiveTab(tabKey);
-  };
+		// if there's no activeTab or if activeTab no longer exists in academicPlan
+		if (!activeTab || (keys && !keys.includes(activeTab))) {
+			if (keys && keys.length > 0) {
+				setActiveTab(keys[0]);
+			} else {
+				setActiveTab(null); // Q: is this needed? wouldn't this just make us pass in nulls?
+			}
+		}
+	}, [academicPlan, activeTab]);
 
-  // Check if tabsData is well-defined and not empty
-  if (!tabsData || Object.keys(tabsData).length === 0) {
-    return <LoadingComponent />;
-  }
+	// Check if tabsData is well-defined and not empty
+	if (!academicPlan || Object.keys(academicPlan).length === 0) {
+		return <LoadingComponent />;
+	}
 
-  return (
-    <div className={styles.tabContainer}>
-      <ul className={styles.tabMenu}>
-        {Object.keys(tabsData).map((tabKey) => (
-          <li
-            key={tabKey}
-            className={tabKey === activeTab ? styles.active : ''}
-            onClick={() => handleTabClick(tabKey)}
-            // style={{
-            //   fontWeight: tabsData[tabKey]['satisfied'] ? '500' : 'normal',
-            //   color: tabsData[tabKey]['satisfied'] ? 'green' : 'inherit',
-            // }}
-          >
-            {tabKey}
-          </li>
-        ))}
-      </ul>
-      <div className={styles.tabContent}>
-        {activeTab === 'Undeclared' ? (
-          <div className='text-sm font-medium text-gray-500'>
-            To choose your major and minor(s), select
-            <strong> Account Settings </strong>
-            within your profile in the top right-hand corner.
-          </div>
-        ) : (
-          activeTab && (
-            <RecursiveDropdown
-              key={activeTab}
-              dictionary={tabsData[activeTab]}
-              profile={profile}
-              csrfToken={csrfToken}
-              updateRequirements={updateRequirements}
-            />
-          )
-        )}
-      </div>
-    </div>
-  );
+	const keys = Object.keys(academicPlan);
+	const currentData = activeTab ? academicPlan[activeTab] : null;
+
+	return (
+		<div className={styles.tabContainer}>
+			<ul className={styles.tabMenu}>
+				{keys.map((tabKey) => (
+					<li
+						key={tabKey}
+						className={tabKey === activeTab ? styles.active : ''}
+						onClick={() => setActiveTab(tabKey)}
+						// style={{
+						//   fontWeight: tabsData[tabKey]['satisfied'] ? '500' : 'normal',
+						//   color: tabsData[tabKey]['satisfied'] ? 'green' : 'inherit',
+						// }}
+					>
+						{tabKey}
+					</li>
+				))}
+			</ul>
+			<div className={styles.tabContent}>
+				{activeTab === 'Undeclared' ? (
+					<div className='text-sm font-medium text-gray-500'>
+						To choose your major and minor(s), select
+						<strong> Account Settings </strong>
+						within your profile in the top right-hand corner.
+					</div>
+				) : (
+					// Render RecursiveDropdown only if we have valid currentData
+					currentData && (
+						<RecursiveDropdown
+							key={activeTab}
+							academicPlan={currentData}
+							profile={profile}
+							csrfToken={csrfToken}
+						/>
+					)
+				)}
+			</div>
+		</div>
+	);
 };
-
-export default TabbedMenu;
