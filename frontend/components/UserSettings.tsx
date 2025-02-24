@@ -310,137 +310,165 @@ const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => {
 		};
 	}, [onClose, handleSave]);
 
-	return (
-		<div>
-			<div className='grid grid-cols-2 gap-6'>
-				<div>
-					{/* TODO: Names are now fixed due to Auth0 migration. Either see if we can change Auth0 data directly or deprecate this. */}
-					<FormLabel>First name</FormLabel>
-					<Input
-						placeholder='First name'
-						variant='soft'
-						autoComplete='off'
-						value={firstName}
-						onChange={(event) => {
-							event.stopPropagation();
-							setFirstName(event.target.value);
-						}}
-					/>
-				</div>
-				<div>
-					<FormLabel>Last name</FormLabel>
-					<Input
-						placeholder='Last name'
-						variant='soft'
-						autoComplete='off'
-						value={lastName}
-						onChange={(event) => {
-							event.stopPropagation();
-							setLastName(event.target.value);
-						}}
-					/>
-				</div>
-				<div>
-					<FormLabel>Major</FormLabel>
-					<Autocomplete
-						multiple={false}
-						autoHighlight
-						options={majorOptions}
-						// Call smartSearch to search through all majors and determine matches for inputValue.
-						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
-						placeholder='Select your major'
-						variant='soft'
-						value={major}
-						// inputValue={major.code === undeclared.code ? '' : major.code}
-						isOptionEqualToValue={isOptionEqual}
-						onChange={(event, newMajor: MajorMinorType) => {
-							event.stopPropagation();
-							setMajor(newMajor ?? undeclared);
-						}}
-						getOptionLabel={(option: MajorMinorType) => option.code}
-						renderOption={(props, option) => (
-							<AutocompleteOption {...props} key={option.name}>
-								<ListItemContent>
-									{option.code}
-									<Typography level='body-sm'>{option.name}</Typography>
-								</ListItemContent>
-							</AutocompleteOption>
-						)}
-					/>
-				</div>
-				<div>
-					<FormLabel>Minor(s)</FormLabel>
-					<Autocomplete
-						multiple={true}
-						autoHighlight
-						options={minorOptions}
-						// Call smartSearch to search through all minors and determine matches for inputValue.
-						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
-						placeholder='Select your minor(s)'
-						variant='soft'
-						value={minors}
-						isOptionEqualToValue={isOptionEqual}
-						onChange={(event, newMinors: MajorMinorType[]) => {
-							event.stopPropagation();
-							handleMinorsChange(event, newMinors);
-						}}
-						getOptionLabel={(option: MajorMinorType) => option.code}
-						renderOption={(props, option) => (
-							<AutocompleteOption {...props} key={option.name}>
-								<ListItemContent>
-									{option.code}
-									<Typography level='body-sm'>{option.name}</Typography>
-								</ListItemContent>
-							</AutocompleteOption>
-						)}
-					/>
-				</div>
-				<div>
-					<FormLabel>Certificate(s)</FormLabel>
-					<Autocomplete
-						multiple={true}
-						autoHighlight
-						options={certificateOptions}
-						// Call smartSearch to search through all certificates and determine matches for inputValue.
-						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
-						placeholder='Select your certificate(s)'
-						variant='soft'
-						value={certificates}
-						isOptionEqualToValue={isOptionEqual}
-						onChange={(event, newCertificates: MajorMinorType[]) => {
-							event.stopPropagation();
-							handleCertificatesChange(event, newCertificates);
-						}}
-						getOptionLabel={(option: MajorMinorType) => option.code}
-						renderOption={(props, option) => (
-							<AutocompleteOption {...props} key={option.name}>
-								<ListItemContent>
-									{option.code}
-									<Typography level='body-sm'>{option.name}</Typography>
-								</ListItemContent>
-							</AutocompleteOption>
-						)}
-					/>
-				</div>
-				<Snackbar
-					open={openSnackbar}
-					color='primary'
-					variant='soft'
-					onClose={handleCloseSnackbar}
-					autoHideDuration={6000}
-					sx={{
-						'.MuiSnackbar-root': {
-							borderRadius: '16px', // Roundedness
-						},
-						backgroundColor: '#0F1E2F', // Hoagie Plan Blue
-						color: '#f6f6f6', // Hoagie Plan Gray
-					}}
-				>
-					<div className='text-center'>
-						You can only minor in two programs and plan up to three.
-					</div>
-				</Snackbar>
-				{/* <div>
+  return (
+    <div>
+      <div className='grid grid-cols-2 gap-6'>
+        <div>
+          {/* TODO: Names are now fixed due to Auth0 migration. Either see if we can change Auth0 data directly or deprecate this. */}
+          <FormLabel>First name</FormLabel>
+          <Input
+            placeholder='First name'
+            variant='soft'
+            autoComplete='off'
+            value={firstName}
+            onChange={(event) => {
+              event.stopPropagation();
+              setFirstName(event.target.value);
+            }}
+          />
+        </div>
+        <div>
+          <FormLabel>Last name</FormLabel>
+          <Input
+            placeholder='Last name'
+            variant='soft'
+            autoComplete='off'
+            value={lastName}
+            onChange={(event) => {
+              event.stopPropagation();
+              setLastName(event.target.value);
+            }}
+          />
+        </div>
+        <div>
+          <FormLabel>Major</FormLabel>
+          <Autocomplete
+            multiple={false}
+            autoHighlight
+            options={majorOptions}
+            // Call smartSearch to search through all majors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your major'
+            variant='soft'
+            value={major}
+            // inputValue={major.code === undeclared.code ? '' : major.code}
+            isOptionEqualToValue={isOptionEqual}
+            onChange={(event, newMajor: MajorMinorType) => {
+              event.stopPropagation();
+              setMajor(newMajor ?? undeclared);
+            }}
+            getOptionLabel={(option: MajorMinorType) => option.code}
+            renderOption={(props, option) => (
+              <AutocompleteOption {...props} key={option.name}>
+                <ListItemContent>
+                  {option.code}
+                  <Typography level='body-sm'>{option.name}</Typography>
+                </ListItemContent>
+              </AutocompleteOption>
+            )}
+          />
+        </div>
+        <div>
+          <FormLabel>Minor(s)</FormLabel>
+          <Autocomplete
+            multiple={true}
+            autoHighlight
+            options={minorOptions}
+            // Call smartSearch to search through all minors and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your minor(s)'
+            variant='soft'
+            value={minors}
+            isOptionEqualToValue={isOptionEqual}
+            onChange={(event, newMinors: MajorMinorType[]) => {
+              event.stopPropagation();
+              handleMinorsChange(event, newMinors);
+            }}
+            getOptionLabel={(option: MajorMinorType) => option.code}
+            renderOption={(props, option) => {
+                // Determine if current minor 'option' is already selected by the user.
+                const isAlreadySelected = minors.some(minor => minor.code === option.code);
+                return (
+                    <AutocompleteOption {...props} 
+                        key={option.name}
+                        component="li"
+                        // Disable the selection of and add custom styling (i.e. darkened background) to already selected minors.
+                        sx={{
+                            ...(isAlreadySelected && {
+                                color: 'darkgray',
+                                pointerEvents: 'none',
+                            })
+                        }}
+                        >
+                        <ListItemContent>
+                            {option.code}
+                            <Typography level='body-sm'>{option.name}</Typography>
+                        </ListItemContent>
+                    </AutocompleteOption>
+                );
+            }}
+          />
+        </div>
+        <div>
+          <FormLabel>Certificate(s)</FormLabel>
+          <Autocomplete
+            multiple={true}
+            autoHighlight
+            options={certificateOptions}
+            // Call smartSearch to search through all certificates and determine matches for inputValue.
+            filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
+            placeholder='Select your certificate(s)'
+            variant='soft'
+            value={certificates}
+            isOptionEqualToValue={isOptionEqual}
+            onChange={(event, newCertificates: MajorMinorType[]) => {
+              event.stopPropagation();
+              handleCertificatesChange(event, newCertificates);
+            }}
+            getOptionLabel={(option: MajorMinorType) => option.code}
+            renderOption={(props, option) => {
+                // Determine if current certificate 'option' is already selected by the user.
+                const isAlreadySelected = certificates.some(certificate => certificate.code === option.code);
+                return (
+                    <AutocompleteOption {...props} 
+                        key={option.name}
+                        component="li"
+                        // Disable the selection of and add custom styling (i.e. darkened background) to already selected certificates.
+                        sx={{
+                            ...(isAlreadySelected && {
+                                color: 'darkgray',
+                                pointerEvents: 'none',
+                            })
+                        }}
+                        >
+                        <ListItemContent>
+                            {option.code}
+                            <Typography level='body-sm'>{option.name}</Typography>
+                        </ListItemContent>
+                    </AutocompleteOption>
+                );
+            }}
+          />
+        </div>
+        <Snackbar
+          open={openSnackbar}
+          color='primary'
+          variant='soft'
+          onClose={handleCloseSnackbar}
+          autoHideDuration={6000}
+          sx={{
+            '.MuiSnackbar-root': {
+              borderRadius: '16px', // Roundedness
+            },
+            backgroundColor: '#0F1E2F', // Hoagie Plan Blue
+            color: '#f6f6f6', // Hoagie Plan Gray
+          }}
+        >
+          <div className='text-center'>
+            You can only minor in two programs and plan up to three.
+          </div>
+        </Snackbar>
+        {/* <div>
             <FormLabel>Certificate(s)</FormLabel>
             <Autocomplete
               multiple={true}

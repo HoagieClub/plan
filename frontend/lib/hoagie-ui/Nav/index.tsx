@@ -74,100 +74,101 @@ function Nav({ name, tabs = [], user, LogoComponent, HeaderComponent, beta = fal
 			? 'calendar'
 			: 'dashboard';
 
-	return (
-		<Pane elevation={1}>
-			{HeaderComponent ? (
-				<HeaderComponent />
-			) : (
-				<Pane width='100%' height={20} background={theme.title} />
-			)}
-			<Pane
-				display='flex'
-				justifyContent='center'
-				width='100%'
-				height={majorScale(9)}
-				background='white'
-			>
-				<Pane
-					display='flex'
-					alignItems='center'
-					justifyContent='space-between'
-					width='100%'
-					height='100%'
-					maxWidth={1200}
-					paddingX={majorScale(5)}
-					fontSize={18}
-				>
-					<Link href='/'>
-						<Pane cursor='pointer' position='relative'>
-							{LogoComponent ? (
-								<LogoComponent />
-							) : (
-								<Pane>
-									<Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
-										hoagie
-									</Text>
-									<Text is='h2' display='inline-block' className='hoagie logo' color='yellow400'>
-										{name}
-									</Text>
-									{beta && (
-										<Text className='hoagie beta' position='absolute' color='gray900'>
-											(BETA)
-										</Text>
-									)}
-								</Pane>
-							)}
-						</Pane>
-					</Link>
-					<Pane display='flex' alignItems='center'>
-						<TabNavigation>
-							{tabs.map((tab) => (
-								<Tab
-									key={tab.title}
-									is='a'
-									id={tab.title}
-									isSelected={pathname === tab.href}
-									onSelect={() => router.push(tab.href)}
-								>
-									{tab.title}
-								</Tab>
-							))}
-						</TabNavigation>
-						<Pane
-							display='flex'
-							alignItems='center'
-							justifyContent='center'
-							marginLeft={majorScale(4)}
-							cursor='pointer'
-							onClick={() => openTutorialModal(tutorialType)}
-						>
-							<HelpOutlineIcon
-								fontSize='medium'
-								style={{ color: theme.colors.blue500 }}
-								titleAccess='Open Tutorial'
-							/>
-						</Pane>
-						{user && (
-							<Popover
-								content={<ProfileCard user={user} onSettingsClick={openSettingsModal} />}
-								position={Position.BOTTOM}
-							>
-								<Avatar
-									name={user.name}
-									style={{ cursor: 'pointer' }}
-									backgroundColor={theme.colors.yellow100}
-									size={40}
-									marginLeft={majorScale(4)}
-								/>
-							</Popover>
-						)}
-						{tutorialModal}
-					</Pane>
-				</Pane>
-			</Pane>
-			{settingsModal}
-		</Pane>
-	);
+  return (
+    <Pane elevation={1}>
+      {HeaderComponent ? (
+        <HeaderComponent />
+      ) : (
+        <Pane width='100%' height={20} background={theme.colors.red600} />
+      )}
+      <Pane
+        display='flex'
+        justifyContent='center'
+        width='100%'
+        height={majorScale(9)}
+        background='white'
+      >
+        <Pane
+          display='flex'
+          alignItems='center'
+          justifyContent='space-between'
+          width='100%'
+          height='100%'
+          maxWidth={1200}
+          paddingX={majorScale(5)}
+          fontSize={18}
+        >
+          <Link href='/'>
+            <Pane cursor='pointer' position='relative'>
+              {LogoComponent ? (
+                <LogoComponent />
+              ) : (
+                <Pane>
+                  <Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
+                    hoagie
+                  </Text>
+                  <Text is='h2' display='inline-block' className='hoagie logo' color='blue500'>
+                    {name}
+                  </Text>
+                  {beta && (
+                    <Text className='hoagie beta' position='absolute' color='gray900'>
+                      (BETA)
+                    </Text>
+                  )}
+                </Pane>
+              )}
+            </Pane>
+          </Link>
+          <Pane display='flex' alignItems='center'>
+            <TabNavigation>
+              {tabs.map((tab) => (
+                <Tab
+                  appearance='secondary'
+                  key={tab.title}
+                  is='a'
+                  id={tab.title}
+                  isSelected={pathname === tab.href}
+                  onSelect={() => router.push(tab.href)}
+                >
+                  {tab.title}
+                </Tab>
+              ))}
+            </TabNavigation>
+            <Pane
+              display='flex'
+              alignItems='center'
+              justifyContent='center'
+              marginLeft={majorScale(4)}
+              cursor='pointer'
+              onClick={() => openTutorialModal(tutorialType)}
+            >
+              <HelpOutlineIcon
+                fontSize='medium'
+                style={{ color: theme.colors.blue500 }}
+                titleAccess='Open Tutorial'
+              />
+            </Pane>
+            {user && (
+              <Popover
+                content={<ProfileCard user={user} onSettingsClick={openSettingsModal} />}
+                position={Position.BOTTOM}
+              >
+                <Avatar
+                  name={user.name}
+                  style={{ cursor: 'pointer' }}
+                  backgroundColor={theme.colors.red25}
+                  size={40}
+                  marginLeft={majorScale(4)}
+                />
+              </Popover>
+            )}
+            {tutorialModal}
+          </Pane>
+        </Pane>
+      </Pane>
+      {settingsModal}
+    </Pane>
+  );
 }
 
 export default Nav;

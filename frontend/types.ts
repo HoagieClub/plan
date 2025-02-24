@@ -63,21 +63,21 @@ export type ProfileProps = {
 };
 
 export type ModalProps = {
-	children?: ReactNode;
-	setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
-	setTermFilter?: (term: string) => void;
-	setDistributionFilter?: (distribution: string) => void;
-	setLevelFilter?: (level: string[]) => void;
-	setGradingFilter?: (grading: string[]) => void;
-	handleCancel?: () => void;
-	handleSave?: () => void;
+  children?: ReactNode;
+  setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
+  setTermFilter?: (term: string) => void;
+  setDistributionFilters?: (distribution: string[]) => void;
+  setLevelFilter?: (level: string[]) => void;
+  setGradingFilter?: (grading: string[]) => void;
+  handleCancel?: () => void;
+  handleSave?: () => void;
 };
 
 export type Filter = {
-	termFilter: string;
-	distributionFilter: string;
-	levelFilter: string[];
-	gradingFilter: string[];
+  termFilter: string;
+  distributionFilters: string[];
+  levelFilter: string[];
+  gradingFilter: string[];
 };
 
 export type SearchStoreState = {

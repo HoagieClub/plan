@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -25,10 +26,12 @@ import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearc
 import { Item } from '@/components/Item';
 import Search from '@/components/Search';
 import TabbedMenu from '@/components/TabbedMenu/TabbedMenu';
+import ButtonWidget from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { getDepartmentGradient } from '@/utils/departmentColors';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 
@@ -40,38 +43,6 @@ import type {
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
-
-const PRIMARY_COLOR_LIST: string[] = [
-	'#ff7895',
-	'#e38a62',
-	'#cdaf7b',
-	'#94bb77',
-	'#e2c25e',
-	'#ead196',
-	'#e7bc7d',
-	'#d0b895',
-	'#72b4c9',
-	'#2cdbca',
-	'#a8cadc',
-	'#c5bab6',
-	'#bf91bd',
-];
-
-const SECONDARY_COLOR_LIST: string[] = [
-	'#ff91a9',
-	'#e9a88a',
-	'#d7bf95',
-	'#afcb9a',
-	'#e9d186',
-	'#f5db9d',
-	'#f0d2a8',
-	'#dcc9af',
-	'#96c7d6',
-	'#2ee8d6',
-	'#a8d3dc',
-	'#cac1be',
-	'#c398c1',
-];
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -95,16 +66,16 @@ const staticRectSortingStrategy = () => {
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
 
-function simpleHash(str: string) {
-	if (str.length !== 3) {
-		return 0;
-	}
+let csrfToken: string;
 
-	let sum = 0;
-	for (let i = 0; i < str.length; i++) {
-		sum += (i + 1) * str.charCodeAt(i);
-	}
-	return sum % 11;
+if (typeof window === 'undefined') {
+  // Server-side or during pre-rendering/build time
+  csrfToken = '';
+} else {
+  // Client-side
+  (async () => {
+    csrfToken = await fetchCsrfToken();
+  })();
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
@@ -444,16 +415,16 @@ export function Canvas({
 				onDragStart={({ active }) => {
 					const activeContainer = findContainer(active.id);
 
-					setActiveId(active.id);
-					setActiveContainerId(activeContainer ?? null);
-					setOverContainerId(activeContainer ?? null);
-					setClonedItems(items);
-				}}
-				onDragOver={({ active, over }) => {
-					const overId = over.id;
-					if (overId === null || overId === undefined || active.id in items) {
-						return;
-					}
+          setActiveId(active.id);
+          setActiveContainerId(activeContainer ?? null);
+          setOverContainerId(activeContainer ?? null);
+          setClonedItems(items);
+        }}
+        onDragOver={({ active, over }) => {
+          const overId = over?.id;
+          if (overId === null || overId === undefined || active.id in items) {
+            return;
+          }
 
 					const overContainer = findContainer(overId);
 					const activeContainer = findContainer(active.id);
@@ -484,7 +455,7 @@ export function Canvas({
 						return;
 					}
 
-					const overId = over.id;
+          const overId = over?.id;
 
 					if (overId === null || overId === undefined) {
 						setActiveId(null);
@@ -534,6 +505,13 @@ export function Canvas({
 							>
 								{/* issue here with resizing + with requirements dropdowns*/}
 								{/* Try to get this to fixed height*/}
+                <div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
+                  <ButtonWidget
+                    href='/dashboard'
+                    text='Upload Transcript from TigerHub'
+                    icon={<ArrowDownTrayIcon className='h-5 w-5' />}
+                  />
+                </div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
 									id={SEARCH_RESULTS_ID}
@@ -752,13 +730,25 @@ export function Canvas({
 }
 
 function getPrimaryColor(id: UniqueIdentifier) {
-	const hash = simpleHash(String(id).split('|')[1].slice(0, 3));
-	return PRIMARY_COLOR_LIST[hash];
+  const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+  const gradient = getDepartmentGradient(dept, 90);
+
+  // Extract the first color
+  const colors = gradient.split(',');
+  const firstColor = colors[1]?.trim();
+
+  return firstColor;
 }
 
 function getSecondaryColor(id: UniqueIdentifier) {
-	const hash = simpleHash(String(id).split('|')[1].slice(0, 3));
-	return SECONDARY_COLOR_LIST[hash];
+  const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+  const gradient = getDepartmentGradient(dept, 90);
+
+  // Extract the second color
+  const colors = gradient.split(',');
+  const secondColor = colors[2]?.trim().split(')')[0];
+
+  return secondColor;
 }
 
 type SortableItemProps = {

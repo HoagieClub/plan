@@ -1,7 +1,5 @@
 import { defaultTheme, mergeTheme } from 'evergreen-ui';
 
-import Tab from './Tab';
-
 export const hoagieUI = mergeTheme(defaultTheme, {
 	title: 'default',
 	colors: {
@@ -21,6 +19,21 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 		gray90: '#FBFBFB',
 		gray75: '#FCFCFC',
 		gray50: '#FFFFFF',
+
+		slate25: '#FBFCFD',
+		slate50: '#F8FAFC',
+		slate100: '#F1F5F9',
+		slate150: '#EEF1F6',
+		slate160: '#ecf1f6',
+		slate175: '#E9EEF4',
+		slate200: '#E2E8F0',
+		slate300: '#CBD5E1',
+		slate400: '#94A3B8',
+		slate500: '#64748B',
+		slate600: '#475569',
+		slate700: '#334155',
+		slate800: '#1E293B',
+		slate900: '#0F172A',
 
 		blue900: '#0A1433',
 		blue800: '#142966',
@@ -48,6 +61,7 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 
 		red700: '#7D2828',
 		red600: '#A73636',
+		red550: '#BD3D3D',
 		red500: '#D14343',
 		red300: '#EE9191',
 		red100: '#F9DADA',
@@ -67,6 +81,8 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 		orange700: '#996A13',
 		orange500: '#FFB020',
 		orange100: '#F8E3DA',
+		orange90: '#FCEBE1',
+		orange50: '#FFF6E8',
 		orange25: '#FFFAF2',
 
 		teal800: '#0F5156',
@@ -127,7 +143,7 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 			backgroundColor: '#F1F1F1',
 		},
 		blue: {
-			color: '#2952CC',
+			color: '#3366FF',
 			backgroundColor: '#D6E0FF',
 		},
 		red: {
@@ -160,7 +176,7 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 		info: {
 			background: '#F3F6FF',
 			border: '#3366FF',
-			text: '#2952CC',
+			text: '#3366FF',
 			icon: '#3366FF',
 		},
 		success: {
@@ -225,14 +241,10 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 		semibold: 500,
 		bold: 600,
 	},
-	components: {
-		...defaultTheme.components,
-		Tab,
-	},
 });
 
-export const hoagieYellow = mergeTheme(hoagieUI, {
-	title: '#FFB020',
+export const hoagiePlan = mergeTheme(hoagieUI, {
+	title: '#A73636',
 	colors: {
 		...hoagieUI.colors,
 		yellow900: '#4A300B',
@@ -259,6 +271,6 @@ export const hoagieYellow = mergeTheme(hoagieUI, {
 	},
 	shadows: {
 		...hoagieUI.shadows,
-		focusRing: '0 0 0 2px #FFEFD2',
+		focusRing: '0 0 0 0px #FFFFFF',
 	},
 });

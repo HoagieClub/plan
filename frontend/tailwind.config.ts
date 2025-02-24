@@ -28,7 +28,7 @@ const config: Config = {
 				'day-secondary': '#FFF',
 				'day-accent': '#FFF',
 				'day-text': '#FFF',
-				'night-primary': '#FFF',
+				'night-primary': '#FFF', // TODO: Night should not be white?
 				'night-secondary': '#FFF',
 				'night-accent': '#FFF',
 				'night-text': '#FFF',
@@ -80,8 +80,8 @@ const config: Config = {
 				'hoagieplan-purple': '#663399',
 			},
 			backgroundColor: {
-				'hoagieplan-dark-yellow': '#FFB020',
-				'hoagieplan-light-yellow': '#FFEFD2',
+				'hoagieplan-dark-blue': '#3366FF',
+				'hoagieplan-light-blue': '#EBF0FF',
 				'dnd-gray': 'rgba(0, 0, 0, 0.05)',
 			},
 			borderRadius: {

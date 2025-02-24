@@ -41,7 +41,8 @@
     "**/*.tsx",
     "postcss.config.js,",
     ".next/types/**/*.ts",
-    "eslint.config.js"
+    "eslint.config.mjs",
+    ".prettierrc.mjs"
   ],
   "exclude": ["node_modules", ".next", "coverage"]
 }

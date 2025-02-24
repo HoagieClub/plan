@@ -54,7 +54,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 
 	return (
 		<Auth0Provider user={user}>
-			<Theme palette='yellow'>
+			<Theme palette='plan'>
 				<Layout>
 					<Nav name='plan' tabs={tabs} user={user} />
 					{children}
@@ -75,7 +75,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang='en' className='bg-hoagieplan-dark-yellow'>
+		<html lang='en' className='bg-black'> {/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
 			<body className='antialiased'>
 				{/* Uncomment this to see components re-render. Used for debugging. */}
 				{/* <script src='https://unpkg.com/react-scan/dist/auto.global.js' /> */}
