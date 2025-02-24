@@ -1,9 +1,5 @@
 /**
- * @overview Auth0 route handler file that creates the following routes:
- * - /api/auth/login
- * - /api/auth/logout
- * - /api/auth/callback
- * - /api/auth/me
+ * @overview Tab component for the Hoagie Plan app.
  *
  * Copyright © 2021-2024 Hoagie Club and affiliates.
  *
@@ -14,11 +10,15 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
-import { handleAuth } from '@auth0/nextjs-auth0';
+import { defaultTheme } from 'evergreen-ui';
 
-/**
- * Handles authentication requests.
- *
- * @returns A NextResponse object with the API response.
- */
-export const GET = handleAuth();
+export const Tab = {
+	...defaultTheme.components.Tab,
+	appearances: {
+		...defaultTheme.components.Tab.appearances,
+		navbar: {
+			...defaultTheme.components.Tab.appearances.primary,
+			fontSize: '14px',
+		},
+	},
+};

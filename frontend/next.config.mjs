@@ -11,7 +11,7 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   env: {
     // TODO: This can be done in a more modern/better way (Hooks -> Route Handlers)
@@ -20,13 +20,12 @@ const nextConfig = {
   },
   reactStrictMode: true,
   experimental: {
+    webpackMemoryOptimizations: true,
+    reactCompiler: true, // Enable the React 19 compiler!
+    ppr: 'incremental', // Only available in canary for now
     optimizePackageImports: ['icon-library'],
-    turbo: {
-      resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
-      moduleIdStrategy: 'deterministic',
-      useSwcCss: true,
-      treeShaking: true,
-      memoryLimit: 1024 * 1024 * 512, // 512 MB memory limit
+    staleTimes: {
+      dynamic: 30,
     },
   },
   ...withPWA({

@@ -2,223 +2,227 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 import 'evergreen-ui';
-import type { UserProfile } from '@auth0/nextjs-auth0/client';
+import { type User } from '@auth0/nextjs-auth0/types';
 
 declare module 'evergreen-ui' {
-  interface DefaultTheme {
-    title: string;
-  }
+	interface DefaultTheme {
+		title: string;
+	}
 }
 
+// TODO: Make use of this or rm it.
 export type HoagieUser = {
-  name?: string;
-  email?: string;
+	name?: string;
+	email?: string;
 };
 
 export type AuthState = {
-  user?: Profile;
-  isAuthenticated: boolean | null;
-  setIsAuthenticated: (isAuthenticated: boolean) => void;
-  checkAuthentication: () => Promise<void>;
-  login: () => void;
-  logout: () => void;
+	user?: Profile;
+	isAuthenticated: boolean | null;
+	setIsAuthenticated: (isAuthenticated: boolean) => void;
+	checkAuthentication: () => Promise<void>;
+	login: () => void;
+	logout: () => void;
 };
 
 export type UserState = {
-  profile: Profile;
-  updateProfile: (updates: Partial<Profile>) => void;
-  fetchAndUpdateProfile: (userProfile: UserProfile | null) => void;
+	profile: Profile;
+	academicPlan: { [key: string]: any }; // TODO: Use a more specific type for academicPlan
+	updateProfile: (updates: Partial<Profile>) => void;
+	setAcademicPlan: (plan: { [key: string]: any }) => void;
+	updateRequirements: () => Promise<any | null>; // TODO: Try to type this better
+	fetchAndUpdateProfile: (userProfile: User) => void;
 };
 
 export type MajorMinorType = {
-  code: string;
-  name: string;
+	code: string;
+	name: string;
 };
 
 export type CertificateType = MajorMinorType & {};
 
 export type Profile = {
-  firstName: string;
-  lastName: string;
-  classYear: number;
-  major: MajorMinorType | string;
-  minors?: MajorMinorType[];
-  certificates?: MajorMinorType[];
-  netId: string;
-  universityId: string;
-  email: string;
-  department: string;
-  timeFormat24h: boolean;
-  themeDarkMode: boolean;
+	firstName: string;
+	lastName: string;
+	classYear: number;
+	major: MajorMinorType | string;
+	minors?: MajorMinorType[];
+	certificates?: MajorMinorType[];
+	netId: string;
+	universityId: string;
+	email: string;
+	department: string;
+	timeFormat24h: boolean;
+	themeDarkMode: boolean;
 };
 
 export type ProfileProps = {
-  profile: Profile;
-  onClose: () => void;
-  onSave: (updatedProfile: Profile) => void;
+	profile: Profile;
+	onClose: () => void;
+	onSave: (updatedProfile: Profile) => void;
 };
 
 export type ModalProps = {
-  children?: ReactNode;
-  setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
-  setTermFilter?: (term: string) => void;
-  setDistributionFilters?: (distribution: string[]) => void;
-  setLevelFilter?: (level: string[]) => void;
-  setGradingFilter?: (grading: string[]) => void;
-  handleCancel?: () => void;
-  handleSave?: () => void;
+	children?: ReactNode;
+	setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
+	setTermFilter?: (term: string) => void;
+	setDistributionFilters?: (distribution: string[]) => void;
+	setLevelFilter?: (level: string[]) => void;
+	setGradingFilter?: (grading: string[]) => void;
+	handleCancel?: () => void;
+	handleSave?: () => void;
 };
 
 export type Filter = {
-  termFilter: string;
-  distributionFilters: string[];
-  levelFilter: string[];
-  gradingFilter: string[];
+	termFilter: string;
+	distributionFilters: string[];
+	levelFilter: string[];
+	gradingFilter: string[];
 };
 
 export type SearchStoreState = {
-  searchResults: Course[];
-  setSearchResults: (results: Course[]) => void;
-  recentSearches: string[];
-  addRecentSearch: (query: string) => void;
-  clearRecentSearches: () => void;
-  error: string | null;
-  setError: (error: string | null) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+	searchResults: Course[];
+	setSearchResults: (results: Course[]) => void;
+	recentSearches: string[];
+	addRecentSearch: (query: string) => void;
+	clearRecentSearches: () => void;
+	error: string | null;
+	setError: (error: string | null) => void;
+	loading: boolean;
+	setLoading: (loading: boolean) => void;
 };
 
 export type CourseProps = {
-  id: number;
-  course: Course;
+	id: number;
+	course: Course;
 };
 
 export type Semester = {
-  id: string;
-  courses: Course[];
+	id: string;
+	courses: Course[];
 };
 
 export type SemesterBinProps = {
-  children?: ReactNode;
-  semester: Semester;
-  className?: string;
+	children?: ReactNode;
+	semester: Semester;
+	className?: string;
 };
 
 export type DraggableProps = {
-  id: number;
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+	id: number;
+	children: ReactNode;
+	className?: string;
+	style?: CSSProperties;
 };
 
 export type DroppableProps = {
-  id: string;
-  children: ReactNode;
-  className?: string;
+	id: string;
+	children: ReactNode;
+	className?: string;
 };
 
 export type DndState = {
-  semesters: Semester[];
-  addCourseToSemester: (course: Course, semesterId: string) => void;
-  moveCourseWithinSemester: (courseID: string, oldIndex: number, newIndex: number) => void;
+	semesters: Semester[];
+	addCourseToSemester: (course: Course, semesterId: string) => void;
+	moveCourseWithinSemester: (courseID: string, oldIndex: number, newIndex: number) => void;
 };
 
 export type SearchResults = {
-  courses: Course[];
+	courses: Course[];
 };
 
 export type MobileMenuState = {
-  mobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
+	mobileMenuOpen: boolean;
+	setMobileMenuOpen: (open: boolean) => void;
 };
 
 export type MenuItemProps = {
-  isActive: boolean;
-  children: ReactNode;
-  onClick: () => void;
+	isActive: boolean;
+	children: ReactNode;
+	onClick: () => void;
 };
 
 // TODO: Super sus type
 export type Dictionary = {
-  [key: string]: string | Dictionary;
+	[key: string]: string | Dictionary;
 };
 
 // Calendar
 export type CalendarEvent = {
-  key: string;
-  course: Course;
-  section: Section;
-  meeting: ClassMeeting;
-  startTime: string;
-  endTime: string;
-  startColumnIndex: number;
-  startRowIndex: number;
-  endRowIndex: number;
-  width?: number;
-  offsetLeft?: number;
-  color?: string;
-  textColor?: string;
+	key: string;
+	course: Course;
+	section: Section;
+	meeting: ClassMeeting;
+	startTime: string;
+	endTime: string;
+	startColumnIndex: number;
+	startRowIndex: number;
+	endRowIndex: number;
+	width?: number;
+	offsetLeft?: number;
+	color?: string;
+	textColor?: string;
 
-  // Defined fields
-  isActive: boolean;
-  needsChoice: boolean;
-  isChosen: boolean;
+	// Defined fields
+	isActive: boolean;
+	needsChoice: boolean;
+	isChosen: boolean;
 };
 
 // Note: types from the API, fields in snake_case.
 
 export type AcademicTerm = {
-  term_code: string;
-  suffix: string;
+	term_code: string;
+	suffix: string;
 };
 
 export type Course = {
-  // From model
-  id: number;
-  guid: string;
-  course_id: number;
-  catalog_number: number;
-  title: string;
-  description: string;
-  drop_consent: string;
-  add_consent: string;
-  web_address: string;
-  transcript_title: string;
-  long_title: string;
-  distribution_area_long: string;
-  distribution_area_short: string;
-  reading_writing_assignment: string;
-  grading_basis: string;
-  reading_list: string;
-  department_code: string;
-  sections: Section[];
-  crosslistings: string;
+	// From model
+	id: number;
+	guid: string;
+	course_id: number;
+	catalog_number: number;
+	title: string;
+	description: string;
+	drop_consent: string;
+	add_consent: string;
+	web_address: string;
+	transcript_title: string;
+	long_title: string;
+	distribution_area_long: string;
+	distribution_area_short: string;
+	reading_writing_assignment: string;
+	grading_basis: string;
+	reading_list: string;
+	department_code: string;
+	sections: Section[];
+	crosslistings: string;
 };
 
 export type Section = {
-  // From model
-  id: number;
-  class_number: number;
-  class_type: string;
-  class_section: string;
-  track: string;
-  seat_reservations: string;
-  instructor_name: string;
-  capacity: number;
-  status: string;
-  enrollment: number;
+	// From model
+	id: number;
+	class_number: number;
+	class_type: string;
+	class_section: string;
+	track: string;
+	seat_reservations: string;
+	instructor_name: string;
+	capacity: number;
+	status: string;
+	enrollment: number;
 
-  // Defined fields
-  class_meetings: ClassMeeting[];
+	// Defined fields
+	class_meetings: ClassMeeting[];
 };
 
 export type ClassMeeting = {
-  // From model
-  id: number;
-  meeting_number: number;
-  start_time: string;
-  end_time: string;
-  room: string;
-  days: string;
-  building_name: string;
+	// From model
+	id: number;
+	meeting_number: number;
+	start_time: string;
+	end_time: string;
+	room: string;
+	days: string;
+	building_name: string;
 };

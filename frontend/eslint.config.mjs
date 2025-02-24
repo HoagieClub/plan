@@ -97,6 +97,7 @@ const eslintConfig = [
           endOfLine: 'auto',
           singleQuote: true,
           trailingComma: 'es5',
+          useTabs: true,
           tabWidth: 2,
           printWidth: 100,
         },

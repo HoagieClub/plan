@@ -14,114 +14,113 @@
 
 'use client';
 
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useUser } from '@auth0/nextjs-auth0';
 import {
-  Pane,
-  majorScale,
-  minorScale,
-  Heading,
-  Spinner,
-  CalendarIcon,
-  GridViewIcon,
-  ArrowLeftIcon,
-  Button,
-  useTheme,
+	Pane,
+	majorScale,
+	minorScale,
+	Heading,
+	Spinner,
+	CalendarIcon,
+	GridViewIcon,
+	ArrowLeftIcon,
+	Button,
 } from 'evergreen-ui';
 import Link from 'next/link';
 
-import AuthButton from '@/lib/hoagie-ui/AuthButton';
+import { AuthButton } from '@/lib/hoagie-ui/AuthButton';
+import { hoagiePlan } from '@/lib/hoagie-ui/Theme/themes';
 
 export default function Index() {
-  const theme = useTheme();
-  const { user, error, isLoading } = useUser();
-  let Profile;
-  if (isLoading) {
-    Profile = <Spinner />;
-  } else if (error) {
-    Profile = <div>{error.message}</div>;
-  } else if (user) {
-    Profile = (
-      <Pane>
-        <Link href='/dashboard'>
-          <Button
-            height={56}
-            width={majorScale(35)}
-            backgroundColor={theme.colors.red25}
-            marginBottom={20}
-            iconBefore={GridViewIcon}
-          >
-            Plan your four-year path
-          </Button>
-        </Link>
-        <br />
-        <Link href='/calendar'>
-          <Button
-            height={56}
-            width={majorScale(35)}
-            backgroundColor={theme.colors.red25}
-            marginBottom={20}
-            iconBefore={CalendarIcon}
-          >
-            Plan your weekly classes
-          </Button>
-        </Link>
-        <br />
-        <AuthButton variant='logout' />
-      </Pane>
-    );
-  } else {
-    Profile = <AuthButton />;
-  }
+	const theme = hoagiePlan;
+	const { user, error, isLoading } = useUser(); // todo: this gives annoying unauthorized console log
 
-  return (
-    <Pane
-      display='flex'
-      justifyContent='center'
-      alignItems='center'
-      marginX={majorScale(1)}
-      paddingBottom={majorScale(4)}
-      paddingTop={majorScale(8)}
-    >
-      <Pane
-        borderRadius={8}
-        textAlign='center'
-        elevation={1}
-        background='white'
-        marginX={20}
-        maxWidth='600px'
-        width='100%'
-        paddingX='10px'
-        paddingTop={majorScale(5)}
-        paddingBottom={majorScale(7)}
-      >
-        <Heading size={900} className='hoagie'>
-          Welcome to HoagiePlan
-        </Heading>
-        <br />
-        <p>Explore courses, read reviews, and manage your four-year schedule.</p>
-        <div>
-          <Pane display='flex' flexDirection='column' alignItems='center' marginTop='30px'>
-            {Profile}
-            <Link href='https://hoagie.io'>
-              <Button
-                height={56}
-                width={majorScale(35)}
-                appearance='default'
-                marginTop={20}
-                iconBefore={ArrowLeftIcon}
-              >
-                <Pane display='flex'>
-                  Back to
-                  <Pane marginLeft={minorScale(1)} className='hoagie'>
-                    hoagie<b>platform</b>
-                  </Pane>
-                </Pane>
-              </Button>
-            </Link>
-            <br />
-          </Pane>
-        </div>
-      </Pane>
-    </Pane>
-  );
+	let Profile;
+	if (isLoading) {
+		Profile = <Spinner />;
+	} else if (error || !user) {
+		Profile = <AuthButton />;
+	} else {
+		Profile = (
+			<Pane>
+				<Link href='/dashboard'>
+					<Button
+						height={56}
+						width={majorScale(35)}
+						backgroundColor={theme.colors.red25}
+						marginBottom={20}
+						iconBefore={GridViewIcon}
+					>
+						Plan your four-year path
+					</Button>
+				</Link>
+				<br />
+				<Link href='/calendar'>
+					<Button
+						height={56}
+						width={majorScale(35)}
+						backgroundColor={theme.colors.red25}
+						marginBottom={20}
+						iconBefore={CalendarIcon}
+					>
+						Plan your weekly classes
+					</Button>
+				</Link>
+				<br />
+				<AuthButton variant='logout' />
+			</Pane>
+		);
+	}
+
+	return (
+		<Pane
+			display='flex'
+			justifyContent='center'
+			alignItems='center'
+			marginX={majorScale(1)}
+			paddingBottom={majorScale(4)}
+			paddingTop={majorScale(8)}
+		>
+			<Pane
+				borderRadius={8}
+				textAlign='center'
+				elevation={1}
+				background='white'
+				marginX={20}
+				maxWidth='600px'
+				width='100%'
+				paddingX='10px'
+				paddingTop={majorScale(5)}
+				paddingBottom={majorScale(7)}
+			>
+				<Heading size={900} className='hoagie'>
+					Welcome to HoagiePlan
+				</Heading>
+				<br />
+				<p>Explore courses, read reviews, and manage your four-year schedule.</p>
+				<div>
+					<Pane display='flex' flexDirection='column' alignItems='center' marginTop='30px'>
+						{Profile}
+						<Link href='https://hoagie.io'>
+							<Button
+								height={56}
+								width={majorScale(35)}
+								appearance='default'
+								marginTop={20}
+								iconBefore={ArrowLeftIcon}
+							>
+								<Pane display='flex'>
+									Back to
+									<Pane marginLeft={minorScale(1)} className='hoagie'>
+										hoagie<b>platform</b>
+									</Pane>
+								</Pane>
+							</Button>
+						</Link>
+						<br />
+					</Pane>
+				</div>
+			</Pane>
+		</Pane>
+	);
 }
