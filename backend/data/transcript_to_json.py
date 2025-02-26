@@ -35,7 +35,7 @@ def transcript_to_json(transcript_pdf_path):
             total_lines.extend(lines)
         currentTerm = ""
         currentTermClasses = []
-        for i in range(len(total_lines)): 
+        for i in range(len(total_lines)):
             curr_line = total_lines[i]
             if ("Fall" in curr_line or "Spring" in curr_line):
                 if (len(currentTermClasses) != 0):
@@ -44,10 +44,15 @@ def transcript_to_json(transcript_pdf_path):
 
                 currentTerm = get_current_term(total_lines[i])
 
+            # print(currentTerm)
             row = curr_line.split(" ")
             if (len(row) >= 2 and row[0].upper() == row[0] and len(row[0]) == 3 and row[1].isnumeric() and row[0] != "ID:"):
-                currClass = row[0] + " " + row[1]  
+                currClass = row[0] + " " + row[1]
+                # print(currClass)
                 currentTermClasses.append(currClass)
+
+        class_output[currentTerm] = currentTermClasses
+        
     return class_output
 
 
@@ -132,14 +137,14 @@ def main():
         "Spring 2023": ["COS 240", "GER 211", "MAT 325", "ORF 307", "PHI 301",],
         "Fall 2023": ["COS 333", "COS 514", "ORF 526", "POL 210"],
         "Spring 2024": ["COS 398", "COS 418", "ENG 319", "ORF 515", "ORF 523",],
-        # "Fall 2024": ["ART 335", "COS 326", "COS 433", "ORF 418"]
+        "Fall 2024": ["ART 335", "COS 326", "COS 433", "ORF 418"]
         }
     
     assert(transcript_json == correct_json)
 
-    transcript_dict, missing_courses = convert_to_guids(transcript_json)
-    print(transcript_dict)
-    print(missing_courses)
+    # transcript_dict, missing_courses = convert_to_guids(transcript_json)
+    # print(transcript_dict)
+    # print(missing_courses)
     
 
 if __name__ == "__main__":
