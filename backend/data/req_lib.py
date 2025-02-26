@@ -1,7 +1,6 @@
 from typing import Dict, Any
 import requests
-from configs import Configs
-
+from .configs import Configs
 
 class ReqLib:
     def __init__(self):
