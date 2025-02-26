@@ -1,5 +1,4 @@
 import pdfplumber
-from hoagieplan.api.search import search_courses
 from django.http import HttpRequest
 from django.test.client import RequestFactory
 import json
@@ -63,24 +62,62 @@ def get_current_term(year_and_semester_string: str) -> str:
     return current_term
 
 
-# Retrieves the course_id from the DB given course_code
-def get_course_id(course_code):
-    factory = RequestFactory()
-    request = factory.get("/search_courses", {"course": course_code})
-    response = search_courses(request)
-    response_content = response.content.decode("utf-8")
+TERMS = {
+	"Spring 2026": "1264",
+	"Fall 2025": "1262",
+	"Spring 2025": "1254",
+	"Fall 2024": "1252",
+	"Spring 2024": "1244",
+	"Fall 2023": "1242",
+	"Spring 2023": "1234",
+	"Fall 2022": "1232",
+	"Spring 2022": "1224",
+	"Fall 2021": "1222",
+	"Spring 2021": "1214",
+	"Fall 2020": "1212",
+}
 
-    courses = json.loads(response_content)["courses"]
+
+# Queries the DB for course_id given course
+# Ex: get_course_id("COS 126") --> 002051
+def get_course_id(course):
+    factory = RequestFactory()
+    request = factory.get("/search_courses", {"course": course})
+    response = search_courses(request)
+    string_data = response.content.decode("utf-8")
+
+    # Parse JSON string to dictionary
+    courses = json.loads(string_data)["courses"]
     if len(courses) != 1:
-        print("search_courses.py: Exact match not found")
+        print("search_courses.py: Exact match for %s not found" % (course))
         return None
 
-    return courses[0]["course_id"]
+    return courses[0]["course_id"] 
 
 
 # Returns course_guid from the semester and course_id
 def get_course_guid(semester, course_id):
     return TERMS[semester] + course_id
+
+
+# Convert transcript_dict into using guids 
+def convert_to_guids(transcript_dict):
+    new_transcript_dict = {}
+    missing_courses = []
+
+    for semester, courses in transcript_dict.items():
+        courses_guids = []
+        for course in courses:
+            print("Querying for", course)
+            course_id = get_course_id(course)
+            if course_id is None:
+                missing_courses.append(course)
+                continue
+            course_guid = get_course_guid(semester, course_id)
+            courses_guids.append(course_guid)
+        new_transcript_dict[semester] = courses_guids
+    
+    return new_transcript_dict, missing_courses
 
 
 def main():
@@ -95,11 +132,15 @@ def main():
         "Spring 2023": ["COS 240", "GER 211", "MAT 325", "ORF 307", "PHI 301",],
         "Fall 2023": ["COS 333", "COS 514", "ORF 526", "POL 210"],
         "Spring 2024": ["COS 398", "COS 418", "ENG 319", "ORF 515", "ORF 523",],
-        "Fall 2024": ["ART 335", "COS 326", "COS 433", "ORF 418"]
+        # "Fall 2024": ["ART 335", "COS 326", "COS 433", "ORF 418"]
         }
     
     assert(transcript_json == correct_json)
 
+    transcript_dict, missing_courses = convert_to_guids(transcript_json)
+    print(transcript_dict)
+    print(missing_courses)
+    
 
 if __name__ == "__main__":
     main()
