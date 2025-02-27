@@ -3,24 +3,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
 	closestCenter,
+	pointerWithin,
+	rectIntersection,
 	DndContext,
 	DragOverlay,
+	getFirstCollision,
 	KeyboardSensor,
+	MouseSensor,
 	TouchSensor,
-	PointerSensor,
 	useSensors,
 	useSensor,
 	MeasuringStrategy,
 	defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import {
-	SortableContext,
-	useSortable,
-	defaultAnimateLayoutChanges,
-	arrayMove,
-	verticalListSortingStrategy,
-	sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
+import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { createPortal } from 'react-dom';
@@ -37,7 +33,15 @@ import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 import { getDepartmentGradient } from '@/utils/departmentColors';
 
-import type { DropAnimation, Modifiers, UniqueIdentifier } from '@dnd-kit/core';
+import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
+
+import type {
+	CollisionDetection,
+	DropAnimation,
+	Modifiers,
+	UniqueIdentifier,
+	KeyboardCoordinateGetter,
+} from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
@@ -50,6 +54,15 @@ const semesterWidth = '22.5vw';
 const requirementsWidth = '26vw';
 const courseWidth = '10.5vw';
 const extendedCourseWidth = '22.0vw';
+
+const staticRectSortingStrategy = () => {
+	return {
+		x: 0,
+		y: 0,
+		scaleX: 1,
+		scaleY: 1,
+	};
+};
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
 
@@ -122,6 +135,8 @@ type Props = {
 	initialItems?: Items;
 	containerStyle?: CSSProperties;
 
+	coordinateGetter?: KeyboardCoordinateGetter;
+
 	getItemStyles?(args: {
 		value: UniqueIdentifier;
 		index: number;
@@ -152,6 +167,7 @@ export function Canvas({
 	columns = 2,
 	handle = true,
 	containerStyle,
+	coordinateGetter = multipleContainersCoordinateGetter,
 	getItemStyles = () => ({}),
 	minimal = false,
 	scrollable,
@@ -302,27 +318,60 @@ export function Canvas({
 	const containers = initialContainers;
 	const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 	const [activeContainerId, setActiveContainerId] = useState<UniqueIdentifier | null>(null);
-	const _lastOverId = useRef<UniqueIdentifier | null>(null);
+	const lastOverId = useRef<UniqueIdentifier | null>(null);
 	const recentlyMovedToNewContainer = useRef(false);
 	const [overContainerId, setOverContainerId] = useState<UniqueIdentifier | null>(null);
 
+	/**
+	 * Custom collision detection strategy optimized for multiple containers
+	 *
+	 * - First, find any droppable containers intersecting with the pointer.
+	 * - If there are none, find intersecting containers with the active draggable.
+	 * - If there are no intersecting containers, return the last matched intersection
+	 *
+	 */
+	const collisionDetectionStrategy: CollisionDetection = useCallback(
+		(args) => {
+			// Start by finding any intersecting droppable
+			const pointerIntersections = pointerWithin(args);
+			const intersections =
+				pointerIntersections.length > 0 ? pointerIntersections : rectIntersection(args);
+			let overId = getFirstCollision(intersections, 'id');
+
+			if (overId !== null) {
+				if (overId in items) {
+					const containerItems = items[overId];
+
+					if (containerItems.length > 0) {
+						overId = closestCenter({
+							...args,
+							droppableContainers: args.droppableContainers.filter(
+								(container) => container.id !== overId && containerItems.includes(container.id)
+							),
+						})[0]?.id;
+					}
+				}
+
+				lastOverId.current = overId;
+
+				return [{ id: overId }];
+			}
+
+			if (recentlyMovedToNewContainer.current) {
+				lastOverId.current = activeId;
+			}
+
+			return lastOverId.current ? [{ id: lastOverId.current }] : [];
+		},
+		[activeId, items]
+	);
+
 	const [clonedItems, setClonedItems] = useState<Items | null>(null);
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			// Require the mouse to move by 10 pixels before activating
-			activationConstraint: {
-				distance: 10,
-			},
-		}),
+		useSensor(MouseSensor),
+		useSensor(TouchSensor),
 		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates,
-		}),
-		useSensor(TouchSensor, {
-			// Press delay of 250ms, with tolerance of 5px of movement
-			activationConstraint: {
-				delay: 250,
-				tolerance: 5,
-			},
+			coordinateGetter,
 		})
 	);
 
@@ -355,51 +404,14 @@ export function Canvas({
 		setClonedItems(null);
 	};
 
-	const announcements = {
-		onDragStart({ active }) {
-			const course = String(active.id).split('|')[0];
-			return `Picked up course ${course}`;
-		},
-		onDragOver({ active, over }) {
-			const _ = active; // Acknowledge the parameter but don't use it
-			if (over) {
-				const container = findContainer(over.id);
-				if (container) {
-					return `Course moved to ${container}`;
-				}
-			}
-		},
-		onDragEnd({ active, over }) {
-			const _ = active; // Acknowledge the parameter but don't use it
-			if (over) {
-				const container = findContainer(over.id);
-				if (container) {
-					return `Course dropped into ${container}`;
-				}
-			}
-		},
-		onDragCancel({ active }) {
-			const course = String(active.id).split('|')[0];
-			return `Dragging cancelled. Course ${course} was dropped.`;
-		},
-	};
-
 	return (
 		<div style={{ display: 'flex', flexDirection: 'row', placeItems: 'center' }}>
 			<DndContext
 				sensors={sensors}
-				collisionDetection={closestCenter}
+				collisionDetection={collisionDetectionStrategy}
 				measuring={{
 					droppable: {
 						strategy: MeasuringStrategy.Always,
-					},
-				}}
-				accessibility={{
-					announcements,
-					screenReaderInstructions: {
-						draggable: `To pick up a course, press space or enter. 
-							While dragging, use arrow keys to move the course around. 
-							Press space or enter again to drop the course in its new position.`,
 					},
 				}}
 				onDragStart={({ active }) => {
@@ -428,34 +440,14 @@ export function Canvas({
 						setItems((items) => {
 							const activeItems = items[activeContainer];
 							const activeIndex = activeItems.indexOf(active.id);
-							const overItems = items[overContainer];
-
-							// Find the index where we want to insert the item
-							const overIndex = overItems.indexOf(overId);
-							const newIndex = overIndex >= 0 ? overIndex : overItems.length;
-
 							recentlyMovedToNewContainer.current = true;
 
 							return {
 								...items,
 								[activeContainer]: items[activeContainer].filter((item) => item !== active.id),
-								[overContainer]: [
-									...items[overContainer].slice(0, newIndex),
-									items[activeContainer][activeIndex],
-									...items[overContainer].slice(newIndex),
-								],
+								[overContainer]: [...items[overContainer], items[activeContainer][activeIndex]],
 							};
 						});
-					} else {
-						const activeIndex = items[activeContainer].indexOf(active.id);
-						const overIndex = items[overContainer].indexOf(overId);
-
-						if (activeIndex !== overIndex) {
-							setItems((items) => ({
-								...items,
-								[overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
-							}));
-						}
 					}
 				}}
 				onDragEnd={async ({ active, over }) => {
@@ -505,7 +497,7 @@ export function Canvas({
 				onDragCancel={onDragCancel}
 			>
 				{/* Removed PLACEHOLDER_ID since it's unused */}
-				<SortableContext items={containers} strategy={verticalListSortingStrategy}>
+				<SortableContext items={containers}>
 					<div style={{ display: 'flex', flexDirection: 'row' }}>
 						{/* Left Section for Search Results */}
 						{containers.includes(SEARCH_RESULTS_ID) && (
@@ -537,7 +529,7 @@ export function Canvas({
 								>
 									<SortableContext
 										items={items[SEARCH_RESULTS_ID]}
-										strategy={verticalListSortingStrategy}
+										strategy={staticRectSortingStrategy}
 									>
 										{staticSearchResults.map((course, index) => {
 											const courseId = `${course.course_id}|${course.crosslistings}`;
@@ -610,11 +602,14 @@ export function Canvas({
 											unstyled={minimal}
 											height={`calc(${containerGridHeight} / 4)`}
 										>
-											<SortableContext items={items[containerId] || []}>
+											<SortableContext
+												items={items[containerId] || []}
+												strategy={staticRectSortingStrategy}
+											>
 												{items[containerId] &&
 													items[containerId].map((course, index) => (
 														<SortableItem
-															disabled={false}
+															disabled={false} // isSortingContainer always false
 															key={index}
 															id={course}
 															index={index}
