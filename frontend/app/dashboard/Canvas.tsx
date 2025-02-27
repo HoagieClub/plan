@@ -3,14 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
 	closestCenter,
-	closestCorners,
-	pointerWithin,
-	rectIntersection,
 	DndContext,
 	DragOverlay,
-	getFirstCollision,
 	KeyboardSensor,
-	MouseSensor,
 	TouchSensor,
 	PointerSensor,
 	useSensors,
@@ -42,15 +37,7 @@ import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 import { getDepartmentGradient } from '@/utils/departmentColors';
 
-import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
-
-import type {
-	CollisionDetection,
-	DropAnimation,
-	Modifiers,
-	UniqueIdentifier,
-	KeyboardCoordinateGetter,
-} from '@dnd-kit/core';
+import type { DropAnimation, Modifiers, UniqueIdentifier } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
@@ -63,15 +50,6 @@ const semesterWidth = '22.5vw';
 const requirementsWidth = '26vw';
 const courseWidth = '10.5vw';
 const extendedCourseWidth = '22.0vw';
-
-const staticRectSortingStrategy = () => {
-	return {
-		x: 0,
-		y: 0,
-		scaleX: 1,
-		scaleY: 1,
-	};
-};
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
 
@@ -144,8 +122,6 @@ type Props = {
 	initialItems?: Items;
 	containerStyle?: CSSProperties;
 
-	coordinateGetter?: KeyboardCoordinateGetter;
-
 	getItemStyles?(args: {
 		value: UniqueIdentifier;
 		index: number;
@@ -176,7 +152,6 @@ export function Canvas({
 	columns = 2,
 	handle = true,
 	containerStyle,
-	coordinateGetter = multipleContainersCoordinateGetter,
 	getItemStyles = () => ({}),
 	minimal = false,
 	scrollable,
@@ -327,53 +302,9 @@ export function Canvas({
 	const containers = initialContainers;
 	const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 	const [activeContainerId, setActiveContainerId] = useState<UniqueIdentifier | null>(null);
-	const lastOverId = useRef<UniqueIdentifier | null>(null);
+	const _lastOverId = useRef<UniqueIdentifier | null>(null);
 	const recentlyMovedToNewContainer = useRef(false);
 	const [overContainerId, setOverContainerId] = useState<UniqueIdentifier | null>(null);
-
-	/**
-	 * Custom collision detection strategy optimized for multiple containers
-	 *
-	 * - First, find any droppable containers intersecting with the pointer.
-	 * - If there are none, find intersecting containers with the active draggable.
-	 * - If there are no intersecting containers, return the last matched intersection
-	 *
-	 */
-	const collisionDetectionStrategy: CollisionDetection = useCallback(
-		(args) => {
-			// Start by finding any intersecting droppable
-			const pointerIntersections = pointerWithin(args);
-			const intersections =
-				pointerIntersections.length > 0 ? pointerIntersections : rectIntersection(args);
-			let overId = getFirstCollision(intersections, 'id');
-
-			if (overId !== null) {
-				if (overId in items) {
-					const containerItems = items[overId];
-
-					if (containerItems.length > 0) {
-						overId = closestCenter({
-							...args,
-							droppableContainers: args.droppableContainers.filter(
-								(container) => container.id !== overId && containerItems.includes(container.id)
-							),
-						})[0]?.id;
-					}
-				}
-
-				lastOverId.current = overId;
-
-				return [{ id: overId }];
-			}
-
-			if (recentlyMovedToNewContainer.current) {
-				lastOverId.current = activeId;
-			}
-
-			return lastOverId.current ? [{ id: lastOverId.current }] : [];
-		},
-		[activeId, items]
-	);
 
 	const [clonedItems, setClonedItems] = useState<Items | null>(null);
 	const sensors = useSensors(
@@ -430,6 +361,7 @@ export function Canvas({
 			return `Picked up course ${course}`;
 		},
 		onDragOver({ active, over }) {
+			const _ = active; // Acknowledge the parameter but don't use it
 			if (over) {
 				const container = findContainer(over.id);
 				if (container) {
@@ -438,6 +370,7 @@ export function Canvas({
 			}
 		},
 		onDragEnd({ active, over }) {
+			const _ = active; // Acknowledge the parameter but don't use it
 			if (over) {
 				const container = findContainer(over.id);
 				if (container) {
