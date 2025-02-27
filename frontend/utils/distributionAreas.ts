@@ -8,6 +8,7 @@ export const distributionAreas: { [key: string]: string } = {
 	'Ethical Thought & Moral Values': 'EM',
 	'Epistemology & Cognition': 'EC',
 	'Culture & Difference': 'CD',
+	'': '',
 };
 
 export const distributionAreasInverse: { [key: string]: string } = {
@@ -20,4 +21,5 @@ export const distributionAreasInverse: { [key: string]: string } = {
 	EM: 'Ethical Thought & Moral Values',
 	EC: 'Epistemology & Cognition',
 	CD: 'Culture & Difference',
+	'': '',
 };

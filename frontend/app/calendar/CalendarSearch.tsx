@@ -184,6 +184,12 @@ export const CalendarSearch: FC = () => {
 		setShowPopup(false);
 	}, [setShowPopup]);
 
+	const handleReset = useCallback(() => {
+		setLocalLevelFilter([]);
+		setLocalGradingFilter([]);
+		setLocalDistributionFilters([]);
+	}, []);
+
 	useEffect(() => {
 		const handleKeyDown = (event) => {
 			if (event.key === 'Enter') {
@@ -316,6 +322,9 @@ export const CalendarSearch: FC = () => {
 					<div className='mt-5 text-right'>
 						<Button variant='soft' color='primary' onClick={handleSave} size='md'>
 							Save
+						</Button>
+						<Button variant='soft' color='danger' onClick={handleReset} sx={{ ml: 2 }} size='md'>
+							Reset
 						</Button>
 						<Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 							Cancel
