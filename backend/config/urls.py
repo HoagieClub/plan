@@ -7,7 +7,7 @@ corresponding views, ensuring the right logic is executed for each route.
 For more information, please see the Django URL dispatcher documentation at:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
 
-Copyright © 2021-2024 Hoagie Club and affiliates.
+Copyright © 2021-2025 Hoagie Club and affiliates.
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree or at
