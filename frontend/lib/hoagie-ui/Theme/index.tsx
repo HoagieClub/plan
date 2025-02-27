@@ -12,36 +12,34 @@
 
 'use client';
 
-import type { ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 
 import { ThemeProvider } from 'evergreen-ui';
 
-import { hoagieYellow, hoagieUI } from './themes';
+import { hoagiePlan, hoagieUI } from './themes';
 
-type ThemeProps = {
-  // Options: "yellow"
-  palette?: string;
+interface ThemeProps {
+	// Options: "yellow"
+	palette?: 'plan' | 'catalog';
 
-  // React children (child components)
-  children?: ReactNode;
-};
+	// React children (child components)
+	children: ReactNode;
+}
 
 /**
  * Returns a Hoagie theme based on the provided palette.
  *
  * @returns {ThemeProvider} A Hoagie-paletted theme provider component.
  */
-function Theme({ palette = 'yellow', children }: ThemeProps) {
-  const colorTheme = (() => {
-    switch (palette) {
-      case 'yellow':
-        return hoagieYellow;
-      default:
-        return hoagieUI;
-    }
-  })();
+export const Theme: FC<ThemeProps> = ({ palette = 'plan', children }) => {
+	const colorTheme = (() => {
+		switch (palette) {
+			case 'plan':
+				return hoagiePlan;
+			default:
+				return hoagieUI;
+		}
+	})();
 
-  return <ThemeProvider value={colorTheme}>{children}</ThemeProvider>;
-}
-
-export default Theme;
+	return <ThemeProvider value={colorTheme}>{children}</ThemeProvider>;
+};

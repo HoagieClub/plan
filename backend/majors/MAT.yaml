@@ -9,10 +9,10 @@ urls:
 contacts:
   - type: Director of Undergraduate Studies, Associate Chair
     name: János Kollár
-    email: kollar@princeton.edu
+    email: kollar@math.princeton.edu
   - type: Associate Director of Undergraduate Studies
     name: Jennifer M. Johnson
-    email: jmjohnso@princeton.edu
+    email: jmjohnso@math.princeton.edu
 req_list:
   - name: Prerequisites
     max_counted: 1
@@ -24,13 +24,14 @@ req_list:
       followed by 218. Students with an interest in rigorous proofs may
       start in 210 or 214 and then continue to the 215-217-300 sequence.
     req_list:
-      - name:
+      - name: 215-217-300 Sequence
         max_counted: 1
-        min_needed: 2
+        min_needed: 3
         course_list:
           - MAT 215
           - MAT 217
-      - name:
+          - MAT 300
+      - name: 216-218 Sequence
         max_counted: 1
         min_needed: 2
         course_list:
@@ -39,45 +40,33 @@ req_list:
   - name: Real Analysis
     max_counted: 1
     min_needed: 1
-    explanation: One course in real analysis (e.g., 300 or 320 or 325 or
-      425 or 385).
+    explanation: One course in real analysis (from the 320s or 420s or 300 or 385 or 520)
     course_list:
-      - MAT 200
-      - MAT 300
-      - MAT 320
-      - MAT 325
-      - MAT 425
-      - MAT 385
-      - MAT 520
       - MAT 32*
       - MAT 42*
+      - MAT 300
+      - MAT 385
+      - MAT 520
   - name: Complex Analysis
     max_counted: 1
     min_needed: 1
-    explanation: One course in complex analysis (e.g., 330 or 335).
+    explanation: One course in complex analysis (from the 330s)
     course_list:
-      - MAT 330
-      - MAT 335
       - MAT 33*
   - name: Algebra
     max_counted: 1
     min_needed: 1
-    explanation: One course in algebra (e.g., 340 or 345)
+    explanation: One course in algebra (from the 340s or 440s)
     course_list:
-      - MAT 340
-      - MAT 345
-      - MAT 440
-      - MAT 445
+      - MAT 34*
       - MAT 44*
   - name: Geometry, Topology, or Discrete Math
     max_counted: 1
     min_needed: 1
-    explanation: One course in geometry or topology (e.g., 355 or 365 or
-      560).
+    explanation: |-
+      one course in geometry or topology (from the 350s or 450s or 360s or 460s,
+      or alternatively, one course in discrete mathematics from the 370s or 470s)
     course_list:
-      - MAT 355
-      - MAT 365
-      - MAT 560
       - MAT 35*
       - MAT 45*
       - MAT 36*
@@ -94,9 +83,9 @@ req_list:
       from other departments that are cross-listed with MAT do not need permission
       and do not count toward the total of three allowed cognates.)
     course_list:
-      - MAT 3*
-      - MAT 4*
-      - MAT 5*
+      - MAT 3**
+      - MAT 4**
+      - MAT 5**
   - name: Junior Independent Work
     max_counted: 1
     min_needed: 1
@@ -104,6 +93,7 @@ req_list:
       <i>Editor's Note: Majors do not enroll in any numbered course for this requirement, so hoagieplan does not check it.</i><br><br>
 
       The junior year independent work generally consists of participating actively in a junior seminar in both the fall and spring semesters. Alternatively, a student may opt to replace one junior seminar with supervised reading in a special subject and then writing a paper based on that reading.
+    no_req:
   - name: Senior Thesis
     max_counted: 1
     min_needed: 1
@@ -117,3 +107,4 @@ req_list:
       The primary adviser for the senior thesis can be a university faculty member outside the mathematics department (which is allowed, supported, and indeed occurs frequently). In this case, the second reader must be arranged within the mathematics department. (This is to help ensure uniformity in the evaluation process.)<br><br>
 
       Senior thesis grades, together with grades in mathematics courses, are also taken into account when determining departmental honors.
+    no_req:

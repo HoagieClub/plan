@@ -13,6 +13,7 @@ node_modules/
 # next.js
 .next/
 /out/
+.heapprofile
 
 # course data
 [f,s][0-9][0-9][0-9][0-9].csv
@@ -31,8 +32,9 @@ db.sqlite3
 .env
 
 # Editor settings
-.vscode/
-.zed/
+**/.vscode/
+**/.zed/
+**/.cursor/
 
 # Virtual environment
 env/
