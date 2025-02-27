@@ -22,7 +22,7 @@ const nextConfig = {
   experimental: {
     webpackMemoryOptimizations: true,
     reactCompiler: true, // Enable the React 19 compiler!
-    ppr: 'incremental', // Only available in canary for now
+    // ppr: 'incremental', // Only available in canary for now
     optimizePackageImports: ['icon-library'],
     staleTimes: {
       dynamic: 30,

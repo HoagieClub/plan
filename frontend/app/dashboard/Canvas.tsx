@@ -24,7 +24,7 @@ import {
 	defaultAnimateLayoutChanges,
 	arrayMove,
 	verticalListSortingStrategy,
-	sortableKeyboardCoordinates
+	sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
@@ -384,7 +384,7 @@ export function Canvas({
 			},
 		}),
 		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates
+			coordinateGetter: sortableKeyboardCoordinates,
 		}),
 		useSensor(TouchSensor, {
 			// Press delay of 250ms, with tolerance of 5px of movement
@@ -425,11 +425,11 @@ export function Canvas({
 	};
 
 	const announcements = {
-		onDragStart({active}) {
+		onDragStart({ active }) {
 			const course = String(active.id).split('|')[0];
 			return `Picked up course ${course}`;
 		},
-		onDragOver({active, over}) {
+		onDragOver({ active, over }) {
 			if (over) {
 				const container = findContainer(over.id);
 				if (container) {
@@ -437,7 +437,7 @@ export function Canvas({
 				}
 			}
 		},
-		onDragEnd({active, over}) {
+		onDragEnd({ active, over }) {
 			if (over) {
 				const container = findContainer(over.id);
 				if (container) {
@@ -445,10 +445,10 @@ export function Canvas({
 				}
 			}
 		},
-		onDragCancel({active}) {
+		onDragCancel({ active }) {
 			const course = String(active.id).split('|')[0];
 			return `Dragging cancelled. Course ${course} was dropped.`;
-		}
+		},
 	};
 
 	return (
@@ -459,15 +459,15 @@ export function Canvas({
 				measuring={{
 					droppable: {
 						strategy: MeasuringStrategy.Always,
-					}
+					},
 				}}
 				accessibility={{
 					announcements,
 					screenReaderInstructions: {
 						draggable: `To pick up a course, press space or enter. 
 							While dragging, use arrow keys to move the course around. 
-							Press space or enter again to drop the course in its new position.`
-					}
+							Press space or enter again to drop the course in its new position.`,
+					},
 				}}
 				onDragStart={({ active }) => {
 					const activeContainer = findContainer(active.id);
@@ -496,7 +496,7 @@ export function Canvas({
 							const activeItems = items[activeContainer];
 							const activeIndex = activeItems.indexOf(active.id);
 							const overItems = items[overContainer];
-							
+
 							// Find the index where we want to insert the item
 							const overIndex = overItems.indexOf(overId);
 							const newIndex = overIndex >= 0 ? overIndex : overItems.length;
@@ -509,7 +509,7 @@ export function Canvas({
 								[overContainer]: [
 									...items[overContainer].slice(0, newIndex),
 									items[activeContainer][activeIndex],
-									...items[overContainer].slice(newIndex)
+									...items[overContainer].slice(newIndex),
 								],
 							};
 						});
@@ -572,10 +572,7 @@ export function Canvas({
 				onDragCancel={onDragCancel}
 			>
 				{/* Removed PLACEHOLDER_ID since it's unused */}
-				<SortableContext 
-					items={containers}
-					strategy={verticalListSortingStrategy}
-				>
+				<SortableContext items={containers} strategy={verticalListSortingStrategy}>
 					<div style={{ display: 'flex', flexDirection: 'row' }}>
 						{/* Left Section for Search Results */}
 						{containers.includes(SEARCH_RESULTS_ID) && (

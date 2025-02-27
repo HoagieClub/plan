@@ -48,7 +48,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "evergreen-ui": "^7.1.9",
     "lucide-react": "^0.464.0",
-    "next": "^15.2.0-canary.71",
+    "next": "^15.2.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "react": "^19.0.0",

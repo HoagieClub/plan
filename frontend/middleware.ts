@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
 	}
 
 	const { origin } = new URL(request.url);
-	const session = await auth0.getSession();
+	const session = await auth0.getSession(request);
 
 	// protect dashboard and calendar routes
 	if (
