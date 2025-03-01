@@ -35,6 +35,12 @@ import { getDepartmentGradient } from '@/utils/departmentColors';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 
+import { useUploadModal } from '@/components/UploadModal/Upload';
+import {
+	majorScale,
+	Pane
+} from 'evergreen-ui'
+
 import type {
 	CollisionDetection,
 	DropAnimation,
@@ -43,6 +49,7 @@ import type {
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
+import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -54,6 +61,8 @@ const semesterWidth = '22.5vw';
 const requirementsWidth = '26vw';
 const courseWidth = '10.5vw';
 const extendedCourseWidth = '22.0vw';
+
+
 
 const staticRectSortingStrategy = () => {
 	return {
@@ -192,6 +201,8 @@ export function Canvas({
 	const { updateRequirements } = useUserSlice((state) => ({
 		updateRequirements: state.updateRequirements,
 	}));
+	
+	const { openUploadModal, uploadModal } = useUploadModal();
 
 	// This limits the width of the course cards
 	const wrapperStyle = () => ({
@@ -404,6 +415,10 @@ export function Canvas({
 		setClonedItems(null);
 	};
 
+	function setIsModalOpen(arg0: boolean): void {
+		throw new Error('Function not implemented.');
+	}
+
 	return (
 		<div style={{ display: 'flex', flexDirection: 'row', placeItems: 'center' }}>
 			<DndContext
@@ -511,11 +526,21 @@ export function Canvas({
 								{/* issue here with resizing + with requirements dropdowns*/}
 								{/* Try to get this to fixed height*/}
 								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
-									<ButtonWidget
-										href='/dashboard'
-										text='Upload Transcript from TigerHub'
-										icon={<ArrowDownTrayIcon className='h-5 w-5' />}
-									/>
+									<Pane
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+										marginLeft={majorScale(4)}
+										cursor="pointer"
+										onClick={openUploadModal}
+									>
+										<ButtonWidget
+											text="Upload Unofficial Transcript"
+											icon={<CloudArrowUpIcon className="h-5 w-5" />}
+											onClick={() => openUploadModal()} 	 								
+										/>
+									</Pane>
+									{uploadModal}
 								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
@@ -650,6 +675,8 @@ export function Canvas({
 			</DndContext>
 		</div>
 	);
+
+	
 
 	function renderSortableItemDragOverlay(id: UniqueIdentifier) {
 		// Determine the current overlay width based on overContainerId

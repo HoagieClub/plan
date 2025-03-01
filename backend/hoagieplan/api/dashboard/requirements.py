@@ -1,5 +1,6 @@
 import collections
 import copy
+import json
 
 import orjson as oj
 from django.db.models import Prefetch, Q
@@ -251,9 +252,14 @@ def prefetch_req_inst(table, code):
 
 @cumulative_time
 def create_courses(user_inst):
-    courses = [[] for i in range(8)]
-    course_insts = UserCourses.objects.select_related("user").filter(user=user_inst)
+    courses = [[] for _ in range(8)]  # Initialize empty list for 8 semesters
+    course_insts = UserCourses.objects.select_related("user", "course").filter(user=user_inst)
+
     for course_inst in course_insts:
+        if not course_inst or not course_inst.course:
+            logger.warning(f"⚠️ ERROR: Course instance or related course is None for user {user_inst.net_id}.")
+            continue  # Skip this course if it's None or has no related course
+
         course = {
             "id": course_inst.course.id,
             "manually_settled": None,
@@ -262,9 +268,11 @@ def create_courses(user_inst):
             "dept_code": course_inst.course.department.code,
             "cat_num": course_inst.course.catalog_number,
         }
+
         req_ids = list(course_inst.requirements.values_list("id", flat=True))
         course["manually_settled"] = req_ids
         courses[course_inst.semester - 1].append(course)
+
     return courses
 
 
@@ -731,55 +739,52 @@ def requirement_info(request):
 
 
 def parse_semester(semester_id, class_year):
-    season = semester_id.split(" ")[0]
-    year = int(semester_id.split(" ")[1])
-    is_Fall = 1 if (season == "Fall") else 0
-    semester_num = 8 - ((class_year - year) * 2 - is_Fall)
+    try:
+        term, year = semester_id.split(" ")
+        year = int(year)  # Ensure it's an integer
+        is_Fall = 1 if term == "Fall" else 0
+        semester_num = 8 - ((class_year - year) * 2 - is_Fall)
+        return semester_num
+    except ValueError:
+        raise ValueError(f"Invalid semester format: {semester_id}")
 
-    return semester_num
 
 def parse_transcript_semester(semester_name):
-    # transcript json for semester looks like `2021-2022 Fall` instead of `Fall 2021`
-    # likewise, convert `2021-2022 Spring` to `Spring 2022`
-    year, term = semester_name.split(' ')
-    start_year, end_year = year.split('-')
-    if (term == "Fall"):
-        return f"{term} {start_year}"
-    else:
-        return f"{term} {end_year}"
+    try:
+        term, year = semester_name.split(' ')  # Fix the order
+        return f"{term} {year}"  # Keep it unchanged
+    except ValueError:
+        raise ValueError(f"Invalid semester format: {semester_name}")
 
 
 def update_transcript_courses(request):
     try:
-        data = oj.loads(request.body)
+        # Ensure the request contains valid JSON
+        data = json.loads(request.body.decode('utf-8'))
+        
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dictionary but got {type(data)}")
+
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)
         class_year = user_inst.class_year
 
-        # for testing
-        # data = {
-        #     '2023-2024 Fall': ['COS 126', 'CWR 201', 'ECO 312', 'EGR 301'],
-        #     '2023-2024 Spring': ['COS 226', 'MAT 217', 'MAT 378', 'ORF 309', 'WRI 192'],
-        #     '2024-2025 Fall': ['COS 217', 'COS 511', 'MAT 320', 'ORF 405'],
-        #     '2024-2025 Spring': ['COS 240', 'GER 211', 'MAT 325', 'ORF 307', 'PHI 301'],
-        #     '2025-2026 Fall': ['COS 333', 'COS 514', 'ORF 526', 'POL 210'],
-        #     '2025-2026 Spring': ['COS 398', 'COS 418', 'ENG 319', 'ORF 515', 'ORF 523']
-        # }
+        missing_courses = []  # Store missing courses for debugging
 
         for semester, courses in data.items():
-            # ex: convert `2021-2022 Fall` to `Fall 2021`
             semester = parse_transcript_semester(semester)
-            # convert to bin number
             semester = parse_semester(semester, class_year)
 
             for course_name in courses:
+                # Try finding course linked to the user
                 course_inst = (
                     Course.objects.select_related('department')
-                    # icontains and not iexact because ORF 309 not found with ORF 309 / EGR 309 / MAT 380
                     .filter(crosslistings__icontains=course_name, usercourses__user=user_inst)
                     .order_by('-guid')
                     .first()
                 )
+                
+                # If course is not linked to the user, search all courses
                 if not course_inst:
                     course_inst = (
                         Course.objects.select_related('department')
@@ -787,21 +792,37 @@ def update_transcript_courses(request):
                         .order_by('-guid')
                         .first()
                     )
-
+                
+                # If the course still isn't found, log it and continue
+                if not course_inst:
+                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database for user {net_id}")
+                    missing_courses.append(course_name)
+                    continue  # Skip this course
+                
+                # Create or update user-course relation
                 user_course, created = UserCourses.objects.update_or_create(
                     user=user_inst, course=course_inst, defaults={'semester': semester}
                 )
-                if created:
-                    message = f'User course added: {semester}, {course_name}, {net_id}'
-                else:
-                    message = f'User course updated: {semester}, {course_name}, {net_id}'
 
-        return JsonResponse({'status': 'success', 'message': message})
+                logger.info(
+                    f"✅ {'Added' if created else 'Updated'} course '{course_name}' for user {net_id} in semester {semester}"
+                )
 
+        # Return success message, including any missing courses for debugging
+        response_data = {'status': 'success', 'message': 'Courses updated successfully'}
+        if missing_courses:
+            response_data['missing_courses'] = missing_courses
 
+        return JsonResponse(response_data)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': f"User with NetID {net_id} not found"}, status=404)
     except Exception as e:
-        logger.error(f'An internal error occurred: {e}', exc_info=True)
-        return JsonResponse({'status': 'error', 'message': 'An internal error has occurred!'})
+        logger.error(f'❌ Internal error: {e}', exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 def update_courses(request):
     try:
@@ -845,5 +866,6 @@ def update_courses(request):
         return JsonResponse({"status": "success", "message": message})
 
     except Exception as e:
-        logger.error(f"An internal error occurred: {e}", exc_info=True)
-        return JsonResponse({"status": "error", "message": "An internal error has occurred!"})
+        logger.error(f'An internal error occurred: {e}', exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
