@@ -13,10 +13,6 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['var(--font-geist-sans)'],
-        mono: ['var(--font-geist-mono)'],
-      },
       spacing: {
         '0.5vh': '0.5vh',
         '1vh': '1vh',
@@ -24,14 +20,6 @@ const config: Config = {
         '1vw': '1vw',
       },
       colors: {
-        'day-primary': '#FFF',
-        'day-secondary': '#FFF',
-        'day-accent': '#FFF',
-        'day-text': '#FFF',
-        'night-primary': '#FFF',
-        'night-secondary': '#FFF',
-        'night-accent': '#FFF',
-        'night-text': '#FFF',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -73,16 +61,8 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
       },
-      textColor: {
-        'hoagieplan-blue': '#0F1E2F',
-        'hoagieplan-gray': '#F6F6F6',
-        'hoagieplan-black': '#2C2C2C',
-        'hoagieplan-purple': '#663399',
-      },
       backgroundColor: {
         'hoagieplan-dark-yellow': '#FFB020',
-        'hoagieplan-light-yellow': '#FFEFD2',
-        'dnd-gray': 'rgba(0, 0, 0, 0.05)',
       },
       borderRadius: {
         lg: 'var(--radius)',
