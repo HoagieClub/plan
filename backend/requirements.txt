@@ -24,7 +24,7 @@ pyyaml==6.0.2
     # via hoagie-plan (pyproject.toml)
 requests==2.32.3
     # via hoagie-plan (pyproject.toml)
-ruff==0.9.7
+ruff==0.11.1
     # via hoagie-plan (pyproject.toml)
 tqdm==4.67.1
     # via hoagie-plan (pyproject.toml)
