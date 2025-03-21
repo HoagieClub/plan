@@ -1,6 +1,6 @@
 export async function fetchCsrfToken() {
 	try {
-		const response = await fetch(`${process.env.BACKEND}/csrf`, {
+		const response = await fetch(`${process.env.BACKEND}/csrf/`, {
 			credentials: 'include',
 		});
 
