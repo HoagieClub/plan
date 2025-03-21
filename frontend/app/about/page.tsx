@@ -236,6 +236,16 @@ const About = () => {
 									))}
 								</div>
 							</div>
+							<div className='mt-16'>
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Acknowledgements</h2>
+								<p className='mx-auto max-w-2xl text-center text-lg text-gray-800'>
+									This project was inspired by TigerPath - a four-year course planner launched in 2018 to help students navigate their major and degree requirements.
+									This application builds on TigerPath's core functionality, while accomodating minor requirements and some additional planning features.
+									Learn more about TigerPath at : This project was inspired by TigerPath, a four-year course planner released in 2018 to help students navigate their major and 
+									degree requirements. This inspired the functionality of this application, which accomplishes some of
+									the same goals while providing accomodations for minor requirements and additional features. Learn more at https://www.tigerpath.io/ !
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
