@@ -747,6 +747,17 @@ def parse_semester(semester_id, class_year):
         return semester_num
     except ValueError:
         raise ValueError(f"Invalid semester format: {semester_id}")
+    
+def assign_sequential_semesters(transcript_data):
+    """
+    Assigns sequential semester numbers based on their order in the JSON file.
+    The first semester in the transcript gets '1', the second '2', etc.
+    """
+    semester_list = list(transcript_data.keys())  # Preserve the order of appearance
+    semester_mapping = {semester: i + 1 for i, semester in enumerate(semester_list)}
+    return semester_mapping
+
+
 
 
 def parse_transcript_semester(semester_name):
@@ -756,6 +767,42 @@ def parse_transcript_semester(semester_name):
     except ValueError:
         raise ValueError(f"Invalid semester format: {semester_name}")
 
+def update_transcript_courses(request):
+    try:
+        body_data = request.body.decode('utf-8')
+        data = json.loads(body_data)
+
+        if not isinstance(data, dict):
+            raise TypeError(f"Expected dictionary but got {type(data)}")
+
+        net_id = request.headers.get("X-NetId")
+        user_inst = CustomUser.objects.get(net_id=net_id)
+
+        # Assign sequential semester numbers
+        semester_mapping = assign_sequential_semesters(data)
+
+        for semester, courses in data.items():
+            semester_number = semester_mapping[semester]  # Get sequential semester number
+
+            for course_name in courses:
+                course_inst = Course.objects.filter(guid=course_name).first()
+                
+                if not course_inst:
+                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database")
+                    continue  
+                
+                # Store the sequential semester number in UserCourses
+                user_course, created = UserCourses.objects.update_or_create(
+                    user=user_inst, course=course_inst, defaults={'semester': semester_number}
+                )
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': f"User with NetID {net_id} not found"}, status=404)
+    except Exception as e:
+        logger.error(f'❌ Internal error: {e}', exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def update_transcript_courses(request):
     try:
@@ -771,10 +818,12 @@ def update_transcript_courses(request):
         class_year = user_inst.class_year
 
         missing_courses = []  # Store missing courses for debugging
+        semester_mapping = assign_sequential_semesters(data)
 
         for semester, courses in data.items():
-            semester = parse_transcript_semester(semester)
-            semester = parse_semester(semester, class_year)
+            semester_number = semester_mapping[semester]
+            #semester = parse_transcript_semester(semester)
+            #semester = parse_semester(semester, class_year)
 
             for course_name in courses:
                 # Try finding course linked to the user
@@ -793,13 +842,13 @@ def update_transcript_courses(request):
                 
                 # Create or update user-course relation
                 user_course, created = UserCourses.objects.update_or_create(
-                    user=user_inst, course=course_inst, defaults={'semester': semester}
+                    user=user_inst, course=course_inst, defaults={'semester': semester_number}
                 )
 
                 if created:
-                    print(f"✅ Added {course_inst.guid} to {user_inst.net_id}'s courses for {semester}")
+                    print(f"✅ Added {course_inst.guid} to {user_inst.net_id}'s courses for {semester_number}")
                 else:
-                    print(f"♻️ Updated {course_inst.guid} in {user_inst.net_id}'s courses for {semester}")
+                    print(f"♻️ Updated {course_inst.guid} in {user_inst.net_id}'s courses for {semester_number}")
 
         # Return success message, including any missing courses for debugging
         response_data = {'status': 'success', 'message': 'Courses updated successfully'}
