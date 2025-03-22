@@ -6,6 +6,7 @@ from django.test import RequestFactory
 from data.transcript_to_json import transcript_to_json, convert_to_guids
 from hoagieplan.models import Course, UserCourses
 from hoagieplan.api.dashboard.requirements import update_transcript_courses
+from django.test import RequestFactory
 
 @csrf_exempt
 @require_POST
@@ -21,25 +22,37 @@ def upload_file(request):
         json_data = transcript_to_json(uploaded_file)
         transcript_output, _ = convert_to_guids(json_data)
 
-        # 📌 Print formatted transcript data
         print("\n📌 Converted Transcript GUIDs:")
         for semester, guids in transcript_output.items():
             print(f"📅 Semester: {semester}")
             for guid in guids:
                 print(f"   🏷️ GUID: {guid}")
             print()  # Add a blank line for readability
+
     except Exception as e:
         print(f"Error processing transcript: {e}")
         return JsonResponse({"error": "Failed to process transcript"}, status=500)
     
-    # Extract NetID from the original request
+    # ✅ Ensure we extract NetID correctly
     net_id = request.headers.get("X-NetId")
+    if not net_id:
+        return JsonResponse({"error": "Missing NetID in request headers"}, status=400)
 
-    # Call update_transcript_courses() and manually pass the data
+    # ✅ Simulate an HTTP request with correct JSON structure
     try:
-        response = update_transcript_courses(request, transcript_output, net_id)
+        factory = RequestFactory()
+        fake_request = factory.post(
+            "/update_courses/",  # Fake endpoint
+            data=json.dumps(transcript_output),  # ✅ JSON data
+            content_type="application/json",
+            HTTP_X_NetId=net_id  # ✅ Manually set header
+        )
+
+        # ✅ Call update_transcript_courses() with a properly formatted request
+        response = update_transcript_courses(fake_request)
         print(f"✅ Courses successfully added.")  
         return response
+
     except Exception as e:
         print(f"❌ Error adding courses: {e}")
         return JsonResponse({"error": "Failed to add courses"}, status=500)

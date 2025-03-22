@@ -760,7 +760,8 @@ def parse_transcript_semester(semester_name):
 def update_transcript_courses(request):
     try:
         # Ensure the request contains valid JSON
-        data = json.loads(request.body.decode('utf-8'))
+        body_data = request.body.decode('utf-8')
+        data = json.loads(body_data)
         
         if not isinstance(data, dict):
             raise TypeError(f"Expected dictionary but got {type(data)}")
@@ -779,23 +780,14 @@ def update_transcript_courses(request):
                 # Try finding course linked to the user
                 course_inst = (
                     Course.objects.select_related('department')
-                    .filter(crosslistings__icontains=course_name, usercourses__user=user_inst)
+                    .filter(guid=course_name)
                     .order_by('-guid')
                     .first()
                 )
                 
-                # If course is not linked to the user, search all courses
-                if not course_inst:
-                    course_inst = (
-                        Course.objects.select_related('department')
-                        .filter(crosslistings__icontains=course_name)
-                        .order_by('-guid')
-                        .first()
-                    )
-                
                 # If the course still isn't found, log it and continue
                 if not course_inst:
-                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database for user {net_id}")
+                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database")
                     missing_courses.append(course_name)
                     continue  # Skip this course
                 
@@ -804,9 +796,10 @@ def update_transcript_courses(request):
                     user=user_inst, course=course_inst, defaults={'semester': semester}
                 )
 
-                logger.info(
-                    f"✅ {'Added' if created else 'Updated'} course '{course_name}' for user {net_id} in semester {semester}"
-                )
+                if created:
+                    print(f"✅ Added {course_inst.guid} to {user_inst.net_id}'s courses for {semester}")
+                else:
+                    print(f"♻️ Updated {course_inst.guid} in {user_inst.net_id}'s courses for {semester}")
 
         # Return success message, including any missing courses for debugging
         response_data = {'status': 'success', 'message': 'Courses updated successfully'}
@@ -827,12 +820,13 @@ def update_transcript_courses(request):
 def update_courses(request):
     try:
         # update_transcript_courses(request)
-        data = oj.loads(request.body)
+        data = json.loads(request.body)
         crosslistings = data.get("crosslistings")
         container = data.get("semesterId")
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)
         class_year = user_inst.class_year
+    
 
         course_inst = (
             Course.objects.select_related("department")
@@ -849,6 +843,8 @@ def update_courses(request):
             )
 
         if container == "Search Results":
+            if not course_inst:
+                return JsonResponse({'status': 'error', 'message': f"Course '{crosslistings}' not found"}, status=404)
             user_course = UserCourses.objects.get(user=user_inst, course=course_inst)
             user_course.delete()
             message = f"User course deleted: {crosslistings}, {net_id}"
