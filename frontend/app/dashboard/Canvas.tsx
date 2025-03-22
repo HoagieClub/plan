@@ -510,11 +510,15 @@ export function Canvas({
 							>
 								{/* issue here with resizing + with requirements dropdowns*/}
 								{/* Try to get this to fixed height*/}
-								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
+								<div className="mt-2 mx-[0.5vw] my-[1vh] -mb-0.5 flex flex-col gap-3">
 									<ButtonWidget
-										href='/dashboard'
-										text='Upload Transcript from TigerHub'
-										icon={<ArrowDownTrayIcon className='h-5 w-5' />}
+										href="/dashboard"
+										text="Upload Transcript from TigerHub"
+										icon={<ArrowDownTrayIcon className="h-5 w-5" />} // Pass as JSX, NOT a component reference
+									/>
+									<ButtonWidget 
+										href="/dashboard" 
+										text="View Almost Completed Minors/Certificates" 
 									/>
 								</div>
 								<DroppableContainer
