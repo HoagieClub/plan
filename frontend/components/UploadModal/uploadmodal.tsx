@@ -7,7 +7,7 @@ import { TutorialModal } from '../Modal';
 
 import styles from './UploadModal.module.css';
 
-import LoadingComponent from '../LoadingComponent';
+import { LoadingComponent } from '../LoadingComponent';
 
 interface Upload {
   isOpen: boolean;
