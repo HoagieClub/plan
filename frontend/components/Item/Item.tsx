@@ -68,6 +68,13 @@ export const Item = memo(
 				};
 			}, [dragOverlay]);
 
+			let tabIndex: number | undefined;
+			if (disabled) {
+				tabIndex = -1;
+			} else if (!handle) {
+				tabIndex = 0;
+			}
+
 			return (
 				<li
 					className={cn(
@@ -105,7 +112,7 @@ export const Item = memo(
 						data-cypress='draggable-item'
 						{...(!handle && !disabled ? listeners : undefined)}
 						{...props}
-						tabIndex={disabled ? -1 : !handle ? 0 : undefined}
+						tabIndex={tabIndex}
 					>
 						{/* Text Container for InfoComponent */}
 						<div className={styles.TextContainer}>

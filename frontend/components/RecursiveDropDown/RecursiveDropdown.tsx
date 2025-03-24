@@ -223,7 +223,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 			.then((response) => response.json())
 			.then(() => {
 				setMarkedSatisfied(true);
-				updateRequirements();
+				void updateRequirements();
 			})
 			.catch((error) => {
 				console.error(error);
@@ -250,7 +250,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 			.then((response) => response.json())
 			.then(() => {
 				setMarkedSatisfied(true);
-				updateRequirements();
+				void updateRequirements();
 			})
 			.catch((error) => {
 				console.error(error);
@@ -373,27 +373,28 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 							Search Courses
 						</JoyButton>
 					)}
-				{isLoading ? null : markedSatisfied ? (
-					<JoyButton
-						variant='soft'
-						color='warning'
-						onClick={handleUnmarkSatisfied}
-						sx={{ ml: 2 }}
-						size='md'
-					>
-						Unmark Satisfied
-					</JoyButton>
-				) : (
-					<JoyButton
-						variant='soft'
-						color='success'
-						onClick={handleMarkSatisfied}
-						sx={{ ml: 2 }}
-						size='md'
-					>
-						Mark Satisfied
-					</JoyButton>
-				)}
+				{!isLoading &&
+					(markedSatisfied ? (
+						<JoyButton
+							variant='soft'
+							color='warning'
+							onClick={handleUnmarkSatisfied}
+							sx={{ ml: 2 }}
+							size='md'
+						>
+							Unmark Satisfied
+						</JoyButton>
+					) : (
+						<JoyButton
+							variant='soft'
+							color='success'
+							onClick={handleMarkSatisfied}
+							sx={{ ml: 2 }}
+							size='md'
+						>
+							Mark Satisfied
+						</JoyButton>
+					))}
 				<JoyButton variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 					Close
 				</JoyButton>
@@ -419,7 +420,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 				return response.json();
 			})
 			.then(() => {
-				updateRequirements();
+				void updateRequirements();
 			})
 			.catch((error) => {
 				console.error('Error during manual settling:', error);
