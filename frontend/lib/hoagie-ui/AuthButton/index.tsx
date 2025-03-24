@@ -46,7 +46,7 @@ export const AuthButton: FC<AuthButtonProps> = ({ variant = 'login', href = '' }
 			<Button
 				height={56}
 				width={majorScale(35)}
-				background={theme.colors.red25}
+				background={theme.colors.white}
 				appearance={isLogout ? 'default' : 'primary'}
 			>
 				{logo}

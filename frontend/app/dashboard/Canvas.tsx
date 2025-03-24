@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -65,6 +65,18 @@ const staticRectSortingStrategy = () => {
 };
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
+
+let csrfToken: string;
+
+if (typeof window === 'undefined') {
+	// Server-side or during pre-rendering/build time
+	csrfToken = '';
+} else {
+	// Client-side
+	void (async () => {
+		csrfToken = await fetchCsrfToken();
+	})();
+}
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
 	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -158,6 +170,7 @@ type Props = {
 	vertical?: boolean;
 };
 
+export const PLACEHOLDER_ID = 'placeholder';
 export const SEARCH_RESULTS_ID = 'Search Results';
 const defaultClassYear = new Date().getFullYear() + 1;
 
@@ -172,21 +185,6 @@ export function Canvas({
 	minimal = false,
 	scrollable,
 }: Props) {
-	const [csrfToken, setCsrfToken] = useState<string>('');
-
-	useEffect(() => {
-		const fetchToken = async () => {
-			try {
-				const token = await fetchCsrfToken();
-				setCsrfToken(token);
-			} catch (err) {
-				console.error('Failed to fetch CSRF token:', err);
-			}
-		};
-
-		void fetchToken();
-	}, []);
-
 	// Subscribe to user slice to let Canvas and Nav/UserSettings sync academicPlan states
 	// This allows us to re-render TabbedMenu when academicPlan changes without reloading the entire page
 	const { updateRequirements } = useUserSlice((state) => ({
@@ -248,6 +246,45 @@ export function Canvas({
 		[SEARCH_RESULTS_ID]: [], // Initialize search container with no courses
 		...semesters,
 	}));
+
+	type Dictionary = {
+		[key: string]: any; // TODO: Aim to replace 'any' with more specific types.
+	};
+
+	// Initialize a more structured dictionary if possible
+	const initialRequirements: Dictionary = {};
+
+	// State for academic requirements
+	const [academicPlan] = useState<Dictionary>(initialRequirements);
+
+	// TODO: Make this dynamic later
+	const userMajorCode = 'COS-BSE';
+	const userMinors = [];
+	const userCertificates = [];
+
+	// Structure to hold degree requirements
+	const degreeRequirements: Dictionary = { General: '' };
+
+	// Add major to degree requirements if it's a string
+	if (userMajorCode && typeof userMajorCode === 'string') {
+		degreeRequirements[userMajorCode] = academicPlan[userMajorCode] ?? {};
+	}
+
+	// Iterate over minors and add them to degree requirements if their code is a string
+	userMinors.forEach((minor) => {
+		const minorCode = minor.code;
+		if (minorCode && typeof minorCode === 'string') {
+			degreeRequirements[minorCode] = academicPlan[minorCode] ?? {};
+		}
+	});
+
+	// Iterate over certificates and add them to degree requirements if their code is a string
+	userCertificates.forEach((certificate) => {
+		const certificateCode = certificate.code;
+		if (certificateCode && typeof certificateCode === 'string') {
+			degreeRequirements[certificateCode] = academicPlan[certificateCode] ?? {};
+		}
+	});
 
 	const fetchCourses = useCallback(async () => {
 		try {
@@ -320,6 +357,8 @@ export function Canvas({
 	const [activeContainerId, setActiveContainerId] = useState<UniqueIdentifier | null>(null);
 	const lastOverId = useRef<UniqueIdentifier | null>(null);
 	const recentlyMovedToNewContainer = useRef(false);
+	// isSortingContainer is legacy code, since we are not using sortable containers
+	const isSortingContainer = false;
 	const [overContainerId, setOverContainerId] = useState<UniqueIdentifier | null>(null);
 
 	/**
@@ -335,14 +374,19 @@ export function Canvas({
 			// Start by finding any intersecting droppable
 			const pointerIntersections = pointerWithin(args);
 			const intersections =
-				pointerIntersections.length > 0 ? pointerIntersections : rectIntersection(args);
+				pointerIntersections.length > 0
+					? // If there are droppables intersecting with the pointer, return those
+						pointerIntersections
+					: rectIntersection(args);
 			let overId = getFirstCollision(intersections, 'id');
 
 			if (overId !== null) {
 				if (overId in items) {
 					const containerItems = items[overId];
 
+					// If a container is matched and it contains items (columns 'A', 'B', 'C')
 					if (containerItems.length > 0) {
+						// Return the closest droppable within that container
 						overId = closestCenter({
 							...args,
 							droppableContainers: args.droppableContainers.filter(
@@ -356,16 +400,19 @@ export function Canvas({
 
 				return [{ id: overId }];
 			}
-
+			// When a draggable item moves to a new container, the layout may shift
+			// and the `overId` may become `null`. We manually set the cached `lastOverId`
+			// to the id of the draggable item that was moved to the new container, otherwise
+			// the previous `overId` will be returned which can cause items to incorrectly shift positions
 			if (recentlyMovedToNewContainer.current) {
 				lastOverId.current = activeId;
 			}
 
+			// If no droppable is matched, return the last match
 			return lastOverId.current ? [{ id: lastOverId.current }] : [];
 		},
 		[activeId, items]
 	);
-
 	const [clonedItems, setClonedItems] = useState<Items | null>(null);
 	const sensors = useSensors(
 		useSensor(MouseSensor),
@@ -374,7 +421,6 @@ export function Canvas({
 			coordinateGetter,
 		})
 	);
-
 	const findContainer = (id?: UniqueIdentifier) => {
 		if (id === null || id === undefined) {
 			return;
@@ -387,14 +433,20 @@ export function Canvas({
 
 	const getIndex = (id: UniqueIdentifier) => {
 		const container = findContainer(id);
+
 		if (!container) {
 			return -1;
 		}
-		return items[container].indexOf(id);
+
+		const index = items[container].indexOf(id);
+
+		return index;
 	};
 
 	const onDragCancel = () => {
 		if (clonedItems) {
+			// Reset items to their original state in case items have been
+			// Dragged across containers
 			setItems(clonedItems);
 		}
 
@@ -467,9 +519,10 @@ export function Canvas({
 
 					const overContainerId = findContainer(overId);
 
-					if (overContainerId && activeContainerId !== overContainerId) {
-						try {
-							const response = await fetch(`${process.env.BACKEND}/update_courses/`, {
+					if (overContainerId) {
+						if (activeContainerId !== overContainerId) {
+							csrfToken = await fetchCsrfToken();
+							void fetch(`${process.env.BACKEND}/update_courses/`, {
 								method: 'POST',
 								credentials: 'include',
 								headers: {
@@ -478,14 +531,13 @@ export function Canvas({
 									'X-CSRFToken': csrfToken,
 								},
 								body: JSON.stringify({
-									crosslistings: String(active.id).split('|')[1],
+									crosslistings: active.id.toString().split('|')[1],
 									semesterId: overContainerId,
 								}),
+							}).then((response) => {
+								void response.json();
+								void updateRequirements();
 							});
-							await response.json();
-							await updateRequirements();
-						} catch (err) {
-							console.error('Error updating courses:', err);
 						}
 					}
 
@@ -496,8 +548,7 @@ export function Canvas({
 				cancelDrop={() => overContainerId === SEARCH_RESULTS_ID}
 				onDragCancel={onDragCancel}
 			>
-				{/* Removed PLACEHOLDER_ID since it's unused */}
-				<SortableContext items={containers}>
+				<SortableContext items={[...containers, PLACEHOLDER_ID]}>
 					<div style={{ display: 'flex', flexDirection: 'row' }}>
 						{/* Left Section for Search Results */}
 						{containers.includes(SEARCH_RESULTS_ID) && (
@@ -539,7 +590,7 @@ export function Canvas({
 														<div className={dashboardItemStyles.title}>{course.title}</div>
 														{items[SEARCH_RESULTS_ID].includes(courseId) ? (
 															<SortableItem
-																disabled={false} // isSortingContainer always false
+																disabled={isSortingContainer}
 																key={index}
 																id={courseId}
 																index={index}
@@ -609,7 +660,7 @@ export function Canvas({
 												{items[containerId] &&
 													items[containerId].map((course, index) => (
 														<SortableItem
-															disabled={false} // isSortingContainer always false
+															disabled={isSortingContainer}
 															key={index}
 															id={course}
 															index={index}
@@ -662,11 +713,12 @@ export function Canvas({
 				? `calc(${extendedCourseWidth} - ${courseWidth})`
 				: '0vw';
 
+		// Modify the wrapperStyle function or directly adjust the style here to use the determined width
 		const dynamicWrapperStyle = {
-			...wrapperStyle(),
-			width: currentOverlayWidth,
+			...wrapperStyle(), // Spread the original styles
+			width: currentOverlayWidth, // Override the width with the current overlay width
 			left: currentOverlayLeft,
-			transition: transitionAnimation,
+			transition: transitionAnimation, // Ensure smooth transition
 		};
 
 		return (
@@ -715,29 +767,22 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		const updateBackend = async () => {
-			try {
-				const response = await fetch(`${process.env.BACKEND}/update_courses/`, {
-					method: 'POST',
-					credentials: 'include',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-CSRFToken': csrfToken,
-						'X-NetId': profile.netId,
-					},
-					body: JSON.stringify({
-						crosslistings: value.toString().split('|')[1],
-						semesterId: 'Search Results',
-					}),
-				});
-				await response.json();
-				await updateRequirements();
-			} catch (err) {
-				console.error('Error updating courses:', err);
-			}
-		};
-
-		void updateBackend();
+		void fetch(`${process.env.BACKEND}/update_courses/`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken,
+				'X-NetId': profile.netId,
+			},
+			body: JSON.stringify({
+				crosslistings: value.toString().split('|')[1],
+				semesterId: 'Search Results',
+			}),
+		}).then((response) => {
+			void response.json();
+			void updateRequirements();
+		});
 	}
 }
 

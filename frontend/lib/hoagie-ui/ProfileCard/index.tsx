@@ -38,7 +38,7 @@ export const ProfileCard: FC<ProfileCardProps> = ({ user, onSettingsClick }) => 
 			flexDirection='column'
 			alignItems='center'
 		>
-			<Avatar name={name} backgroundColor={theme.colors.red25} size={40} />
+			<Avatar name={name} backgroundColor={theme.colors.slate150} size={40} />
 			<Heading size={500} marginTop={majorScale(1)}>
 				{name}
 			</Heading>

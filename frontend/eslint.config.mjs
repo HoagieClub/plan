@@ -40,6 +40,7 @@ const eslintConfig = [
 			'**/.next/**',
 			'**/coverage/**',
 			'**/.git/**',
+			'next.config.js',
 		],
 	},
 
@@ -167,7 +168,6 @@ const eslintConfig = [
 			],
 			'import/no-duplicates': 'error',
 			'import/no-cycle': 'warn',
-			'import/no-default-export': 'warn',
 
 			// General rules
 			'no-console': ['warn', { allow: ['warn', 'error'] }],
