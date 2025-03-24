@@ -73,7 +73,7 @@ if (typeof window === 'undefined') {
 	csrfToken = '';
 } else {
 	// Client-side
-	(async () => {
+	void (async () => {
 		csrfToken = await fetchCsrfToken();
 	})();
 }
@@ -255,7 +255,7 @@ export function Canvas({
 	const initialRequirements: Dictionary = {};
 
 	// State for academic requirements
-	const [academicPlan, setAcademicPlan] = useState<Dictionary>(initialRequirements);
+	const [academicPlan] = useState<Dictionary>(initialRequirements);
 
 	// TODO: Make this dynamic later
 	const userMajorCode = 'COS-BSE';
@@ -522,7 +522,7 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							fetch(`${process.env.BACKEND}/update_courses/`, {
+							void fetch(`${process.env.BACKEND}/update_courses/`, {
 								method: 'POST',
 								credentials: 'include',
 								headers: {
@@ -535,8 +535,8 @@ export function Canvas({
 									semesterId: overContainerId,
 								}),
 							}).then((response) => {
-								response.json();
-								updateRequirements();
+								void response.json();
+								void updateRequirements();
 							});
 						}
 					}
@@ -687,12 +687,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu
-								tabsData={academicPlan}
-								profile={profile}
-								csrfToken={csrfToken}
-								updateRequirements={updateRequirements}
-							/>
+							<TabbedMenu profile={profile} csrfToken={csrfToken} />
 						</div>
 					</div>
 				</SortableContext>
@@ -772,7 +767,7 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		fetch(`${process.env.BACKEND}/update_courses/`, {
+		void fetch(`${process.env.BACKEND}/update_courses/`, {
 			method: 'POST',
 			credentials: 'include',
 			headers: {
@@ -785,8 +780,8 @@ export function Canvas({
 				semesterId: 'Search Results',
 			}),
 		}).then((response) => {
-			response.json();
-			updateRequirements();
+			void response.json();
+			void updateRequirements();
 		});
 	}
 }
