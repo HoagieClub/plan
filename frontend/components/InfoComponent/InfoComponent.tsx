@@ -32,7 +32,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			const url = new URL(`${process.env.BACKEND}/course/details/`);
 			url.searchParams.append('crosslistings', value);
 
-			fetch(url.toString(), {
+			void fetch(url.toString(), {
 				method: 'GET',
 				credentials: 'include',
 				headers: {
