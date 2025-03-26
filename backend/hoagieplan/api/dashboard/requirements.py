@@ -771,62 +771,25 @@ def update_transcript_courses(request):
     try:
         body_data = request.body.decode('utf-8')
         data = json.loads(body_data)
-
-        if not isinstance(data, dict):
-            raise TypeError(f"Expected dictionary but got {type(data)}")
-
-        net_id = request.headers.get("X-NetId")
-        user_inst = CustomUser.objects.get(net_id=net_id)
-
-        # Assign sequential semester numbers
-        semester_mapping = assign_sequential_semesters(data)
-
-        for semester, courses in data.items():
-            semester_number = semester_mapping[semester]  # Get sequential semester number
-
-            for course_name in courses:
-                course_inst = Course.objects.filter(guid=course_name).first()
-                
-                if not course_inst:
-                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database")
-                    continue  
-                
-                # Store the sequential semester number in UserCourses
-                user_course, created = UserCourses.objects.update_or_create(
-                    user=user_inst, course=course_inst, defaults={'semester': semester_number}
-                )
-
-    except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
-    except CustomUser.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': f"User with NetID {net_id} not found"}, status=404)
-    except Exception as e:
-        logger.error(f'❌ Internal error: {e}', exc_info=True)
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-def update_transcript_courses(request):
-    try:
-        # Ensure the request contains valid JSON
-        body_data = request.body.decode('utf-8')
-        data = json.loads(body_data)
         
         if not isinstance(data, dict):
             raise TypeError(f"Expected dictionary but got {type(data)}")
 
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)
-        class_year = user_inst.class_year
-
-        missing_courses = []  # Store missing courses for debugging
+        
+        missing_courses = []
         semester_mapping = assign_sequential_semesters(data)
 
         for semester, courses in data.items():
             semester_number = semester_mapping[semester]
-            #semester = parse_transcript_semester(semester)
-            #semester = parse_semester(semester, class_year)
 
             for course_name in courses:
-                # Try finding course linked to the user
+                
+                # Extract course_id from GUID (last 6 digits)
+                course_id = course_name[-6:] if len(course_name) >= 6 else course_name
+                
+                # Try finding course by GUID first
                 course_inst = (
                     Course.objects.select_related('department')
                     .filter(guid=course_name)
@@ -834,26 +797,35 @@ def update_transcript_courses(request):
                     .first()
                 )
                 
-                # If the course still isn't found, log it and continue
+                # If not found by GUID, try finding by course_id
                 if not course_inst:
-                    logger.warning(f"⚠️ WARNING: Course '{course_name}' not found in database")
-                    missing_courses.append(course_name)
-                    continue  # Skip this course
+                    course_inst = (
+                        Course.objects.select_related('department')
+                        .filter(course_id=course_id)
+                        .order_by('-guid')  # Get the most recent version
+                        .first()
+                    )
                 
-                # Create or update user-course relation
+                if not course_inst:
+                    missing_courses.append({
+                        'guid': course_name,
+                        'course_id': course_id,
+                        'semester': semester
+                    })
+                    continue
+                
                 user_course, created = UserCourses.objects.update_or_create(
-                    user=user_inst, course=course_inst, defaults={'semester': semester_number}
+                    user=user_inst, 
+                    course=course_inst, 
+                    defaults={'semester': semester_number}
                 )
 
-                if created:
-                    print(f"✅ Added {course_inst.guid} to {user_inst.net_id}'s courses for {semester_number}")
-                else:
-                    print(f"♻️ Updated {course_inst.guid} in {user_inst.net_id}'s courses for {semester_number}")
-
-        # Return success message, including any missing courses for debugging
-        response_data = {'status': 'success', 'message': 'Courses updated successfully'}
-        if missing_courses:
-            response_data['missing_courses'] = missing_courses
+        response_data = {
+            'status': 'success',
+            'message': 'Courses updated successfully',
+            'processed_courses': len(data),
+            'missing_courses': missing_courses
+        }
 
         return JsonResponse(response_data)
 
@@ -903,10 +875,6 @@ def update_courses(request):
             user_course, created = UserCourses.objects.update_or_create(
                 user=user_inst, course=course_inst, defaults={"semester": semester}
             )
-            if created:
-                message = f"User course added: {semester}, {crosslistings}, {net_id}"
-            else:
-                message = f"User course updated: {semester}, {crosslistings}, {net_id}"
 
         return JsonResponse({"status": "success", "message": message})
 

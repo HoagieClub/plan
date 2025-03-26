@@ -83,11 +83,18 @@ def get_course_id(course):
 
     # Parse JSON string to dictionary
     courses = json.loads(string_data)["courses"]
-    if len(courses) != 1:
-        print("search_courses.py: Exact match for %s not found" % (course))
+    if not courses:  # Only fail if no courses found
+        print("search_courses.py: No match found for %s" % (course))
         return None
 
-    return courses[0]["course_id"] 
+    # If multiple matches, look for exact crosslisting match
+    for course_match in courses:
+        if course_match["crosslistings"].strip() == course.strip():
+            return course_match["course_id"]
+    
+    # If no exact match found, use the first result
+    print(f"Warning: Using first match for {course} from {len(courses)} results")
+    return courses[0]["course_id"]
 
 
 # Returns course_guid from the semester and course_id
