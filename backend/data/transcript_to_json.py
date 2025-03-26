@@ -7,17 +7,19 @@ from hoagieplan.tests import search_courses_test
 from hoagieplan.tests.search_courses_test import search_courses
 
 TERMS = {
-	"Spring 2026": "1264",
+	"Spring 2027": "1284",
+	"Fall 2026": "1272",
+    "Spring 2026": "1274",
 	"Fall 2025": "1262",
-	"Spring 2025": "1254",
+	"Spring 2025": "1264",
 	"Fall 2024": "1252",
-	"Spring 2024": "1244",
+	"Spring 2024": "1254",
 	"Fall 2023": "1242",
-	"Spring 2023": "1234",
+	"Spring 2023": "1244",
 	"Fall 2022": "1232",
-	"Spring 2022": "1224",
+	"Spring 2022": "1234",
 	"Fall 2021": "1222",
-	"Spring 2021": "1214",
+	"Spring 2021": "1224",
 	"Fall 2020": "1212",
 }
 
@@ -29,6 +31,7 @@ TERMS = {
 # "Fall 2023": ["COS 333", "COS 514", "ORF 526", "POL 210"],
 # "Spring 2024": ["COS 398", "COS 418", "ENG 319", "ORF 515", "ORF 523",],
 # "Fall 2024": ["ART 335", "COS 326", "COS 433", "ORF 418"]}
+
 def transcript_to_json(transcript_pdf_path):
     class_output = {}
     with pdfplumber.open(transcript_pdf_path) as pdf:
@@ -68,22 +71,6 @@ def get_current_term(year_and_semester_string: str) -> str:
     year = semester_info_list[0].split("-")[0] if semester == "Fall" else semester_info_list[0].split("-")[1]
     current_term = semester + " " + year
     return current_term
-
-
-TERMS = {
-	"Spring 2027": "1264",
-	"Fall 2026": "1262",
-	"Spring 2026": "1254",
-	"Fall 2025": "1252",
-	"Spring 2025": "1244",
-	"Fall 2024": "1242",
-	"Spring 2024": "1234",
-	"Fall 2023": "1232",
-	"Spring 2023": "1224",
-	"Fall 2022": "1222",
-	"Spring 2022": "1214",
-	"Fall 2021": "1212",
-}
 
 
 # Queries the DB for course_id given course
