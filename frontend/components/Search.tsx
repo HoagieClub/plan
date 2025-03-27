@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import {
 	Button,
 	Checkbox,
@@ -387,13 +387,6 @@ export const Search: FC = () => {
 								onClick={() => clearRecentSearches()}
 							>
 								Clear
-							</button>
-							<button
-								type='button'
-								className='rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-sm hover:bg-gray-50 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600'
-								aria-label='Upload transcript'
-							>
-								<ArrowUpTrayIcon className='h-4 w-4 text-gray-500' aria-hidden='true' />
 							</button>
 						</div>
 					</div>

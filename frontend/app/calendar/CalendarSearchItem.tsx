@@ -9,7 +9,7 @@ const CalendarSearchItem = ({ course }) => {
 	const addCourse = useCalendarStore((state) => state.addCourse);
 
 	const handleClick = () => {
-		addCourse(course);
+		void addCourse(course);
 	};
 
 	const termCode = course.guid.slice(0, 4);

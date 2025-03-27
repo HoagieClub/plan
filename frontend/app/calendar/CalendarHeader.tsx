@@ -56,4 +56,4 @@ const CalendarHeader: FC<CalendarHeaderProps> = ({ days, style }) => {
 	);
 };
 
-export default CalendarHeader;
+export { CalendarHeader };
