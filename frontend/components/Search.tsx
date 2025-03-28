@@ -274,12 +274,12 @@ export const Search: FC = () => {
 					/>
 				</div>
 				<div>
-					<FormLabel>Distribution area</FormLabel>
+					<FormLabel>Distribution areas</FormLabel>
 					<Autocomplete
 						multiple={true}
 						autoHighlight
 						options={Object.keys(distributionAreas)}
-						placeholder='Distribution area'
+						placeholder='Distribution areas'
 						variant='soft'
 						value={localDistributionFilters.map(
 							(distribution) => distributionAreasInverse[distribution]
