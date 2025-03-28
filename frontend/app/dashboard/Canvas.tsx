@@ -563,7 +563,7 @@ export function Canvas({
 								{/* Try to get this to fixed height*/}
 								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
 									<ButtonWidget
-										href='/dashboard'
+										onClick={() => {}}
 										text='Upload Transcript from TigerHub'
 										icon={<ArrowDownTrayIcon className='h-5 w-5' />}
 									/>
