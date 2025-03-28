@@ -228,6 +228,7 @@ export const CalendarSearch: FC = () => {
 
 	const distributionAreasInverse = invert(distributionAreas);
 
+<<<<<<< HEAD
 	const modalContent =
 		isClient && showPopup ? (
 			<FilterModal
@@ -385,4 +386,64 @@ export const CalendarSearch: FC = () => {
 			{modalContent}
 		</>
 	);
+=======
+  return (
+    <>
+      <div className='calendar-search'>
+        <div className='search-header'>
+          <div className='search-input-container'>
+            <div className='search-icon'>
+              <MagnifyingGlassIcon className='icon' aria-hidden='true' />
+            </div>
+            <input
+              type='text'
+              name='search'
+              id='search'
+              className='search-input'
+              placeholder='Search courses'
+              autoComplete='off'
+              onChange={handleInputChange}
+            />
+            <button
+              type='button'
+              className='search-settings-button'
+              onClick={handleSettingsChange}
+              aria-label='Adjust search settings'
+            >
+              <AdjustmentsHorizontalIcon
+                className={`h-5 w-5 ${areFiltersActive() ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`}
+                aria-hidden='true'
+              />
+            </button>
+          </div>
+            <button 
+              type='button'
+              className="p-2.5 font-semibold font-medium text-center text-gray-700 bg-yellow-400 
+              rounded-lg shadow-xl hover:bg-yellow-100 transition-all duration-300 ease-in-out w-auto"
+              >
+              Export Calendar
+            </button>
+          <div className='recent-searches'>
+            <div className='recent-searches-label'>Recent searches:</div>
+            <div className='recent-searches-list'>
+              {recentSearches.map((search, index) => (
+                <button
+                  key={index}
+                  className='recent-search-item'
+                  onClick={() => retrieveCachedSearch(search)}
+                >
+                  {search}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className='search-results'>
+          <CalendarSearchResults courses={calendarSearchResults} />
+        </div>
+      </div>
+      {modalContent}
+    </>
+  );
+>>>>>>> origin
 };
