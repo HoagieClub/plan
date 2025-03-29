@@ -9,18 +9,15 @@ import Upload from './uploadmodal'; // Import your Tutorial component
 Manages the state and logic for the tutorial modal.*
 @returns Object containing functions to open the modal and the rendered modal.*/
 export function useUploadModal() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openUploadModal = () => {
-    setIsModalOpen(true);
-  };
+	const openUploadModal = () => {
+		setIsModalOpen(true);
+	};
 
-  const uploadModal = isModalOpen ? (
-    <Upload
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-    />
-  ) : null;
+	const uploadModal = isModalOpen ? (
+		<Upload isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+	) : null;
 
-  return { openUploadModal, uploadModal };
+	return { openUploadModal, uploadModal };
 }

@@ -8,7 +8,7 @@ interface ButtonWidgetProps {
 	href?: string;
 	text: string;
 	icon?: ReactNode;
-	onClick?: () => void; 
+	onClick?: () => void;
 }
 
 export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon }) => {
@@ -20,9 +20,10 @@ export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon }) => {
 		</Button>
 	) : (
 		<Button variant='outline' className='w-full hover:bg-gray-200'>
-			<div className="flex items-center justify-center gap-2">
-				{icon}{text}
+			<div className='flex items-center justify-center gap-2'>
+				{icon}
+				{text}
 			</div>
 		</Button>
-	)
+	);
 };

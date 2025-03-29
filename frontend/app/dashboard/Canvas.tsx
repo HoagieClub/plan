@@ -18,7 +18,9 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { majorScale, Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -26,6 +28,7 @@ import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearc
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
+import { useUploadModal } from '@/components/UploadModal/Upload';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
@@ -35,12 +38,6 @@ import { getDepartmentGradient } from '@/utils/departmentColors';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 
-import { useUploadModal } from '@/components/UploadModal/Upload';
-import {
-	majorScale,
-	Pane
-} from 'evergreen-ui'
-
 import type {
 	CollisionDetection,
 	DropAnimation,
@@ -49,7 +46,6 @@ import type {
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -61,8 +57,6 @@ const semesterWidth = '22.5vw';
 const requirementsWidth = '26vw';
 const courseWidth = '10.5vw';
 const extendedCourseWidth = '22.0vw';
-
-
 
 const staticRectSortingStrategy = () => {
 	return {
@@ -199,7 +193,7 @@ export function Canvas({
 	const { updateRequirements } = useUserSlice((state) => ({
 		updateRequirements: state.updateRequirements,
 	}));
-	
+
 	const { openUploadModal, uploadModal } = useUploadModal();
 
 	// This limits the width of the course cards
@@ -578,17 +572,17 @@ export function Canvas({
 								{/* Try to get this to fixed height*/}
 								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
 									<Pane
-										display="flex"
-										alignItems="center"
-										justifyContent="center"
+										display='flex'
+										alignItems='center'
+										justifyContent='center'
 										marginLeft={majorScale(4)}
-										cursor="pointer"
+										cursor='pointer'
 										onClick={openUploadModal}
 									>
 										<ButtonWidget
-											text="Upload Unofficial Transcript"
-											icon={<CloudArrowUpIcon className="h-5 w-5" />}
-											onClick={() => openUploadModal()} 	 								
+											text='Upload Unofficial Transcript'
+											icon={<CloudArrowUpIcon className='h-5 w-5' />}
+											onClick={() => openUploadModal()}
 										/>
 									</Pane>
 									{uploadModal}
@@ -726,8 +720,6 @@ export function Canvas({
 			</DndContext>
 		</div>
 	);
-
-	
 
 	function renderSortableItemDragOverlay(id: UniqueIdentifier) {
 		// Determine the current overlay width based on overContainerId
