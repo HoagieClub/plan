@@ -7,13 +7,15 @@ import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
 
 import styles from './UploadModal.module.css';
+import { Profile } from '../../types'
 
 interface Upload {
 	isOpen: boolean;
 	onClose: () => void;
+	profile: Profile;
 }
 
-const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose, profile }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +69,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
 				body: formData,
 				headers: {
 					Accept: 'application/json',
-					'X-NetId': 'gc5512',
+					'X-NetId': profile.netId,
 				},
 			});
 
@@ -124,7 +126,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose }) => {
 					</div>
 				)}
 
-				<div className={styles.footer}>
+				<div className={styles.footer} style = {{ marginTop: '16px' }}>
 					{isLoading ? (
 						<LoadingComponent />
 					) : (

@@ -194,7 +194,7 @@ export function Canvas({
 		updateRequirements: state.updateRequirements,
 	}));
 
-	const { openUploadModal, uploadModal } = useUploadModal();
+	const { openUploadModal, uploadModal } = useUploadModal(profile);
 
 	// This limits the width of the course cards
 	const wrapperStyle = () => ({

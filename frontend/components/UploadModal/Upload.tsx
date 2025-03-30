@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 
-import Upload from './uploadmodal'; // Import your Tutorial component
+import Upload from './uploadmodal';
+import { Profile } from '../../types'
 
-/**
- 
-Manages the state and logic for the tutorial modal.*
+/** Manages the state and logic for the tutorial modal.*
 @returns Object containing functions to open the modal and the rendered modal.*/
-export function useUploadModal() {
+export function useUploadModal(profile: Profile) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const openUploadModal = () => {
@@ -16,7 +15,7 @@ export function useUploadModal() {
 	};
 
 	const uploadModal = isModalOpen ? (
-		<Upload isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+		<Upload isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} profile = { profile }/>
 	) : null;
 
 	return { openUploadModal, uploadModal };
