@@ -575,12 +575,11 @@ export function Canvas({
 										display='flex'
 										alignItems='center'
 										justifyContent='center'
-										marginLeft={majorScale(4)}
 										cursor='pointer'
 										onClick={openUploadModal}
 									>
 										<ButtonWidget
-											text='Upload Unofficial Transcript'
+											text='Import Courses From Transcript'
 											icon={<CloudArrowUpIcon className='h-5 w-5' />}
 											onClick={() => openUploadModal()}
 										/>
