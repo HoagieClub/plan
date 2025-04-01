@@ -76,21 +76,15 @@ DASHBOARD = urljoin(os.getenv("HOAGIEPLAN"), "dashboard")
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
-    "X-NetId", 
-    "Content-Type", 
-    "X-CSRFToken", 
+    "X-NetId",
+    "Content-Type",
+    "X-CSRFToken",
     "Authorization",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    os.getenv("HOAGIEPLAN"),
-    os.getenv("AUTH0_ISSUER_BASE_URL")
-]
+CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
-CSRF_TRUSTED_ORIGINS = [
-    os.getenv("HOAGIEPLAN"),
-    os.getenv("AUTH0_ISSUER_BASE_URL")
-]
+CSRF_TRUSTED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
 LOGGING = {
     "version": 1,

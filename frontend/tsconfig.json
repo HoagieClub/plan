@@ -1,48 +1,48 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false, // TODO: Let's be true TS champs and make this true eventually --windsor
-    "strictNullChecks": false, // TODO: Set to true and follow the above advice
-    "noImplicitAny": false,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": false, // TODO: Let's be true TS champs and make this true eventually --windsor
+		"strictNullChecks": false, // TODO: Set to true and follow the above advice
+		"noImplicitAny": false,
+		"noEmit": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"incremental": true,
 
-    /* TODO: Strictness Flags */
-    // "noUncheckedIndexedAccess": true,
-    // "noImplicitOverride": true,
-    // "noImplicitReturns": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
+		/* TODO: Strictness Flags */
+		// "noUncheckedIndexedAccess": true,
+		// "noImplicitOverride": true,
+		// "noImplicitReturns": true,
+		// "noFallthroughCasesInSwitch": true,
+		// "noUnusedLocals": true,
+		// "noUnusedParameters": true,
 
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "postcss.config.js,",
-    ".next/types/**/*.ts",
-    "eslint.config.mjs",
-    ".prettierrc.mjs"
-  ],
-  "exclude": ["node_modules", ".next", "coverage"]
+		"plugins": [
+			{
+				"name": "next"
+			}
+		],
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"include": [
+		"next-env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		"postcss.config.js",
+		".next/types/**/*.ts",
+		"eslint.config.mjs",
+		".prettierrc.mjs"
+	],
+	"exclude": ["node_modules", ".next", "coverage"]
 }
