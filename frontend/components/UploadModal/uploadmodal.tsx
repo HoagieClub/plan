@@ -12,10 +12,11 @@ import { Profile } from '../../types'
 interface Upload {
 	isOpen: boolean;
 	onClose: () => void;
+	onSuccess: () => Promise<void>;
 	profile: Profile;
 }
 
-const Upload: React.FC<Upload> = ({ isOpen, onClose, profile }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +86,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, profile }) => {
 			}
 			alert('Files uploaded successfully!');
 			setSelectedFiles([]);
-			onClose();
+			await onSuccess();
 		} catch (error) {
 			console.error('Upload error:', error);
 			if (error instanceof TypeError && error.message.includes('Failed to fetch')) {

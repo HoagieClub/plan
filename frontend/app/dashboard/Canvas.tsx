@@ -194,7 +194,23 @@ export function Canvas({
 		updateRequirements: state.updateRequirements,
 	}));
 
-	const { openUploadModal, uploadModal } = useUploadModal(profile);
+	const refreshData = async () => {
+		try {
+			// Fetch new course data
+			const fetchedData = await fetchCourses();
+			if (fetchedData) {
+				setItems((prevItems) => ({
+					...updateSemesters(prevItems, classYear, fetchedData),
+				}));
+			}
+			// Update requirements
+			await updateRequirements();
+		} catch (err) {
+			console.error('Error refreshing data:', err);
+		}
+	};
+
+	const { openUploadModal, uploadModal } = useUploadModal(profile, refreshData);
 
 	// This limits the width of the course cards
 	const wrapperStyle = () => ({
@@ -234,13 +250,17 @@ export function Canvas({
 		const startYear = classYear - 4;
 		let semester = 1;
 		for (let year = startYear; year < classYear; ++year) {
-			prevItems[`Fall ${year}`] = userCourses[semester].map(
+			// Use Set to ensure unique course IDs
+			const fallCourses = [...new Set(userCourses[semester].map(
 				(course) => `${course.course_id}|${course.crosslistings}`
-			);
+			))];
+			prevItems[`Fall ${year}`] = fallCourses;
 			semester += 1;
-			prevItems[`Spring ${year + 1}`] = userCourses[semester].map(
+
+			const springCourses = [...new Set(userCourses[semester].map(
 				(course) => `${course.course_id}|${course.crosslistings}`
-			);
+			))];
+			prevItems[`Spring ${year + 1}`] = springCourses;
 			semester += 1;
 		}
 		return prevItems;
