@@ -85,7 +85,7 @@ export const Nav: FC<NavProps> = ({
 			{HeaderComponent ? (
 				<HeaderComponent />
 			) : (
-				<Pane width='100%' height={20} background={theme.colors.red600} />
+				<Pane width='100%' height={20} background={theme.title} />
 			)}
 			<Pane
 				display='flex'
@@ -113,7 +113,7 @@ export const Nav: FC<NavProps> = ({
 									<Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
 										hoagie
 									</Text>
-									<Text is='h2' display='inline-block' className='hoagie logo' color='blue500'>
+									<Text is='h2' display='inline-block' className='hoagie logo' color='slate400'>
 										{name}
 									</Text>
 									{beta && (
@@ -162,7 +162,7 @@ export const Nav: FC<NavProps> = ({
 								<Avatar
 									name={user.name}
 									style={{ cursor: 'pointer' }}
-									backgroundColor={theme.colors.red25}
+									backgroundColor={theme.colors.slate150}
 									size={40}
 									marginLeft={majorScale(4)}
 								/>

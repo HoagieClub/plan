@@ -21,7 +21,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Poppins } from 'next/font/google';
 
-import { hoagie } from '@/app/hoagie';
 import { Toaster } from '@/components/ui/toaster';
 import { auth0 } from '@/lib/auth0';
 import { Layout } from '@/lib/hoagie-ui/Layout';
@@ -84,13 +83,6 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 export default async function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang='en' className={`bg-hoagieplan-dark-red ${poppins.className}`}>
-			<head>
-				<script
-					dangerouslySetInnerHTML={{
-						__html: `(${hoagie.toString()})();`,
-					}}
-				/>
-			</head>
 			{/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
 			<body className='antialiased'>
 				{/* Uncomment this to see components re-render. Used for debugging. */}
