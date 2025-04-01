@@ -249,7 +249,7 @@ const About = () => {
 										TigerPath
 									</a>
 									, a four-year course planner launched in 2018 to help students navigate their
-									major and degree requirements. Building on TigerPath's core functionality, our
+									major and degree requirements. Building on TigerPath&#39;s core functionality, our
 									application extends its capabilities by also accommodating minor requirements and
 									offering additional planning features tailored to user needs.
 								</p>
