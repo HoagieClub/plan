@@ -43,21 +43,27 @@ def transcript_to_json(transcript_pdf_path):
         currentTermClasses = []
         for i in range(len(total_lines)):
             curr_line = total_lines[i]
-            if ("Fall" in curr_line or "Spring" in curr_line):
-                if (len(currentTermClasses) != 0):
+            if ("Fall" in curr_line or "Spring" in curr_line or "Summer" in curr_line):
+                # Only save previous term's classes if it wasn't a summer term
+                if len(currentTermClasses) != 0 and "Summer" not in currentTerm:
                     class_output[currentTerm] = currentTermClasses
-                    currentTermClasses = []
+                
+                currentTermClasses = []
+                # Only set currentTerm if it's not a summer term
+                if "Summer" not in curr_line:
+                    currentTerm = get_current_term(total_lines[i])
+                else:
+                    currentTerm = ""  # Reset term if it's summer
 
-                currentTerm = get_current_term(total_lines[i])
-
-            # print(currentTerm)
+            # Only process classes if we're not in a summer term
             row = curr_line.split(" ")
-            if (len(row) >= 2 and row[0].upper() == row[0] and len(row[0]) == 3 and row[1].isnumeric() and row[0] != "ID:"):
+            if currentTerm and len(row) >= 2 and row[0].upper() == row[0] and len(row[0]) == 3 and row[1].isnumeric() and row[0] != "ID:":
                 currClass = row[0] + " " + row[1]
-                # print(currClass)
                 currentTermClasses.append(currClass)
 
-        class_output[currentTerm] = currentTermClasses
+        # Only save final term if it's not summer
+        if currentTerm and "Summer" not in currentTerm:
+            class_output[currentTerm] = currentTermClasses
         
     return class_output
 
