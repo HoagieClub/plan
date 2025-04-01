@@ -141,4 +141,4 @@ const ConfigurationSelector: FC<ConfigurationSelectorProps> = ({
 	);
 };
 
-export default ConfigurationSelector;
+export { ConfigurationSelector };

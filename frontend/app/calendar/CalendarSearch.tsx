@@ -142,9 +142,9 @@ export const CalendarSearch: FC = () => {
 			gradingFilter,
 		};
 		if (query) {
-			search(query, filters);
+			void search(query, filters);
 		} else {
-			search('', filters);
+			void search('', filters);
 		}
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
