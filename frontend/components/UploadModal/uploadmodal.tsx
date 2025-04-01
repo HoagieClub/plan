@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
+import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
@@ -18,6 +19,8 @@ interface Upload {
 
 const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+	const [isDragging, setIsDragging] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files) {
@@ -28,6 +31,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 	const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
 		event.stopPropagation();
+		setIsDragging(false);
 
 		const droppedFiles = event.dataTransfer.files;
 		if (droppedFiles && droppedFiles.length > 0) {
@@ -37,13 +41,17 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 
 	const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
+		setIsDragging(true);
+	};
+
+	const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		setIsDragging(false);
 	};
 
 	const removeFile = (fileName: string) => {
 		setSelectedFiles(selectedFiles.filter((file) => file.name !== fileName));
 	};
-
-	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSave = async () => {
 		if (selectedFiles.length === 0) {
@@ -76,9 +84,6 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 
 			// Get both text and status for debugging
 			const responseText = await response.text();
-			console.log('Response Status:', response.status);
-			console.log('Response Headers:', response.headers);
-			console.log('Response Body:', responseText);
 
 			if (!response.ok) {
 				// More descriptive error with status code
@@ -102,52 +107,71 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 	const modalContent = (
 		<TutorialModal>
 			<div className={styles.modal}>
-				<div className={styles.header}>Load file(s)</div>
-
-				<div className={styles.fileInputContainer}>
-					<label>
-						<input type='file' multiple onChange={handleFileChange} />
-					</label>
+				<div className={styles.header}>
+					Upload Transcript
 				</div>
 
-				<div className={styles.dropZone} onDrop={handleDrop} onDragOver={handleDragOver}>
-					Drop files here
-				</div>
-
-				{selectedFiles.length > 0 && (
-					<div className={styles.fileContainer}>
-						{selectedFiles.map((file, index) => (
-							<div key={index}>
-								<span>{file.name}</span>
-								<button className={styles.closeButton} onClick={() => removeFile(file.name)}>
-									X
-								</button>
+				<div className={styles.content}>
+					<div 
+						className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
+						onDrop={handleDrop}
+						onDragOver={handleDragOver}
+						onDragLeave={handleDragLeave}
+					>
+						
+						<div className={styles.dropText}>
+							<div style={{ display: 'flex', justifyContent: 'center' }}>
+								<CloudArrowUpIcon className={styles.uploadIcon} />
 							</div>
-						))}
+							<p>Drag and drop your transcript PDF here</p>
+							<span>or</span>
+						</div>
+						<label className={styles.fileInput}>
+							<input 
+								type='file'
+								onChange={handleFileChange}
+								accept=".pdf"
+								multiple={false}
+							/>
+							Browse Files
+						</label>
 					</div>
-				)}
 
-				<div className={styles.footer} style = {{ marginTop: '16px' }}>
+					{selectedFiles.length > 0 && (
+						<div className={styles.fileList}>
+							{selectedFiles.map((file, index) => (
+								<div key={index} className={styles.fileItem}>
+									<span className={styles.fileName}>{file.name}</span>
+									<button 
+										className={styles.removeButton}
+										onClick={() => removeFile(file.name)}
+										aria-label="Remove file"
+									>
+										×
+									</button>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+
+				<div className={styles.footer}>
 					{isLoading ? (
 						<LoadingComponent />
 					) : (
 						<>
 							<JoyButton
-								variant='soft'
-								color='neutral'
+								variant='solid'
 								onClick={handleSave}
-								sx={{ ml: 2 }}
-								size='md'
-								disabled={isLoading}
+								disabled={isLoading || selectedFiles.length === 0}
+								sx={{ mr: 1, bgcolor: '#0d99ff' }}
 							>
-								Save
+								Upload
 							</JoyButton>
 							<JoyButton
 								variant='soft'
 								color='neutral'
 								onClick={onClose}
-								sx={{ ml: 2 }}
-								size='md'
 								disabled={isLoading}
 							>
 								Cancel

@@ -1,89 +1,128 @@
 .modal {
-    display: flex;
-    flex-direction: column; 
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 70%;
-    height: 70%;
-    background-color: #ffffff;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    overflow: auto;
-  }
-  
-  @media (max-width: 600px) {
-    .modal {
-      width: 90%;
-      height: 90%;
-      padding: 15px;
-    }
-  }
-  
-  
-  @media (max-width: 768px) {
-    .modal {
-      width: 80%;
-      height: 80%;
-      padding: 15px;
-    }
-  }
-  
-  
-  @media (min-width: 1200px) {
-    .modal {
-      width: 50%;
-      height: 70%;
-      padding: 25px;
-    }
-  }
-  
-  .header {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
-  }
+}
 
-  .fileInputContainer {
-    margin-bottom: 20px;
-  }
-
-  .dropZone {
+.header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 700px;
-    height: 380px;
-    border: 8px dashed #a09f9f;
-    border-radius: 2px;
-    background-color: #ffffff;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1a1a1a;
+}
+
+.headerIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.content {
+    margin-bottom: 1.5rem;
+}
+
+.dropZone {
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+    padding: 2rem;
     text-align: center;
-    margin: 0 auto;
-    font-size: 28px;
-    font-weight: bold;
-    color: #9a9696;
-  }
-
-  .fileContainer {
-    margin-top: 16px;
-    margin-bottom: 16px;
-  }
-
-  .closeButton {
-    color: red;
+    transition: all 0.2s ease;
+    background: #f9fafb;
     cursor: pointer;
-    font-size: 18px;
+}
+
+.dragging {
+    border-color: #007be5;
+    background: #f5f3ff;
+}
+
+.uploadIcon {
+    width: 3rem;
+    height: 3rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.dropText {
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+.dropText span {
+    display: block;
+    margin: 0.5rem 0;
+    color: #9ca3af;
+}
+
+.fileInput {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #0d99ff;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.fileInput:hover {
+    background: #007be5;
+}
+
+.fileInput input {
+    display: none;
+}
+
+.fileList {
+    margin-top: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.fileItem:last-child {
+    border-bottom: none;
+}
+
+.fileName {
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.removeButton {
     background: none;
     border: none;
-    padding: 0;
-    margin-left: 10px;
-  }
-  
-  .footer {
+    color: #9ca3af;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.footer {
     display: flex;
-    justify-content: space-between;
-    margin-top: auto;
-  }
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
