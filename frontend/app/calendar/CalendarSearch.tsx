@@ -2,7 +2,7 @@ import type { ChangeEvent, FC } from 'react';
 import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import {
 	Button,
 	Checkbox,
@@ -14,11 +14,10 @@ import {
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
-import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
-import { distributionAreas } from '@/utils/distributionAreas';
+import { distributionAreas, distributionAreasInverse } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
 
@@ -37,7 +36,7 @@ function buildQuery(searchQuery: string, filter: Filter): string {
 		queryString += `&term=${encodeURIComponent(filter.termFilter)}`;
 	}
 	if (filter.distributionFilters.length > 0) {
-		queryString += `&distribution=${filter.distributionFilters.map(encodeURIComponent).join(',')}`;
+		queryString += `&distribution=${filter.distributionFilters.join(',')}`;
 	}
 	if (filter.levelFilter.length > 0) {
 		queryString += `&level=${filter.levelFilter.map(encodeURIComponent).join(',')}`;
@@ -101,7 +100,12 @@ export const CalendarSearch: FC = () => {
 	} = useFilterStore();
 
 	const areFiltersActive = () => {
-		return distributionFilters.length > 0 || levelFilter.length > 0 || gradingFilter.length > 0;
+		return (
+			distributionFilters.length > 0 ||
+			levelFilter.length > 0 ||
+			gradingFilter.length > 0 ||
+			termFilter !== ''
+		);
 	};
 
 	const search = useCallback(
@@ -226,7 +230,18 @@ export const CalendarSearch: FC = () => {
 		}
 	};
 
-	const distributionAreasInverse = invert(distributionAreas);
+	const handleDistributionChange = (_: any, newDistribution: string[] | null) => {
+		if (!newDistribution) {
+			setLocalDistributionFilters([]);
+			return;
+		}
+
+		const uniqueDistributions = newDistribution
+			.filter((distribution) => distributionAreas[distribution] !== undefined)
+			.map((distribution) => distributionAreas[distribution ?? ''] ?? '');
+
+		setLocalDistributionFilters(uniqueDistributions);
+	};
 
 	const modalContent =
 		isClient && showPopup ? (
@@ -240,32 +255,24 @@ export const CalendarSearch: FC = () => {
 			>
 				<div className='grid grid-cols-1 gap-6'>
 					<div>
-						<FormLabel>Distribution area</FormLabel>
+						<FormLabel>Distribution Areas</FormLabel>
 						<Autocomplete
 							multiple={true}
 							autoHighlight
 							options={Object.keys(distributionAreas)}
-							placeholder='Distribution area'
+							placeholder='Distribution Areas'
 							variant='soft'
-							value={localDistributionFilters
-								.map((distribution) => distributionAreasInverse[distribution])
-								.filter(Boolean)}
+							value={localDistributionFilters.map(
+								(distribution) => distributionAreasInverse[distribution]
+							)}
 							isOptionEqualToValue={(option, value) => value === '' || option === value}
 							onChange={(event, newDistributions: string[] | null) => {
 								event.stopPropagation();
-								if (!newDistributions) {
-									setLocalDistributionFilters([]);
-									return;
-								}
-
-								const uniqueDistributions = newDistributions
-									.filter((distribution) => distributionAreas[distribution] !== undefined)
-									.map((distribution) => distributionAreas[distribution])
-									.filter(Boolean);
-
-								setLocalDistributionFilters(uniqueDistributions);
+								handleDistributionChange(event, newDistributions);
 							}}
-							getOptionLabel={(option) => option.toString()}
+							getOptionLabel={(option) => {
+								return option ? option.toString() : '';
+							}}
 							renderOption={(props, option) => (
 								<AutocompleteOption {...props} key={option}>
 									<ListItemContent>{option}</ListItemContent>
@@ -327,21 +334,12 @@ export const CalendarSearch: FC = () => {
 
 	return (
 		<>
-			<div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
-				<ButtonWidget
-					href='/dashboard'
-					text='Export Calendar'
-					icon={<ArrowUpTrayIcon className='h-5 w-5' />}
-				/>
-			</div>
-
 			<div className='calendar-search'>
 				<div className='search-header'>
 					<div className='search-input-container'>
 						<div className='search-icon'>
 							<MagnifyingGlassIcon className='icon' aria-hidden='true' />
 						</div>
-
 						<input
 							type='text'
 							name='search'
@@ -363,6 +361,12 @@ export const CalendarSearch: FC = () => {
 							/>
 						</button>
 					</div>
+					<button
+						type='button'
+						className='w-auto rounded-lg bg-yellow-400 p-2.5 text-center font-medium font-semibold text-gray-700 shadow-xl transition-all duration-300 ease-in-out hover:bg-yellow-100'
+					>
+						Export Calendar
+					</button>
 					<div className='recent-searches'>
 						<div className='recent-searches-label'>Recent searches:</div>
 						<div className='recent-searches-list'>
@@ -386,3 +390,5 @@ export const CalendarSearch: FC = () => {
 		</>
 	);
 };
+
+export default CalendarSearch;
