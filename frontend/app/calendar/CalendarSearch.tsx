@@ -57,7 +57,7 @@ function invert(obj: TermMap): TermMap {
 	return Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key]));
 }
 
-const CalendarSearch: FC = () => {
+export const CalendarSearch: FC = () => {
 	const [isClient, setIsClient] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -68,7 +68,7 @@ const CalendarSearch: FC = () => {
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
 	const [query, setQuery] = useState<string>('');
-	const timerRef = useRef<number>();
+	const timerRef = useRef<number>(undefined);
 	const {
 		setCalendarSearchResults,
 		calendarSearchResults,
@@ -146,9 +146,9 @@ const CalendarSearch: FC = () => {
 			gradingFilter,
 		};
 		if (query) {
-			search(query, filters);
+			void search(query, filters);
 		} else {
-			search('', filters);
+			void search('', filters);
 		}
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
@@ -255,12 +255,12 @@ const CalendarSearch: FC = () => {
 			>
 				<div className='grid grid-cols-1 gap-6'>
 					<div>
-						<FormLabel>Distribution areas</FormLabel>
+						<FormLabel>Distribution Areas</FormLabel>
 						<Autocomplete
 							multiple={true}
 							autoHighlight
 							options={Object.keys(distributionAreas)}
-							placeholder='Distribution areas'
+							placeholder='Distribution Areas'
 							variant='soft'
 							value={localDistributionFilters.map(
 								(distribution) => distributionAreasInverse[distribution]
