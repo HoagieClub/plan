@@ -210,7 +210,7 @@ export function Canvas({
 		}
 	};
 
-	const { openUploadModal, uploadModal } = useUploadModal(profile, refreshData);
+	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
 
 	// This limits the width of the course cards
 	const wrapperStyle = () => ({
@@ -605,6 +605,7 @@ export function Canvas({
 										/>
 									</Pane>
 									{uploadModal}
+									{notification}
 								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}

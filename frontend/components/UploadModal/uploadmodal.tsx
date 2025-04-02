@@ -22,6 +22,43 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 	const [isDragging, setIsDragging] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
+	const handleSave = async () => {
+		if (selectedFiles.length === 0) {
+			return;
+		}
+
+		setIsLoading(true);
+
+		const formData = new FormData();
+		selectedFiles.forEach((file) => {
+			formData.append('file', file);
+		});
+
+		try {
+			const response = await fetch('http://localhost:8000/api/upload/', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					Accept: 'application/json',
+					'X-NetId': profile.netId,
+				},
+			});
+
+			const responseText = await response.text();
+
+			if (!response.ok) {
+				throw new Error(`Upload failed with status ${response.status}: ${responseText}`);
+			}
+
+			setSelectedFiles([]);
+			await onSuccess();
+		} catch (error) {
+			console.error('Upload error:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files) {
 			setSelectedFiles([...selectedFiles, ...Array.from(event.target.files)]);
@@ -51,57 +88,6 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 
 	const removeFile = (fileName: string) => {
 		setSelectedFiles(selectedFiles.filter((file) => file.name !== fileName));
-	};
-
-	const handleSave = async () => {
-		if (selectedFiles.length === 0) {
-			alert('No files selected');
-			return;
-		}
-
-		setIsLoading(true);
-
-		const formData = new FormData();
-		selectedFiles.forEach((file) => {
-			formData.append('file', file);
-		});
-
-		try {
-			// Log what we're trying to upload for debugging
-			console.log(
-				'Attempting to upload files:',
-				selectedFiles.map((f) => `${f.name} (${f.size} bytes)`)
-			);
-
-			const response = await fetch('http://localhost:8000/api/upload/', {
-				method: 'POST',
-				body: formData,
-				headers: {
-					Accept: 'application/json',
-					'X-NetId': profile.netId,
-				},
-			});
-
-			// Get both text and status for debugging
-			const responseText = await response.text();
-
-			if (!response.ok) {
-				// More descriptive error with status code
-				throw new Error(`Upload failed with status ${response.status}: ${responseText}`);
-			}
-			alert('Files uploaded successfully!');
-			setSelectedFiles([]);
-			await onSuccess();
-		} catch (error) {
-			console.error('Upload error:', error);
-			if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-				alert('Network error: Server may be down or unreachable.');
-			} else {
-				alert(`Error uploading files: ${error instanceof Error ? error.message : String(error)}`);
-			}
-		} finally {
-			setIsLoading(false);
-		}
 	};
 
 	const modalContent = (
