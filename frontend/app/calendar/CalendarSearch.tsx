@@ -18,10 +18,10 @@ import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
+import { fetchCsrfToken } from '@/utils/csrf';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { termsInverse } from '@/utils/terms';
 
 import CalendarSearchResults from './CalendarSearchResults';
@@ -62,72 +62,70 @@ function invert(obj: TermMap): TermMap {
 
 const exportCalendar = async () => {
 	try {
+		const calendarData = generateCalendarData();
+		if (!calendarData) {
+			throw new Error('Please complete all course selections before exporting');
+		}
 
-	  const calendarData = generateCalendarData();
-	  if (!calendarData) {
-		throw new Error("Please complete all course selections before exporting");
-	  }
-  
-	  const csrfToken = await fetchCsrfToken();
-  
-	  const response = await fetch(`${process.env.BACKEND}/export-calendar/`, {
-		method: "POST",
-		headers: {
-		  "Content-Type": "application/json",
-		  "X-CSRFToken": csrfToken, 
-		},
-		credentials: "include",
-		body: JSON.stringify(calendarData),
-	  });
-  
-	  if (!response.ok) {
-		throw new Error(`Export failed: ${await response.text()}`);
-	  }
+		const csrfToken = await fetchCsrfToken();
 
-	  // First get term name for file download
-	  const term = termsInverse[calendarData.term];
+		const response = await fetch(`${process.env.BACKEND}/export-calendar/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken,
+			},
+			credentials: 'include',
+			body: JSON.stringify(calendarData),
+		});
 
-	  const blob = await response.blob();
-	  const url = window.URL.createObjectURL(blob);
-	  const a = document.createElement('a');
-	  a.href = url;
-	  a.download = `${term}_schedule.ics`;
-	  document.body.appendChild(a);
-	  a.click();
-	  document.body.removeChild(a);
-	  window.URL.revokeObjectURL(url);
-  
+		if (!response.ok) {
+			throw new Error(`Export failed: ${await response.text()}`);
+		}
+
+		// First get term name for file download
+		const term = termsInverse[calendarData.term];
+
+		const blob = await response.blob();
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `${term}_schedule.ics`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		window.URL.revokeObjectURL(url);
 	} catch (error) {
-	  console.error('Export failed:', error);
-	  throw new Error(error instanceof Error ? error.message : "Export failed");
+		console.error('Export failed:', error);
+		throw new Error(error instanceof Error ? error.message : 'Export failed');
 	}
 };
 
 const generateCalendarData = () => {
-    const { selectedCourses } = useCalendarStore.getState(); 
-    const termFilter = useFilterStore.getState().termFilter; 
+	const { selectedCourses } = useCalendarStore.getState();
+	const termFilter = useFilterStore.getState().termFilter;
 
 	// All courses in the selected semester
 	const currentSemesterCourses = selectedCourses[termFilter] || [];
-	
+
 	// We need to make sure user doesn't have any unsettled courses
 	const hasUnselectedRequired = currentSemesterCourses.some(
-        course => course.isActive && course.needsChoice && !course.isChosen
-    );
-    
-    if (hasUnselectedRequired) {
-        return null; 
-    }
-    
-	// Filter out sections that are active 
-	const class_sections = currentSemesterCourses.filter(course => 
-        course.isChosen || !course.needsChoice
-    );
+		(course) => course.isActive && course.needsChoice && !course.isChosen
+	);
 
-    return {
-        term: termFilter,
-        class_sections
-    };    
+	if (hasUnselectedRequired) {
+		return null;
+	}
+
+	// Filter out sections that are active
+	const class_sections = currentSemesterCourses.filter(
+		(course) => course.isChosen || !course.needsChoice
+	);
+
+	return {
+		term: termFilter,
+		class_sections,
+	};
 };
 
 export const CalendarSearch: FC = () => {
@@ -401,7 +399,7 @@ export const CalendarSearch: FC = () => {
 		<>
 			<div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
 				<ButtonWidget
-					onClick = {exportCalendar}
+					onClick={exportCalendar}
 					text='Export Calendar'
 					icon={<ArrowUpTrayIcon className='h-5 w-5' />}
 				/>
