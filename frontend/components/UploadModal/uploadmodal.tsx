@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
@@ -14,13 +14,30 @@ interface Upload {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => Promise<void>;
+	onError: (error: string) => void;
 	profile: Profile;
 }
 
-const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				onClose();
+			}
+		};
+
+		if (isOpen) {
+			document.addEventListener('keydown', handleKeyDown);
+		}
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [isOpen, onClose]);
 
 	const handleSave = async () => {
 		if (selectedFiles.length === 0) {
@@ -45,15 +62,22 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 			});
 
 			const responseText = await response.text();
+			let responseData;
+			try {
+				responseData = JSON.parse(responseText);
+			} catch (e) {
+				throw new Error('Invalid response from server');
+			}
 
 			if (!response.ok) {
-				throw new Error(`Upload failed with status ${response.status}: ${responseText}`);
+				throw new Error(responseData.error || 'Upload failed');
 			}
 
 			setSelectedFiles([]);
 			await onSuccess();
 		} catch (error) {
 			console.error('Upload error:', error);
+			onError(error instanceof Error ? error.message : 'Upload failed');
 		} finally {
 			setIsLoading(false);
 		}
@@ -128,6 +152,9 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, profile }) => {
 							{selectedFiles.map((file, index) => (
 								<div key={index} className={styles.fileItem}>
 									<span className={styles.fileName}>{file.name}</span>
+									{isLoading && (
+										<div className={styles.spinner} />
+									)}
 									<button 
 										className={styles.removeButton}
 										onClick={() => removeFile(file.name)}
