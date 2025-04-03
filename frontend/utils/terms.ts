@@ -9,6 +9,7 @@ export const terms: { [key: string]: string } = {
 	'Fall 2021': '1222',
 	'Spring 2021': '1214',
 	'Fall 2020': '1212',
+	'': '',
 };
 
 export const termsInverse: { [key: string]: string } = {
@@ -22,4 +23,5 @@ export const termsInverse: { [key: string]: string } = {
 	'1222': 'Fall 2021',
 	'1214': 'Spring 2021',
 	'1212': 'Fall 2020',
+	'': '',
 };
