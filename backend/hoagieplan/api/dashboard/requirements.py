@@ -252,13 +252,18 @@ def prefetch_req_inst(table, code):
 
 @cumulative_time
 def create_courses(user_inst):
+    # Clean up any invalid records for this user
+    cleanup_invalid_usercourses()
+    
     courses = [[] for _ in range(8)]  # Initialize empty list for 8 semesters
-    course_insts = UserCourses.objects.select_related("user", "course").filter(user=user_inst)
+    course_insts = UserCourses.objects.select_related("user", "course", "course__department").filter(user=user_inst)
 
     for course_inst in course_insts:
         if not course_inst or not course_inst.course:
             logger.warning(f"⚠️ ERROR: Course instance or related course is None for user {user_inst.net_id}.")
-            continue  # Skip this course if it's None or has no related course
+            # Delete the invalid record
+            course_inst.delete()
+            continue
 
         course = {
             "id": course_inst.course.id,
@@ -778,6 +783,9 @@ def update_transcript_courses(request):
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)
         
+        # Clean up old UserCourses records for this user
+        UserCourses.objects.filter(user=user_inst).delete()
+        
         missing_courses = []
         semester_mapping = assign_sequential_semesters(data)
 
@@ -785,10 +793,6 @@ def update_transcript_courses(request):
             semester_number = semester_mapping[semester]
 
             for course_name in courses:
-                
-                # Extract course_id from GUID (last 6 digits)
-                course_id = course_name[-6:] if len(course_name) >= 6 else course_name
-                
                 # Try finding course by GUID first
                 course_inst = (
                     Course.objects.select_related('department')
@@ -798,7 +802,8 @@ def update_transcript_courses(request):
                 )
                 
                 # If not found by GUID, try finding by course_id
-                if not course_inst:
+                if not course_inst and len(course_name) >= 6:
+                    course_id = course_name[-6:]
                     course_inst = (
                         Course.objects.select_related('department')
                         .filter(course_id=course_id)
@@ -809,15 +814,16 @@ def update_transcript_courses(request):
                 if not course_inst:
                     missing_courses.append({
                         'guid': course_name,
-                        'course_id': course_id,
+                        'course_id': course_name[-6:] if len(course_name) >= 6 else course_name,
                         'semester': semester
                     })
                     continue
                 
-                user_course, created = UserCourses.objects.update_or_create(
+                # Create new UserCourses record
+                UserCourses.objects.create(
                     user=user_inst, 
                     course=course_inst, 
-                    defaults={'semester': semester_number}
+                    semester=semester_number
                 )
 
         response_data = {
@@ -881,4 +887,17 @@ def update_courses(request):
     except Exception as e:
         logger.error(f'An internal error occurred: {e}', exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def cleanup_invalid_usercourses():
+    """Remove any UserCourses records that have null courses or invalid course references."""
+    invalid_records = UserCourses.objects.filter(
+        Q(course__isnull=True) | 
+        Q(course__department__isnull=True)
+    )
+    count = invalid_records.count()
+    if count > 0:
+        logger.info(f"Cleaning up {count} invalid UserCourses records")
+        invalid_records.delete()
+    return count
 
