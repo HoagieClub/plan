@@ -15,42 +15,54 @@ def upload_file(request):
         return JsonResponse({"error": "No file uploaded"}, status=400)
 
     uploaded_file = request.FILES["file"]
-    print(f"✅ Received file: {uploaded_file.name}, size: {uploaded_file.size} bytes")
+    print(f"Processing transcript: {uploaded_file.name}")
+
+    # Validate file type
+    if not uploaded_file.name.lower().endswith('.pdf'):
+        return JsonResponse({"error": "Please upload a PDF file"}, status=400)
 
     # Convert transcript PDF to JSON
     try:
         json_data = transcript_to_json(uploaded_file)
-        transcript_output, _ = convert_to_guids(json_data)
+        
+        # Check if the JSON data looks like a transcript
+        if not json_data or not isinstance(json_data, dict):
+            return JsonResponse({"error": "Invalid transcript format"}, status=400)
+            
+        # Check if it has at least one semester with courses
+        has_valid_semesters = any(
+            isinstance(courses, list) and len(courses) > 0 
+            for courses in json_data.values()
+        )
+        if not has_valid_semesters:
+            return JsonResponse({"error": "No valid courses found in transcript"}, status=400)
 
-        print("\n📌 Converted Transcript GUIDs:")
-        for semester, guids in transcript_output.items():
-            print(f"📅 Semester: {semester}")
-            for guid in guids:
-                print(f"   🏷️ GUID: {guid}")
-            print()  # Add a blank line for readability
+        transcript_output, missing_courses = convert_to_guids(json_data)
+
+        if missing_courses:
+            print(f"⚠️ Could not find: {', '.join(missing_courses)}")
 
     except Exception as e:
         print(f"Error processing transcript: {e}")
-        return JsonResponse({"error": "Failed to process transcript"}, status=500)
+        return JsonResponse({"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500)
     
-    # ✅ Ensure we extract NetID correctly
+    # Ensure we extract NetID correctly
     net_id = request.headers.get("X-NetId")
     if not net_id:
         return JsonResponse({"error": "Missing NetID in request headers"}, status=400)
 
-    # ✅ Simulate an HTTP request with correct JSON structure
+    # Simulate an HTTP request with correct JSON structure
     try:
         factory = RequestFactory()
         fake_request = factory.post(
-            "/update_courses/",  # Fake endpoint
-            data=json.dumps(transcript_output),  # ✅ JSON data
+            "/update_courses/",
+            data=json.dumps(transcript_output),
             content_type="application/json",
-            HTTP_X_NetId=net_id  # ✅ Manually set header
+            HTTP_X_NetId=net_id
         )
 
-        # ✅ Call update_transcript_courses() with a properly formatted request
         response = update_transcript_courses(fake_request)
-        print(f"✅ Courses successfully added.")  
+        print("✅ Transcript processed successfully")
         return response
 
     except Exception as e:

@@ -90,7 +90,6 @@ def get_course_id(course):
     # Parse JSON string to dictionary
     courses = json.loads(string_data)["courses"]
     if not courses:  # Only fail if no courses found
-        print("search_courses.py: No match found for %s" % (course))
         return None
 
     # If multiple matches, look for exact crosslisting match
@@ -99,7 +98,6 @@ def get_course_id(course):
             return course_match["course_id"]
     
     # If no exact match found, use the first result
-    print(f"Warning: Using first match for {course} from {len(courses)} results")
     return courses[0]["course_id"]
 
 
@@ -116,7 +114,6 @@ def convert_to_guids(transcript_dict):
     for semester, courses in transcript_dict.items():
         courses_guids = []
         for course in courses:
-            print("Querying for", course)
             course_id = get_course_id(course)
             if course_id is None:
                 missing_courses.append(course)
