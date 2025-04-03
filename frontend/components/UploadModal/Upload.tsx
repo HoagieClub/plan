@@ -13,6 +13,8 @@ import styles from './UploadModal.module.css';
 export function useUploadModal(profile: Profile, refreshData: () => Promise<void>) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [showNotification, setShowNotification] = useState(false);
+	const [notificationMessage, setNotificationMessage] = useState('');
+	const [isError, setIsError] = useState(false);
 
 	const openUploadModal = () => {
 		setIsModalOpen(true);
@@ -20,9 +22,19 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 
 	const handleUploadSuccess = async () => {
 		setIsModalOpen(false);
+		setNotificationMessage('Transcript uploaded successfully!');
+		setIsError(false);
 		setShowNotification(true);
-		// Refresh the data after successful upload
 		await refreshData();
+		setTimeout(() => {
+			setShowNotification(false);
+		}, 3000);
+	};
+
+	const handleUploadError = (error: string) => {
+		setNotificationMessage(error);
+		setIsError(true);
+		setShowNotification(true);
 		setTimeout(() => {
 			setShowNotification(false);
 		}, 3000);
@@ -33,6 +45,7 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 			isOpen={isModalOpen} 
 			onClose={() => setIsModalOpen(false)} 
 			onSuccess={handleUploadSuccess}
+			onError={handleUploadError}
 			profile={profile}
 		/>
 	) : null;
@@ -40,14 +53,14 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 	const notification = (
 		<Snackbar
 			open={showNotification}
-			color='primary'
+			color={isError ? 'danger' : 'primary'}
 			variant='soft'
 			onClose={() => setShowNotification(false)}
 			autoHideDuration={3000}
 			className={styles.snackbar}
 		>
 			<div className={styles.snackbarContent}>
-				Files uploaded successfully!
+				{notificationMessage}
 			</div>
 		</Snackbar>
 	);
