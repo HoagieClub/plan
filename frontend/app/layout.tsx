@@ -37,7 +37,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
 	title: 'Plan by Hoagie',
 	description: 'Academic planning, reimagined.',
-	manifest: 'manifest.json',
+	// manifest: 'manifest.json',
 };
 
 /**
