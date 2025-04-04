@@ -1,21 +1,19 @@
 import type { FC, ReactNode } from 'react';
 
-import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
 
 interface ButtonWidgetProps {
-	href: string;
+	onClick?: () => void;
 	text: string;
 	icon?: ReactNode;
 }
 
-export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon }) => {
+export const ButtonWidget: FC<ButtonWidgetProps> = ({ onClick, text, icon }) => {
 	return (
-		<Button variant='outline' className='w-full hover:bg-gray-200'>
-			<Link href={href} className='flex items-center justify-center gap-2'>
+		<Button variant='outline' className='w-full hover:bg-gray-200' onClick={onClick}>
+			<div className='flex items-center justify-center gap-2'>
 				{icon} {text}
-			</Link>
+			</div>
 		</Button>
 	);
 };
