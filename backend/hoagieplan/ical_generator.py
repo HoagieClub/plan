@@ -2,6 +2,9 @@ from datetime import date, datetime, timedelta
 import pytz
 import icalendar
 from icalendar import Event
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_POST
+import json
 
 # Maps from day abbreviations to days used in ical rrule
 DAY_DICT = {'M': 'MO', 'T': 'TU', 'W': 'WE', 'Th': 'TH', 'F': 'FR'}
@@ -35,6 +38,39 @@ END_DATE = {
         '1264': date(2026, 4, 24),
     }
 
+@require_POST
+def export_calendar_view(request):
+    """
+    API endpoint for exporting calendar as iCal file.
+
+    Args:
+    - request (HttpRequest): Request object containing JSON payload (already 
+    filtered)
+
+    """
+    try:
+        data = json.loads(request.body)
+        term = data.get('term')
+        class_sections = data.get('class_sections', [])
+        
+        if not term:
+            return JsonResponse({'error': 'Missing term'}, status=400)
+            
+        if not class_sections:
+            return JsonResponse({'error': 'No sections provided'}, status=400)
+        
+        ical_content = generate_full_schedule_ical(class_sections, term)
+        
+        response = HttpResponse(ical_content, content_type='text/calendar')
+        response['Content-Disposition'] = f'attachment; filename="{term}_schedule.ics"'
+        return response
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+
 def generate_class_ical(cal, calendar_event, semester_code):
     '''
     Add a single class section to an existing calendar
@@ -57,8 +93,17 @@ def generate_class_ical(cal, calendar_event, semester_code):
     # Required fields
     course_name = course.get('department_code') + course.get('catalog_number')
     section_number = section.get('class_section')
-    start_time = datetime.strptime(section.get('startTime'), "%H:%M").time()
-    end_time = datetime.strptime(calendar_event.get('endTime'), "%H:%M").time()
+    # start_time = datetime.strptime(section.get('startTime'), "%H:%M").time()
+    # end_time = datetime.strptime(calendar_event.get('endTime'), "%H:%M").time()
+    start_time_str = calendar_event.get('startTime') or \
+                   section.get('class_meetings', [{}])[0].get('start_time')
+    
+    end_time_str = calendar_event.get('endTime') or \
+                 section.get('class_meetings', [{}])[0].get('end_time')
+    
+    start_time = datetime.strptime(start_time_str, "%H:%M").time()
+    end_time = datetime.strptime(end_time_str, "%H:%M").time()
+ 
     days_of_week = section.get('class_meetings')[0].get('days')
 
     # Extracting start date from constants
@@ -66,7 +111,7 @@ def generate_class_ical(cal, calendar_event, semester_code):
     start_date = START_DATE[semester_code] + DAYS_OFFSET[first_day]
     end_date = END_DATE[semester_code]
 
-    location = section.get('class_meetings')[0].get('building_name')
+    # location = section.get('class_meetings')[0].get('building_name')
     instructor = section.get('instructor').get('name')
 
     # Generate description
@@ -94,11 +139,12 @@ def generate_class_ical(cal, calendar_event, semester_code):
         event.add('description', description)
     else:
         print('No description')
-    
-    if location:
-        event.add('location', location)
-    else:
-        print('No location')
+
+    # Weird cancelled name bug  
+    # if location:
+    #     event.add('location', location)
+    # else:
+    #     print('No location')
     
     if instructor:
         event.add('organizer', instructor)

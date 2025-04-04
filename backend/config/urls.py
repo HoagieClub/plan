@@ -22,13 +22,17 @@ limitations under the License.
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
 
 from hoagieplan.api import details, search, tutorial
 from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
 from hoagieplan.api.profile import info
+from hoagieplan import ical_generator 
+
+from hoagieplan.api import upload
 
 urlpatterns = [
     # Admin
@@ -49,6 +53,7 @@ urlpatterns = [
     path("search/", search.search_courses, name="search"),
     path("fetch_courses/", info.get_user_courses, name="fetch_courses"),
     path("update_courses/", requirements.update_courses, name="update_courses"),
+    path("update_transcript_courses/", requirements.update_transcript_courses, name="update_transcript_courses"),
     path("manually_settle/", requirements.manually_settle, name="manually_settle"),
     path("mark_satisfied/", requirements.mark_satisfied, name="mark_satisfied"),
     path("update_requirements/", requirements.update_requirements, name="update_requirements"),
@@ -59,4 +64,7 @@ urlpatterns = [
         configuration.FetchCalendarClasses.as_view(),
         name="fetch_calendar_classes",
     ),
+    path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
+    path('upload/', upload.upload_file, name='upload_file'),
+    path('api/', include('hoagieplan.api.urls')), 
 ]

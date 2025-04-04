@@ -177,6 +177,13 @@ export const Search: FC = () => {
 		setTermFilter,
 	]);
 
+	const handleReset = useCallback(() => {
+		setLocalLevelFilter([]);
+		setLocalTermFilter('');
+		setLocalGradingFilter([]);
+		setLocalDistributionFilters([]);
+	}, []);
+
 	const handleCancel = useCallback(() => {
 		setLocalLevelFilter(useFilterStore.getState().levelFilter);
 		setLocalTermFilter(useFilterStore.getState().termFilter);
@@ -338,6 +345,9 @@ export const Search: FC = () => {
 				<div className='mt-5 text-right'>
 					<Button variant='soft' color='primary' onClick={handleSave} size='md'>
 						Save
+					</Button>
+					<Button variant='soft' color='danger' onClick={handleReset} sx={{ ml: 2 }} size='md'>
+						Reset
 					</Button>
 					<Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 						Cancel
