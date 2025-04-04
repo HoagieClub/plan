@@ -29,6 +29,7 @@ from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
 from hoagieplan.api.dashboard import requirements
 from hoagieplan.api.profile import info
+from hoagieplan import ical_generator 
 
 urlpatterns = [
     # Admin
@@ -59,4 +60,5 @@ urlpatterns = [
         configuration.FetchCalendarClasses.as_view(),
         name="fetch_calendar_classes",
     ),
+    path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
 ]
