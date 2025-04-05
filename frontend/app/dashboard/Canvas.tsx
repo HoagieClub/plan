@@ -18,7 +18,9 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { majorScale, Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -26,6 +28,7 @@ import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearc
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
+import { useUploadModal } from '@/components/UploadModal/Upload';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
@@ -191,6 +194,24 @@ export function Canvas({
 		updateRequirements: state.updateRequirements,
 	}));
 
+	const refreshData = async () => {
+		try {
+			// Fetch new course data
+			const fetchedData = await fetchCourses();
+			if (fetchedData) {
+				setItems((prevItems) => ({
+					...updateSemesters(prevItems, classYear, fetchedData),
+				}));
+			}
+			// Update requirements
+			await updateRequirements();
+		} catch (err) {
+			console.error('Error refreshing data:', err);
+		}
+	};
+
+	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
+
 	// This limits the width of the course cards
 	const wrapperStyle = () => ({
 		width: courseWidth,
@@ -229,13 +250,21 @@ export function Canvas({
 		const startYear = classYear - 4;
 		let semester = 1;
 		for (let year = startYear; year < classYear; ++year) {
-			prevItems[`Fall ${year}`] = userCourses[semester].map(
-				(course) => `${course.course_id}|${course.crosslistings}`
-			);
+			// Use Set to ensure unique course IDs
+			const fallCourses = [
+				...new Set(
+					userCourses[semester].map((course) => `${course.course_id}|${course.crosslistings}`)
+				),
+			];
+			prevItems[`Fall ${year}`] = fallCourses;
 			semester += 1;
-			prevItems[`Spring ${year + 1}`] = userCourses[semester].map(
-				(course) => `${course.course_id}|${course.crosslistings}`
-			);
+
+			const springCourses = [
+				...new Set(
+					userCourses[semester].map((course) => `${course.course_id}|${course.crosslistings}`)
+				),
+			];
+			prevItems[`Spring ${year + 1}`] = springCourses;
 			semester += 1;
 		}
 		return prevItems;
@@ -456,6 +485,10 @@ export function Canvas({
 		setClonedItems(null);
 	};
 
+	function setIsModalOpen(arg0: boolean): void {
+		throw new Error('Function not implemented.');
+	}
+
 	return (
 		<div style={{ display: 'flex', flexDirection: 'row', placeItems: 'center' }}>
 			<DndContext
@@ -562,11 +595,21 @@ export function Canvas({
 								{/* issue here with resizing + with requirements dropdowns*/}
 								{/* Try to get this to fixed height*/}
 								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
-									<ButtonWidget
-										href='/dashboard'
-										text='Upload Transcript from TigerHub'
-										icon={<ArrowDownTrayIcon className='h-5 w-5' />}
-									/>
+									<Pane
+										display='flex'
+										alignItems='center'
+										justifyContent='center'
+										cursor='pointer'
+										onClick={openUploadModal}
+									>
+										<ButtonWidget
+											text='Import Courses From Transcript'
+											icon={<CloudArrowUpIcon className='h-5 w-5' />}
+											onClick={() => openUploadModal()}
+										/>
+									</Pane>
+									{uploadModal}
+									{notification}
 								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
