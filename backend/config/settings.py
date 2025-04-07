@@ -75,8 +75,6 @@ DASHBOARD = urljoin(os.getenv("HOAGIEPLAN"), "dashboard")
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_HEADERS = [
     "X-NetId",
     "Content-Type",
