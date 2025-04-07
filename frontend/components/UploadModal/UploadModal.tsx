@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
 
+// Changed name
 import styles from './UploadModal.module.css';
 
 import type { Profile } from '../../types';
