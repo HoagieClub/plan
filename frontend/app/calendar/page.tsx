@@ -16,7 +16,8 @@ import { terms } from '@/utils/terms';
 import '@/app/calendar/Calendar.css';
 
 const CalendarUI: FC = () => {
-	const [currentPage, setCurrentPage] = useState(2);
+	// Initialize tab 3 to be highlighted on page load
+	const [currentPage, setCurrentPage] = useState(3);
 	const userProfile = UserState((state) => state.profile);
 	const { termFilter, setTermFilter } = useFilterStore((state) => state);
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
@@ -31,8 +32,7 @@ const CalendarUI: FC = () => {
 	const handlePageChange = (page: number) => {
 		if (page >= 1 && page <= totalPages) {
 			setCurrentPage(page);
-			const selectedSemester =
-				semesterList[semesterList.length - ((page - 1) * semestersPerPage + 1)];
+			const selectedSemester = semesterList[(page - 1) * semestersPerPage];
 			if (selectedSemester && terms[selectedSemester]) {
 				setTermFilter(terms[selectedSemester]);
 			}
