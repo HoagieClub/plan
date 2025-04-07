@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from 'react';
 
+import Link from 'next/link'; // ✅ Import Link
+
 import { Button } from '@/components/ui/button';
 
 interface ButtonWidgetProps {
@@ -9,15 +11,18 @@ interface ButtonWidgetProps {
 	onClick?: () => void;
 }
 
-export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon }) => {
+export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon, onClick }) => {
 	return href ? (
-		<Button variant='outline' className='bg-slate-100 w-full hover:bg-gray-200'>
-			<Link href={href} className='flex items-center justify-center gap-2'>
-				{icon} {text}
-			</div>
-		</Button>
+		<Link href={href} className='w-full'>
+			<Button variant='outline' className='w-full bg-slate-100 hover:bg-gray-200'>
+				<div className='flex items-center justify-center gap-2'>
+					{icon}
+					{text}
+				</div>
+			</Button>
+		</Link>
 	) : (
-		<Button variant='outline' className='bg-slate-100 w-full hover:bg-gray-200'>
+		<Button onClick={onClick} variant='outline' className='w-full bg-slate-100 hover:bg-gray-200'>
 			<div className='flex items-center justify-center gap-2'>
 				{icon}
 				{text}
