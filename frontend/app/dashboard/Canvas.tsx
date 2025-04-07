@@ -19,8 +19,7 @@ import {
 import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
-import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import { majorScale, Pane } from 'evergreen-ui';
+import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
@@ -484,10 +483,6 @@ export function Canvas({
 		setOverContainerId(null);
 		setClonedItems(null);
 	};
-
-	function setIsModalOpen(arg0: boolean): void {
-		throw new Error('Function not implemented.');
-	}
 
 	return (
 		<div style={{ display: 'flex', flexDirection: 'row', placeItems: 'center' }}>

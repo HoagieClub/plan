@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
+
 import { Snackbar } from '@mui/joy';
 
-import Upload from './uploadmodal';
-import { Profile } from '../../types'
+import Upload from './UploadModal';
 import styles from './UploadModal.module.css';
+
+import type { Profile } from '../../types';
 
 /** Manages the state and logic for the tutorial modal.*
 @returns Object containing functions to open the modal and the rendered modal.*/
@@ -41,9 +42,9 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 	};
 
 	const uploadModal = isModalOpen ? (
-		<Upload 
-			isOpen={isModalOpen} 
-			onClose={() => setIsModalOpen(false)} 
+		<Upload
+			isOpen={isModalOpen}
+			onClose={() => setIsModalOpen(false)}
 			onSuccess={handleUploadSuccess}
 			onError={handleUploadError}
 			profile={profile}
@@ -59,9 +60,7 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 			autoHideDuration={3000}
 			className={styles.snackbar}
 		>
-			<div className={styles.snackbarContent}>
-				{notificationMessage}
-			</div>
+			<div className={styles.snackbarContent}>{notificationMessage}</div>
 		</Snackbar>
 	);
 

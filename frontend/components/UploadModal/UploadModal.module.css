@@ -116,7 +116,7 @@
 /* Snackbar styles */
 .snackbar {
 	border-radius: 16px !important;
-	background-color: #0F1E2F !important;
+	background-color: #0f1e2f !important;
 	color: #f6f6f6 !important;
 }
 
@@ -135,6 +135,10 @@
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }

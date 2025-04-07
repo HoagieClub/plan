@@ -1,14 +1,16 @@
+/* eslint-disable no-undef */
 import { useState, useEffect } from 'react';
 
+import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
-import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
 
 import styles from './UploadModal.module.css';
-import { Profile } from '../../types'
+
+import type { Profile } from '../../types';
 
 interface Upload {
 	isOpen: boolean;
@@ -65,7 +67,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 			let responseData;
 			try {
 				responseData = JSON.parse(responseText);
-			} catch (e) {
+			} catch {
 				throw new Error('Invalid response from server');
 			}
 
@@ -117,18 +119,15 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 	const modalContent = (
 		<TutorialModal>
 			<div className={styles.modal}>
-				<div className={styles.header}>
-					Upload Transcript
-				</div>
+				<div className={styles.header}>Upload Transcript</div>
 
 				<div className={styles.content}>
-					<div 
+					<div
 						className={`${styles.dropZone} ${isDragging ? styles.dragging : ''}`}
 						onDrop={handleDrop}
 						onDragOver={handleDragOver}
 						onDragLeave={handleDragLeave}
 					>
-						
 						<div className={styles.dropText}>
 							<div style={{ display: 'flex', justifyContent: 'center' }}>
 								<CloudArrowUpIcon className={styles.uploadIcon} />
@@ -137,12 +136,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 							<span>or</span>
 						</div>
 						<label className={styles.fileInput}>
-							<input 
-								type='file'
-								onChange={handleFileChange}
-								accept=".pdf"
-								multiple={false}
-							/>
+							<input type='file' onChange={handleFileChange} accept='.pdf' multiple={false} />
 							Browse Files
 						</label>
 					</div>
@@ -152,13 +146,11 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 							{selectedFiles.map((file, index) => (
 								<div key={index} className={styles.fileItem}>
 									<span className={styles.fileName}>{file.name}</span>
-									{isLoading && (
-										<div className={styles.spinner} />
-									)}
-									<button 
+									{isLoading && <div className={styles.spinner} />}
+									<button
 										className={styles.removeButton}
 										onClick={() => removeFile(file.name)}
-										aria-label="Remove file"
+										aria-label='Remove file'
 									>
 										×
 									</button>
@@ -181,12 +173,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 							>
 								Upload
 							</JoyButton>
-							<JoyButton
-								variant='soft'
-								color='neutral'
-								onClick={onClose}
-								disabled={isLoading}
-							>
+							<JoyButton variant='soft' color='neutral' onClick={onClose} disabled={isLoading}>
 								Cancel
 							</JoyButton>
 						</>
