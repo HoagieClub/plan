@@ -130,6 +130,7 @@ AB_MAJORS = {
     "GEO": "Geosciences",
     "GER": "German",
     "HIS": "History",
+    "LIN": "Linguistics",
     "MAT": "Mathematics",
     "MOL": "Molecular Biology",
     "MUS": "Music",
