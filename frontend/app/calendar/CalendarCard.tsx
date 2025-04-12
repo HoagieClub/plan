@@ -73,9 +73,10 @@ const CalendarCard: FC<CalendarCardProps> = ({
 				<span>
 					{event.startTime} - {event.endTime}
 				</span>
-				<span>
+				{/* <span>
+					TODO: cron jobs to update enrollment -George
 					{event.section.enrollment}/{event.section.capacity}
-				</span>
+				</span> */}
 			</div>
 		</div>
 	);

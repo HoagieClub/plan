@@ -12,7 +12,7 @@
 	transition: background-color 350ms ease;
 	background-color: #fff;
 	border: 1px solid #e2e8f0;
-	font-size: 1em;
+	font-size: 0.95em;
 	width: 24vw;
 	overflow: hidden; /* IMPORTANT: prevents dynamic resizing of container + makes scrollbars cleaner */
 }

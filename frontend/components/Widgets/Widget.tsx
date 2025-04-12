@@ -18,7 +18,7 @@ export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon, onClick 
 				variant='outline'
 				className='w-full rounded-lg border border-solid border-slate-200 bg-slate-100 shadow-none hover:bg-white'
 			>
-				<div className='flex items-center justify-center gap-2'>
+				<div className='flex items-center justify-center gap-2 font-normal'>
 					{icon}
 					{text}
 				</div>
@@ -30,7 +30,7 @@ export const ButtonWidget: FC<ButtonWidgetProps> = ({ href, text, icon, onClick 
 			variant='outline'
 			className='w-full rounded-lg border border-solid border-slate-200 bg-slate-100 shadow-none hover:bg-white'
 		>
-			<div className='flex items-center justify-center gap-2'>
+			<div className='flex items-center justify-center gap-2 font-normal'>
 				{icon}
 				{text}
 			</div>
