@@ -82,7 +82,11 @@ def search_courses(request):
         query_conditions &= Q(guid__startswith=term)
 
     if distribution:
-        query_conditions &= Q(distribution_area_short__icontains=distribution)
+        distributions = distribution.split(",")
+        distribution_query = Q()
+        for distribution in distributions:
+            distribution_query |= Q(distribution_area_short__icontains=distribution)
+        query_conditions &= distribution_query
 
     if levels:
         levels = levels.split(",")
@@ -130,7 +134,7 @@ def search_courses(request):
         if courses:
             serialized_courses = CourseSerializer(courses, many=True)
             sorted_data = sorted(serialized_courses.data, key=make_sort_key(dept))
-            print(f"Search time: {time.time() - init_time}")
+            # print(f"Search time: {time.time() - init_time}")
             return JsonResponse({"courses": sorted_data})
         return JsonResponse({"courses": []})
     except Exception as e:

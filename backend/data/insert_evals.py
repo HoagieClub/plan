@@ -1,21 +1,19 @@
 import csv
-import orjson as oj
 import os
 import sys
 from pathlib import Path
 
 import django
+import orjson as oj
 from django.db import transaction
 from tqdm import tqdm
-
-from compass.models import CourseComments, CourseEvaluations
 
 sys.path.append(str(Path("../").resolve()))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 django.setup()
 
-from hoagieplan.models import CourseEvaluations, CourseComments
+from hoagieplan.models import CourseComments, CourseEvaluations
 
 evals = "./evals.csv"
 
@@ -108,12 +106,6 @@ def import_data(evals):
 
 def main():
     import_data(evals)
-    # course_evals = CourseEvaluations.objects.filter(course_guid='1234002051')
-
-    # for eval in course_evals:
-    #     print(eval.quality_of_course)
-
-    # print(CourseComments.objects.filter(course_evaluation_id=id))
 
 
 if __name__ == "__main__":

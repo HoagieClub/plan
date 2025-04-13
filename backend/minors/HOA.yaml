@@ -1,8 +1,10 @@
+---
 type: Minor
 name: History of Art
 code: HOA
 degree:
-description: The Department of Art and Archaeology studies artwork and 
+description: |-
+  The Department of Art and Archaeology studies artwork and 
   material artifacts from a wide range of cultures and periods, approaching 
   them in historical perspective. Art history's subjects include drawing, 
   painting, sculpture, photography, architecture and the built environment, 
@@ -43,7 +45,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Basile Baudez
   email: bbaudez@princeton.edu
-req_list: 
+req_list:
 - name: Requirements
   max_counted: 1
   min_needed: 4
@@ -55,30 +57,30 @@ req_list:
   max_common_with_major: 1
   pdfs_allowed: 0
   req_list:
-  - name: Introductory
-    max_counted: 1
-    min_needed: 1
-    explanation: All minors must take ART 100, the Department's introductory course
-    course_list: 
-    - ART 100
-  - name: 200 level
-    max_counted: 1
-    min_needed: 1
-    explanation: One of the five courses must be at 200-level
-    course_list: 
-    - ART 2*
-  - name: 400 level
-    max_counted: 1
-    min_needed: 1
-    explanation: One of the five courses must be at 400-level
-    course_list: 
-    - ART 4*
-  - name: 5 courses
-    max_counted: 1
-    min_needed: 5
-    explanation: Five ART courses; none to be taken pass/D/fail.
-    dept_list: 
-    - ART
+    - name: Introductory
+      max_counted: 1
+      min_needed: 1
+      explanation: All minors must take ART 100, the Department's introductory course
+      course_list: 
+      - ART 100
+    - name: 200 level
+      max_counted: 1
+      min_needed: 1
+      explanation: One of the five courses must be at 200-level
+      course_list: 
+      - ART 2*
+    - name: 400 level
+      max_counted: 1
+      min_needed: 1
+      explanation: One of the five courses must be at 400-level
+      course_list: 
+      - ART 4*
+    - name: 5 courses
+      max_counted: 1
+      min_needed: 5
+      explanation: Five ART courses; none to be taken pass/D/fail.
+      course_list: 
+      - ART *
 - name: Distribution Areas 
   max_counted: 1
   min_needed: 1

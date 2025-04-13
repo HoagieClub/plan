@@ -1,7 +1,7 @@
 /**
  * @overview Thematic Hoagie styles, specific to each Hoagie app.
  * 
- * Copyright © 2021-2024 Hoagie Club and affiliates.
+ * Copyright © 2021-2025 Hoagie Club and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree or at https://github.com/hoagieclub/plan/LICENSE.
@@ -12,42 +12,41 @@
 
 /* Thematic Hoagie styles, specific to each Hoagie app */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
 document,
 html,
 body {
-  height: 100%;
+	height: 100%;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  margin: 0;
+	font-family: 'Poppins', sans-serif;
+	margin: 0;
+	font-size: 90%;
 }
 
 p {
-  font-size: 14pt;
+	font-size: 14pt;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+	color: inherit;
+	text-decoration: none;
 }
 
+/* TODO: Deprecated way of styling, should generally be done in layout.tsx and tailwind configs. */
 .hoagie {
-  font-family: 'Poppins', sans-serif !important;
+	font-family: 'Poppins', sans-serif !important;
 }
 
 .logo {
-  font-weight: 600 !important;
-  font-size: 1.6rem !important;
+	font-weight: 600 !important;
+	font-size: 1.6rem !important;
 }
 
 .beta {
-  display: inline-block;
-  top: 22px;
-  right: -38px;
-  font-size: 10px !important;
-  font-weight: 700 !important;
+	display: inline-block;
+	top: 22px;
+	right: -38px;
+	font-size: 10px !important;
+	font-weight: 700 !important;
 }

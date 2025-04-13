@@ -130,6 +130,7 @@ AB_MAJORS = {
     "GEO": "Geosciences",
     "GER": "German",
     "HIS": "History",
+    "LIN": "Linguistics",
     "MAT": "Mathematics",
     "MOL": "Molecular Biology",
     "MUS": "Music",
@@ -179,4 +180,4 @@ LANG_DEPTS = {
     "TUR": "Turkish",
     "TWI": "Twi",
     "URD": "Urdu",
-}  # unsure if some of these can count for AB foreign language requirement.
+} # unsure if some of these can count for AB foreign language requirement. --George

@@ -1,7 +1,7 @@
 /**
  * @overview Root layout component for the Hoagie Plan app. Styles apply to all children.
  *
- * Copyright © 2021-2024 Hoagie Club and affiliates.
+ * Copyright © 2021-2025 Hoagie Club and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree or at https://github.com/hoagieclub/plan/LICENSE.
@@ -13,65 +13,63 @@
 import './globals.css';
 import '@/lib/hoagie-ui/Theme/theme.css';
 
-import { type ReactNode } from 'react';
+import { type ReactNode, type JSX } from 'react';
 
-import { getSession } from '@auth0/nextjs-auth0';
-import { UserProvider } from '@auth0/nextjs-auth0/client';
+import { Auth0Provider } from '@auth0/nextjs-auth0';
+import { type User } from '@auth0/nextjs-auth0/types';
 import { Analytics } from '@vercel/analytics/react';
-import { cookies } from 'next/headers';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Poppins } from 'next/font/google';
 
 import { Toaster } from '@/components/ui/toaster';
-import Footer from '@/lib/hoagie-ui/Footer';
-import Layout from '@/lib/hoagie-ui/Layout';
-import Nav from '@/lib/hoagie-ui/Nav';
-import Theme from '@/lib/hoagie-ui/Theme';
+import { auth0 } from '@/lib/auth0';
+import { Layout } from '@/lib/hoagie-ui/Layout';
+import { Nav } from '@/lib/hoagie-ui/Nav';
+import { Theme } from '@/lib/hoagie-ui/Theme';
 
-// import Content from '@/app/content';
+const poppins = Poppins({
+	weight: ['400', '500', '600', '700'],
+	subsets: ['latin'],
+});
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Plan by Hoagie',
-  description: 'Princeton, All In One.',
-  manifest: 'manifest.json',
+	title: 'Plan by Hoagie',
+	description: 'Academic planning, reimagined.',
+	manifest: 'manifest.json',
 };
-
-async function fetchSession() {
-  const cookieStore = cookies();
-
-  const sessionCookie = cookieStore.get('appSession');
-  if (!sessionCookie) {
-    return null;
-  }
-
-  const session = await getSession();
-  return session;
-}
 
 /**
  * Content Component
- * Fetches user data (real or mock) and renders the main layout.
+ * Fetches user data renders the main layout.
  *
  * @param children - The child components to render within the layout.
  * @returns JSX Element representing the content area.
  */
 async function Content({ children }: { children: ReactNode }): Promise<JSX.Element> {
-  const tabs = [
-    { title: 'About', href: '/about' },
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Calendar', href: '/calendar' },
-    { title: 'Contact', href: '/contact' },
-  ];
+	// Server-side fetch
+	const session = await auth0.getSession();
+	const user: User | null = session?.user;
 
-  return (
-    <Theme palette='yellow'>
-      <Layout>
-        <Nav name='plan' tabs={tabs} />
-        {children}
-        <Toaster />
-      </Layout>
-    </Theme>
-  );
+	const tabs = [
+		{ title: 'About', href: '/about' },
+		{ title: 'Graduation Requirements', href: '/dashboard' },
+		{ title: 'Course Planner', href: '/calendar' },
+		{ title: 'Contact', href: '/contact' },
+	];
+
+	return (
+		<Auth0Provider user={user}>
+			<Theme palette='plan'>
+				<Layout>
+					<Nav name='plan' tabs={tabs} user={user} />
+					{children}
+					<Toaster />
+				</Layout>
+			</Theme>
+		</Auth0Provider>
+	);
 }
 
 /**
@@ -83,74 +81,17 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
  * @returns JSX Element representing the root HTML structure.
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang='en' className='bg-hoagieplan-dark-yellow'>
-      <UserProvider>
-        <body className='antialiased'>
-          <Content>{children}</Content>
-          <Analytics />
-        </body>
-      </UserProvider>
-    </html>
-  );
+	return (
+		<html lang='en' className={`bg-white ${poppins.className}`}>
+			{/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
+			<body className='antialiased'>
+				{/* Uncomment this to see components re-render. Used for debugging. */}
+				{/* <script src='https://unpkg.com/react-scan/dist/auto.global.js' /> */}
+
+				<Content>{children}</Content>
+				<Analytics />
+				<SpeedInsights />
+			</body>
+		</html>
+	);
 }
-
-// // TODO: Type-safe auth fix 3
-
-// import "./globals.css";
-
-// import { ReactNode } from "react";
-// import type { Metadata } from "next";
-// import { Analytics } from "@vercel/analytics/react";
-
-// import { getSession } from "@auth0/nextjs-auth0";
-// import { UserProvider } from "@auth0/nextjs-auth0/client";
-// import { cookies } from "next/headers";
-
-// import Content from "@/app/content";
-// import "@/lib/hoagie-ui/Theme/theme.css";
-
-// export const metadata: Metadata = {
-//   title: "Plan by Hoagie",
-//   description: "Princeton, All In One",
-//   manifest: "manifest.json",
-// };
-
-// async function fetchSession() {
-//   const cookieStore = cookies();
-
-//   // TODO: I think this is handled in middleware.ts and should be removed -windsor
-//   const sessionCookie = cookieStore.get("appSession");
-//   if (!sessionCookie) {
-//     return null;
-//   }
-
-//   const session = await getSession();
-//   return session;
-// }
-
-// /**
-//  * RootLayout server side
-//  * Wraps the entire application with necessary providers and layouts.
-//  *
-//  * @param children - The child components to render within the layout.
-//  * @returns JSX Element representing the root HTML structure.
-//  */
-// export default async function RootLayout({
-//   children,
-// }: {
-//   children: ReactNode;
-// }) {
-//   const session = await fetchSession();
-
-//   return (
-//     <html lang='en' className='bg-hoagieplan-dark-yellow'>
-//       <UserProvider>
-//         <body className='antialiased'>
-//           <Content user={session.user}>{children}</Content>
-//           <Analytics />
-//         </body>
-//       </UserProvider>
-//     </html>
-//   );
-// }
