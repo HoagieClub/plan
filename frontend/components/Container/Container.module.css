@@ -119,11 +119,11 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: repeat(4, 1fr); /* same as '1fr 1fr 1fr 1fr' */
-  }
+}
 
 @media screen and (max-width: 1000px) {
-.gridContainer {
-	grid-template-columns: 1fr;
-	grid-template-rows: repeat(8, 1fr);
-}
+	.gridContainer {
+		grid-template-columns: 1fr;
+		grid-template-rows: repeat(8, 1fr);
+	}
 }

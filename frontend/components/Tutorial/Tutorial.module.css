@@ -5,8 +5,8 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	width: 70%;
-	height: 70%;
+	width: 60%;
+	height: auto;
 	background-color: #ffffff;
 	border-radius: 8px;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -22,31 +22,16 @@
 	}
 }
 
-@media (max-width: 768px) {
-	.modal {
-		width: 80%;
-		height: 80%;
-		padding: 15px;
-	}
-}
-
-@media (min-width: 1200px) {
-	.modal {
-		width: 50%;
-		height: 70%;
-		padding: 25px;
-	}
-}
-
 .header {
+	text-align: center;
 	font-size: 24px;
 	font-weight: bold;
 	color: #333;
-	margin-bottom: 10px;
+	margin-bottom: 3vh;
 }
 
 .pageContent {
-	font-size: 16px;
+	font-size: 0.9rem;
 	color: #333;
 	min-height: 90px;
 }
@@ -55,7 +40,6 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-bottom: 20px;
 }
 
 .imageContainer {

@@ -140,25 +140,25 @@
 ::-webkit-scrollbar {
 	width: 8px;
 	height: 8px; /* For horizontal scrollbars */
-  }
-  
-  ::-webkit-scrollbar-track {
-	background: transparent !important;;
-  }
-  
-  ::-webkit-scrollbar-thumb {
+}
+
+::-webkit-scrollbar-track {
+	background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
 	background: rgba(0, 0, 0, 0.2); /* Adjust transparency as needed */
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
+}
+
+::-webkit-scrollbar-thumb:hover {
 	background: rgba(0, 0, 0, 0.4);
-  }
-  
-  /* For Firefox */
-  * {
+}
+
+/* For Firefox */
+* {
 	scrollbar-width: thin;
 	scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-  }
+}
 
 @layer base {
 	* {
