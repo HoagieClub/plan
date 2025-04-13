@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
 
+// Changed name
 import styles from './UploadModal.module.css';
 
 import type { Profile } from '../../types';
@@ -20,6 +21,7 @@ interface Upload {
 	profile: Profile;
 }
 
+// Changed name
 const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isDragging, setIsDragging] = useState(false);
@@ -54,7 +56,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 		});
 
 		try {
-			const response = await fetch('http://localhost:8000/api/upload/', {
+			const response = await fetch(`${process.env.BACKEND}/api/upload/`, {
 				method: 'POST',
 				body: formData,
 				headers: {
