@@ -247,7 +247,7 @@ def push_major(yaml_file):
         name=major_fields["name"], code=major_fields["code"], defaults=major_fields
     )
 
-    degree_code = "AB" if major_inst.code in constants.AB_MAJORS else "BSE"
+    degree_code = "BSE" if major_inst.code in constants.BSE_MAJORS else "AB"
     try:
         degree_inst = Degree.objects.get(code=degree_code)
         major_inst.degree.add(degree_inst)
