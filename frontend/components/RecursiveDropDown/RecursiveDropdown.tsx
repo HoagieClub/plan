@@ -451,10 +451,11 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 						<Button
 							key={index}
 							variant='contained'
-							color='info'
 							size='small'
 							disabled={!item['manually_settled'].includes(value[1])}
 							sx={{
+								color: '#ffffff',
+								backgroundColor: '#409853',
 								margin: '5px',
 							}}
 							onClick={() => handleClick(item['crosslistings'], value[1])}

@@ -83,7 +83,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 export default async function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang='en' className={`bg-white ${poppins.className}`}>
-			{/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
+			{/* Background to match up-scroll */}
 			<body className='antialiased'>
 				{/* Uncomment this to see components re-render. Used for debugging. */}
 				{/* <script src='https://unpkg.com/react-scan/dist/auto.global.js' /> */}

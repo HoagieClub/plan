@@ -1,8 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+import { usePathname } from 'next/navigation';
 
 import { Tutorial } from '@/components/Tutorial/TutorialModal';
+import useUserSlice from '@/store/userSlice';
+import { fetchCsrfToken } from '@/utils/csrf';
 
 /**
  * Custom hook that manages the state and logic for the tutorial modal.
@@ -23,6 +27,45 @@ import { Tutorial } from '@/components/Tutorial/TutorialModal';
 export function useTutorialModal() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [tutorialType, setTutorialType] = useState<string>('dashboard');
+	const profile = useUserSlice((state) => state.profile);
+	const pathname = usePathname();
+
+	const [csrfToken, setCsrfToken] = useState('');
+	useEffect(() => {
+		void (async () => {
+			const token = await fetchCsrfToken();
+			setCsrfToken(token);
+		})();
+	}, []);
+
+	useEffect(() => {
+		if (pathname !== '/dashboard') {
+			return;
+		}
+
+		if (!profile || !profile.netId) {
+			return;
+		}
+
+		async function fetchTutorialStatus() {
+			try {
+				const response = await fetch(`${process.env.BACKEND}/tutorial/get-status/`, {
+					method: 'GET',
+					credentials: 'include',
+					headers: {
+						'X-NetId': profile.netId,
+					},
+				});
+				const data = await response.json();
+				if (data.hasSeenTutorial === false) {
+					setIsModalOpen(true);
+				}
+			} catch (error) {
+				console.error('Error fetching tutorial status:', error);
+			}
+		}
+		void fetchTutorialStatus();
+	}, [profile, pathname]);
 
 	/**
 	 * Opens the tutorial modal with the specified tutorial type.
@@ -34,12 +77,25 @@ export function useTutorialModal() {
 		setIsModalOpen(true);
 	};
 
+	const finishTutorial = async () => {
+		try {
+			await fetch(`${process.env.BACKEND}/tutorial/set-status/`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-NetId': profile.netId,
+					'X-CSRFToken': csrfToken,
+				},
+			});
+			setIsModalOpen(false);
+		} catch (error) {
+			console.error('Error updating tutorial status:', error);
+		}
+	};
+
 	const tutorialModal = isModalOpen ? (
-		<Tutorial
-			isOpen={isModalOpen}
-			onClose={() => setIsModalOpen(false)}
-			tutorialType={tutorialType}
-		/>
+		<Tutorial isOpen={isModalOpen} onClose={finishTutorial} tutorialType={tutorialType} />
 	) : null;
 
 	return { openTutorialModal, tutorialModal };
