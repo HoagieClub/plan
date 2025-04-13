@@ -20,6 +20,8 @@ orjson==3.10.12
     # via hoagie-plan (pyproject.toml)
 pdfplumber==0.11.6
     # via hoagie-plan (pyproject.toml)
+pdfplumber==0.11.6
+    # via hoagie-plan (pyproject.toml)
 postgres==4.0
     # via hoagie-plan (pyproject.toml)
 python-dotenv==1.0.1

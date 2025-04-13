@@ -23,7 +23,7 @@ export const FilterModal: FC<ModalProps> = ({ children }) => {
 		<>
 			<div className='modal-backdrop fixed inset-0 z-50 bg-black bg-opacity-30 backdrop-blur-sm' />
 			<div className='modal-entrance fixed inset-0 z-50 flex items-center justify-center'>
-				<div className='w-1/4 max-w-2xl rounded-xl border border-gray-400 bg-white p-8 shadow-2xl'>
+				<div className='w-1/3 rounded-xl border border-gray-400 bg-white p-8 shadow-2xl'>
 					{children}
 				</div>
 			</div>

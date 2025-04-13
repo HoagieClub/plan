@@ -69,10 +69,14 @@ export const Tutorial: FC<TutorialProps> = ({ isOpen, onClose, tutorialType }) =
 	const modalContent = (
 		<TutorialModal>
 			<div className={styles.modal}>
-				<div className={styles.header}>{headers[currentPage]}</div>
-				<div className={styles.pageContent}>{pages[currentPage]}</div>
+				<div className={styles.header}>
+					<span dangerouslySetInnerHTML={{ __html: headers[currentPage] }} />
+				</div>
+				<div className={styles.pageContent}>
+					<span dangerouslySetInnerHTML={{ __html: pages[currentPage] }} />
+				</div>
 				<div className={styles.pagePhoto}>
-					<div style={{ position: 'relative', width: '65%', aspectRatio: '16/9' }}>
+					<div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
 						<Image
 							src={photos[currentPage]}
 							alt={`Step ${currentPage + 1}`}

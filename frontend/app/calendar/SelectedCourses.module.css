@@ -4,12 +4,12 @@
 	box-sizing: border-box;
 	margin: 1vh 0.5vw;
 	border-radius: 8px;
-	background-color: #f1f5f9;
-	border: 1px solid rgba(0, 0, 0, 0.05);
+	background-color: #ffffff;
+	border: 1px solid #e2e8f0;
 	font-size: 1em;
 	width: 24vw;
-	height: calc(46vh);
-	overflow: hidden;
+	min-width: 270px;
+	height: calc(100vh - 55vh - 36px);
 }
 
 .header {
@@ -17,7 +17,7 @@
 	padding: 1rem;
 	align-items: center;
 	justify-content: space-between;
-	background-color: #ffffff;
+	background-color: #f1f5f9;
 	border-top-left-radius: 6px;
 	border-top-right-radius: 6px;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -32,7 +32,6 @@
 
 .content {
 	flex: 1;
-	overflow-y: auto;
 }
 
 .item {

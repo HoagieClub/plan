@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
-import tabStyles from '@/components/TabbedMenu/TabbedMenu.module.css';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 
@@ -34,26 +33,19 @@ export const SelectedCourses: FC = () => {
 				<h3>Selected Courses</h3>
 			</div>
 			<div className={styles.content}>
-				{uniqueCourses.length === 0 ? (
-					<div className={`${tabStyles.tabContent}`}>
-						<div className='text-sm font-medium text-gray-500'>No courses selected.</div>
-					</div>
-				) : (
-					<Virtuoso
-						style={{ height: '400px' }}
-						data={uniqueCourses}
-						itemContent={(_, course) => (
-							<div key={course.course.guid} className={styles.item}>
-								<div className={styles.textContainer}>
-									{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
-								</div>
-								<div className={styles.actions}>
-									<button onClick={() => removeCourse(course.key)}>Remove</button>
-								</div>
+				<Virtuoso
+					data={uniqueCourses}
+					itemContent={(_, course) => (
+						<div key={course.course.guid} className={styles.item}>
+							<div className={styles.textContainer}>
+								{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
 							</div>
-						)}
-					/>
-				)}
+							<div className={styles.actions}>
+								<button onClick={() => removeCourse(course.key)}>Remove</button>
+							</div>
+						</div>
+					)}
+				/>
 			</div>
 		</div>
 	);

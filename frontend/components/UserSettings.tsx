@@ -46,11 +46,8 @@ const majorOptions = [
 	{ code: 'CHM', name: 'Chemistry' },
 	{ code: 'CLA', name: 'Classics' },
 	{ code: 'COM', name: 'Comparative Literature' },
-
-	// TODO: These are currently too long to display if 2+ minors
 	{ code: 'COS-AB', name: 'Computer Science - A.B.' },
 	{ code: 'COS-BSE', name: 'Computer Science - B.S.E.' },
-
 	{ code: 'EAS', name: 'East Asian Studies' },
 	{ code: 'ECE', name: 'Electrical and Computer Engineering' },
 	{ code: 'ECO', name: 'Economics' },
@@ -60,6 +57,7 @@ const majorOptions = [
 	{ code: 'GEO', name: 'Geosciences' },
 	{ code: 'GER', name: 'German' },
 	{ code: 'HIS', name: 'History' },
+	{ code: 'LIN', name: 'Linguistics' },
 	{ code: 'MAE', name: 'Mechanical and Aerospace Engineering' },
 	{ code: 'MAT', name: 'Mathematics' },
 	{ code: 'MOL', name: 'Molecular Biology' },
@@ -79,7 +77,6 @@ const majorOptions = [
 	{ code: 'POR', name: 'Portuguese' },
 	{ code: 'SPI', name: 'School of Public and International Affairs' },
 	// { code: 'Independent', name: 'Independent' }, TODO: This is an actual major here and should be added.
-	// https://odoc.princeton.edu/learning-curriculum/independent-majors
 	{ code: 'Undeclared', name: 'Undeclared' },
 ];
 

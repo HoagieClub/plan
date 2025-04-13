@@ -451,11 +451,11 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 						<Button
 							key={index}
 							variant='contained'
+							color='info'
+							size='small'
 							disabled={!item['manually_settled'].includes(value[1])}
-							style={{
+							sx={{
 								margin: '5px',
-								color: '#4b5563',
-								background: 'linear-gradient(to bottom, #c6e8ac, #d9f2c7)',
 							}}
 							onClick={() => handleClick(item['crosslistings'], value[1])}
 						>
@@ -468,12 +468,14 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 						<Button
 							key={index}
 							variant='contained'
-							style={{
+							size='small'
+							color='error'
+							sx={{
 								margin: '5px',
-								color: '#030712',
+								color: '#ffffff',
 								opacity: '0.5',
 								background:
-									'repeating-linear-gradient(45deg, #e6ccb3, #e6ccb3 10px, #e6ae7c 10px, #e6ae7c 14px)', // Striped background
+									'repeating-linear-gradient(45deg, #d32f2f, #d32f2f 10px, #bf2a2a 10px, #bf2a2a 14px)', // Striped background
 							}}
 							onClick={() => handleClick(item['crosslistings'], value[1])}
 						>
@@ -520,10 +522,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 				<Accordion
 					key={key}
 					style={{
-						margin: '0',
+						margin: 0,
 						boxShadow: 'none',
 						borderTop: '1px solid #e0e0e0',
-						// borderBottom: "1px solid #e0e0e0",
 					}}
 					expanded={!expanded.has(key)}
 					onChange={(event) => handleChange(event, key)} // TODO: disable propagation in modals
@@ -532,7 +533,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 						expandIcon={hasNestedItems && !hasItems ? <ExpandMoreIcon /> : null}
 						aria-controls={`${key}-content`}
 						id={`${key}-header`}
-						style={{ backgroundColor: '#fff' }} // subtle background color
+						sx={{ pt: 0, backgroundColor: '#fff' }}
 					>
 						<div
 							style={{
@@ -551,7 +552,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 						</div>
 					</AccordionSummary>
 					{!hasItems && (
-						<AccordionDetails>
+						<AccordionDetails sx={{ backgroundColor: '#fff' }}>
 							{hasNestedItems ? renderContent(subItems) : <Typography>{value}</Typography>}
 						</AccordionDetails>
 					)}
