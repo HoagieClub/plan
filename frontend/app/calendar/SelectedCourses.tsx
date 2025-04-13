@@ -40,7 +40,6 @@ export const SelectedCourses: FC = () => {
 					</div>
 				) : (
 					<Virtuoso
-						style={{ height: '400px' }}
 						data={uniqueCourses}
 						itemContent={(_, course) => (
 							<div key={course.course.guid} className={styles.item}>

@@ -23,6 +23,7 @@
 .Wrapper {
 	display: flex;
 	height: 30px !important;
+	min-width: 125px;
 	box-sizing: border-box;
 	position: relative;
 	transform: translate3d(var(--translate-x, 0), var(--translate-y, 0), 0) scaleX(var(--scale-x, 1))
@@ -51,7 +52,7 @@
 	flex-grow: 1;
 	align-items: center;
 	width: calc(100%);
-	padding: 15px 15px;
+	padding: 5px;
 	background-image: linear-gradient(to bottom, var(--color_primary), var(--color_secondary));
 	box-shadow:
 		0 0 0 calc(1px / var(--scale-x, 1)) rgba(63, 63, 68, 0.05),
@@ -68,8 +69,8 @@
 .TextContainer {
 	display: inline-block;
 	color: #ffffff;
-	font-weight: 400;
-	font-size: 1rem;
+	font-size: 0.9rem;
+	font-weight: 500;
 	flex-grow: 1;
 	overflow: hidden;
 }
@@ -98,6 +99,7 @@
 }
 
 .Item.disabled {
+	padding: 10px;
 	opacity: 0.5;
 }
 
@@ -142,7 +144,7 @@
 .Actions {
 	display: flex;
 	align-items: center;
-	margin-right: -10px;
+	margin-left: -5px;
 }
 
 .Actions > *:first-child:not(:last-child) {

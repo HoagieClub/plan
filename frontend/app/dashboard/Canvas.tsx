@@ -23,6 +23,7 @@ import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
+import containerStyles from '@/components/Container/Container.module.css';
 import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearchItem.module.css';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
@@ -485,7 +486,13 @@ export function Canvas({
 	};
 
 	return (
-		<div style={{ display: 'flex', flexDirection: 'row', placeItems: 'center' }}>
+		<div
+			style={{
+				display: 'flex',
+				flexDirection: 'row',
+				placeItems: 'center',
+			}}
+		>
 			<DndContext
 				sensors={sensors}
 				collisionDetection={collisionDetectionStrategy}
@@ -577,7 +584,12 @@ export function Canvas({
 				onDragCancel={onDragCancel}
 			>
 				<SortableContext items={[...containers, PLACEHOLDER_ID]}>
-					<div style={{ display: 'flex', flexDirection: 'row' }}>
+					<div
+						style={{
+							display: 'flex',
+							flexDirection: 'row',
+						}}
+					>
 						{/* Left Section for Search Results */}
 						{containers.includes(SEARCH_RESULTS_ID) && (
 							<div
@@ -661,14 +673,7 @@ export function Canvas({
 						)}
 
 						{/* Center Section for other containers in a 2x4 grid */}
-						<div
-							style={{
-								flexGrow: 1,
-								display: 'grid',
-								gridTemplateColumns: '1fr 1fr',
-								gridTemplateRows: '1fr 1fr 1fr 1fr',
-							}}
-						>
+						<div className={containerStyles.gridContainer}>
 							{containers
 								.filter((id) => id !== 'Search Results')
 								.map((containerId) => (

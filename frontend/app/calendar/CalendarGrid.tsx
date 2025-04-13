@@ -38,7 +38,6 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
 			<div className='calendar-container grid' style={{ gridTemplateColumns, gridTemplateRows }}>
 				{/* Filled-in top left cell */}
 				<div
-					// className='bg-[#F7F7F7]'
 					style={{
 						gridColumn: 1,
 						gridRow: 1,

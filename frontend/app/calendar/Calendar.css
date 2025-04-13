@@ -79,7 +79,6 @@
 	justify-content: space-between;
 	border-radius: 10px;
 	box-shadow: var(--box-shadow-base);
-
 	padding: 8px;
 	margin: -1px;
 	box-sizing: border-box;
@@ -126,7 +125,7 @@
 	background: inherit; /* Inherit the background from the parent */
 	mix-blend-mode: overlay;
 	opacity: 0.5; /* Adjust as needed for desired effect */
-	border-radius: 10px; /* Match the border radius */
+	border-radius: 8px; /* Match the border radius */
 	pointer-events: none; /* Allow clicks to pass through */
 	transition: opacity var(--hover-transition);
 }
@@ -248,8 +247,8 @@
 	font-weight: bold;
 	display: flex;
 	flex-direction: column;
-	background-color: #f1f5f9;
-	border-right: 1px solid #ccc;
+	background-color: #FFFFFF;
+	border-right: 1px solid #e2e8f0;
 	padding: 8px 0;
 }
 

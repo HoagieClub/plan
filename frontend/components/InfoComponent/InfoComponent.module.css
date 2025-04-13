@@ -42,8 +42,8 @@
 }
 
 .Action {
-	padding-left: 2px;
-	padding-right: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
 	border-radius: 5px;
 	background-color: transparent;
 	-webkit-tap-highlight-color: transparent;

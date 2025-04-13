@@ -82,14 +82,12 @@ const CalendarUI: FC = () => {
 			</div>
 
 			<main className='flex flex-grow justify-center'>
-				<div className='flex h-full w-full'>
-					<div>
-						<CalendarSearch />
-						<SelectedCourses />
-					</div>
-					<div className='margin flex-grow pr-2'>
-						{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
-					</div>
+				<div>
+					<CalendarSearch />
+					<SelectedCourses />
+				</div>
+				<div className='margin flex-grow pr-2'>
+					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
 				</div>
 			</main>
 		</>

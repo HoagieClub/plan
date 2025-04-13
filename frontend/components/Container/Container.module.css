@@ -12,8 +12,8 @@
 	transition: background-color 350ms ease;
 	background-color: #fff;
 	border: 1px solid #e2e8f0;
-	font-size: 0.95em;
 	width: 24vw;
+	min-width: 270px;
 	overflow: hidden; /* IMPORTANT: prevents dynamic resizing of container + makes scrollbars cleaner */
 }
 
@@ -112,4 +112,18 @@
 
 .Actions > *:first-child:not(:last-child):focus-visible {
 	opacity: 1;
+}
+
+.gridContainer {
+	flex-grow: 1;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: repeat(4, 1fr); /* same as '1fr 1fr 1fr 1fr' */
+  }
+
+@media screen and (max-width: 1000px) {
+.gridContainer {
+	grid-template-columns: 1fr;
+	grid-template-rows: repeat(8, 1fr);
+}
 }

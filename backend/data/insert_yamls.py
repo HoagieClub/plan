@@ -2,6 +2,7 @@ import orjson as oj
 import logging
 import os
 import sys
+import re
 from datetime import date
 from pathlib import Path
 
@@ -87,12 +88,18 @@ def load_course_list(course_list):
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif "*" in course_num:
+                elif re.match(r'^\d\d\*$', course_num):
+                    course_inst_list += Course.objects.filter(
+                        department_id=dept_id, catalog_number__startswith=course_num[:2]
+                    )
+                elif re.match(r'^\d\*{1,2}$', course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
+                        )
                 else:
-                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                    course_inst_list += Course.objects.filter(
+                        department_id=dept_id, catalog_number=course_num
+                    )
         else:
             try:
                 dept_id = Department.objects.get(code=dept_code).id
@@ -104,13 +111,19 @@ def load_course_list(course_list):
                 continue
 
             if course_num in ["*", "***"]:
-                dept_list.append(dept_code)
-            elif "*" in course_num:
+                    dept_list.append(dept_code)
+            elif re.match(r'^\d\d\*$', course_num):
+                course_inst_list += Course.objects.filter(
+                    department_id=dept_id, catalog_number__startswith=course_num[:2]
+                )
+            elif re.match(r'^\d\*{1,2}$', course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[0]
-                )
+                    )
             else:
-                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                course_inst_list += Course.objects.filter(
+                    department_id=dept_id, catalog_number=course_num
+                )
     return course_inst_list, dept_list
 
 
