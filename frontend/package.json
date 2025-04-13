@@ -46,7 +46,7 @@
 		"@vercel/analytics": "^1.4.1",
 		"@vercel/speed-insights": "^1.2.0",
 		"autoprefixer": "^10.4.20",
-		"babel-plugin-react-compiler": "^19.0.0-beta-21e868a-20250216",
+		"babel-plugin-react-compiler": "^19.0.0-beta-714736e-20250131",
 		"caniuse-lite": "^1.0.30001700",
 		"class-variance-authority": "^0.7.1",
 		"classnames": "^2.5.1",
