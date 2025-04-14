@@ -453,8 +453,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 							variant='contained'
 							size='small'
 							disabled={!item['manually_settled'].includes(value[1])}
-							sx={{
+							style={{
 								color: '#ffffff',
+								opacity: 0.9,
 								backgroundColor: '#409853',
 								margin: '5px',
 							}}
