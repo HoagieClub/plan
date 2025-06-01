@@ -64,7 +64,7 @@
 		"eslint-plugin-react-compiler": "^19.0.0-beta-21e868a-20250216",
 		"eslint-plugin-react-hooks": "^5.0.0",
 		"evergreen-ui": "^7.1.9",
-		"globals": "^15.13.0",
+		"globals": "^16.2.0",
 		"lucide-react": "^0.464.0",
 		"next": "^15.2.0",
 		"postcss": "^8.4.49",
