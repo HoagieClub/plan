@@ -58,17 +58,19 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 			}}
 		>
 			<table>
-				<tr>
-					<td>
-						<strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
-					</td>
-					<td width='120px' />
-					<td>{rating}</td>
-					<td>
-						{' '}
-						<Rating name='course rating' value={rating} precision={0.1} readOnly />{' '}
-					</td>
-				</tr>
+				<tbody>
+					<tr>
+						<td>
+							<strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
+						</td>
+						<td width='120px' />
+						<td>{rating}</td>
+						<td>
+							{' '}
+							<Rating name='course rating' value={rating} precision={0.1} readOnly />{' '}
+						</td>
+					</tr>
+				</tbody>
 			</table>
 
 			<div
