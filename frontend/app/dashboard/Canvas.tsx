@@ -637,7 +637,27 @@ export function Canvas({
 											return (
 												<div className={dashboardItemStyles.card} key={index}>
 													<div className={dashboardItemStyles.content}>
-														<div className={dashboardItemStyles.title}>{course.title}</div>
+														<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+															<div className={dashboardItemStyles.title}>{course.title}</div>
+															{typeof course.rating === 'number' && (
+																<div
+																	style={{
+																		background: getRatingColor(course.rating),
+																		color: '#111',
+																		borderRadius: '2em',
+																		fontWeight: 500,
+																		fontSize: '0.9rem',
+																		padding: '0.1em 0.8em',
+																		marginLeft: '1em',
+																		display: 'flex',
+																		alignItems: 'center',
+																		justifyContent: 'center',
+																	}}
+																>
+																	{course.rating.toFixed(2)}
+																</div>
+															)}
+														</div>
 														{items[SEARCH_RESULTS_ID].includes(courseId) ? (
 															<SortableItem
 																disabled={isSortingContainer}
@@ -849,6 +869,21 @@ function getSecondaryColor(id: UniqueIdentifier) {
 	const secondColor = colors[2]?.trim().split(')')[0];
 
 	return secondColor;
+}
+
+function getRatingColor(rating) {
+	if (rating >= 4.75) return '#378d3b';
+	if (rating >= 4.5) return '#44a248';
+	if (rating >= 4.25) return '#66b849';
+	if (rating >= 4.0) return '#86bc4a'; 
+	if (rating >= 3.75) return '#a0c742';
+	if (rating >= 3.5) return '#c8ce35';
+	if (rating >= 3.25) return '#f4d22c';
+	if (rating >= 3.0) return '#fdb814';
+	if (rating >= 2.75) return '#f39301';
+	if (rating >= 2.5) return '#f09001';
+	if (rating >= 0)   return '#de563e';
+	return '#ccc';	// Default/gray for missing
 }
 
 type SortableItemProps = {

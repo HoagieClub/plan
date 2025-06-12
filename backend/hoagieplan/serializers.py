@@ -6,6 +6,7 @@ from .models import (
     Course,
     Section,
     UserCalendarSection,
+    CourseEvaluations
 )
 
 
@@ -47,6 +48,7 @@ class CourseSerializer(serializers.ModelSerializer):
     # Nested SectionSerializer to include section details in the course data
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -69,13 +71,24 @@ class CourseSerializer(serializers.ModelSerializer):
             "department_code",
             "sections",
             "crosslistings",
+            "rating",
         )
+
+    def get_rating(self, obj):
+        # Find the latest evaluation for this course by guid suffix
+        if not obj.guid:
+            return None
+        course_guid_suffix = obj.guid[4:]
+        evaluation = CourseEvaluations.objects.filter(course_guid__endswith=course_guid_suffix).order_by('-id').first()
+        if evaluation and evaluation.quality_of_course is not None:
+            return evaluation.quality_of_course
+        return None
 
 
 # Calendar (temporary serializer)
 class CalendarClassMeetingSerializer(serializers.ModelSerializer):
-    start_time = serializers.TimeField(format="%H:%M")
-    end_time = serializers.TimeField(format="%H:%M")
+    start_time = serializers.TimeField()
+    end_time = serializers.TimeField()
 
     class Meta:
         model = ClassMeeting
