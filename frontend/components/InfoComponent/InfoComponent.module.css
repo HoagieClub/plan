@@ -49,6 +49,12 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
+.hoverLink:hover{
+	text-decoration: underline;
+  	color: #0070f3; 
+  	transition: text-decoration 0.2s ease-in-out;
+}
+
 @media (hover: hover) {
 	.Action:hover {
 		background-color: var(--action-background, rgba(0, 0, 0, 0.05));
