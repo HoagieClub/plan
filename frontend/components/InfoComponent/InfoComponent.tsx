@@ -120,7 +120,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										<strong className={styles.strong}>{key}: </strong> 
 										{key === "Registrar" ? (
       										<a href={value as string} target="_blank" rel="noopener noreferrer" className={styles.hoverLink}>
-        										Course Details
+        										Link to Registrar
       										</a>
     								) : (
 									value
