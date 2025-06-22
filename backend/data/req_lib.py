@@ -1,6 +1,7 @@
+import json
 from typing import Dict, Any
 import requests
-from configs import Configs
+from .configs import Configs
 
 
 class ReqLib:
@@ -47,8 +48,8 @@ class ReqLib:
             try:
                 req.raise_for_status()
                 return req.json()
-            except requests.HTTPError:
-                print("req_lib.py: HTTPError, {e}")
+            except requests.exceptions.HTTPError as e:
+                print(f"req_lib.py: HTTPError, {e}")
                 pass
             except json.JSONDecodeError:
                 print("req_lib.py: JSONDecodeError")

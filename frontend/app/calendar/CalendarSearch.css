@@ -7,11 +7,11 @@
 	margin: 1vh 0.5vw;
 	border-radius: 8px;
 	transition: background-color 350ms ease;
-	background-color: #f1f5f9;
 	border: 1px solid rgba(0, 0, 0, 0.05);
 	font-size: 1em;
 	width: 24vw;
-	height: calc(55vh - 2vh);
+	min-width: 270px;
+	height: 53vh;
 	overflow: hidden;
 }
 
@@ -25,7 +25,7 @@
 	display: flex;
 	flex-direction: column;
 	padding: 1rem;
-	background-color: #ffffff;
+	background-color: #f1f5f9;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 	border-top-left-radius: 6px;
 	border-top-right-radius: 6px;
@@ -33,8 +33,8 @@
 
 .search-input-container {
 	position: relative;
-	margin-bottom: 0.75rem;
 	border-radius: 0.5rem;
+	height: 34px;
 	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
@@ -55,6 +55,7 @@
 .search-input {
 	display: block;
 	width: 100%;
+	height: 34px;
 	padding: 0.5rem 2.5rem;
 	font-size: 0.875rem;
 	color: #1f2937;
@@ -107,20 +108,18 @@
 
 .recent-searches-label {
 	font-size: 0.875rem;
-	font-weight: 500;
 	color: #6b7280;
 }
 
 .recent-searches-list {
 	display: flex;
 	flex-wrap: wrap;
-	padding: 0.5rem 0;
 	margin-top: 0.5rem;
 	gap: 0.5rem;
 }
 
 .recent-search-item {
-	padding: 0.25rem 0.5rem;
+	padding: 0.1rem 0.5rem;
 	font-size: 0.75rem;
 	font-weight: 500;
 	color: #1e40af;
@@ -143,7 +142,7 @@
 .search-results {
 	flex: 1;
 	overflow-y: auto;
-	background-color: #f1f5f9;
+	background-color: #ffffff;
 	border-bottom-left-radius: 6px;
 	border-bottom-right-radius: 6px;
 }

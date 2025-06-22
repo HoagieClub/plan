@@ -10,7 +10,9 @@ import {
 	FormLabel,
 	AutocompleteOption,
 	ListItemContent,
+	Snackbar,
 } from '@mui/joy';
+import Alert from '@mui/material/Alert';
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
@@ -18,9 +20,11 @@ import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
+import { fetchCsrfToken } from '@/utils/csrf';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
+import { termsInverse } from '@/utils/terms';
 
 import CalendarSearchResults from './CalendarSearchResults';
 
@@ -65,6 +69,8 @@ export const CalendarSearch: FC = () => {
 		setIsClient(true);
 	}, []);
 
+	const [openSuccessSnackBar, setOpenSuccessSnackBar] = useState(false);
+	const [openErrorSnackBar, setOpenErrorSnackBar] = useState(false);
 	const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
@@ -162,6 +168,89 @@ export const CalendarSearch: FC = () => {
 		}, 500);
 	};
 
+	const closeSuccessSnackBar = () => {
+		setOpenSuccessSnackBar(false);
+	};
+
+	const closeErrorSnackBar = () => {
+		setOpenErrorSnackBar(false);
+	};
+
+	const exportCalendar = async () => {
+		try {
+			const calendarData = generateCalendarData();
+			if (!calendarData) {
+				setOpenErrorSnackBar(true);
+				return;
+			}
+
+			const csrfToken = await fetchCsrfToken();
+
+			const response = await fetch(`${process.env.BACKEND}/export-calendar/`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': csrfToken,
+				},
+				credentials: 'include',
+				body: JSON.stringify(calendarData),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Export failed: ${await response.text()}`);
+			}
+
+			// First get term name for file download
+			const term = termsInverse[calendarData.term];
+
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${term}_schedule.ics`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+
+			setOpenSuccessSnackBar(true);
+		} catch (error) {
+			console.error('Export failed:', error);
+			throw new Error(error instanceof Error ? error.message : 'Export failed');
+		}
+	};
+
+	const generateCalendarData = () => {
+		const { selectedCourses } = useCalendarStore.getState();
+		const termFilter = useFilterStore.getState().termFilter;
+
+		if (!termFilter) {
+			return null;
+		}
+
+		// All courses in the selected semester
+		const currentSemesterCourses = selectedCourses[termFilter] || [];
+
+		// We need to make sure user doesn't have any unsettled courses
+		const hasUnselectedRequired = currentSemesterCourses.some(
+			(course) => course.isActive && course.needsChoice && !course.isChosen
+		);
+
+		if (hasUnselectedRequired) {
+			return null;
+		}
+
+		// Filter out sections that are active
+		const class_sections = currentSemesterCourses.filter(
+			(course) => course.isChosen || !course.needsChoice
+		);
+
+		return {
+			term: termFilter,
+			class_sections,
+		};
+	};
+
 	const handleSave = useCallback(() => {
 		setDistributionFilters(localDistributionFilters);
 		setLevelFilter(localLevelFilter);
@@ -183,6 +272,12 @@ export const CalendarSearch: FC = () => {
 		setLocalDistributionFilters(useFilterStore.getState().distributionFilters);
 		setShowPopup(false);
 	}, [setShowPopup]);
+
+	const handleReset = useCallback(() => {
+		setLocalLevelFilter([]);
+		setLocalGradingFilter([]);
+		setLocalDistributionFilters([]);
+	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (event) => {
@@ -317,6 +412,9 @@ export const CalendarSearch: FC = () => {
 						<Button variant='soft' color='primary' onClick={handleSave} size='md'>
 							Save
 						</Button>
+						<Button variant='soft' color='danger' onClick={handleReset} sx={{ ml: 2 }} size='md'>
+							Reset
+						</Button>
 						<Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 							Cancel
 						</Button>
@@ -329,7 +427,7 @@ export const CalendarSearch: FC = () => {
 		<>
 			<div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
 				<ButtonWidget
-					href='/dashboard'
+					onClick={exportCalendar}
 					text='Export Calendar'
 					icon={<ArrowUpTrayIcon className='h-5 w-5' />}
 				/>
@@ -382,6 +480,42 @@ export const CalendarSearch: FC = () => {
 					<CalendarSearchResults courses={calendarSearchResults} />
 				</div>
 			</div>
+			<Snackbar
+				open={openSuccessSnackBar}
+				onClose={closeSuccessSnackBar}
+				sx={{
+					padding: 0, // Ensure no extra padding
+					boxShadow: 'none', // Remove potential shadow effects
+				}}
+			>
+				<Alert
+					onClose={closeSuccessSnackBar}
+					severity='success'
+					variant='filled'
+					sx={{
+						'.MuiSnackbar-root': {
+							borderRadius: '16px', // Roundedness
+						},
+					}}
+				>
+					Successfully exported your calendar!
+				</Alert>
+			</Snackbar>
+
+			<Snackbar
+				open={openErrorSnackBar}
+				onClose={closeErrorSnackBar}
+				sx={{
+					padding: 0, // Ensure no extra padding
+					boxShadow: 'none', // Remove potential shadow effects
+				}}
+			>
+				<Alert onClose={closeErrorSnackBar} severity='error' variant='filled'>
+					{!termFilter
+						? 'Please select a term before exporting your calendar.'
+						: 'Please select course times before exporting your calendar.'}
+				</Alert>
+			</Snackbar>
 			{modalContent}
 		</>
 	);

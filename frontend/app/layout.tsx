@@ -54,8 +54,8 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 
 	const tabs = [
 		{ title: 'About', href: '/about' },
-		{ title: 'Dashboard', href: '/dashboard' },
-		{ title: 'Calendar', href: '/calendar' },
+		{ title: 'Graduation Requirements', href: '/dashboard' },
+		{ title: 'Course Planner', href: '/calendar' },
 		{ title: 'Contact', href: '/contact' },
 	];
 
@@ -82,8 +82,8 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang='en' className={`bg-hoagieplan-dark-red ${poppins.className}`}>
-			{/* TODO: Change this to whatever color we decide (background to match up-scroll) */}
+		<html lang='en' className={`bg-white ${poppins.className}`}>
+			{/* Background to match up-scroll */}
 			<body className='antialiased'>
 				{/* Uncomment this to see components re-render. Used for debugging. */}
 				{/* <script src='https://unpkg.com/react-scan/dist/auto.global.js' /> */}

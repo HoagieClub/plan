@@ -3,7 +3,8 @@
 	padding: 0.5vw;
 	background-color: #ffffff;
 	border-radius: 8px;
-	width: 23vw;
+	width: calc(23vw - 12px);
+	min-width: 250px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	cursor: pointer;
 }
@@ -26,7 +27,6 @@
 }
 
 .title {
-	font-size: 1rem;
 	color: #6b7280;
 	line-height: 1.4;
 	margin-bottom: 0.8vw;

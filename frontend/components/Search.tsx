@@ -177,6 +177,13 @@ export const Search: FC = () => {
 		setTermFilter,
 	]);
 
+	const handleReset = useCallback(() => {
+		setLocalLevelFilter([]);
+		setLocalTermFilter('');
+		setLocalGradingFilter([]);
+		setLocalDistributionFilters([]);
+	}, []);
+
 	const handleCancel = useCallback(() => {
 		setLocalLevelFilter(useFilterStore.getState().levelFilter);
 		setLocalTermFilter(useFilterStore.getState().termFilter);
@@ -339,6 +346,9 @@ export const Search: FC = () => {
 					<Button variant='soft' color='primary' onClick={handleSave} size='md'>
 						Save
 					</Button>
+					<Button variant='soft' color='danger' onClick={handleReset} sx={{ ml: 2 }} size='md'>
+						Reset
+					</Button>
 					<Button variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 						Cancel
 					</Button>
@@ -380,7 +390,7 @@ export const Search: FC = () => {
 				</div>
 				<div className='mt-3'>
 					<div className='mb-2 flex items-center justify-between'>
-						<div className='text-sm font-medium text-gray-500'>Recent searches:</div>
+						<div className='text-sm text-gray-500'>Recent searches:</div>
 						<div className='flex items-center space-x-2'>
 							<button
 								className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
@@ -390,7 +400,7 @@ export const Search: FC = () => {
 							</button>
 						</div>
 					</div>
-					<div className='flex space-x-2 overflow-x-auto py-2'>
+					<div className='flex space-x-2 overflow-x-auto pb-2'>
 						{recentSearches.map((search, index) => (
 							<button
 								key={index}

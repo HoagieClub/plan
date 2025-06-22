@@ -40,7 +40,7 @@ export const AuthButton: FC<AuthButtonProps> = ({ variant = 'login', href = '' }
 		</h2>
 	);
 	const isLogout = variant === 'logout';
-	const defHref = isLogout ? '/auth/logout' : '/auth/login';
+	const defHref = isLogout ? '/auth/logout' : '/auth/login?connection=Princeton-CAS';
 	return (
 		<a href={href === '' ? defHref : href}>
 			<Button

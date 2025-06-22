@@ -97,7 +97,10 @@ export default function Index() {
 					Welcome to HoagiePlan
 				</Heading>
 				<br />
-				<p>Explore courses, read reviews, and manage your four-year schedule.</p>
+				<p>
+					Explore courses, read reviews, and manage <br />
+					your four-year schedule.
+				</p>
 				<div>
 					<Pane display='flex' flexDirection='column' alignItems='center' marginTop='30px'>
 						{Profile}

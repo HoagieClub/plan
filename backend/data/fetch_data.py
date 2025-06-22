@@ -2,7 +2,7 @@ import argparse
 import csv
 import os
 import time
-from req_lib import ReqLib
+from data.req_lib import ReqLib
 from concurrent.futures import ThreadPoolExecutor
 
 # Note to future developers: This script can be made much faster if made asynchronous.
@@ -384,6 +384,7 @@ def generate_csv(semester, subjects, query, fieldnames, req_lib):
 def main():
     req_lib = ReqLib()
     query = {
+        "f2025": "1262",
         "f2024": "1252",
         "f2023": "1242",
         "f2022": "1232",

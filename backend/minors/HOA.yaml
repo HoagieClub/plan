@@ -79,8 +79,8 @@ req_list:
       max_counted: 1
       min_needed: 5
       explanation: Five ART courses; none to be taken pass/D/fail.
-      dept_list: 
-      - ART
+      course_list: 
+      - ART *
 - name: Distribution Areas 
   max_counted: 1
   min_needed: 1

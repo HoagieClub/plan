@@ -1,12 +1,15 @@
 import argparse
+import sys
 import csv
 import os
-import sys
 import re
 from hoagieplan.logger import logger
 from datetime import datetime
 from pathlib import Path
+
 from tqdm import tqdm
+
+from hoagieplan.logger import logger
 
 sys.path.append(str(Path("../").resolve()))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -15,16 +18,16 @@ import django
 
 django.setup()
 from django.db import transaction
+
 from hoagieplan.models import (
-    Department,
     AcademicTerm,
-    Course,
-    Section,
     ClassMeeting,
     ClassYearEnrollment,
+    Course,
+    Department,
     Instructor,
+    Section,
 )
-
 
 # -------------------------------------------------------------------------------------#
 
@@ -75,10 +78,7 @@ def insert_departments(rows):
 
     # Fetch existing departments into a dictionary for quick access
     existing_departments_dict = {
-        dept.code: dept
-        for dept in Department.objects.filter(
-            code__in=[code for code, _ in unique_departments]
-        )
+        dept.code: dept for dept in Department.objects.filter(code__in=[code for code, _ in unique_departments])
     }
 
     departments_to_create = []
@@ -190,8 +190,7 @@ def insert_courses(rows):
         reading_list_entries = [
             f"{row[f'Reading List Title {i}']}//{row[f'Reading List Author {i}']}"
             for i in range(1, 7)
-            if row.get(f"Reading List Author {i}")
-            and row.get(f"Reading List Title {i}")
+            if row.get(f"Reading List Author {i}") and row.get(f"Reading List Title {i}")
         ]
         reading_list = ";".join(reading_list_entries)
 
@@ -248,9 +247,7 @@ def insert_courses(rows):
     except Exception as e:
         logger.error(f"Error in inserting/updating courses: {e}")
 
-    logger.info(
-        f"Inserted {len(new_courses)} new courses, updated {len(updated_courses)} existing courses."
-    )
+    logger.info(f"Inserted {len(new_courses)} new courses, updated {len(updated_courses)} existing courses.")
     logger.info("Course insertions and updates completed!")
 
 
@@ -266,9 +263,7 @@ def insert_instructors(rows):
     marked = []
 
     # Pre-fetch existing instructors to reduce duplicate checks during processing
-    existing_instructors = {
-        instructor.emplid: instructor for instructor in Instructor.objects.all()
-    }
+    existing_instructors = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
 
     for row in tqdm(rows, desc="Processing Instructors..."):
         instructor_emplid = row.get("Instructor EmplID", "").strip()
@@ -283,12 +278,7 @@ def insert_instructors(rows):
         instructor = existing_instructors.get(instructor_emplid)
         if instructor:
             # Update existing instructor if there are changes
-            changed = any(
-                [
-                    getattr(instructor, field) != locals()[field]
-                    for field in update_fields
-                ]
-            )
+            changed = any([getattr(instructor, field) != locals()[field] for field in update_fields])
             if changed:
                 for field in update_fields:
                     setattr(instructor, field, locals()[field])
@@ -335,13 +325,9 @@ def insert_sections(rows):
     # Load existing sections to facilitate updates and prevent duplicates
     existing_sections = {
         (section.course.guid, section.class_number, section.instructor.emplid): section
-        for section in Section.objects.select_related(
-            "course", "term", "instructor"
-        ).all()
+        for section in Section.objects.select_related("course", "term", "instructor").all()
     }
-    existing_instructors = {
-        instructor.emplid: instructor for instructor in Instructor.objects.all()
-    }
+    existing_instructors = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
 
     new_sections = []
     updated_sections = []
@@ -351,16 +337,8 @@ def insert_sections(rows):
         term_code = row["Term Code"].strip()
         course_guid = row["Course GUID"].strip()
         instructor_emplid = row.get("Instructor EmplID", "").strip()
-        course = (
-            course_cache.get(course_guid)
-            if course_cache
-            else Course.objects.get(guid=course_guid)
-        )
-        term = (
-            term_cache.get(term_code)
-            if term_cache
-            else AcademicTerm.objects.get(term_code=term_code)
-        )
+        course = course_cache.get(course_guid) if course_cache else Course.objects.get(guid=course_guid)
+        term = term_cache.get(term_code) if term_cache else AcademicTerm.objects.get(term_code=term_code)
         instructor = existing_instructors.get(instructor_emplid)
         # Skip if mandatory information is missing
         if not term or not course:
@@ -407,9 +385,7 @@ def insert_sections(rows):
     except Exception as e:
         logger.error(f"Error in section insertion and update process: {e}")
 
-    logger.info(
-        f"Inserted {len(new_sections)} new sections, updated {len(updated_sections)} sections."
-    )
+    logger.info(f"Inserted {len(new_sections)} new sections, updated {len(updated_sections)} sections.")
     logger.info("Section processing completed!")
 
 
@@ -421,9 +397,7 @@ def insert_class_meetings(rows):
 
     section_cache = {
         (section.course.guid, section.class_number, section.instructor.emplid): section
-        for section in Section.objects.select_related(
-            "course", "term", "instructor"
-        ).all()
+        for section in Section.objects.select_related("course", "term", "instructor").all()
     }
 
     existing_meetings = {
@@ -454,17 +428,11 @@ def insert_class_meetings(rows):
         end_time = _parse_time(row.get("Meeting End Time", ""))
 
         if not start_time:
-            logger.error(
-                f"Invalid start_time format for Class {class_number} "
-                f"in Term {term_code} on row {row}."
-            )
+            logger.error(f"Invalid start_time format for Class {class_number} " f"in Term {term_code} on row {row}.")
             continue
 
         if not end_time:
-            logger.error(
-                f"Invalid end_time for Class {class_number} "
-                f"in Term {term_code} on row {row}."
-            )
+            logger.error(f"Invalid end_time for Class {class_number} " f"in Term {term_code} on row {row}.")
             continue
 
         meeting_key = (section.id, meeting_number)
@@ -489,11 +457,7 @@ def insert_class_meetings(rows):
         else:
             # Check if the class meeting already exists in new_meetings
             new_meeting = next(
-                (
-                    m
-                    for m in new_meetings
-                    if m.section_id == section.id and m.meeting_number == meeting_number
-                ),
+                (m for m in new_meetings if m.section_id == section.id and m.meeting_number == meeting_number),
                 None,
             )
             if new_meeting:
@@ -556,9 +520,7 @@ def insert_class_year_enrollments(rows):
     # Fetch existing enrollments in bulk and create a dictionary for faster lookup
     existing_enrollments = {
         (enrollment.section_id, enrollment.class_year): enrollment
-        for enrollment in ClassYearEnrollment.objects.filter(
-            section_id__in=section_cache.values()
-        )
+        for enrollment in ClassYearEnrollment.objects.filter(section_id__in=section_cache.values())
     }
 
     new_enrollments = []
@@ -586,9 +548,7 @@ def insert_class_year_enrollments(rows):
 
                 if existing_enrollment:
                     if existing_enrollment.enrl_seats != enrl_seats:
-                        updated_enrollment_data.append(
-                            (existing_enrollment.id, enrl_seats)
-                        )
+                        updated_enrollment_data.append((existing_enrollment.id, enrl_seats))
                 else:
                     new_enrollment = ClassYearEnrollment(
                         section_id=section_id,
@@ -604,10 +564,7 @@ def insert_class_year_enrollments(rows):
                 # TODO: This is still somehow showing non-zero updates even
                 # we insert the same semester data twice in a row. Bug?
                 ClassYearEnrollment.objects.bulk_update(
-                    [
-                        ClassYearEnrollment(id=id, enrl_seats=enrl_seats)
-                        for id, enrl_seats in updated_enrollment_data
-                    ],
+                    [ClassYearEnrollment(id=id, enrl_seats=enrl_seats) for id, enrl_seats in updated_enrollment_data],
                     ["enrl_seats"],
                 )
     except Exception as e:
@@ -623,9 +580,7 @@ def insert_class_year_enrollments(rows):
 
 
 def get_semesters_from_args():
-    parser = argparse.ArgumentParser(
-        description="Fetch academic course data for specified semesters."
-    )
+    parser = argparse.ArgumentParser(description="Fetch academic course data for specified semesters.")
     parser.add_argument(
         "semesters",
         nargs="*",
@@ -634,9 +589,7 @@ def get_semesters_from_args():
     args = parser.parse_args()
 
     if not args.semesters:
-        print(
-            "No semesters provided as arguments. Please enter the semesters separated by spaces:"
-        )
+        print("No semesters provided as arguments. Please enter the semesters separated by spaces:")
         args.semesters = input().strip().split(" ")
 
     return args.semesters
@@ -662,9 +615,7 @@ def insert_course_data(semester):
         reader = csv.DictReader(file)
         rows = [row for row in reader]
 
-    formatted_rows = [
-        {key.strip(): value.strip() for key, value in row.items()} for row in rows
-    ]
+    formatted_rows = [{key.strip(): value.strip() for key, value in row.items()} for row in rows]
 
     try:
         with transaction.atomic():

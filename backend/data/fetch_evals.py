@@ -104,8 +104,8 @@ def save(data: str, term: str, course_id: str) -> None:
             writer.writeheader()
 
         # Ensure scores and comments are properly formatted as JSON strings
-        scores = oj.dumps(_scores, indent=4).decode("utf-8").replace("\\/", "/")[1:-1]
-        comments = oj.dumps(_comments, indent=4).decode("utf-8").replace("\\/", "/")[1:-1]
+        scores = oj.dumps(_scores).decode("utf-8").replace("\\/", "/")[1:-1]
+        comments = oj.dumps(_comments).decode("utf-8").replace("\\/", "/")[1:-1]
         writer.writerow(
             {
                 "course_id": course_id,
