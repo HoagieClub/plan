@@ -7,6 +7,7 @@ from hoagieplan.models import (
     CourseComments,
     CourseEvaluations,
     Department,
+    Section, 
 )
 
 
@@ -78,18 +79,46 @@ def get_course_info(crosslistings):
 
     course_dict = {}
 
+    # Add title of course
+    title = getattr(course, "title", None)
+    if title:
+        course_dict["Title"] = title
+    
+    # Add instructors with Section model
+    sections = Section.objects.filter(course=course).select_related("instructor")
+    instructor_names = [
+        section.instructor.full_name
+        for section in sections
+        ]
+    # Check for duplicates of instructors and remove when necessary
+    hasSeen = set()
+    instructor_hasSeen = []
+    for name in instructor_names:
+        if name not in hasSeen:
+            hasSeen.add(name)
+            instructor_hasSeen.append(name)
+
+    if instructor_hasSeen:
+        course_dict["Instructors"] = ", ".join(instructor_hasSeen)
+
     # Map fields to their display names
     field_mapping = {
-        "title": "Title",
         "description": "Description",
         "distribution_area_short": "Distribution Area",
         "grading_basis": "Grading Basis",
     }
 
     # Add basic fields if they exist
-    for field, display_name in field_mapping.items():
+    for field, display_name in field_mapping.items():            
         if value := getattr(course, field):
             course_dict[display_name] = value
+    
+    # Add registrar link 
+    course_id = course.guid[4:]
+    term = course.guid[:4]
+    registrar_link = f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
+
+    course_dict["Registrar"] = registrar_link
 
     # Handle reading list specially due to cleaning requirements
     if course.reading_list:
@@ -100,6 +129,7 @@ def get_course_info(crosslistings):
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
+    
     return course_dict
 
 
