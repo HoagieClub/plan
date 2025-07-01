@@ -16,7 +16,7 @@ djangorestframework==3.15.2
     # via hoagie-plan (pyproject.toml)
 gunicorn==23.0.0
     # via hoagie-plan (pyproject.toml)
-icalendar==6.1.3
+icalendar==6.3.1
     # via hoagie-plan (pyproject.toml)
 orjson==3.10.12
     # via hoagie-plan (pyproject.toml)
