@@ -4,7 +4,7 @@ bs4==0.0.2
     # via hoagie-plan (pyproject.toml)
 colorama==0.4.6
     # via hoagie-plan (pyproject.toml)
-dj-database-url==2.3.0
+dj-database-url==3.0.1
     # via hoagie-plan (pyproject.toml)
 django==5.1.6
     # via hoagie-plan (pyproject.toml)
