@@ -35,7 +35,7 @@ const undeclared = { code: 'Undeclared', name: 'Undeclared' };
 const defaultClassYear = new Date().getFullYear();
 
 // TODO: Should probably id these corresponding to the ids in the database, may be used in other files
-const majorOptions = [
+const MAJOR_OPTIONS = [
 	{ code: 'AAS', name: 'African American Studies' },
 	{ code: 'ANT', name: 'Anthropology' },
 	{ code: 'ARC', name: 'Architecture' },
@@ -64,23 +64,22 @@ const majorOptions = [
 	{ code: 'MUS', name: 'Music' },
 	{ code: 'NES', name: 'Near Eastern Studies' },
 	{ code: 'NEU', name: 'Neuroscience' },
-	{ code: 'PER', name: 'Persian Language' },
 	{ code: 'ORF', name: 'Operations Research and Financial Engineering' },
 	{ code: 'PHI', name: 'Philosophy' },
 	{ code: 'PHY', name: 'Physics' },
 	{ code: 'POL', name: 'Politics' },
+	{ code: 'POR', name: 'Portuguese' },
 	{ code: 'PSY', name: 'Psychology' },
 	{ code: 'REL', name: 'Religion' },
 	{ code: 'SLA', name: 'Slavic Languages and Literatures' },
 	{ code: 'SOC', name: 'Sociology' },
 	{ code: 'SPA', name: 'Spanish' },
-	{ code: 'POR', name: 'Portuguese' },
 	{ code: 'SPI', name: 'School of Public and International Affairs' },
 	// { code: 'Independent', name: 'Independent' }, TODO: This is an actual major here and should be added.
 	{ code: 'Undeclared', name: 'Undeclared' },
 ];
 
-const minorOptions = [
+const MINOR_OPTIONS = [
 	{ code: 'AAS', name: 'African American Studies' },
 	{ code: 'AFS', name: 'African Studies' },
 	{ code: 'APC', name: 'Applied and Computational Mathematics' },
@@ -144,7 +143,7 @@ const minorOptions = [
 	{ code: 'VPL', name: 'Values and Public Life' },
 ];
 
-const certificateOptions = [
+const CERTIFICATE_OPTIONS = [
 	{ code: 'AAS', name: 'African American Studies - Open to Class of 25 only' },
 	{
 		code: 'ACE',
@@ -347,7 +346,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 					<Autocomplete
 						multiple={false}
 						autoHighlight
-						options={majorOptions}
+						options={MAJOR_OPTIONS}
 						// Call smartSearch to search through all majors and determine matches for inputValue.
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your major'
@@ -375,7 +374,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 					<Autocomplete
 						multiple={true}
 						autoHighlight
-						options={minorOptions}
+						options={MINOR_OPTIONS}
 						// Call smartSearch to search through all minors and determine matches for inputValue.
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your minor(s)'
@@ -417,7 +416,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 					<Autocomplete
 						multiple={true}
 						autoHighlight
-						options={certificateOptions}
+						options={CERTIFICATE_OPTIONS}
 						// Call smartSearch to search through all certificates and determine matches for inputValue.
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your certificate(s)'
