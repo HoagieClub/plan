@@ -144,13 +144,12 @@ const MINOR_OPTIONS = [
 ];
 
 const CERTIFICATE_OPTIONS = [
-	{ code: 'AAS', name: 'African American Studies - Open to Class of 25 only' },
 	{
 		code: 'ACE',
 		name: 'Architecture and Engineering - Open to all class years',
 	},
 	{ code: 'AMS', name: 'American Studies - Open to all class years' },
-	{ code: 'AST', name: 'Planets and Life - Open to all class years' },
+	{ code: 'AST', name: 'Planets and Life - Open to Class of 26, 27, 28 only' },
 	{ code: 'ENT', name: 'Entrepreneurship - Open to all class years' },
 	{ code: 'GEO', name: 'Geological Engineering - Open to all class years' },
 	{ code: 'GER', name: 'German - Open to all class years' },
@@ -159,28 +158,12 @@ const CERTIFICATE_OPTIONS = [
 		name: 'History and the Practice of Diplomacy - Open to all class years',
 	},
 	{
-		code: 'LAC-CLA',
-		name: 'Language and Culture: Classics - Open to Class of 25 only',
-	},
-	{
-		code: 'LAC-POR',
-		name: 'Portuguese Language and Culture - Open to Class of 25 only',
-	},
-	{
-		code: 'LAC-SPA',
-		name: 'Spanish Language and Culture - Open to Class of 25 only',
-	},
-	{
 		code: 'OQDS',
 		name: 'Optimization and Quantitative Decision Science - Open to all class years',
 	},
 	{
 		code: 'QCB',
 		name: 'Quantitative and Computational Biology - Open to all class years',
-	},
-	{
-		code: 'RIS',
-		name: 'Robotics and Intelligent Systems - Open to Class of 25 only',
 	},
 	{
 		code: 'TAS-E',
