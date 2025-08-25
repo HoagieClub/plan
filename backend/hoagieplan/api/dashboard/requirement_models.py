@@ -11,7 +11,7 @@ class UserRequirements:
             keys.remove("BSE")
         elif "AB" in data:
             self.degree_type = Requirement(data["AB"]["requirements"])
-            keys.remove("BSE")
+            keys.remove("AB")
         else:
             raise ValueError("UserRequirements must have either a BSE or AB field")
 
@@ -48,6 +48,7 @@ class UserRequirements:
 
 class Requirement:
     def __init__(self, requirements: dict):
+        self.code: str | None
         self.req_id: int
         self.manually_satisfied: bool
         self.satisfied: bool
@@ -63,7 +64,8 @@ class Requirement:
             if key not in requirements:
                 raise ValueError(f"Requirements must have a {key} field")
             return requirements[key]
-
+        
+        self.code = requirements.get("code", None)
         self.req_id = int(require("req_id"))
         self.manually_satisfied = require("manually_satisfied")
         self.satisfied = bool(require("satisfied"))
@@ -89,6 +91,7 @@ class Requirement:
 
     def __str__(self):
         fields = {
+            "code": self.code,
             "req_id": self.req_id,
             "manually_satisfied": self.manually_satisfied,
             "satisfied": self.satisfied,
