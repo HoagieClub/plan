@@ -117,20 +117,23 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 								{Object.entries(courseDetails).map(([key, value]) => (
 									<div key={key} className={styles.detailRow}>
-										<strong className={styles.strong}>{key}: </strong> 
-										{key === "Registrar" ? (
-      										<a href={value as string} target="_blank" rel="noopener noreferrer" className={styles.hoverLink}>
-        										Link to Registrar
-      										</a>
-    								) : (
-									value
-    							)}
+										<strong className={styles.strong}>{key}: </strong>
+										{key === 'Registrar' ? (
+											<a
+												href={value as string}
+												target='_blank'
+												rel='noopener noreferrer'
+												className={styles.hoverLink}
+											>
+												Link to Registrar
+											</a>
+										) : (
+											value
+										)}
 									</div>
 								))}
 							</div>
-
-
-              </div>
+						</div>
 						{/* ReviewMenu with explicit width */}
 						<div style={{ paddingLeft: '20px', width: '45%', height: '400px' }}>
 							{' '}
