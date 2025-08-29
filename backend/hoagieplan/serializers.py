@@ -5,7 +5,6 @@ from .models import (
     ClassMeeting,
     Course,
     Section,
-    SemesterConfiguration,
     UserCalendarSection,
 )
 
@@ -106,7 +105,7 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
         )
 
 
-class UserCalendarCourseSerializer(serializers.ModelSerializer):
+class UserCalendarSectionSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
 
     def get_section_details(self, obj):
@@ -139,18 +138,10 @@ class UserCalendarCourseSerializer(serializers.ModelSerializer):
         fields = ["id", "section_details", "index", "name", "is_active"]
 
 
-class SemesterConfigurationSerializer(serializers.ModelSerializer):
-    schedule_selections = UserCalendarCourseSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = SemesterConfiguration
-        fields = ["id", "term", "schedule_selections"]
-
-
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    semester_configurations = SemesterConfigurationSerializer(many=True, read_only=True)
+    user_calendar_sections = UserCalendarSectionSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
-        fields = ["id", "user", "name", "semester_configurations"]
+        fields = ["id", "user", "name", "term", "user_calendar_section"]
         read_only_fields = ["id", "user"]

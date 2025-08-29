@@ -14,7 +14,7 @@ from hoagieplan.models import (
 )
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
-    UserCalendarCourseSerializer,
+    UserCalendarSectionSerializer,
 )
 
 
@@ -163,7 +163,7 @@ class CalendarConfigurationsView(APIView):
             )
 
 
-class UserCalendarCourseView(APIView):
+class UserCalendarSectionView(APIView):
     def get_object(self, request, configuration_id, term_code, index):
         try:
             return UserCalendarSection.objects.get(
@@ -178,7 +178,7 @@ class UserCalendarCourseView(APIView):
     def put(self, request, configuration_id, term_code, index):
         schedule_selection = self.get_object(request, configuration_id, term_code, index)
         if schedule_selection:
-            serializer = UserCalendarCourseSerializer(schedule_selection, data=request.data, partial=True)
+            serializer = UserCalendarSectionSerializer(schedule_selection, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

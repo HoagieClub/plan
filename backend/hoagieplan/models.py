@@ -329,11 +329,7 @@ class CalendarConfiguration(models.Model):
     name = models.CharField(max_length=100, db_index=True, blank=True)
 
     # The academic term this calendar configuration is associated with
-    term = models.ForeignKey(
-        AcademicTerm,
-        on_delete=models.CASCADE,
-        db_index=True,
-    )
+    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
 
     # Timestamp for when this row was created
     created_at = models.DateTimeField(auto_now_add=True)
@@ -355,7 +351,7 @@ class UserCalendarSection(models.Model):
     calendar_configuration = models.ForeignKey(
         CalendarConfiguration,
         on_delete=models.CASCADE,
-        related_name="schedule_selections",
+        related_name="user_calendar_section",
         db_index=True,
     )
 
