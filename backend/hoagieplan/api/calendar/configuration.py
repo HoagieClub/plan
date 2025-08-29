@@ -10,12 +10,10 @@ from hoagieplan.models import (
     ClassMeeting,
     CustomUser,
     Section,
-    SemesterConfiguration,
     UserCalendarSection,
 )
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
-    SemesterConfigurationSerializer,
     UserCalendarCourseSerializer,
 )
 
@@ -127,8 +125,8 @@ class CalendarConfigurationsView(APIView):
         net_id = request.headers.get("X-NetId")
         user_inst = CustomUser.objects.get(net_id=net_id)
 
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        print("net_id: ", net_id)
+        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        # print("net_id: ", net_id)
 
         if term_code:
             queryset = CalendarConfiguration.objects.filter(
@@ -138,9 +136,9 @@ class CalendarConfigurationsView(APIView):
             queryset = CalendarConfiguration.objects.filter(user=user_inst)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
-        print("Response data: ", serializer.data)
-        print("Serializer type: ", type(serializer))
-        print("Serializer.data type: ", type(serializer.data))
+        # print("Response data: ", serializer.data)
+        # print("Serializer type: ", type(serializer))
+        # print("Serializer.data type: ", type(serializer.data))
         return Response(serializer.data)
 
     def post(self, request):
@@ -162,94 +160,6 @@ class CalendarConfigurationsView(APIView):
             logger.error("An error occurred: %s", str(e))
             return Response(
                 {"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-# class CalendarConfigurationView(APIView):
-#     def get(self, request, term_code):
-#         user = request.user
-#         try:
-#             calendar_config = CalendarConfiguration.objects.get(
-#                 user=user,
-#                 semester_configurations__term__term_code=term_code,
-#             )
-#             serializer = CalendarConfigurationSerializer(calendar_config)
-#             return Response(serializer.data)
-#         except CalendarConfiguration.DoesNotExist:
-#             return Response(
-#                 {"detail": "Calendar configuration not found."},
-#                 status=status.HTTP_404_NOT_FOUND,
-#             )
-#         except Exception as e:
-#             logger.error("An error occurred while fetching calendar configuration: %s", str(e))
-#             return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-#     def post(self, request):
-#         user = request.user
-#         name = request.data.get("name", "Default Schedule")
-
-#         try:
-#             calendar_config, _ = CalendarConfiguration.objects.get_or_create(
-#                 user=user, name=name, defaults={"user": user, "name": name}
-#             )
-#             serializer = CalendarConfigurationSerializer(calendar_config)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         except IntegrityError:
-#             return Response(
-#                 {"detail": "Calendar configuration with this name already exists."},
-#                 status=status.HTTP_400_BAD_REQUEST,
-#             )
-#         except Exception as e:
-#             logger.error("An error occurred while creating calendar configuration: %s", str(e))
-#             return Response({"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class SemesterConfigurationView(APIView):
-    def get_object(self, request, configuration_id, term_code):
-        try:
-            return SemesterConfiguration.objects.get(
-                calendar_configuration_id=configuration_id,
-                calendar_configuration__user=request.user,
-                term__term_code=term_code,
-            )
-        except SemesterConfiguration.DoesNotExist:
-            return None
-
-    def get(self, request, configuration_id, term_code):
-        semester_configuration = self.get_object(request, configuration_id, term_code)
-        if semester_configuration:
-            serializer = SemesterConfigurationSerializer(semester_configuration)
-            return Response(serializer.data)
-        else:
-            return Response(
-                {"detail": "Semester configuration not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-    def put(self, request, configuration_id, term_code):
-        semester_configuration = self.get_object(request, configuration_id, term_code)
-        if semester_configuration:
-            serializer = SemesterConfigurationSerializer(semester_configuration, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(
-                {"detail": "Semester configuration not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-    def delete(self, request, configuration_id, term_code):
-        semester_configuration = self.get_object(request, configuration_id, term_code)
-        if semester_configuration:
-            semester_configuration.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(
-                {"detail": "Semester configuration not found."},
-                status=status.HTTP_404_NOT_FOUND,
             )
 
 
