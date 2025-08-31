@@ -46,6 +46,7 @@ import type {
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -642,7 +643,7 @@ export function Canvas({
 															{typeof course.rating === 'number' && (
 																<div
 																	style={{
-																		background: getRatingColor(course.rating),
+																		background: getRatingBackground(course.rating),
 																		color: '#111',
 																		borderRadius: '2em',
 																		fontWeight: 500,
@@ -869,21 +870,6 @@ function getSecondaryColor(id: UniqueIdentifier) {
 	const secondColor = colors[2]?.trim().split(')')[0];
 
 	return secondColor;
-}
-
-function getRatingColor(rating) {
-	if (rating >= 4.75) return '#378d3b';
-	if (rating >= 4.5) return '#44a248';
-	if (rating >= 4.25) return '#66b849';
-	if (rating >= 4.0) return '#86bc4a'; 
-	if (rating >= 3.75) return '#a0c742';
-	if (rating >= 3.5) return '#c8ce35';
-	if (rating >= 3.25) return '#f4d22c';
-	if (rating >= 3.0) return '#fdb814';
-	if (rating >= 2.75) return '#f39301';
-	if (rating >= 2.5) return '#f09001';
-	if (rating >= 0)   return '#de563e';
-	return '#ccc';	// Default/gray for missing
 }
 
 type SortableItemProps = {
