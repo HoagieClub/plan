@@ -20,7 +20,6 @@ import {
 	majorScale,
 	Pane,
 	Text,
-	Button,
 	Position,
 	Popover,
 	Avatar,
@@ -34,14 +33,14 @@ import { useSettingsModal } from '@/components/SettingsModal';
 import { useTutorialModal } from '@/components/Tutorial/Tutorial';
 import { ProfileCard } from '@/lib/hoagie-ui/ProfileCard';
 import { hoagiePlan } from '@/lib/hoagie-ui/Theme/themes';
-import useUserSlice, { useFetchUserProfile } from '@/store/userSlice';
+import { useFetchUserProfile } from '@/store/userSlice';
 
 export type NavProps = {
 	// The name of the app for generating the `hoagie{name}` title.
 	name: string;
 
 	// A list of tab objects for the navbar, each with `title` and `href` fields.
-	tabs?: Array<{ title: string; href: string; icon?: React.ReactNode; color?: string }>;
+	tabs?: Array<{ title: string; href: string }>;
 
 	// Auth0 user
 	user: User;
@@ -54,27 +53,25 @@ export type NavProps = {
 
 	// A flag to show the "beta" development disclaimer on the hoagie app logo.
 	beta?: boolean;
-
-	onAddMinor: () => void;
-	onAddCertificate: () => void;
 };
 
 /**
  * Nav is a navbar meant for internal navigations throughout
  * different Hoagie applications.
  */
-export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta = false }) => {
+export const Nav: FC<NavProps> = ({
+	name,
+	tabs = [],
+	user,
+	LogoComponent,
+	HeaderComponent,
+	beta = false,
+}) => {
 	const { openSettingsModal, settingsModal } = useSettingsModal();
 	const theme = hoagiePlan;
 	const router = useRouter();
 	const pathname = usePathname();
 	const { openTutorialModal, tutorialModal } = useTutorialModal();
-
-	const { major, classYear } = useUserSlice((state) => state.profile);
-
-	const majorCode = typeof major === 'object' && major?.code ? major.code : 'Undeclared';
-	const shortClassYear = classYear ? `'${classYear.toString().slice(2)}` : '';
-	const academicLabel = `${majorCode} ${shortClassYear}`.trim();
 
 	useFetchUserProfile(user);
 
@@ -85,9 +82,13 @@ export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta =
 
 	return (
 		<Pane elevation={1}>
+			{HeaderComponent ? (
+				<HeaderComponent />
+			) : (
+				<Pane width='100%' height={20} background={theme.title} />
+			)}
 			<Pane
 				display='flex'
-				alignItems='center'
 				justifyContent='center'
 				width='100%'
 				height={majorScale(9)}
@@ -100,43 +101,31 @@ export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta =
 					width='100%'
 					height='100%'
 					maxWidth={1200}
-					fontSize={18}
 					paddingX={majorScale(5)}
+					fontSize={18}
 				>
-					<Pane width='auto' display='flex' alignItems='center'>
-						<Link href='/'>
-							<Pane cursor='pointer' position='relative'>
-								{LogoComponent ? (
-									<LogoComponent />
-								) : (
-									<Pane>
-										<Text
-											is='h2'
-											display='inline-block'
-											className='hoagie logo'
-											color='purple' 
-										>
-											hoagie
+					<Link href='/'>
+						<Pane cursor='pointer' position='relative'>
+							{LogoComponent ? (
+								<LogoComponent />
+							) : (
+								<Pane>
+									<Text is='h2' display='inline-block' className='hoagie logo' color='gray900'>
+										hoagie
+									</Text>
+									<Text is='h2' display='inline-block' className='hoagie logo' color='slate400'>
+										{name}
+									</Text>
+									{beta && (
+										<Text className='hoagie beta' position='absolute' color='gray900'>
+											(BETA)
 										</Text>
-										<Text
-											is='h2'
-											display='inline-block'
-											className='hoagie logo'
-											color='purple'
-										>
-											{name}
-										</Text>
-										{beta && (
-											<Text className='hoagie beta' position='absolute' color='gray900'>
-												(BETA)
-											</Text>
-										)}
-									</Pane>
-								)}
-							</Pane>
-						</Link>
-					</Pane>
-					<Pane flex='1' display='flex' alignItems='center' justifyContent='center'>
+									)}
+								</Pane>
+							)}
+						</Pane>
+					</Link>
+					<Pane display='flex' alignItems='center'>
 						<TabNavigation>
 							{tabs.map((tab) => (
 								<Tab
@@ -144,50 +133,18 @@ export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta =
 									key={tab.title}
 									is='a'
 									id={tab.title}
+									isSelected={pathname === tab.href}
 									onSelect={() => router.push(tab.href)}
 								>
-									<Pane display='flex' alignItems='center'>
-										{tab.icon}
-										<Text fontWeight={700} color={tab.color}>
-											{tab.title}
-										</Text>
-									</Pane>
+									{tab.title}
 								</Tab>
 							))}
 						</TabNavigation>
-					</Pane>
-					<Pane
-						display='flex'
-						alignItems='center'
-						gap={majorScale(3)}
-						marginRight={majorScale(3)}
-						justifyContent='flex-end'
-						minWidth={0}
-						flexWrap='nowrap'
-					>
-						{/* <Pane
-        				marginTop={majorScale(2)}
-						cursor="pointer"
-        				onClick={openSettingsModal}
-        				borderBottom={`1px solid ${theme.colors.gray200}`}
-        				paddingBottom={majorScale(1)}
-      					>
-						<Text size={400} color="gray800">
-						  {academicLabel}
-						</Text>
-						<Button appearance="minimal" height={24} paddingX={8}>
-						  Add a Minor
-						</Button>
-					  
-						<Button appearance="minimal" height={24} paddingX={8}>
-						  Add a Certificate
-						</Button>
-					</Pane> */}
 						<Pane
 							display='flex'
 							alignItems='center'
 							justifyContent='center'
-							marginLeft='auto'
+							marginLeft={majorScale(4)}
 							cursor='pointer'
 							onClick={() => openTutorialModal(tutorialType)}
 						>
@@ -197,7 +154,6 @@ export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta =
 								titleAccess='Open Tutorial'
 							/>
 						</Pane>
-
 						{user && (
 							<Popover
 								content={<ProfileCard user={user} onSettingsClick={openSettingsModal} />}
@@ -216,7 +172,6 @@ export const Nav: FC<NavProps> = ({ name, tabs = [], user, LogoComponent, beta =
 					</Pane>
 				</Pane>
 			</Pane>
-
 			{settingsModal}
 		</Pane>
 	);
