@@ -58,6 +58,7 @@ export const hoagieUI = mergeTheme(defaultTheme, {
 		purple100: '#E9DDFE',
 		purple50: '#F5F0FF',
 		purple25: '#F9F5FF',
+		purple: '#57309B',
 
 		red700: '#7D2828',
 		red600: '#A73636',

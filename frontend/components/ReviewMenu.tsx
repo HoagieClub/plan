@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useState, useEffect } from 'react';
 
-import { Rating } from '@mui/material';
+import { Rating, CircularProgress } from '@mui/material';
 
 interface ReviewMenuProps {
 	dept: string;
@@ -11,11 +11,13 @@ interface ReviewMenuProps {
 export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 	const [reviews, setReviews] = useState<string[]>([]);
 	const [rating, setRating] = useState<number>(0);
+	const [loading, setLoading] = useState<boolean>(true);
 
 	useEffect(() => {
 		if (dept && coursenum) {
 			const fetchReviews = async () => {
 				try {
+					setLoading(true);
 					const url = new URL(`${process.env.BACKEND}/course/comments/`);
 					url.searchParams.append('dept', dept);
 					url.searchParams.append('coursenum', coursenum);
@@ -40,12 +42,22 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					// TODO: What should we do if error?
 					setReviews([]);
 					setRating(0);
+				} finally {
+					setLoading(false);
 				}
 			};
 
 			void fetchReviews();
 		}
 	}, [dept, coursenum]);
+
+	if (loading) {
+		return (
+			<div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
+				<CircularProgress size={35} />
+			</div>
+		);
+	}
 
 	return (
 		<div
