@@ -2,58 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TODO: Address the compass changes below */
-:root {
-	--foreground-rgb: 30, 30, 30; /* Dark Gray for text */
-	--background-start-rgb: 18, 40, 63; /* compass-blue but darker */
-	--background-end-rgb: 15, 30, 47; /* Change to compass-blue */
-	--system-text-color: #f6efec; /* Light Gray */
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		/*--foreground-rgb: 224, 224, 224; !* Soft White for text *!*/
-		/*--background-start-rgb: 18, 18, 18; !* Near Black *!*/
-		/*--background-end-rgb: 30, 30, 30; !* Dark Gray *!*/
-		/*--system-text-color: #fafafa; !* Soft Blue *!*/
-		--foreground-rgb: 0, 0, 0; /* Dark Gray for text */
-		--background-start-rgb: 18, 18, 18; /* Near Black */
-		--background-end-rgb: 30, 30, 30; /* Change to compass-blue */
-		--system-text-color: #f6efec; /* Light Gray */
-	}
-}
-
-@keyframes cascadeFadeIn {
-	0% {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	80% {
-		opacity: 0.8;
-		transform: translateY(-5px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-.cascade-animation {
-	animation: cascadeFadeIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-.columns-1 {
-	column-count: 1;
-}
-.columns-2 {
-	column-count: 2;
-}
-.columns-3 {
-	column-count: 3;
-}
-.columns-4 {
-	column-count: 4;
-}
 
 .modal-backdrop {
 	opacity: 0;
