@@ -55,20 +55,12 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 	const user: User | null = session?.user;
 
 	const tabs = [
-		{
-			title: 'Graduation Requirements',
-			href: '/dashboard',
-			icon: <SchoolIcon style={{ color: '#57309B', marginRight: 6 }} />,
-			color: '#57309B',
-		},
-		{
-			title: 'Course Planner',
-			href: '/calendar',
-			icon: <CalendarMonthIcon style={{ color: '#9FA4A9', marginRight: 6 }} />,
-			color: '#9FA4A9',
-		},
+		{ title: 'About', href: '/about' },
+		{ title: 'Graduation Requirements', href: '/dashboard' },
+		{ title: 'Course Planner', href: '/calendar' },
+		{ title: 'Contact', href: '/contact' },
 	];
-
+	
 	return (
 		<Auth0Provider user={user}>
 			<Theme palette='plan'>
