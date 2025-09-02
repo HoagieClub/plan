@@ -28,6 +28,11 @@ function rgbToHex(r: number, g: number, b: number): string {
 	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+// Helper function to interpolate rgb colors
+function interpolateRgb(color1: number, color2: number, ratio: number): number {
+	return Math.round(color1 + (color2 - color1) * ratio);
+}
+
 export function getRatingColor(rating: number): string {
 	// Clamp rating between 0 and 5
 	const clampedRating = Math.max(0, Math.min(5, rating));
@@ -69,10 +74,10 @@ function interpolateColor(color1: string, color2: string, ratio: number): string
 	const b2 = getBlue(color2);
 	
 	// Interpolate each component
-	const r = Math.round(r1 + (r2 - r1) * ratio);
-	const g = Math.round(g1 + (g2 - g1) * ratio);
-	const b = Math.round(b1 + (b2 - b1) * ratio);
-	
+	const r = interpolateRgb(r1, r2, ratio);
+	const g = interpolateRgb(g1, g2, ratio);
+	const b = interpolateRgb(b1, b2, ratio);
+
 	// Convert back to hex using helper function
 	return rgbToHex(r, g, b);
 }
