@@ -1,11 +1,10 @@
-from django.db import IntegrityError
 from django.db.models.query import Prefetch
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.logger import logger
 from hoagieplan.models import (
+    AcademicTerm,
     CalendarConfiguration,
     ClassMeeting,
     CustomUser,
@@ -120,47 +119,153 @@ class FetchCalendarClasses(APIView):
 
 
 class CalendarConfigurationsView(APIView):
+    DEFAULT_CALENDAR_NAME = "My Calendar"
+
     def get(self, request):
-        term_code = request.query_params.get("term_code")
+        """Fetch all calendar configurations for the user, or for a specific term if provided."""
         net_id = request.headers.get("X-NetId")
-        user_inst = CustomUser.objects.get(net_id=net_id)
 
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        # print("net_id: ", net_id)
+        term = request.data.get("term")
+        if not term:
+            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        term_id = AcademicTerm.objects.get(term_code=term).id
 
-        if term_code:
-            queryset = CalendarConfiguration.objects.filter(
-                user=user_inst, semester_configurations__term__term_code=term_code
-            )
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        try:
+            user_inst = CustomUser.objects.get(net_id=net_id)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        print("Request body:", request.data)
+
+        if term:
+            queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
         else:
             queryset = CalendarConfiguration.objects.filter(user=user_inst)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
-        # print("Response data: ", serializer.data)
-        # print("Serializer type: ", type(serializer))
-        # print("Serializer.data type: ", type(serializer.data))
         return Response(serializer.data)
 
     def post(self, request):
-        user = request.user
-        name = request.data.get("name", "Default Schedule")
+        """Create a new calendar configuration for the user."""
+        net_id = request.headers.get("X-NetId")
+
+        term = request.data.get("term")
+        if not term:
+            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        term_id = AcademicTerm.objects.get(term_code=term).id
+
+        calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
+        if not calendar_name:
+            return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        try:
+            user_inst = CustomUser.objects.get(net_id=net_id)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        print("Request body:", request.data)
 
         try:
             calendar_config, created = CalendarConfiguration.objects.get_or_create(
-                user=user, name=name, defaults={"user": user, "name": name}
+                user=user_inst, name=calendar_name, term_id=term_id
             )
+
+            if not created:
+                return Response(
+                    {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
+                )
+
             serializer = CalendarConfigurationSerializer(calendar_config)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except IntegrityError:
-            return Response(
-                {"detail": "Calendar configuration with this name already exists."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception:
+            return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_calendar(self, calendar_name, net_id, term_id):
+        """Helper function to retrieve calendar."""
+        try:
+            print(calendar_name, net_id, term_id)
+            user_inst = CustomUser.objects.get(net_id=net_id)
+            print(user_inst.id)
+            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+            return calendar, user_inst
+        except CustomUser.DoesNotExist:
+            print("User not found")
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CalendarConfiguration.DoesNotExist:
+            print("Calendar not found")
+            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request):
+        """Update an existing calendar configuration."""
+        net_id = request.headers.get("X-NetId")
+        calendar_name = request.data.get("calendar_name")
+        term = request.data.get("term")
+        if not term:
+            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        term_id = AcademicTerm.objects.get(term_code=term).id
+
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        try:
+            calendar, user_inst = self.get_calendar(calendar_name, net_id, term_id)
         except Exception as e:
-            logger.error("An error occurred: %s", str(e))
-            return Response(
-                {"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        new_calendar_name = request.data.get("new_calendar_name")
+
+        try:
+            # Check if there exists another calendar with the new calendar name
+            existing = (
+                CalendarConfiguration.objects.filter(user=user_inst, name=new_calendar_name)
+                .exclude(name=calendar_name)
+                .exists()
             )
+
+            if existing:
+                return Response(
+                    {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # If not, update the calendar name
+            calendar.name = new_calendar_name
+            calendar.save()
+            serializer = CalendarConfigurationSerializer(calendar)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception:
+            return Response({"detail": "Failed to update calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request):
+        """Delete an existing calendar configuration."""
+        net_id = request.headers.get("X-NetId")
+        calendar_name = request.data.get("calendar_name")
+
+        term = request.data.get("term")
+        if not term:
+            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        term_id = AcademicTerm.objects.get(term_code=term).id
+
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        try:
+            calendar, user_inst = self.get_calendar(calendar_name, net_id, term_id)
+            print(user_inst.id)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            calendar_name = calendar.name
+            calendar.delete()
+
+            return Response({"detail": f"Calendar '{calendar_name}' deleted successfully."}, status=status.HTTP_200_OK)
+
+        except Exception:
+            return Response({"detail": "Failed to delete calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserCalendarSectionView(APIView):

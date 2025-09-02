@@ -124,10 +124,8 @@ class UserCalendarSectionSerializer(serializers.ModelSerializer):
                 {
                     "id": meeting.id,
                     "days": meeting.days,
-                    "start_time": meeting.start_time,
-                    "end_time": meeting.end_time,
-                    # "start_date": meeting.start_date,
-                    # "end_date": meeting.end_date,
+                    "start_time": meeting.start_time.strftime("%H:%M"),
+                    "end_time": meeting.end_time.strftime("%H:%M"),
                 }
                 for meeting in obj.section.classmeeting_set.all()
             ],
