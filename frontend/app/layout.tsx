@@ -17,8 +17,6 @@ import { type ReactNode, type JSX } from 'react';
 
 import { Auth0Provider } from '@auth0/nextjs-auth0';
 import { type User } from '@auth0/nextjs-auth0/types';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import SchoolIcon from '@mui/icons-material/School';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Poppins } from 'next/font/google';
@@ -60,7 +58,7 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 		{ title: 'Course Planner', href: '/calendar' },
 		{ title: 'Contact', href: '/contact' },
 	];
-	
+
 	return (
 		<Auth0Provider user={user}>
 			<Theme palette='plan'>
