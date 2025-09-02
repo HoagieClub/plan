@@ -647,7 +647,17 @@ export function Canvas({
 													wrapperStyle={wrapperStyle}
 												/>
 											) : (
-												<DashboardSearchItem key={index} course={course} />
+												<SortableItem
+													disabled={true}
+													key={index}
+													id={courseId + '|disabled'}
+													containerId={SEARCH_RESULTS_ID}
+													index={index}
+													handle={handle}
+													style={getItemStyles}
+													getIndex={getIndex}
+													wrapperStyle={searchWrapperStyle}
+												/>
 											);
 										})}
 									</SortableContext>
@@ -889,7 +899,8 @@ function SortableItem({
 
 	// For search results, render DashboardSearchItem with Item as child
 	if (containerId === SEARCH_RESULTS_ID) {
-		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === id);
+		const cleanId = id.toString().replace('|disabled', '');
+		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === cleanId);
 		if (course) {
 			return (
 				<div
@@ -901,24 +912,25 @@ function SortableItem({
 					}}
 				>
 					<DashboardSearchItem course={course}>
-						<div {...listeners} style={{ width: '100%' }}>
+						<div {...(disabled ? {} : listeners)} style={{ width: '100%' }}>
 							<Item
-								value={id}
-								handle={handle}
+								disabled={disabled}
+								value={cleanId}
+								handle={handle && !disabled}
 								style={{
 									...style({
 										containerId,
 										overIndex: -1,
 										index: getIndex ? getIndex(id) : index,
-										value: id,
+										value: cleanId,
 										isSorting: false,
 										isDragging,
 										isDragOverlay: false,
 									}),
 									width: '100%',
 								}}
-								color_primary={getPrimaryColor(id)}
-								color_secondary={getSecondaryColor(id)}
+								color_primary={getPrimaryColor(cleanId)}
+								color_secondary={getSecondaryColor(cleanId)}
 								wrapperStyle={{
 									...wrapperStyle({ index }),
 									width: '100%',
