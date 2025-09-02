@@ -145,7 +145,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									{value}
 								</div>
 
-								{/* Buttons */}
+								{/* Buttons for Registrar & Princeton Courses */}
 								<div style={{ display: 'flex', gap: '8px' }}>
 									{courseDetails?.Registrar && (
 										<a
@@ -184,7 +184,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 							</div>
 
-							{/* Distribution Area Pill */}
+							{/* Distribution Area Code */}
 							{courseDetails['Distribution Area'] && (
 								<div
 									style={{
@@ -199,17 +199,17 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									{courseDetails['Distribution Area']}
 								</div>
 							)}
-							{/* COURSE TITLE */}
+							{/* Course Title */}
 							{courseDetails['Title'] && (
 								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
 									{courseDetails['Title']}
 								</h2>
 							)}
 
-							{/* INSTRUCTORS LABEL */}
+							{/* Instructor Names */}
 							<strong style={modalTitleStyle}>Instructors</strong>
 
-							{/* INSTRUCTORS BOX */}
+							{/* Instructors Box */}
 							<div
 								style={{
 									backgroundColor: '#f5f5f5',
@@ -236,7 +236,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									<div>No instructor listed</div>
 								)}
 							</div>
-							{/* DESCRIPTION BOX */}
+							{/* Description Box */}
 
 							<strong style={modalTitleStyle}>Description</strong>
 
