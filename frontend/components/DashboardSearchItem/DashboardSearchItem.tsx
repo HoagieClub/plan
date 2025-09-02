@@ -5,10 +5,11 @@ import styles from './DashboardSearchItem.module.css';
 
 interface DashboardSearchItemProps {
 	course: Course;
+	children?: React.ReactNode; // For the draggable course chip
 	onClick?: () => void;
 }
 
-export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({ course, onClick }) => {
+export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({ course, children, onClick }) => {
 	const handleClick = () => {
 		if (onClick) {
 			onClick();
@@ -29,6 +30,11 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({ course, onCl
 						</div>
 					)}
 				</div>
+				{children && (
+					<div className={styles.chipContainer}>
+						{children}
+					</div>
+				)}
 			</div>
 		</div>
 	);

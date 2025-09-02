@@ -24,7 +24,7 @@ import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
-import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearchItem.module.css';
+import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -46,7 +46,6 @@ import type {
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
-import { getRatingBackground } from '@/utils/ratingColors';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -635,57 +634,20 @@ export function Canvas({
 									>
 										{staticSearchResults.map((course, index) => {
 											const courseId = `${course.course_id}|${course.crosslistings}`;
-											return (
-												<div className={dashboardItemStyles.card} key={index}>
-													<div className={dashboardItemStyles.content}>
-														<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-															<div className={dashboardItemStyles.title}>{course.title}</div>
-															{typeof course.rating === 'number' && (
-																<div
-																	style={{
-																		background: getRatingBackground(course.rating),
-																		color: '#111',
-																		borderRadius: '2em',
-																		fontWeight: 500,
-																		fontSize: '0.9rem',
-																		padding: '0.1em 0.8em',
-																		marginLeft: '1em',
-																		display: 'flex',
-																		alignItems: 'center',
-																		justifyContent: 'center',
-																	}}
-																>
-																	{course.rating.toFixed(2)}
-																</div>
-															)}
-														</div>
-														{items[SEARCH_RESULTS_ID].includes(courseId) ? (
-															<SortableItem
-																disabled={isSortingContainer}
-																key={index}
-																id={courseId}
-																index={index}
-																handle={handle}
-																style={getItemStyles}
-																wrapperStyle={searchWrapperStyle}
-																containerId={SEARCH_RESULTS_ID}
-																getIndex={getIndex}
-															/>
-														) : (
-															<SortableItem
-																disabled={true}
-																key={index}
-																id={courseId + '|disabled'}
-																index={index}
-																handle={handle}
-																style={getItemStyles}
-																wrapperStyle={searchWrapperStyle}
-																containerId={SEARCH_RESULTS_ID}
-																getIndex={getIndex}
-															/>
-														)}
-													</div>
-												</div>
+											return items[SEARCH_RESULTS_ID].includes(courseId) ? (
+												<SortableItem
+													key={courseId}
+													id={courseId}
+													index={index}
+													containerId={SEARCH_RESULTS_ID}
+													handle={handle}
+													style={getItemStyles}
+													onRemove={() => {}}
+													getIndex={getIndex}
+													wrapperStyle={wrapperStyle}
+												/>
+											) : (
+												<DashboardSearchItem key={index} course={course} />
 											);
 										})}
 									</SortableContext>
@@ -907,6 +869,8 @@ function SortableItem({
 	getIndex,
 	wrapperStyle,
 }: SortableItemProps) {
+	const staticSearchResults = useSearchStore((state) => state.searchResults);
+	
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
@@ -922,6 +886,51 @@ function SortableItem({
 	});
 	const mounted = useMountStatus();
 	const mountedWhileDragging = isDragging && !mounted;
+
+	// For search results, render DashboardSearchItem with Item as child
+	if (containerId === SEARCH_RESULTS_ID) {
+		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === id);
+		if (course) {
+			return (
+				<div
+					ref={disabled ? undefined : setNodeRef}
+					style={{
+						transform: CSS.Translate.toString(transform),
+						transition,
+						opacity: isDragging ? 0.5 : 1,
+					}}
+				>
+					<DashboardSearchItem course={course}>
+						<div {...listeners} style={{ width: '100%' }}>
+							<Item
+								value={id}
+								handle={handle}
+								style={{
+									...style({
+										containerId,
+										overIndex: -1,
+										index: getIndex ? getIndex(id) : index,
+										value: id,
+										isSorting: false,
+										isDragging,
+										isDragOverlay: false,
+									}),
+									width: '100%',
+								}}
+								color_primary={getPrimaryColor(id)}
+								color_secondary={getSecondaryColor(id)}
+								wrapperStyle={{
+									...wrapperStyle({ index }),
+									width: '100%',
+								}}
+								dragOverlay={false}
+							/>
+						</div>
+					</DashboardSearchItem>
+				</div>
+			);
+		}
+	}
 
 	return (
 		<Item
