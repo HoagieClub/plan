@@ -9,6 +9,7 @@ import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
+import { distributionColors } from '@/utils/distributionColors';
 
 import styles from './InfoComponent.module.css';
 
@@ -28,7 +29,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const modalRef = useRef(null);
 	const courseColor = departmentColors[dept];
+	
+	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
+	const distColor = distributionColors[distShort];
 
+	
 	useEffect(() => {
 		if (showPopup && value) {
 			const url = new URL(`${process.env.BACKEND}/course/details/`);
@@ -47,6 +52,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				});
 		}
 	}, [showPopup, value]);
+
 
 	const handleOutsideClick = (event) => {
 		if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -185,10 +191,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							</div>
 
 							{/* Distribution Area Code */}
-							{courseDetails['Distribution Area'] && (
+							{distShort && (
 								<div
 									style={{
-										backgroundColor: courseColor,
+										backgroundColor: distColor,
 										color: 'white',
 										padding: '6px 12px',
 										borderRadius: '6px',
@@ -196,7 +202,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										width: 'fit-content',
 									}}
 								>
-									{courseDetails['Distribution Area']}
+									{distShort}
 								</div>
 							)}
 							{/* Course Title */}
@@ -258,7 +264,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							style={{
 								display: 'flex',
 								justifyContent: 'flex-end',
-								padding: '8px 10px',
+								padding: '0px 8px 8px 10px',
 								height: 'auto',
 							}}
 						>
@@ -320,5 +326,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			</div>
 			{modalContent && createPortal(modalContent, document.body)}
 		</>
+		
 	);
 };
