@@ -383,7 +383,7 @@ class CalendarEvent(models.Model):
     is_chosen = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "calendar_event"
+        db_table = "CalendarEvent"
         unique_together = ("calendar_configuration", "course", "section")
 
     def __str__(self):
