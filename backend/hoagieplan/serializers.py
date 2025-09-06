@@ -2,10 +2,10 @@ from rest_framework import serializers
 
 from .models import (
     CalendarConfiguration,
+    CalendarEvent,
     ClassMeeting,
     Course,
     Section,
-    UserCalendarSection,
 )
 
 
@@ -105,7 +105,7 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
         )
 
 
-class UserCalendarSectionSerializer(serializers.ModelSerializer):
+class CalendarEventSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
 
     def get_section_details(self, obj):
@@ -132,12 +132,12 @@ class UserCalendarSectionSerializer(serializers.ModelSerializer):
         }
 
     class Meta:
-        model = UserCalendarSection
+        model = CalendarEvent
         fields = ["id", "section_details", "is_active"]
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    user_calendar_section = UserCalendarSectionSerializer(many=True, read_only=True)
+    user_calendar_section = CalendarEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
