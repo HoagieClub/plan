@@ -28,6 +28,8 @@ from hoagieplan import ical_generator
 from hoagieplan.api import details, search, tutorial, upload
 from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
+from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
+from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
 from hoagieplan.api.dashboard import requirements
 from hoagieplan.api.profile import info
 
@@ -64,5 +66,6 @@ urlpatterns = [
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
     path("upload/", upload.upload_file, name="upload_file"),
     path("api/", include("hoagieplan.api.urls")),
-    path("fetch_calendars/", configuration.CalendarConfigurationsView.as_view(), name="fetch_calendars"),
+    path("fetch_calendars/", CalendarConfigurationView.as_view(), name="fetch_calendars"),
+    path("add_course/", CalendarEventView.as_view(), name="add_course"),
 ]
