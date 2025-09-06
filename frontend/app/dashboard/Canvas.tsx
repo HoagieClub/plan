@@ -117,7 +117,6 @@ function DroppableContainer({
 				...style,
 				transition,
 				transform: CSS.Translate.toString(transform),
-				opacity: isDragging ? 0.5 : undefined,
 			}}
 			hover={isOverContainer}
 			columns={columns}
@@ -133,7 +132,7 @@ const dropAnimation: DropAnimation = {
 	sideEffects: defaultDropAnimationSideEffects({
 		styles: {
 			active: {
-				opacity: '0.5',
+				opacity: '0.9',
 			},
 		},
 	}),
@@ -634,29 +633,19 @@ export function Canvas({
 									>
 										{staticSearchResults.map((course, index) => {
 											const courseId = `${course.course_id}|${course.crosslistings}`;
-											return items[SEARCH_RESULTS_ID].includes(courseId) ? (
+											const isIncluded = items[SEARCH_RESULTS_ID].includes(courseId);
+											return (
 												<SortableItem
-													key={courseId}
-													id={courseId}
+													disabled={!isIncluded}
+													key={isIncluded ? courseId : index}
+													id={isIncluded ? courseId : courseId + '|disabled'}
 													index={index}
 													containerId={SEARCH_RESULTS_ID}
 													handle={handle}
 													style={getItemStyles}
-													onRemove={() => {}}
+													onRemove={isIncluded ? () => {} : undefined}
 													getIndex={getIndex}
-													wrapperStyle={wrapperStyle}
-												/>
-											) : (
-												<SortableItem
-													disabled={true}
-													key={index}
-													id={courseId + '|disabled'}
-													containerId={SEARCH_RESULTS_ID}
-													index={index}
-													handle={handle}
-													style={getItemStyles}
-													getIndex={getIndex}
-													wrapperStyle={searchWrapperStyle}
+													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
 												/>
 											);
 										})}
@@ -903,43 +892,34 @@ function SortableItem({
 		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === cleanId);
 		if (course) {
 			return (
-				<div
-					ref={disabled ? undefined : setNodeRef}
-					style={{
-						transform: CSS.Translate.toString(transform),
-						transition,
-						opacity: isDragging ? 0.5 : 1,
-					}}
-				>
-					<DashboardSearchItem course={course}>
-						<div {...(disabled ? {} : listeners)} style={{ width: '100%' }}>
-							<Item
-								disabled={disabled}
-								value={cleanId}
-								handle={handle && !disabled}
-								style={{
-									...style({
-										containerId,
-										overIndex: -1,
-										index: getIndex ? getIndex(id) : index,
-										value: cleanId,
-										isSorting: false,
-										isDragging,
-										isDragOverlay: false,
-									}),
-									width: '100%',
-								}}
-								color_primary={getPrimaryColor(cleanId)}
-								color_secondary={getSecondaryColor(cleanId)}
-								wrapperStyle={{
-									...wrapperStyle({ index }),
-									width: '100%',
-								}}
-								dragOverlay={false}
-							/>
-						</div>
-					</DashboardSearchItem>
-				</div>
+				<DashboardSearchItem course={course}>
+					<Item
+						disabled={disabled}
+						ref={disabled ? undefined : setNodeRef}
+						value={cleanId}
+						dragging={isDragging}
+						sorting={isSorting}
+						handle={handle && !disabled}
+						handleProps={disabled ? undefined : setActivatorNodeRef}
+						index={index}
+						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+						style={style({
+							index,
+							value: cleanId,
+							isDragging,
+							isSorting,
+							overIndex: over ? getIndex(over.id) : overIndex,
+							containerId,
+						})}
+						color_primary={getPrimaryColor(cleanId)}
+						color_secondary={getSecondaryColor(cleanId)}
+						transition={transition}
+						transform={transform}
+						fadeIn={mountedWhileDragging}
+						listeners={disabled ? undefined : listeners}
+						onRemove={() => {}}
+					/>
+				</DashboardSearchItem>
 			);
 		}
 	}
