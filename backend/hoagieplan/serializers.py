@@ -1,11 +1,11 @@
 from rest_framework import serializers
+
 from .models import (
+    CalendarConfiguration,
+    ClassMeeting,
     Course,
     Section,
-    ClassMeeting,
-    CalendarConfiguration,
-    ScheduleSelection,
-    SemesterConfiguration,
+    UserCalendarSection,
 )
 
 
@@ -92,9 +92,7 @@ class CalendarClassMeetingSerializer(serializers.ModelSerializer):
 
 # May be deprecated due to new serializers below?
 class CalendarSectionSerializer(serializers.ModelSerializer):
-    class_meetings = CalendarClassMeetingSerializer(
-        source="classmeeting_set", many=True, read_only=True
-    )
+    class_meetings = CalendarClassMeetingSerializer(source="classmeeting_set", many=True, read_only=True)
 
     class Meta:
         model = Section
@@ -107,7 +105,7 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
         )
 
 
-class ScheduleSelectionSerializer(serializers.ModelSerializer):
+class UserCalendarSectionSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
 
     def get_section_details(self, obj):
@@ -117,42 +115,33 @@ class ScheduleSelectionSerializer(serializers.ModelSerializer):
                 "guid": obj.section.course.guid,
                 "title": obj.section.course.title,
                 "catalog_number": obj.section.course.catalog_number,
-                "distribution_area_name": obj.section.course.distribution_area_name,
+                "distribution_area_long": obj.section.course.distribution_area_long,
                 "distribution_area_short": obj.section.course.distribution_area_short,
                 "grading_basis": obj.section.course.grading_basis,
             },
-            "section_number": obj.section.section_number,
+            "class_number": obj.section.class_number,
             "class_meetings": [
                 {
                     "id": meeting.id,
                     "days": meeting.days,
                     "start_time": meeting.start_time,
                     "end_time": meeting.end_time,
-                    "start_date": meeting.start_date,
-                    "end_date": meeting.end_date,
+                    # "start_date": meeting.start_date,
+                    # "end_date": meeting.end_date,
                 }
-                for meeting in obj.section.class_meetings.all()
+                for meeting in obj.section.classmeeting_set.all()
             ],
         }
 
     class Meta:
-        model = ScheduleSelection
-        fields = ["id", "section_details", "index", "name", "is_active"]
-
-
-class SemesterConfigurationSerializer(serializers.ModelSerializer):
-    schedule_selections = ScheduleSelectionSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = SemesterConfiguration
-        fields = ["id", "term", "schedule_selections"]
+        model = UserCalendarSection
+        fields = ["id", "section_details", "is_active"]
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    semester_configurations = SemesterConfigurationSerializer(many=True, read_only=True)
+    user_calendar_section = UserCalendarSectionSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
-        fields = ["id", "user", "name", "semester_configurations"]
+        fields = ["id", "user", "name", "term", "user_calendar_section"]
         read_only_fields = ["id", "user"]
-        

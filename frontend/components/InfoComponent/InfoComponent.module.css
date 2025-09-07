@@ -49,8 +49,6 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-
-
 @media (hover: hover) {
 	.Action:hover {
 		background-color: var(--action-background, rgba(0, 0, 0, 0.05));

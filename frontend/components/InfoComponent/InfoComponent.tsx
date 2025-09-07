@@ -150,6 +150,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								>
 									{value}
 								</div>
+<<<<<<< HEAD
 
 								{/* Buttons for Registrar & Princeton Courses */}
 								<div style={{ display: 'flex', gap: '8px' }}>
@@ -257,6 +258,25 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								}}
 							>
 								{courseDetails['Description']}
+=======
+								{Object.entries(courseDetails).map(([key, value]) => (
+									<div key={key} className={styles.detailRow}>
+										<strong className={styles.strong}>{key}: </strong>
+										{key === 'Registrar' ? (
+											<a
+												href={value as string}
+												target='_blank'
+												rel='noopener noreferrer'
+												className={styles.hoverLink}
+											>
+												Link to Registrar
+											</a>
+										) : (
+											value
+										)}
+									</div>
+								))}
+>>>>>>> dev
 							</div>
 						</div>
 						{/* ReviewMenu with explicit width */}
