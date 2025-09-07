@@ -16,12 +16,9 @@ from hoagieplan.serializers import (
 class CalendarConfigurationView(APIView):
     DEFAULT_CALENDAR_NAME = "My Calendar"
 
-    def get(self, request) -> Response:
+    def get(self, request, net_id: str, term: int) -> Response:
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
-        net_id = request.headers.get("X-NetId")
-        term = request.data.get("term")
-
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
 
         try:
             user_inst = CustomUser.objects.get(net_id=net_id)
@@ -29,34 +26,30 @@ class CalendarConfigurationView(APIView):
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if term:
-            term_id = AcademicTerm.objects.get(term_code=term).id
-
-            queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
+            try:
+                term_id = AcademicTerm.objects.get(term_code=term).id
+                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
+            except AcademicTerm.DoesNotExist:
+                return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
             queryset = CalendarConfiguration.objects.filter(user=user_inst)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def post(self, request) -> Response:
+    def put(self, request, net_id: str, term: int) -> Response:
         """Create a new calendar configuration for the user."""
-        net_id = request.headers.get("X-NetId")
-
-        term = request.data.get("term")
-        if not term:
-            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         term_id = AcademicTerm.objects.get(term_code=term).id
 
         calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         try:
-            user_inst = CustomUser.objects.get(net_id=net_id)
-        except CustomUser.DoesNotExist:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            user_inst = get_user(net_id)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             calendar_config, created = CalendarConfiguration.objects.get_or_create(
@@ -74,25 +67,22 @@ class CalendarConfigurationView(APIView):
         except Exception:
             return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def put(self, request) -> Response:
+    def post(self, request, net_id: str, term: int) -> Response:
         """Update an existing calendar configuration."""
-        net_id = request.headers.get("X-NetId")
-        calendar_name = request.data.get("calendar_name")
-        term = request.data.get("term")
-        if not term:
-            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         term_id = AcademicTerm.objects.get(term_code=term).id
 
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        calendar_name = request.data.get("calendar_name")
+        if not calendar_name:
+            return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user_inst = get_user(net_id)
-            calendar, user_inst = get_calendar(user_inst, calendar_name, term_id)
+            calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         new_calendar_name = request.data.get("new_calendar_name")
-
         try:
             # Check if there exists another calendar with the new calendar name
             existing = (
@@ -115,21 +105,18 @@ class CalendarConfigurationView(APIView):
         except Exception:
             return Response({"detail": "Failed to update calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def delete(self, request) -> Response:
+    def delete(self, request, net_id: str, term: int) -> Response:
         """Delete an existing calendar configuration."""
-        net_id = request.headers.get("X-NetId")
-        calendar_name = request.data.get("calendar_name")
-
-        term = request.data.get("term")
-        if not term:
-            return Response({"detail": "Term is required."}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         term_id = AcademicTerm.objects.get(term_code=term).id
 
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        calendar_name = request.data.get("calendar_name")
+        if not calendar_name:
+            return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user_inst = get_user(net_id)
-            calendar, user_inst = get_calendar(user_inst, calendar_name, term_id)
+            calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 

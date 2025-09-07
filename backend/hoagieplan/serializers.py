@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, CourseEvaluations, Section
+from .models import (
+    CalendarConfiguration,
+    CalendarEvent,
+    ClassMeeting,
+    Course,
+    Section,
+)
 
 
 class ClassMeetingSerializer(serializers.ModelSerializer):
@@ -121,28 +127,39 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
 
 class CalendarEventSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
+    course_details = serializers.SerializerMethodField()
+    calendar_configuration_details = serializers.SerializerMethodField()
 
     def get_section_details(self, obj):
         return {
             "id": obj.section.id,
-            "course": {
-                "guid": obj.section.course.guid,
-                "title": obj.section.course.title,
-                "catalog_number": obj.section.course.catalog_number,
-                "distribution_area_long": obj.section.course.distribution_area_long,
-                "distribution_area_short": obj.section.course.distribution_area_short,
-                "grading_basis": obj.section.course.grading_basis,
-            },
             "class_number": obj.section.class_number,
             "class_meetings": [
                 {
                     "id": meeting.id,
                     "days": meeting.days,
-                    "start_time": meeting.start_time.strftime("%H:%M"),
-                    "end_time": meeting.end_time.strftime("%H:%M"),
+                    "start_time": meeting.start_time.strftime("%H:%M") if meeting.start_time else None,
+                    "end_time": meeting.end_time.strftime("%H:%M") if meeting.end_time else None,
                 }
                 for meeting in obj.section.classmeeting_set.all()
             ],
+        }
+
+    def get_course_details(self, obj):
+        return {
+            "guid": obj.course.guid,
+            "title": obj.course.title,
+            "catalog_number": obj.course.catalog_number,
+            "distribution_area_long": obj.course.distribution_area_long,
+            "distribution_area_short": obj.course.distribution_area_short,
+            "grading_basis": obj.course.grading_basis,
+        }
+
+    def get_calendar_configuration_details(self, obj):
+        return {
+            "id": obj.calendar_configuration.id,
+            "name": obj.calendar_configuration.name,
+            "term": str(obj.calendar_configuration.term) if obj.calendar_configuration.term else None,
         }
 
     class Meta:
@@ -151,9 +168,9 @@ class CalendarEventSerializer(serializers.ModelSerializer):
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    user_calendar_section = CalendarEventSerializer(many=True, read_only=True)
+    calendar_events = CalendarEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
-        fields = ["id", "user", "name", "term", "user_calendar_section"]
+        fields = ["id", "user", "name", "term", "calendar_events"]
         read_only_fields = ["id", "user"]
