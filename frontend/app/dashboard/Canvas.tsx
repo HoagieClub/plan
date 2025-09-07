@@ -24,7 +24,7 @@ import { createPortal } from 'react-dom';
 
 import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
-import dashboardItemStyles from '@/components/DashboardSearchItem/DashboardSearchItem.module.css';
+import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -117,7 +117,6 @@ function DroppableContainer({
 				...style,
 				transition,
 				transform: CSS.Translate.toString(transform),
-				opacity: isDragging ? 0.5 : undefined,
 			}}
 			hover={isOverContainer}
 			columns={columns}
@@ -133,7 +132,7 @@ const dropAnimation: DropAnimation = {
 	sideEffects: defaultDropAnimationSideEffects({
 		styles: {
 			active: {
-				opacity: '0.5',
+				opacity: '0.9',
 			},
 		},
 	}),
@@ -634,37 +633,20 @@ export function Canvas({
 									>
 										{staticSearchResults.map((course, index) => {
 											const courseId = `${course.course_id}|${course.crosslistings}`;
+											const isIncluded = items[SEARCH_RESULTS_ID].includes(courseId);
 											return (
-												<div className={dashboardItemStyles.card} key={index}>
-													<div className={dashboardItemStyles.content}>
-														<div className={dashboardItemStyles.title}>{course.title}</div>
-														{items[SEARCH_RESULTS_ID].includes(courseId) ? (
-															<SortableItem
-																disabled={isSortingContainer}
-																key={index}
-																id={courseId}
-																index={index}
-																handle={handle}
-																style={getItemStyles}
-																wrapperStyle={searchWrapperStyle}
-																containerId={SEARCH_RESULTS_ID}
-																getIndex={getIndex}
-															/>
-														) : (
-															<SortableItem
-																disabled={true}
-																key={index}
-																id={courseId + '|disabled'}
-																index={index}
-																handle={handle}
-																style={getItemStyles}
-																wrapperStyle={searchWrapperStyle}
-																containerId={SEARCH_RESULTS_ID}
-																getIndex={getIndex}
-															/>
-														)}
-													</div>
-												</div>
+												<SortableItem
+													disabled={!isIncluded}
+													key={isIncluded ? courseId : index}
+													id={isIncluded ? courseId : courseId + '|disabled'}
+													index={index}
+													containerId={SEARCH_RESULTS_ID}
+													handle={handle}
+													style={getItemStyles}
+													onRemove={isIncluded ? () => {} : undefined}
+													getIndex={getIndex}
+													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
+												/>
 											);
 										})}
 									</SortableContext>
@@ -886,6 +868,8 @@ function SortableItem({
 	getIndex,
 	wrapperStyle,
 }: SortableItemProps) {
+	const staticSearchResults = useSearchStore((state) => state.searchResults);
+	
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
@@ -901,6 +885,44 @@ function SortableItem({
 	});
 	const mounted = useMountStatus();
 	const mountedWhileDragging = isDragging && !mounted;
+
+	// For search results, render DashboardSearchItem with Item as child
+	if (containerId === SEARCH_RESULTS_ID) {
+		const cleanId = id.toString().replace('|disabled', '');
+		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === cleanId);
+		if (course) {
+			return (
+				<DashboardSearchItem course={course}>
+					<Item
+						disabled={disabled}
+						ref={disabled ? undefined : setNodeRef}
+						value={cleanId}
+						dragging={isDragging}
+						sorting={isSorting}
+						handle={handle && !disabled}
+						handleProps={disabled ? undefined : setActivatorNodeRef}
+						index={index}
+						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+						style={style({
+							index,
+							value: cleanId,
+							isDragging,
+							isSorting,
+							overIndex: over ? getIndex(over.id) : overIndex,
+							containerId,
+						})}
+						color_primary={getPrimaryColor(cleanId)}
+						color_secondary={getSecondaryColor(cleanId)}
+						transition={transition}
+						transform={transform}
+						fadeIn={mountedWhileDragging}
+						listeners={disabled ? undefined : listeners}
+						onRemove={() => {}}
+					/>
+				</DashboardSearchItem>
+			);
+		}
+	}
 
 	return (
 		<Item
