@@ -345,30 +345,49 @@ class CalendarConfiguration(models.Model):
         return f"{self.user.username}: {self.name} ({self.term})"
 
 
-# Table for storing the courses that belong to each calendar configuration
-class UserCalendarSection(models.Model):
+# Table for storing the events that belong to each calendar configuration
+class CalendarEvent(models.Model):
     # The calendar configuration this course belongs to
     calendar_configuration = models.ForeignKey(
         CalendarConfiguration,
         on_delete=models.CASCADE,
-        related_name="user_calendar_section",
+        related_name="calendar_events",
+        db_index=True,
+    )
+    # The course that the calendar event belongs to
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
+    # The section that the calendar event represents
+    section = models.ForeignKey(
+        Section,
+        on_delete=models.CASCADE,
         db_index=True,
     )
 
-    # The section that is in this calendar configuration
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True)
+    # Start time of the event
+    start_time = models.TimeField(db_index=True, null=True)
+    # End time of the event
+    end_time = models.TimeField(db_index=True, null=True)
 
-    # Whether this section is active/chosen in the calendar
-    is_active = models.BooleanField(default=True)
+    # The weekday column that the event belongs in
+    start_column_index = models.IntegerField()
 
-    # Timestamp for when this row was created
-    created_at = models.DateTimeField(auto_now_add=True)
-    # Timestamp for when this row was last updated
-    updated_at = models.DateTimeField(auto_now=True)
+    # Whether the event is visible in the calendar
+    is_active = models.BooleanField(default=False)
+    # Whether the event can be chosen by the user (if there are alternatives)
+    needs_choice = models.BooleanField(default=False)
+    # Whether the event is chosen among alternatives
+    is_chosen = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "UserCalendarSection"
-        unique_together = ("calendar_configuration", "section")
+        db_table = "CalendarEvent"
+        unique_together = ("calendar_configuration", "course", "section")
+
+    def __str__(self):
+        return f"{self.course} - {self.section}"
 
 
 class CourseEvaluations(models.Model):

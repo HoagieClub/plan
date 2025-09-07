@@ -1,13 +1,6 @@
 from rest_framework import serializers
 
-from .models import (
-    CalendarConfiguration,
-    ClassMeeting,
-    Course,
-    Section,
-    UserCalendarSection,
-    CourseEvaluations
-)
+from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, CourseEvaluations, Section
 
 
 class ClassMeetingSerializer(serializers.ModelSerializer):
@@ -79,15 +72,14 @@ class CourseSerializer(serializers.ModelSerializer):
         # Get the course_id part from guid (last 6 characters)
         if not obj.course_id:
             return None
-            
+
         # Find the most recent evaluation for this course_id across all terms
         # The course_guid in CourseEvaluations is in format: {term}{course_id}
         # We want to find all evaluations for this course_id and get the most recent one
         evaluations = CourseEvaluations.objects.filter(
-            course_guid__endswith=obj.course_id,
-            quality_of_course__isnull=False
-        ).order_by('-course_guid')  # Order by course_guid descending to get most recent term
-        
+            course_guid__endswith=obj.course_id, quality_of_course__isnull=False
+        ).order_by("-course_guid")  # Order by course_guid descending to get most recent term
+
         evaluation = evaluations.first()
         if evaluation and evaluation.quality_of_course:
             return round(evaluation.quality_of_course, 2)
@@ -127,7 +119,7 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
         )
 
 
-class UserCalendarSectionSerializer(serializers.ModelSerializer):
+class CalendarEventSerializer(serializers.ModelSerializer):
     section_details = serializers.SerializerMethodField()
 
     def get_section_details(self, obj):
@@ -156,12 +148,12 @@ class UserCalendarSectionSerializer(serializers.ModelSerializer):
         }
 
     class Meta:
-        model = UserCalendarSection
+        model = CalendarEvent
         fields = ["id", "section_details", "is_active"]
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    user_calendar_section = UserCalendarSectionSerializer(many=True, read_only=True)
+    user_calendar_section = CalendarEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration

@@ -10,11 +10,11 @@ from hoagieplan.models import (
     ClassMeeting,
     CustomUser,
     Section,
-    UserCalendarSection,
+    CalendarEvent,
 )
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
-    UserCalendarSectionSerializer,
+    CalendarEventSerializer,
 )
 
 
@@ -163,22 +163,22 @@ class CalendarConfigurationsView(APIView):
             )
 
 
-class UserCalendarSectionView(APIView):
+class CalendarEventView(APIView):
     def get_object(self, request, configuration_id, term_code, index):
         try:
-            return UserCalendarSection.objects.get(
+            return CalendarEvent.objects.get(
                 semester_configuration__calendar_configuration_id=configuration_id,
                 semester_configuration__calendar_configuration__user=request.user,
                 semester_configuration__term__term_code=term_code,
                 index=index,
             )
-        except UserCalendarSection.DoesNotExist:
+        except CalendarEvent.DoesNotExist:
             return None
 
     def put(self, request, configuration_id, term_code, index):
         schedule_selection = self.get_object(request, configuration_id, term_code, index)
         if schedule_selection:
-            serializer = UserCalendarSectionSerializer(schedule_selection, data=request.data, partial=True)
+            serializer = CalendarEventSerializer(schedule_selection, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
