@@ -29,11 +29,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const modalRef = useRef(null);
 	const courseColor = departmentColors[dept];
-	
+
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
 	const distColor = distributionColors[distShort];
 
-	
 	useEffect(() => {
 		if (showPopup && value) {
 			const url = new URL(`${process.env.BACKEND}/course/details/`);
@@ -52,7 +51,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				});
 		}
 	}, [showPopup, value]);
-
 
 	const handleOutsideClick = (event) => {
 		if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -150,7 +148,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								>
 									{value}
 								</div>
-<<<<<<< HEAD
 
 								{/* Buttons for Registrar & Princeton Courses */}
 								<div style={{ display: 'flex', gap: '8px' }}>
@@ -160,7 +157,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											target='_blank'
 											style={{
 												backgroundColor: '#f0f0f0',
-												padding: '6px 12px',
+												padding: '8px 12px',
 												borderRadius: '8px',
 												fontWeight: 600,
 												color: '#333',
@@ -179,7 +176,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										target='_blank'
 										style={{
 											backgroundColor: '#f0f0f0',
-											padding: '8px 10px',
+											padding: '8px 12px',
 											borderRadius: '8px',
 											fontWeight: 600,
 											color: '#333',
@@ -258,25 +255,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								}}
 							>
 								{courseDetails['Description']}
-=======
-								{Object.entries(courseDetails).map(([key, value]) => (
-									<div key={key} className={styles.detailRow}>
-										<strong className={styles.strong}>{key}: </strong>
-										{key === 'Registrar' ? (
-											<a
-												href={value as string}
-												target='_blank'
-												rel='noopener noreferrer'
-												className={styles.hoverLink}
-											>
-												Link to Registrar
-											</a>
-										) : (
-											value
-										)}
-									</div>
-								))}
->>>>>>> dev
 							</div>
 						</div>
 						{/* ReviewMenu with explicit width */}
@@ -346,6 +324,5 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			</div>
 			{modalContent && createPortal(modalContent, document.body)}
 		</>
-		
 	);
 };
