@@ -869,7 +869,6 @@ function SortableItem({
 	wrapperStyle,
 }: SortableItemProps) {
 	const staticSearchResults = useSearchStore((state) => state.searchResults);
-
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
