@@ -98,7 +98,7 @@ function DroppableContainer({
 	items: UniqueIdentifier[];
 	style?: CSSProperties;
 }) {
-x	const { active, over, setNodeRef, transition, transform } = useSortable({
+	const { active, over, setNodeRef, transition, transform } = useSortable({
 		id,
 		data: {
 			type: 'container',
