@@ -869,7 +869,7 @@ function SortableItem({
 	wrapperStyle,
 }: SortableItemProps) {
 	const staticSearchResults = useSearchStore((state) => state.searchResults);
-	
+
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
@@ -889,7 +889,7 @@ function SortableItem({
 	// For search results, render DashboardSearchItem with Item as child
 	if (containerId === SEARCH_RESULTS_ID) {
 		const cleanId = id.toString().replace('|disabled', '');
-		const course = staticSearchResults.find(c => `${c.course_id}|${c.crosslistings}` === cleanId);
+		const course = staticSearchResults.find((c) => `${c.course_id}|${c.crosslistings}` === cleanId);
 		if (course) {
 			return (
 				<DashboardSearchItem course={course}>
