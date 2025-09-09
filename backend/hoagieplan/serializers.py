@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from .models import (
-    CalendarConfiguration,
-    CalendarEvent,
-    ClassMeeting,
-    Course,
-    Section,
-)
+from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, CourseEvaluations, Section
 
 
 class ClassMeetingSerializer(serializers.ModelSerializer):
