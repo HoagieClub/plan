@@ -384,7 +384,7 @@ class CalendarEvent(models.Model):
 
     class Meta:
         db_table = "CalendarEvent"
-        unique_together = ("calendar_configuration", "course", "section")
+        unique_together = ("calendar_configuration", "course", "section", "start_column_index")
 
     def __str__(self):
         return f"{self.course} - {self.section}"
