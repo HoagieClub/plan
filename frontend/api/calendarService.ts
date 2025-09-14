@@ -25,7 +25,7 @@ const CalendarConfigurationSchema = z.object({
 	user: z.number(), // User id
 	name: z.string(),
 	term: z.number(), // Term id
-	calendar_events: z.any(),
+	calendar_events: z.array(CalendarEventSchema),
 });
 
 const CalendarEventArraySchema = z.array(CalendarEventSchema);
@@ -46,7 +46,7 @@ export class CalendarService {
 	// Returns the list of all calendars for the user
 	public async getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
 		try {
-			const url = this.buildUrl(term);
+			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, this.getGetRequestDetails());
 
 			if (!response.ok) {
@@ -76,7 +76,7 @@ export class CalendarService {
 	public async createCalendar(calendarName: string, term: number): Promise<any> {
 		console.log(`Trying to create calendar with name ${calendarName}`);
 		try {
-			const url = this.buildUrl(term);
+			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
 				...this.getPutRequestDetails(),
 				body: JSON.stringify({ calendar_name: calendarName }),
@@ -106,7 +106,7 @@ export class CalendarService {
 	): Promise<void> {
 		console.log(`Trying to update calendar ${calendarName} to ${newCalendarName}`);
 		try {
-			const url = this.buildUrl(term);
+			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
 				...this.getPostRequestDetails(),
 				body: JSON.stringify({
@@ -133,7 +133,7 @@ export class CalendarService {
 	public async deleteCalendar(calendarName: string, term: number): Promise<void> {
 		console.log(`Deleting calendar: ${calendarName}`);
 		try {
-			const url = this.buildUrl(term);
+			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
 				...this.getDeleteRequestDetails(),
 				body: JSON.stringify({ calendar_name: calendarName }),
@@ -155,16 +155,15 @@ export class CalendarService {
 
 	public async getCalendarEvents(calendarName: string, term: number): Promise<CalendarEvent[]> {
 		try {
-			const response = await fetch(CALENDAR_EVENTS_URL, {
-				...this.getGetRequestDetails(),
-				body: JSON.stringify({ calendar_name: calendarName, term: term }),
-			});
+			const url = this.buildCalendarEventsUrl(calendarName, term);
+			const response = await fetch(url, this.getGetRequestDetails());
 
 			if (!response.ok) {
 				return null;
 			}
 
 			const rawData = await response.json();
+			console.log(rawData);
 			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
 
 			console.log('Fetched calendar events:', validatedData);
@@ -176,18 +175,54 @@ export class CalendarService {
 		}
 	}
 
-	private buildUrl(term: number): string {
+	public async addCourseToCalendar(
+		calendarName: string,
+		term: number,
+		guid: string
+	): Promise<CalendarEvent[]> {
+		try {
+			console.log('Adding course to calendar: ', calendarName, term, guid);
+			const url = this.buildCalendarEventsUrl(calendarName, term);
+			const response = await fetch(url, {
+				...this.getPostRequestDetails(),
+				body: JSON.stringify({ guid: guid }),
+			});
+
+			if (!response.ok) {
+				return null;
+			}
+
+			const rawData = await response.json();
+			console.log(rawData);
+			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
+			console.log('Fetched calendar events:', validatedData);
+			return validatedData;
+		} catch (error) {
+			// TODO: Handle error
+			console.log('Some other fetch error occurred:', error);
+			return null;
+		}
+	}
+
+	private buildCalendarsUrl(term: number): string {
 		const encodedNetId = encodeURIComponent(this.netId);
 		const encodedTerm = encodeURIComponent(term.toString());
 
 		return `${CALENDARS_URL}${encodedNetId}/${encodedTerm}`;
 	}
 
+	private buildCalendarEventsUrl(calendarName: string, term: number): string {
+		const encodedNetId = encodeURIComponent(this.netId);
+		const encodedCalendarName = encodeURIComponent(calendarName.toString());
+		const encodedTerm = encodeURIComponent(term.toString());
+
+		return `${CALENDAR_EVENTS_URL}${encodedNetId}/${encodedCalendarName}/${encodedTerm}`;
+	}
+
 	private getRequestDetails(): RequestInit {
 		return {
 			headers: {
 				'Content-Type': 'application/json',
-				'X-NetId': this.netId,
 			},
 			credentials: 'include',
 		};

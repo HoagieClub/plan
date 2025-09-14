@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.api.model_getters import get_calendar, get_user
+from hoagieplan.api.model_getters import get_calendar, get_term, get_user
 from hoagieplan.models import (
     AcademicTerm,
     CalendarConfiguration,
@@ -70,13 +70,13 @@ class CalendarConfigurationView(APIView):
     def post(self, request, net_id: str, term: int) -> Response:
         """Update an existing calendar configuration."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        term_id = AcademicTerm.objects.get(term_code=term).id
 
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            term_id = get_term(term).id
             user_inst = get_user(net_id)
             calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
