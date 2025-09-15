@@ -31,7 +31,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const courseColor = departmentColors[dept];
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
-	const distColor = distributionColors[distShort];
+	const isMultiDist = distShort.includes('OR');
+	const distColor = isMultiDist ? '#A0AEC0' : distributionColors[distShort];
 
 	useEffect(() => {
 		if (showPopup && value) {
