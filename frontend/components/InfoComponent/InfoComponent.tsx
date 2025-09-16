@@ -9,7 +9,7 @@ import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
-import { distributionColors } from '@/utils/distributionColors';
+import { getDistributionColors } from '@/utils/distributionColors';
 
 import styles from './InfoComponent.module.css';
 
@@ -31,8 +31,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const courseColor = departmentColors[dept];
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
-	const isMultiDist = distShort.includes('OR');
-	const distColor = isMultiDist ? '#A0AEC0' : distributionColors[distShort];
+	const distColor = getDistributionColors(distShort);
 
 	useEffect(() => {
 		if (showPopup && value) {
