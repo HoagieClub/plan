@@ -59,8 +59,8 @@ def parse_evaluations(eval_str):
 
 
 def parse_comments(comment_str):
-    comments = comment_str.strip().split('",\n    "')
-    return [comment.strip('",') for comment in comments]
+    comments = comment_str.strip().split('","')
+    return [comment.strip().strip('"') for comment in comments]
 
 
 def count_rows(file_path):

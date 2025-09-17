@@ -20,7 +20,13 @@ req_list:
     min_needed: ALL
     max_counted: 1
     explanation: |-
-      The prerequisites for entering the Department of Psychology are the successful graded completion (without pass/D/fail) of PSY 251 (Quantitative Methods) or a preapproved statistics course in another department (for example, ORF 245 or ECO 202, SPI 200, SML 201, or POL 345), along with two other courses from the following list.
+      The prerequisites for entering the Department of Psychology are the successful graded completion (without pass/D/fail) of PSY 251 (Quantitative Methods) or a preapproved statistics course in another department (for example, ORF 245 or ECO 202, SPI 200, SML 201, or POL 345), along with two other courses from the following list. <br><br>
+
+      If a student did not complete them as prerequisites, the following courses must be taken
+      as one or more of the eight departmental courses: <br><br>
+      
+      PSY 252 (Social Psychology), PSY 255 (Cognitive Psychology), and NEU 200/PSY 200
+      (Functional Neuroanatomy) or NEU 201/PSY 258 (Fundamentals of Neuroscience)
     completed_by_semester: 4
     req_list:
       - name: Statistics
@@ -42,28 +48,6 @@ req_list:
           - PSY 254
           - PSY 255
           - PSY 258
-          - NEU 200
-          - NEU 201
-  - name: Prerequisites
-    min_needed: 2
-    max_counted: 1
-    explanation: |-
-      If a student did not complete them as prerequisites, the following courses must be taken
-      as one or more of the eight departmental courses. <br><br>
-      
-      PSY 252 (Social Psychology), PSY 255 (Cognitive Psychology), and NEU 200/PSY 200
-      (Functional Neuroanatomy) or NEU 201/PSY 258 (Fundamentals of Neuroscience)
-    req_list:
-      - name: Social & Cognitive Psychology
-        min_needed: 2
-        max_counted: 1
-        course_list:
-          - PSY 252
-          - PSY 255
-      - name: Neuroscience Courses
-        min_needed: 2
-        max_counted: 1
-        course_list:
           - NEU 200
           - NEU 201
   - name: Research Methods

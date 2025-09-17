@@ -27,7 +27,8 @@ EVALS_CSV = "./evals.csv"
 
 
 def fetch_courses() -> list[tuple[str, str]]:
-    """Fetches unique course IDs and academic terms from the Course model.
+    """Fetch unique course IDs and academic terms from the Course model.
+
     :return: A list of tuples containing course_id and term.
     """
     courses: list[str] = Course.objects.all().values_list("guid", flat=True)
@@ -37,6 +38,7 @@ def fetch_courses() -> list[tuple[str, str]]:
 
 def authenticate(scraper: webdriver.Remote) -> None:
     """Authenticate the scraper into the course evaluation portal.
+
     :param scraper: Selenium WebDriver instance.
     """
     login_url: str = "https://registrarapps.princeton.edu/course-evaluation"
@@ -46,18 +48,30 @@ def authenticate(scraper: webdriver.Remote) -> None:
     login_button = scraper.find_element(By.CSS_SELECTOR, "button.mdc-button.mdc-button--raised.btn.btn-primary")
     login_button.click()
 
-    # Wait for login to complete
-    login_buffer: int = 30
+    # Wait for login to complete. Need to do Duo push authentication.
+    login_buffer: int = 10
     for remaining in range(login_buffer, 0, -1):
         sys.stdout.write("\r")
-        sys.stdout.write("Waiting for login to complete: {:2d} seconds remaining.".format(remaining))
+        sys.stdout.write("Waiting for login to complete: {:2d} seconds remaining.\n".format(remaining))
         sys.stdout.flush()
         time.sleep(1)
+
+    # Wait for authentication to complete
+    time.sleep(2)
+
+    # Click the "Trust Browser" button
+    if scraper.title != "Course Evaluation Results":
+        trust_button_button = scraper.find_element(By.ID, "trust-browser-button")
+        trust_button_button.click()
+        print("Trust browser button clicked. Waiting for login to complete...")
+
+    time.sleep(2)
     sys.stdout.write("\rLogin attempt complete.                            \n")
 
 
 def scrape_scores(soup: BeautifulSoup) -> dict[str, float]:
-    """Extracts scores from a BeautifulSoup object.
+    """Extract scores from a BeautifulSoup object.
+
     :param soup: BeautifulSoup object containing the HTML content.
     :return: Dictionary of scores.
     """
@@ -71,7 +85,8 @@ def scrape_scores(soup: BeautifulSoup) -> dict[str, float]:
 
 
 def scrape_comments(soup: BeautifulSoup) -> list[str]:
-    """Extracts comments from a BeautifulSoup object.
+    """Extract comments from a BeautifulSoup object.
+
     :param soup: BeautifulSoup object containing the HTML content.
     :return: List of comments.
     """
@@ -79,8 +94,8 @@ def scrape_comments(soup: BeautifulSoup) -> list[str]:
 
 
 def save(data: str, term: str, course_id: str) -> None:
-    """Saves scraped data to a CSV file. Writes headers only if the file is being created,
-    and appends data without overwriting existing content.
+    """Append data to evals.csv file or create it if it doesn't exist.
+
     :param data: HTML content as a string.
     :param term: Term identifier.
     :param course_id: Course identifier.
@@ -117,7 +132,8 @@ def save(data: str, term: str, course_id: str) -> None:
 
 
 def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
-    """Scrapes course evaluation data for a specific term and course ID.
+    """Scrape course evaluation data for a specific term and course ID.
+
     :param term: Term identifier.
     :param course_id: Course identifier.
     """
@@ -126,12 +142,18 @@ def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
     save(content, term, course_id)
 
 
+# Usage: python fetch_evals.py
+# Need to go Duo push authentication when the script is ran.
 def main() -> None:
     # Can multithread or parallelize this in the future to make it faster
     options: Options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     service: Service = Service(ChromeDriverManager().install())
     service.start()
-    scraper: webdriver.Remote = webdriver.Remote(service.service_url, options=options)
+    scraper: webdriver.Remote = webdriver.Chrome(service = service, options=options)
     authenticate(scraper)
 
     start_time: float = time.time()

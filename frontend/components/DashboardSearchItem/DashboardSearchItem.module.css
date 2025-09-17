@@ -29,7 +29,39 @@
 .title {
 	color: #6b7280;
 	line-height: 1.4;
-	margin-bottom: 0.8vw;
+	margin-top: 0.4vw;
+	margin-bottom: 0.4vw;
+	flex: 1;
+}
+
+.titleRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.rating {
+	padding: 2px 8px;
+	border-radius: 12px;
+	color: white;
+	font-size: 0.75rem;
+	font-weight: 600;
+	min-width: 40px;
+	text-align: center;
+	margin-left: 8px;
+	flex-shrink: 0;
+}
+
+.chipContainer {
+	margin-top: 0.5rem;
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.chipContainer > * {
+	width: 100%;
 }
 
 .meta {

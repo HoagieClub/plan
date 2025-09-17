@@ -160,6 +160,7 @@ BSE_MAJORS = {
 
 LANG_DEPTS = {
     "ARA": "Arabic",
+    "ASL": "American Sign Language",
     "SLA": "Slavic Languages and Lit",  # TODO: confirm
     "CHI": "Chinese",
     "CZE": "Czech",
