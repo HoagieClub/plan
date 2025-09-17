@@ -153,43 +153,30 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								{/* Buttons for Registrar & Princeton Courses */}
 								<div style={{ display: 'flex', gap: '8px' }}>
 									{courseDetails?.Registrar && (
-										<a
+										<JoyButton
+											variant='soft'
+											color='neutral'
+											component='a'
 											href={courseDetails.Registrar}
-											target='_blank'
-											className={styles.Link}
-											style={{
-												backgroundColor: '#f0f0f0',
-												padding: '8px 12px',
-												borderRadius: '8px',
-												fontWeight: 600,
-												textAlign: 'center',
-												color: '#333',
-												display: 'block',
-											}}
+											sx={{ ml: 2 }}
+											size='md'
 										>
 											Registrar
-										</a>
+										</JoyButton>
 									)}
-
-									<a
+									<JoyButton
+										variant='soft'
+										color='neutral'
+										component='a'
 										href={`https://www.princetoncourses.com/course/${
 											new URL(courseDetails.Registrar).searchParams.get('term') +
 											new URL(courseDetails.Registrar).searchParams.get('courseid')
 										}`}
-										target='_blank'
-										className={styles.Link}
-										style={{
-											backgroundColor: '#f0f0f0',
-											padding: '8px 12px',
-											borderRadius: '8px',
-											fontWeight: 600,
-											textAlign: 'center',
-											color: '#333',
-											display: 'block',
-										}}
+										sx={{ ml: 2 }}
+										size='md'
 									>
 										Princeton Courses
-									</a>
+									</JoyButton>
 								</div>
 							</div>
 
