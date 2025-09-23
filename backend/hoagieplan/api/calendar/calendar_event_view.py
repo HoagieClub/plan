@@ -6,7 +6,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.api.model_getters import get_calendar, get_term, get_user
+from hoagieplan.api.model_getters import (
+    get_calendar,
+    get_calendar_event,
+    get_calendar_events,
+    get_course,
+    get_section,
+    get_term,
+    get_user,
+)
 from hoagieplan.models import CalendarEvent, ClassMeeting, Course, Section
 from hoagieplan.serializers import CalendarEventSerializer
 from hoagieplan.utils import get_term_and_course_id
@@ -32,7 +40,6 @@ class CalendarEventView(APIView):
             user_inst = get_user(net_id)
             calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
-            print("Error:", str(e))
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         queryset = CalendarEvent.objects.filter(calendar_configuration=calendar)
@@ -43,7 +50,7 @@ class CalendarEventView(APIView):
     def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Create calendar events for the given course guid for the user."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        guid = request.data.get("guid")
+        guid: str = request.data.get("guid")
 
         try:
             term_id = get_term(term).id
@@ -51,6 +58,7 @@ class CalendarEventView(APIView):
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
         course_term, course_id = get_term_and_course_id(guid)
         course = Course.objects.get(guid=guid)
 
@@ -70,7 +78,6 @@ class CalendarEventView(APIView):
         selected_instructor = next(iter(sections_by_instructor.keys()))
         selected_sections_data = sections_by_instructor[selected_instructor]
 
-        # -------------------------------------------------------------
         unique_sections: Set[Section] = set(section.class_section for section in selected_sections_data)
         unique_count = len(unique_sections)
 
@@ -88,6 +95,7 @@ class CalendarEventView(APIView):
             if match:
                 unique_lecture_numbers.add(match.group(1))
 
+        # Creating the CalendarEvent objects
         calendar_events: List[CalendarEvent] = []
         for section in selected_sections_data:
             for class_meeting in section.classmeeting_set.all():
@@ -114,17 +122,109 @@ class CalendarEventView(APIView):
         return Response(serializer.data)
 
     def delete(self, request, net_id: str, calendar_name: str, term: int) -> Response:
-        """Delete a calendar event."""
-        # Retreived from the body of the request
-        guid = request.data.get("guid")
-        pass
+        """Delete all calendar events associated with a given guid."""
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        guid: str = request.data.get("guid")
+
+        try:
+            term_id = get_term(term).id
+            user_inst = get_user(net_id)
+            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+            course = get_course(guid)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            events_to_delete = CalendarEvent.objects.filter(
+                calendar_configuration=calendar_configuration,
+                course=course,
+            )
+            deleted_count, _ = events_to_delete.delete()
+            if deleted_count == 0:
+                return Response({"detail": "No events to delete."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": f"Deleted {deleted_count} events."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Update a calendar event."""
-        # Retreived from the body of the request
-        guid = request.data.get("guid")
-        # Change is_chosen and other booleans status
-        pass
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        guid: str = request.data.get("guid")
+
+        # class_section are L01, C01, P01, etc.
+        class_section: str = request.data.get("classSection")
+
+        try:
+            term_id = get_term(term).id
+            user_inst = get_user(net_id)
+            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+            course = get_course(guid)
+            clicked_sections = get_section(course, class_section)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        # Retrieving the event that was clicked
+        clicked_events: List[CalendarEvent] = []
+        for section in clicked_sections:
+            try:
+                clicked_event = get_calendar_event(calendar_configuration, course, section)
+                clicked_events.append(clicked_event)
+            except Exception:
+                continue
+        if not clicked_events:
+            return Response({"detail": "No CalendarEvents found for the section"}, status=status.HTTP_404_NOT_FOUND)
+        clicked_event = clicked_events[0]
+
+        # If the clicked section is an exception, do nothing and return
+        is_exception = (
+            clicked_event.section.class_type == "Seminar" and "Independent Work" not in clicked_event.course.title
+        )
+        if is_exception:
+            return Response({"detail": "No updates"}, status=status.HTTP_200_OK)
+
+        # Change status of is_chosen and is_active
+        events_for_course = get_calendar_events(calendar_configuration, course)
+        matched_sections = [
+            section
+            for section in events_for_course
+            if (section.course.guid == clicked_event.course.guid and section.section.id == clicked_event.section.id)
+        ]
+        sections_per_grouping = len(matched_sections)
+
+        active_sections = [
+            section
+            for section in events_for_course
+            if (
+                section.course.guid == clicked_event.course.guid
+                and section.is_active
+                and section.section.class_type == clicked_event.section.class_type
+            )
+        ]
+        is_active_single = len(active_sections) <= sections_per_grouping
+
+        for section in events_for_course:
+            # Section that was clicked
+            if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
+                section.is_chosen = not section.is_chosen
+                section.save()
+
+            # Completely different course, do nothing
+            elif section.course.guid != clicked_event.course.guid:
+                continue
+
+            # Only has one section that is visible, which is the one that is clicked
+            elif is_active_single and clicked_event.is_active:
+                if section.section.class_type == clicked_event.section.class_type:
+                    section.is_active = True
+                    section.is_chosen = False
+                    section.save()
+            elif section.section.class_type == clicked_event.section.class_type:
+                section.is_active = section.get_key() == clicked_event.get_key()
+                section.is_chosen = section.get_key() == clicked_event.get_key()
+                section.save()
+
+        return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
 
     def _get_unique_class_meetings(self, term: str, course_id: str) -> list[Section]:
         sections = Section.objects.filter(term__term_code=term, course__course_id=course_id)
@@ -174,41 +274,3 @@ class CalendarEventView(APIView):
             "room": meeting.room,
         }
         return class_meeting_data
-
-    # def post(self, request):
-    #     return
-    #     """Create a new calendar event for the user."""
-    #     net_id = request.headers.get("X-NetId")
-
-    #     calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
-    #     if not calendar_name:
-    #         return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
-    #     if not calendar_name:
-    #         return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
-    #     try:
-    #         user_inst = CustomUser.objects.get(net_id=net_id)
-    #     except CustomUser.DoesNotExist:
-    #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    #     print("Request body:", request.data)
-
-    #     try:
-    #         calendar_config, created = CalendarConfiguration.objects.get_or_create(
-    #             user=user_inst, name=calendar_name, term_id=term_id
-    #         )
-
-    #         if not created:
-    #             return Response(
-    #                 {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
-    #             )
-
-    #         serializer = CalendarConfigurationSerializer(calendar_config)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    #     except Exception:
-    #         return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -34,12 +34,11 @@ const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
 type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
+// Intermediate class to handle HTTP requests related to calendars and calendar events
 export class CalendarService {
-	private profile: Profile;
 	private netId: string;
 
 	constructor(profile: Profile) {
-		this.profile = profile;
 		this.netId = profile.netId;
 	}
 
@@ -163,7 +162,6 @@ export class CalendarService {
 			}
 
 			const rawData = await response.json();
-			console.log(rawData);
 			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
 
 			console.log('Fetched calendar events:', validatedData);
@@ -193,10 +191,64 @@ export class CalendarService {
 			}
 
 			const rawData = await response.json();
-			console.log(rawData);
 			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
 			console.log('Fetched calendar events:', validatedData);
 			return validatedData;
+		} catch (error) {
+			// TODO: Handle error
+			console.log('Some other fetch error occurred:', error);
+			return null;
+		}
+	}
+
+	public async deleteCourseFromCalendar(
+		calendarName: string,
+		term: number,
+		guid: string
+	): Promise<void> {
+		try {
+			console.log('Deleting course from calendar: ', calendarName, term, guid);
+			const url = this.buildCalendarEventsUrl(calendarName, term);
+			const response = await fetch(url, {
+				...this.getDeleteRequestDetails(),
+				body: JSON.stringify({ guid: guid }),
+			});
+
+			if (!response.ok) {
+				return null;
+			}
+
+			const rawData = await response.json();
+			console.log(rawData);
+			return null;
+		} catch (error) {
+			// TODO: Handle error
+			console.log('Some other fetch error occurred:', error);
+			return null;
+		}
+	}
+
+	public async activateSectionInCalendar(
+		calendarName: string,
+		term: number,
+		guid: string,
+		classSection: string
+	): Promise<void> {
+		try {
+			console.log('Activating section in calendar: ', calendarName, term, guid, classSection);
+			const url = this.buildCalendarEventsUrl(calendarName, term);
+			const response = await fetch(url, {
+				...this.getPutRequestDetails(),
+				body: JSON.stringify({ guid: guid, classSection: classSection }),
+			});
+
+			if (!response.ok) {
+				return null;
+			}
+
+			const rawData = await response.json();
+			console.log(rawData);
+			return null;
 		} catch (error) {
 			// TODO: Handle error
 			console.log('Some other fetch error occurred:', error);
