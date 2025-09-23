@@ -313,7 +313,9 @@ class UserCourses(models.Model):
         db_table = "UserCourses"
 
 
+# Table for storing details related to individual calendar configurations
 class CalendarConfiguration(models.Model):
+    # The user associated with this calendar configuration
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -322,59 +324,70 @@ class CalendarConfiguration(models.Model):
         blank=True,
         db_index=True,
     )
+
+    # The name of the calendar configuration
     name = models.CharField(max_length=100, db_index=True, blank=True)
+
+    # The academic term this calendar configuration is associated with
+    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
+
+    # Timestamp for when this row was created
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Timestamp for when this row was last updated
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("user", "name")
+        unique_together = ("user", "name", "term")
         db_table = "CalendarConfiguration"
 
     def __str__(self):
-        return f"{self.user.username}: {self.name}"
+        return f"{self.user.username}: {self.name} ({self.term})"
 
 
-class SemesterConfiguration(models.Model):
+# Table for storing the events that belong to each calendar configuration
+class CalendarEvent(models.Model):
+    # The calendar configuration this course belongs to
     calendar_configuration = models.ForeignKey(
         CalendarConfiguration,
         on_delete=models.CASCADE,
-        related_name="semester_configurations",
+        related_name="calendar_events",
         db_index=True,
     )
-    term = models.ForeignKey(
-        AcademicTerm,
+    # The course that the calendar event belongs to
+    course = models.ForeignKey(
+        Course,
         on_delete=models.CASCADE,
-        related_name="semester_configurations",
         db_index=True,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # The section that the calendar event represents
+    section = models.ForeignKey(
+        Section,
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
+
+    # Start time of the event
+    start_time = models.TimeField(db_index=True, null=True)
+    # End time of the event
+    end_time = models.TimeField(db_index=True, null=True)
+
+    # The weekday column that the event belongs in
+    start_column_index = models.IntegerField()
+
+    # Whether the event is visible in the calendar
+    is_active = models.BooleanField(default=False)
+    # Whether the event can be chosen by the user (if there are alternatives)
+    needs_choice = models.BooleanField(default=False)
+    # Whether the event is chosen among alternatives
+    is_chosen = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("calendar_configuration", "term")
-        db_table = "SemesterConfiguration"
+        db_table = "CalendarEvent"
+        unique_together = ("calendar_configuration", "course", "section")
 
     def __str__(self):
-        return f"{self.calendar_configuration}: {self.term.suffix}"
-
-
-class ScheduleSelection(models.Model):
-    semester_configuration = models.ForeignKey(
-        SemesterConfiguration,
-        on_delete=models.CASCADE,
-        related_name="schedule_selections",
-        db_index=True,
-    )
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True)
-    index = models.PositiveSmallIntegerField()
-    name = models.CharField(max_length=100, db_index=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "ScheduleSelection"
-        unique_together = ("semester_configuration", "section", "index")
+        return f"{self.course} - {self.section}"
 
 
 class CourseEvaluations(models.Model):

@@ -73,7 +73,10 @@ req_list:
       max_counted: 4
       min_needed: 4
       course_list:
-      - PHY *
+      - PHY 2**
+      - PHY 3**
+      - PHY 4**
+      - PHY 5**
   - name: BSE Courses
     max_counted: 1
     min_needed: 5

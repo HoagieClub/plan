@@ -8,6 +8,8 @@ import { LoadingComponent } from '@/components/LoadingComponent';
 import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
+import { departmentColors } from '@/utils/departmentColors';
+import { distributionColors } from '@/utils/distributionColors';
 
 import styles from './InfoComponent.module.css';
 
@@ -26,6 +28,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	} | null>(null);
 
 	const modalRef = useRef(null);
+	const courseColor = departmentColors[dept];
+
+	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
+	const distColor = distributionColors[distShort];
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -73,6 +79,15 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 		document.removeEventListener('mousedown', handleOutsideClick);
 	};
 
+	const modalTitleStyle = {
+		color: '#333',
+		display: 'block',
+		fontWeight: 600,
+		fontSize: '0.95rem',
+		marginTop: '10px',
+		marginBottom: '6px',
+	};
+
 	const modalContent = showPopup ? (
 		<Modal>
 			<div
@@ -80,6 +95,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				style={{
 					width: '85%',
 					height: '75%',
+					gap: '10px',
 					padding: '25px',
 					display: 'flex',
 					justifyContent: 'flex-end',
@@ -111,19 +127,150 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								paddingLeft: '10px',
 							}}
 						>
-							<div>
-								<div className={styles.detailRow}>
-									<strong className={styles.strong}>{value}</strong>
+							<div
+								style={{
+									display: 'flex',
+									justifyContent: 'space-between',
+									alignItems: 'center',
+									gap: '16px',
+									marginBottom: '12px',
+								}}
+							>
+								{/* Course code box */}
+								<div
+									style={{
+										backgroundColor: courseColor,
+										color: 'white',
+										padding: '6px 12px',
+										borderRadius: '4px',
+										fontWeight: 'bold',
+										width: 'fit-content',
+									}}
+								>
+									{value}
 								</div>
-								{Object.entries(courseDetails).map(([key, value]) => (
-									<div key={key} className={styles.detailRow}>
-										<strong className={styles.strong}>{key}:</strong> {value}
-									</div>
-								))}
+
+								{/* Buttons for Registrar & Princeton Courses */}
+								<div style={{ display: 'flex', gap: '8px' }}>
+									{courseDetails?.Registrar && (
+										<a
+											href={courseDetails.Registrar}
+											target='_blank'
+											className={styles.Link}
+											style={{
+												backgroundColor: '#f0f0f0',
+												padding: '8px 12px',
+												borderRadius: '8px',
+												fontWeight: 600,
+												textAlign: 'center',
+												color: '#333',
+												display: 'block',
+											}}
+										>
+											Registrar
+										</a>
+									)}
+
+									<a
+										href={`https://www.princetoncourses.com/course/${
+											new URL(courseDetails.Registrar).searchParams.get('term') +
+											new URL(courseDetails.Registrar).searchParams.get('courseid')
+										}`}
+										target='_blank'
+										className={styles.Link}
+										style={{
+											backgroundColor: '#f0f0f0',
+											padding: '8px 12px',
+											borderRadius: '8px',
+											fontWeight: 600,
+											textAlign: 'center',
+											color: '#333',
+											display: 'block',
+										}}
+									>
+										Princeton Courses
+									</a>
+								</div>
+							</div>
+
+							{/* Distribution Area Code */}
+							{distShort && (
+								<div
+									style={{
+										backgroundColor: distColor,
+										color: 'white',
+										padding: '6px 12px',
+										borderRadius: '6px',
+										fontWeight: 'bold',
+										width: 'fit-content',
+									}}
+								>
+									{distShort}
+								</div>
+							)}
+							{/* Course Title */}
+							{courseDetails['Title'] && (
+								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
+									{courseDetails['Title']}
+								</h2>
+							)}
+
+							{/* Instructor Names */}
+							<strong style={modalTitleStyle}>Instructors</strong>
+
+							{/* Instructors Box */}
+							<div
+								style={{
+									backgroundColor: '#f5f5f5',
+									padding: '6px 12px',
+									borderRadius: '6px',
+									display: 'flex',
+									width: 'fit-content',
+									flexDirection: 'column',
+								}}
+							>
+								{typeof courseDetails?.Instructors === 'string' ? (
+									courseDetails.Instructors.split(',').map((name, index, arr) => (
+										<div
+											key={index}
+											style={{
+												padding: '6px 0px',
+												borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+											}}
+										>
+											{name.trim()}
+										</div>
+									))
+								) : (
+									<div>No instructor listed</div>
+								)}
+							</div>
+							{/* Description Box */}
+
+							<strong style={modalTitleStyle}>Description</strong>
+
+							<div
+								style={{
+									backgroundColor: '#f5f5f5',
+									padding: '8px 10px',
+									borderRadius: '6px',
+									display: 'flex',
+									height: 'fit-content',
+									flexDirection: 'column',
+								}}
+							>
+								{courseDetails['Description']}
 							</div>
 						</div>
 						{/* ReviewMenu with explicit width */}
-						<div style={{ paddingLeft: '20px', width: '45%', height: '400px' }}>
+						<div
+							style={{
+								display: 'flex',
+								justifyContent: 'flex-end',
+								padding: '0px 8px 8px 10px',
+								height: 'auto',
+							}}
+						>
 							{' '}
 							{/* Half width */}
 							<ReviewMenu dept={dept} coursenum={coursenum} />
@@ -133,7 +280,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 					<div
 						style={{
 							display: 'flex',
-							justifyContent: 'center',
+							justifyContent: 'flex-end',
 							width: '100%',
 						}}
 					>

@@ -31,8 +31,10 @@ req_list:
     course_list:
     - SPI 200
     - ECO 202
+    - EEB 355
     - ORF 245
     - POL 345
+    - SML 201
   - name: Microeconomics
     min_needed: 1
     max_counted: 1
@@ -282,32 +284,61 @@ req_list:
     min_needed: 3
     max_counted: 1
     explanation: |-
-      Take one course from three SPIA-related departments (EEB, HIS, POL, PSY, SOC) not already covered by the intellectual depth requirement noted below. ECO is excluded because it is already a required prerequisite and core course. Prerequisites and core courses may double-count; ECO courses may not.<br>
+      Take one course from each of three SPIA-related departments (CEE, COS, EEB, GEO, HIS, MAE, POL, PSY, SOC, SPI) not already covered by the intellectual depth requirement noted below. ECO is excluded because it is already a required prerequisite and core course. Prerequisites and core courses may double-count; ECO courses may not. As mentioned above, all courses are recorded based on the home department title, no cross-listed departments will be taken into account.
       By graduation, we strongly encourage students to have taken courses in departments where they have not yet taken a course (for example in a natural science, if they are focusing on the social sciences).
     req_list:
+    - name: Civil and Environmental Engineering
+      min_needed: 1
+      max_counted: 1
+      double_counting_allowed: true
+      course_list:
+      - CEE ***
+    - name: Computer Science
+      min_needed: 1
+      max_counted: 1
+      double_counting_allowed: true
+      course_list:
+      - COS ***
     - name: Ecology and Evolutionary Biology
       min_needed: 1
       max_counted: 1
+      double_counting_allowed: true
       course_list:
       - EEB ***
+    - name: Geoscience
+      min_needed: 1
+      max_counted: 1
+      double_counting_allowed: true
+      course_list:
+      - GEO ***
     - name: History
       min_needed: 1
       max_counted: 1
+      double_counting_allowed: true
       course_list:
       - HIS ***
+    - name: Mechanical and Aerospace Engineering
+      min_needed: 1
+      max_counted: 1
+      double_counting_allowed: true
+      course_list:
+      - MAE ***
     - name: Politics
       min_needed: 1
       max_counted: 1
+      double_counting_allowed: true
       course_list:
       - POL ***
     - name: Psychology
       min_needed: 1
       max_counted: 1
+      double_counting_allowed: true
       course_list:
       - PSY ***
     - name: Sociology
       min_needed: 1
       max_counted: 1
+      double_counting_allowed: true
       course_list:
       - SOC ***
   - name: Intellectual Depth

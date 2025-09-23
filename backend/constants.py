@@ -163,6 +163,7 @@ ALL_MAJORS: Dict[str, str] = dict(sorted({**AB_MAJORS, **BSE_MAJORS}.items(), ke
 
 LANG_DEPTS: Dict[str, str] = {
     "ARA": "Arabic",
+    "ASL": "American Sign Language",
     "SLA": "Slavic Languages and Lit",  # TODO: confirm
     "CHI": "Chinese",
     "CZE": "Czech",
