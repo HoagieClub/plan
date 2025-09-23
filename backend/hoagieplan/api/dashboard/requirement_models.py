@@ -12,7 +12,7 @@ class UserRequirements:
         elif "AB" in data:
             self.degree_type = Requirement(data["AB"]["requirements"])
             keys.remove("AB")
-        else:
+        else: # TODO: handle this case, when calling almost_completed_reqs w/non-BSE/AB users, may be a problem
             raise ValueError("UserRequirements must have either a BSE or AB field")
 
         if "Minors" in data:
