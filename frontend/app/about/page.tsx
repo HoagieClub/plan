@@ -81,6 +81,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/henryli0508/',
 	},
 	{
+		name: 'David Lee',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/davidlee08/',
+	},
+	{
 		name: 'Luke Sanborn',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/luke-sanborn/',
