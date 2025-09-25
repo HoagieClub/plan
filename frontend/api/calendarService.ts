@@ -31,6 +31,10 @@ const CalendarConfigurationSchema = z.object({
 const CalendarEventArraySchema = z.array(CalendarEventSchema);
 const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 
+enum CalendarEventPostAction {
+	AddCourse = 'ADD_COURSE',
+}
+
 type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
 type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
@@ -178,12 +182,26 @@ export class CalendarService {
 		term: number,
 		guid: string
 	): Promise<CalendarEvent[]> {
+		return this.performPostCalendarOperation(
+			calendarName,
+			term,
+			CalendarEventPostAction.AddCourse,
+			{ guid: guid }
+		);
+	}
+
+	private async performPostCalendarOperation(
+		calendarName: string,
+		term: number,
+		action: CalendarEventPostAction,
+		payload: Record<string, string>
+	): Promise<CalendarEvent[]> {
 		try {
-			console.log('Adding course to calendar: ', calendarName, term, guid);
-			const url = this.buildCalendarEventsUrl(calendarName, term);
+			// console.log('Adding course to calendar: ', calendarName, term, guid);
+			const url = this.buildCalendarEventsUrl(calendarName, term, { action: action });
 			const response = await fetch(url, {
 				...this.getPostRequestDetails(),
-				body: JSON.stringify({ guid: guid }),
+				body: JSON.stringify(payload),
 			});
 
 			if (!response.ok) {
@@ -263,12 +281,26 @@ export class CalendarService {
 		return `${CALENDARS_URL}${encodedNetId}/${encodedTerm}`;
 	}
 
-	private buildCalendarEventsUrl(calendarName: string, term: number): string {
+	private buildCalendarEventsUrl(
+		calendarName: string,
+		term: number,
+		queryParams?: Record<string, string | number | boolean>
+	): string {
 		const encodedNetId = encodeURIComponent(this.netId);
 		const encodedCalendarName = encodeURIComponent(calendarName.toString());
 		const encodedTerm = encodeURIComponent(term.toString());
 
-		return `${CALENDAR_EVENTS_URL}${encodedNetId}/${encodedCalendarName}/${encodedTerm}`;
+		const baseUrl = `${CALENDAR_EVENTS_URL}${encodedNetId}/${encodedCalendarName}/${encodedTerm}`;
+
+		if (queryParams && Object.keys(queryParams).length > 0) {
+			const searchParams = new URLSearchParams();
+			Object.entries(queryParams).forEach(([key, value]) => {
+				searchParams.append(key, String(value));
+			});
+			return `${baseUrl}?${searchParams.toString()}`;
+		}
+
+		return baseUrl;
 	}
 
 	private getRequestDetails(): RequestInit {

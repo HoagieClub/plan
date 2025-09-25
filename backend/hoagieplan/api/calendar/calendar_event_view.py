@@ -49,6 +49,16 @@ class CalendarEventView(APIView):
 
     def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Create calendar events for the given course guid for the user."""
+        action: str = request.query_params.get("action")
+        if action == 'ADD_COURSE':
+            return self._create_calendar_event(request, net_id, calendar_name, term)
+        else:
+            return Response(
+                {"error": f"Unknown operation: {action}"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def _create_calendar_event(self, request, net_id: str, calendar_name: str, term: int)-> Response:
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         guid: str = request.data.get("guid")
 
