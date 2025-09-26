@@ -5,7 +5,7 @@ from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequire
 from hoagieplan.api.dashboard.requirements import check_user
 from hoagieplan.api.profile.info import fetch_user_info
 
-TOP_ALMOST_COMPLETED = 3
+TOP_ALMOST_COMPLETED = 10
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
@@ -30,14 +30,12 @@ def _get_all_outstanding_reqs_for_user(net_id: str) -> Dict[str, int]:
         certs_as_list,
     )
     output_requirements = UserRequirements(user_req_output)
-    
+
     outstanding_reqs_minors = {
-        minor: count_outstanding_courses(output_requirements.minors[minor]) 
-        for minor in MINORS.keys()
+        minor: count_outstanding_courses(output_requirements.minors[minor]) for minor in MINORS.keys()
     }
     outstanding_reqs_certs = {
-        cert: count_outstanding_courses(output_requirements.certificates[cert]) 
-        for cert in CERTIFICATES.keys()
+        cert: count_outstanding_courses(output_requirements.certificates[cert]) for cert in CERTIFICATES.keys()
     }
 
     combined_outstanding_reqs = dict(
@@ -55,97 +53,177 @@ def _convert_dict_to_list(dict: Dict[str, str]) -> list:
 
 
 def count_outstanding_courses(requirement: Requirement) -> int:
-    """
-    Return the minimal number of *additional* courses still needed to satisfy
-    the given Requirement tree.
-
-    Notes:
-    - Uses unsettled candidate courses to cover remaining slots where possible.
-    - Prevents double counting the same course across sibling leaves by sharing `used`.
-    - If you want a conservative *upper bound* instead of the minimal path,
-      call the helper with ignore_candidates=True.
-    """
-    return count_outstanding_courses_helper(requirement, used=[], ignore_candidates=False)
+    print(requirement)
+    # print()
+    used = []
+    return count_outstanding_courses_helper(requirement, used=used)
 
 
-def count_outstanding_courses_helper(requirement: Requirement, used: list, ignore_candidates: bool = False) -> int:
-    """
-    Recursively compute the minimal number of *additional* courses required
-    to satisfy `requirement`.
+def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) -> int:
+    # Base case
+    print()
+    if requirement.is_leaf:
+        print(requirement)
+        print("Returning ", max(0, requirement.min_needed - requirement.count))
+        return max(0, requirement.min_needed - requirement.count)
+    
+    # Top level node
+    if requirement.code is not None: 
+        val = sum(
+            [
+                count_outstanding_courses_helper(subrequirement, used)
+                for subrequirement in requirement.subrequirements.values()
+            ]
+        )
+        print("Returning ", val)
+        return val
 
-    Rules:
-    - Leaf node: need = max(0, min_needed - count). If `ignore_candidates` is False,
-      greedily claim from `unsettled.courses` whose ids are not in `used`, and return
-      the remaining shortfall. Claimed ids are appended to `used` to avoid reuse.
-    - Group (non-leaf): treat as a k-of-n chooser. Recurse into children sharing `used`,
-      sort child costs ascending, and sum the cheapest `k = min_needed` values.
+    # Return the min if requirement is the parent of a leaf node
+    if _is_parent_of_leaf(requirement):
+        print(requirement)
+        val = max(
+            requirement.min_needed - requirement.count,
+            min(
+                [
+                    count_outstanding_courses_helper(subrequirement, used)
+                    for subrequirement in requirement.subrequirements.values()
+                ]
+            ),
+        )
+        print("Returning ", val)
+        return val
 
-    Parameters
-    ----------
-    requirement : Requirement
-        The current node (root or child) in the requirement tree.
-    used : list
-        A shared list of course ids already claimed elsewhere in the traversal.
-    ignore_candidates : bool
-        If True, do not credit unsettled candidate courses at leaves (upper bound).
-        If False, credit candidates (minimal path).
-
-    Returns
-    -------
-    int
-        Minimal additional courses required for this node.
-    """
-    if requirement is None:
-        return 0  # defensive
-
-    # ---------- LEAF: directly about courses ----------
-    if getattr(requirement, "is_leaf", False):
-        min_needed = max(0, getattr(requirement, "min_needed", 0))
-        have = max(0, getattr(requirement, "count", 0))
-
-        # nothing required or already satisfied
-        if min_needed == 0 or have >= min_needed:
-            return 0
-
-        needed = min_needed - have
-        if ignore_candidates:
-            return needed
-
-        # try to cover with unsettled candidates (without double-counting)
-        unsettled = getattr(requirement, "unsettled", None)
-        courses = getattr(unsettled, "courses", []) if unsettled is not None else []
-
-        claimed = 0
-        for course in courses:
-            if claimed >= needed:
-                break
-            cid = getattr(course, "id", None)
-            if cid is not None and cid not in used:
-                used.append(cid)  # claim globally so siblings can't reuse it
-                claimed += 1
-
-        return max(0, needed - claimed)
-
-    # ---------- GROUP: k-of-n children ----------
-    subreqs = getattr(requirement, "subrequirements", None) or {}
-    if not subreqs:
-        # No children present — fall back to this node's own quota/count defensively.
-        k = max(0, getattr(requirement, "min_needed", 0))
-        have = max(0, getattr(requirement, "count", 0))
-        return max(0, k - have)
-
-    # compute each child's cost, sharing the same `used` list to prevent double-counting
-    child_costs = [
-        count_outstanding_courses_helper(child, used, ignore_candidates)
-        for child in subreqs.values()
-    ]
-    child_costs.sort()  # cheapest first
-
-    k = max(0, getattr(requirement, "min_needed", 0))
-
-    if k == 0:
-        return 0
-
-    return sum(child_costs[:min(k, len(child_costs))])
+    return max(
+        requirement.min_needed - requirement.count,
+        sum(
+            [
+                count_outstanding_courses_helper(subrequirement, used)
+                for subrequirement in requirement.subrequirements.values()
+            ]
+        ),
+    )
 
 
+def _is_parent_of_leaf(requirement: Requirement) -> bool:
+    if requirement is None or requirement.subrequirements is None:
+        return False
+    for subreq in requirement.subrequirements.values():
+        if not subreq.is_leaf:
+            return False
+    return True
+
+
+# def count_outstanding_courses(requirement: Requirement) -> int:
+#     """Return the minimal number of *additional* courses still needed to satisfy the given Requirement tree.
+
+#     Notes:
+#     - Uses unsettled candidate courses to cover remaining slots where possible.
+#     - Prevents double counting the same course across sibling leaves by sharing `used`.
+#     - If you want a conservative *upper bound* instead of the minimal path,
+#       call the helper with ignore_candidates=True.
+
+#     """
+#     used = []
+#     return count_outstanding_courses_helper(requirement, used=used, ignore_candidates=False)
+
+
+# def count_outstanding_courses_helper(requirement: Requirement, used: list, ignore_candidates: bool = False) -> int:
+#     """Recursively compute the minimal number of *additional* courses required to satisfy `requirement`.
+
+#     Rules:
+#     - Leaf node: need = max(0, min_needed - count). If `ignore_candidates` is False,
+#       greedily claim from `unsettled.courses` whose ids are not in `used`, and return
+#       the remaining shortfall. Claimed ids are appended to `used` to avoid reuse.
+#     - Group (non-leaf): Calculate how many additional courses are needed from children.
+
+#     Parameters
+#     ----------
+#     requirement : Requirement
+#         The current node (root or child) in the requirement tree.
+#     used : list
+#         A shared list of course ids already claimed elsewhere in the traversal.
+#     ignore_candidates : bool
+#         If True, do not credit unsettled candidate courses at leaves (upper bound).
+#         If False, credit candidates (minimal path).
+
+#     Returns
+#     -------
+#     int
+#         Minimal additional courses required for this node.
+
+#     """
+#     print()
+#     print(requirement)
+#     print(used)
+#     print(ignore_candidates)
+
+#     if requirement is None:
+#         print("Returning ", 0)
+#         return 0  # defensive
+
+#     # ---------- LEAF: directly about courses ----------
+#     if getattr(requirement, "is_leaf", False):
+#         min_needed = max(0, requirement.min_needed)
+#         count = max(0, requirement.count)
+
+#         # nothing required or already satisfied
+#         if min_needed == 0 or count >= min_needed:
+#             print("Returning ", 0)
+#             return 0
+
+#         needed = min_needed - count
+#         if ignore_candidates:
+#             print("Returning ", needed)
+#             return needed
+
+#         # try to cover with unsettled candidates (without double-counting)
+#         unsettled = requirement.unsettled
+#         courses = [] if unsettled is None else unsettled.courses
+
+#         claimed = 0
+#         for course in courses:
+#             if claimed >= needed:
+#                 break
+#             cid = getattr(course, "id", None)
+#             if cid is not None and cid not in used:
+#                 used.append(cid)  # claim globally so siblings can't reuse it
+#                 claimed += 1
+
+#         print("Returning ", max(0, needed - claimed))
+#         return max(0, needed - claimed)
+
+#     # ---------- GROUP: collect k courses from children ----------
+#     subreqs = getattr(requirement, "subrequirements", None) or {}
+#     if not subreqs:
+#         k = max(0, getattr(requirement, "min_needed", 0))
+#         count = max(0, getattr(requirement, "count", 0))
+#         print("Returning ", max(0, k - count))
+#         return max(0, k - count)
+
+#     k = max(0, getattr(requirement, "min_needed", 0))
+#     current_count = max(0, getattr(requirement, "count", 0))
+
+#     if current_count >= k:
+#         print("Returning ", 0)
+#         return 0
+
+#     # For groups: if the group itself has a deficit, that takes priority
+#     # Otherwise, sum the deficits of children
+#     group_deficit = k - current_count
+
+#     if group_deficit > 0:
+#         # This group needs courses - either return its deficit or sum of children, whichever is larger
+#         child_total = sum(
+#             count_outstanding_courses_helper(child, used, ignore_candidates) for child in subreqs.values()
+#         )
+
+#         # Return the larger of: group's own deficit, or sum of children's needs
+#         result = max(group_deficit, child_total)
+#     else:
+#         # Group is satisfied, just return sum of children
+#         result = sum(
+#             count_outstanding_courses_helper(child, used, ignore_candidates) for child in subreqs.values()
+#         )
+
+#     print("Returning ", result)
+#     return result
