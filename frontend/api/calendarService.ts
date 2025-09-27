@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Profile } from '@/types';
+import type { Profile, CalendarEvent as OldCalendarEvent } from '@/types';
 
 import { HttpRequestType } from './common';
 
@@ -32,8 +32,26 @@ const CalendarEventArraySchema = z.array(CalendarEventSchema);
 const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 
 enum CalendarEventPostAction {
-	AddCourse = 'ADD_COURSE',
+	AddAllCalendarEventsForCourse = 'ADD_ALL_CALENDAR_EVENTS_FOR_COURSE',
+	AddCalendarEvent = 'ADD_CALENDAR_EVENT',
 }
+
+interface AddCoursePayload {
+	guid: string;
+}
+
+interface AddCalendarEventPayload {
+	guid: string;
+	section_id: number;
+	start_time: string;
+	end_time: string;
+	start_column_index: number;
+	is_active: boolean;
+	needs_choice: boolean;
+	is_chosen: boolean;
+}
+
+type CalendarEventPostPayload = AddCoursePayload | AddCalendarEventPayload;
 
 type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
 type CalendarEvent = z.infer<typeof CalendarEventSchema>;
@@ -46,7 +64,7 @@ export class CalendarService {
 		this.netId = profile.netId;
 	}
 
-	// Returns the list of all calendars for the user
+	// Returns the list of all calendars for the user in term
 	public async getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
 		try {
 			const url = this.buildCalendarsUrl(term);
@@ -56,9 +74,9 @@ export class CalendarService {
 				return null;
 			}
 
-			const rawData = await response.json();
+			const responseData = await response.json();
 			const validatedData = CalendarConfigurationArraySchema.parse(
-				rawData
+				responseData
 			) as CalendarConfiguration[];
 
 			console.log('Fetched calendars:', validatedData);
@@ -75,8 +93,11 @@ export class CalendarService {
 		return calendars && calendars.length > 0;
 	}
 
-	// Creates a calendar with the given name and data
-	public async createCalendar(calendarName: string, term: number): Promise<any> {
+	// Creates a calendar with the name calendarName in term
+	public async createCalendar(
+		calendarName: string,
+		term: number
+	): Promise<CalendarConfiguration | null> {
 		console.log(`Trying to create calendar with name ${calendarName}`);
 		try {
 			const url = this.buildCalendarsUrl(term);
@@ -94,14 +115,17 @@ export class CalendarService {
 
 			const responseData = await response.json();
 			console.log(`Created calendar with name ${calendarName}`);
-			return responseData;
+			const validatedData = CalendarConfigurationSchema.parse(
+				responseData
+			) as CalendarConfiguration;
+			return validatedData;
 		} catch {
 			// TODO: Handle error
 			return null;
 		}
 	}
 
-	// Updates a calendar with the given name
+	// Updates a calendar from calendarName to newCalendarName in term
 	public async updateCalendar(
 		calendarName: string,
 		newCalendarName: string,
@@ -123,16 +147,16 @@ export class CalendarService {
 				return null;
 			}
 
-			const data = await response.json();
+			const responseData = await response.json();
 			console.log(`Updated ${calendarName} to ${newCalendarName}`);
-			return data;
+			return responseData;
 		} catch {
 			// TODO: Handle error
 			return null;
 		}
 	}
 
-	// Deletes the calendar with the given name
+	// Deletes the calendar with calendarName in term
 	public async deleteCalendar(calendarName: string, term: number): Promise<void> {
 		console.log(`Deleting calendar: ${calendarName}`);
 		try {
@@ -147,15 +171,16 @@ export class CalendarService {
 				return null;
 			}
 
-			const data = await response.json();
+			const responseData = await response.json();
 			console.log(`Deleted ${calendarName}`);
-			return data;
+			return responseData;
 		} catch {
 			// TODO: Handle error
 			return null;
 		}
 	}
 
+	// Returns the list of all events in calendar with calendarName for term
 	public async getCalendarEvents(calendarName: string, term: number): Promise<CalendarEvent[]> {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term);
@@ -165,8 +190,8 @@ export class CalendarService {
 				return null;
 			}
 
-			const rawData = await response.json();
-			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
+			const responseData = await response.json();
+			const validatedData = CalendarEventArraySchema.parse(responseData) as CalendarEvent[];
 
 			console.log('Fetched calendar events:', validatedData);
 			return validatedData;
@@ -185,8 +210,30 @@ export class CalendarService {
 		return this.performPostCalendarOperation(
 			calendarName,
 			term,
-			CalendarEventPostAction.AddCourse,
+			CalendarEventPostAction.AddAllCalendarEventsForCourse,
 			{ guid: guid }
+		);
+	}
+
+	public async addCalendarEventObjectToCalendar(
+		calendarName: string,
+		term: number,
+		calendarEvent: OldCalendarEvent
+	): Promise<CalendarEvent[]> {
+		return this.performPostCalendarOperation(
+			calendarName,
+			term,
+			CalendarEventPostAction.AddCalendarEvent,
+			{
+				guid: calendarEvent.course.guid,
+				section_id: calendarEvent.section.id,
+				start_time: calendarEvent.startTime,
+				end_time: calendarEvent.endTime,
+				start_column_index: calendarEvent.startColumnIndex,
+				is_active: calendarEvent.isActive,
+				needs_choice: calendarEvent.needsChoice,
+				is_chosen: calendarEvent.isChosen,
+			}
 		);
 	}
 
@@ -194,7 +241,7 @@ export class CalendarService {
 		calendarName: string,
 		term: number,
 		action: CalendarEventPostAction,
-		payload: Record<string, string>
+		payload: CalendarEventPostPayload
 	): Promise<CalendarEvent[]> {
 		try {
 			// console.log('Adding course to calendar: ', calendarName, term, guid);

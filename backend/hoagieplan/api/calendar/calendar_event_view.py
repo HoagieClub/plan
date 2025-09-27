@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 from typing import Dict, List, Set
 
 from django.db.models.query import Prefetch
@@ -15,22 +16,27 @@ from hoagieplan.api.model_getters import (
     get_term,
     get_user,
 )
-from hoagieplan.models import CalendarEvent, ClassMeeting, Course, Section
+from hoagieplan.models import CalendarEvent, ClassMeeting, Section
 from hoagieplan.serializers import CalendarEventSerializer
 from hoagieplan.utils import get_term_and_course_id
 
+DAYS_TO_START_COLUMN_INDEX = {
+    "M": 1,  # Monday
+    "T": 2,  # Tuesday
+    "W": 3,  # Wednesday
+    "Th": 4,  # Thursday
+    "F": 5,  # Friday
+}
+
+EXCEPTIONS_FOR_NEEDS_CHOICE = ["Seminar", "Lecture"]
+
+
+class CalendarEventPostAction(Enum):
+    AddAllCalendarEventsForCourse = "ADD_ALL_CALENDAR_EVENTS_FOR_COURSE"
+    AddCalendarEvent = "ADD_CALENDAR_EVENT"
+
 
 class CalendarEventView(APIView):
-    DAYS_TO_START_COLUMN_INDEX = {
-        "M": 1,  # Monday
-        "T": 2,  # Tuesday
-        "W": 3,  # Wednesday
-        "Th": 4,  # Thursday
-        "F": 5,  # Friday
-    }
-
-    EXCEPTIONS_FOR_NEEDS_CHOICE = ["Seminar", "Lecture"]
-
     def get(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Fetch all calendar events associated with a calendar."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
@@ -49,29 +55,31 @@ class CalendarEventView(APIView):
 
     def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Create calendar events for the given course guid for the user."""
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+        
         action: str = request.query_params.get("action")
-        if action == 'ADD_COURSE':
-            return self._create_calendar_event(request, net_id, calendar_name, term)
+        if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
+            return self._add_all_calendar_events_for_course(request, net_id, calendar_name, term)
+        elif action == CalendarEventPostAction.AddCalendarEvent.value:
+            return self._add_calendar_event(request, net_id, calendar_name, term)
         else:
-            return Response(
-                {"error": f"Unknown operation: {action}"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def _create_calendar_event(self, request, net_id: str, calendar_name: str, term: int)-> Response:
+    def _add_all_calendar_events_for_course(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+        print(CalendarEventPostAction.AddAllCalendarEventsForCourse)
+        
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         guid: str = request.data.get("guid")
 
         try:
-            term_id = get_term(term).id
+            term_id: int = get_term(term).id
             user_inst = get_user(net_id)
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+            course = get_course(guid)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         course_term, course_id = get_term_and_course_id(guid)
-        course = Course.objects.get(guid=guid)
-
         sections = self._get_unique_class_meetings(course_term, course_id)
         if not sections:
             return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
@@ -120,7 +128,7 @@ class CalendarEventView(APIView):
                         start_column_index=start_column_index,
                         is_active=True,
                         needs_choice=(
-                            (section.class_type not in self.EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
+                            (section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
                             or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
                         ),
                         is_chosen=False,
@@ -129,6 +137,41 @@ class CalendarEventView(APIView):
                     calendar_events.append(calendar_event)
 
         serializer = CalendarEventSerializer(calendar_events, many=True)
+        return Response(serializer.data)
+
+    def _add_calendar_event(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
+
+        guid: str = request.data.get("guid")
+        section_id: str = request.data.get("section_id")
+        start_time: str = request.data.get("start_time")
+        end_time: str = request.data.get("end_time")
+        start_column_index: str = request.data.get("start_column_index")
+        is_active: str = request.data.get("is_active")
+        needs_choice: str = request.data.get("needs_choice")
+        is_chosen: str = request.data.get("is_chosen")
+
+        try:
+            term_id: int = get_term(term).id
+            user_inst = get_user(net_id)
+            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+            course = get_course(guid)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        calendar_event = CalendarEvent.objects.create(
+            calendar_configuration=calendar_configuration,
+            course=course,
+            section_id=section_id,
+            start_time=start_time,
+            end_time=end_time,
+            start_column_index=start_column_index,
+            is_active=is_active,
+            needs_choice=needs_choice,
+            is_chosen=is_chosen,
+        )
+
+        serializer = CalendarEventSerializer([calendar_event], many=True)
         return Response(serializer.data)
 
     def delete(self, request, net_id: str, calendar_name: str, term: int) -> Response:
@@ -250,7 +293,7 @@ class CalendarEventView(APIView):
 
     def _get_start_column_index_for_days(self, days_string: str) -> list[int]:
         days_array = days_string.split(",")
-        return [self.DAYS_TO_START_COLUMN_INDEX.get(day.strip(), 0) for day in days_array]
+        return [DAYS_TO_START_COLUMN_INDEX.get(day.strip(), 0) for day in days_array]
 
     def _serialize_section(self, section):
         class_meetings_data = [
