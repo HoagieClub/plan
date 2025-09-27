@@ -28,6 +28,9 @@ const CalendarConfigurationSchema = z.object({
 	calendar_events: z.array(CalendarEventSchema),
 });
 
+type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
+type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+
 const CalendarEventArraySchema = z.array(CalendarEventSchema);
 const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 
@@ -52,9 +55,6 @@ interface AddCalendarEventPayload {
 }
 
 type CalendarEventPostPayload = AddCoursePayload | AddCalendarEventPayload;
-
-type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
-type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
 // Intermediate class to handle HTTP requests related to calendars and calendar events
 export class CalendarService {
@@ -202,6 +202,7 @@ export class CalendarService {
 		}
 	}
 
+	// Adds the course with guid to calendar with calendarName in term
 	public async addCourseToCalendar(
 		calendarName: string,
 		term: number,
@@ -215,6 +216,7 @@ export class CalendarService {
 		);
 	}
 
+	// Adds calendarEvent to calendar with calendarName in term
 	public async addCalendarEventObjectToCalendar(
 		calendarName: string,
 		term: number,
@@ -237,6 +239,7 @@ export class CalendarService {
 		);
 	}
 
+	// Helper function to perform POST operations for calendar events
 	private async performPostCalendarOperation(
 		calendarName: string,
 		term: number,
@@ -244,7 +247,6 @@ export class CalendarService {
 		payload: CalendarEventPostPayload
 	): Promise<CalendarEvent[]> {
 		try {
-			// console.log('Adding course to calendar: ', calendarName, term, guid);
 			const url = this.buildCalendarEventsUrl(calendarName, term, { action: action });
 			const response = await fetch(url, {
 				...this.getPostRequestDetails(),
@@ -266,6 +268,7 @@ export class CalendarService {
 		}
 	}
 
+	// Deletes the course with guid from calendar with calendarName in term
 	public async deleteCourseFromCalendar(
 		calendarName: string,
 		term: number,
@@ -293,6 +296,7 @@ export class CalendarService {
 		}
 	}
 
+	// Activates the classSection for course with guid in calendar with calendarName in term
 	public async activateSectionInCalendar(
 		calendarName: string,
 		term: number,

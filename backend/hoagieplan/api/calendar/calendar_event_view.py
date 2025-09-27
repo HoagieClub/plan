@@ -54,9 +54,9 @@ class CalendarEventView(APIView):
         return Response(serializer.data)
 
     def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
-        """Create calendar events for the given course guid for the user."""
+        """Handle post operations for calendar events for the user."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        
+
         action: str = request.query_params.get("action")
         if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
             return self._add_all_calendar_events_for_course(request, net_id, calendar_name, term)
@@ -66,8 +66,7 @@ class CalendarEventView(APIView):
             return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
 
     def _add_all_calendar_events_for_course(self, request, net_id: str, calendar_name: str, term: int) -> Response:
-        print(CalendarEventPostAction.AddAllCalendarEventsForCourse)
-        
+        """Add all calendar events for a course identified by guid."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         guid: str = request.data.get("guid")
 
@@ -140,6 +139,7 @@ class CalendarEventView(APIView):
         return Response(serializer.data)
 
     def _add_calendar_event(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+        """Add a single calendar event with specified details."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
 
         guid: str = request.data.get("guid")
@@ -200,7 +200,7 @@ class CalendarEventView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, net_id: str, calendar_name: str, term: int) -> Response:
-        """Update a calendar event."""
+        """Activates a calendar event."""
         print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
 
         guid: str = request.data.get("guid")
@@ -294,36 +294,3 @@ class CalendarEventView(APIView):
     def _get_start_column_index_for_days(self, days_string: str) -> list[int]:
         days_array = days_string.split(",")
         return [DAYS_TO_START_COLUMN_INDEX.get(day.strip(), 0) for day in days_array]
-
-    def _serialize_section(self, section):
-        class_meetings_data = [
-            self._serialize_class_meeting(meeting) for meeting in getattr(section, "unique_class_meetings", [])
-        ]
-
-        section_data = {
-            "id": section.id,
-            "class_section": section.class_section,
-            "class_type": section.class_type,
-            "enrollment": section.enrollment,
-            "capacity": section.capacity,
-            "course": {
-                "course_id": section.course.course_id,
-                "title": section.course.title,
-            },
-            "instructor": {
-                "name": str(section.instructor),
-            },
-            "class_meetings": class_meetings_data,
-        }
-        return section_data
-
-    def _serialize_class_meeting(self, meeting):
-        class_meeting_data = {
-            "id": meeting.id,
-            "days": meeting.days,
-            "start_time": meeting.start_time.strftime("%H:%M"),
-            "end_time": meeting.end_time.strftime("%H:%M"),
-            "building_name": meeting.building_name,
-            "room": meeting.room,
-        }
-        return class_meeting_data
