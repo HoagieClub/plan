@@ -48,7 +48,7 @@ req_list:
     course_list:
     - ART 401
   - name: Other ART Courses
-    max_counted: 1
+    max_counted: 4
     min_needed: 1
     explanation: |-
       Four other archaeology-related courses. A list of acceptable
