@@ -106,6 +106,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/yang-aaron/',
 	},
 	{
+		name: 'Gary Yang',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
 		name: 'Daniel Yeo',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/daniel-yeo-320635248/',
@@ -119,11 +124,6 @@ const contributors: HoagieChef[] = [
 		name: 'Linsey Zhong',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
-	},
-	{
-		name: 'Gary Yang',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
 	},
 ];
 
