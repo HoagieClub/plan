@@ -181,13 +181,13 @@ req_list:
               Language Acquisition and Pedagogy or GER 316, with the same
               title.
             req_list:
-              - name:
+              - name: Linguistics & Language History
                 max_counted: 1
                 min_needed: 2
                 course_list:
                   - LIN 201
                   - GER 505
-              - name:
+              - name: Second Language Acquisition
                 max_counted: 1
                 min_needed: 1
                 course_list:
