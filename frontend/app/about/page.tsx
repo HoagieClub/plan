@@ -125,6 +125,11 @@ const contributors: HoagieChef[] = [
 		graduationYear: '2029',
 		link: 'https://www.linkedin.com/in/gracetding/',
 	},
+	{
+		name: 'Albert Rho',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/albert-rho-956b012b3',
+	},
 ];
 
 const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
