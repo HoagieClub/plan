@@ -10,6 +10,7 @@ import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
+import { getAuditTag } from '@/utils/auditTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -33,6 +34,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
 	const distColor = getDistributionColors(distShort);
 
+	const gradingBasis = courseDetails?.['Grading Basis'];
+	const auditTag = getAuditTag(gradingBasis);
+
 	useEffect(() => {
 		if (showPopup && value) {
 			const url = new URL(`${process.env.BACKEND}/course/details/`);
@@ -47,6 +51,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			})
 				.then((response) => response.json())
 				.then((data) => {
+					console.log('Fetched course details:', data);
 					setCourseDetails(data);
 				});
 		}
@@ -193,21 +198,40 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 							</div>
 
-							{/* Distribution Area Code */}
-							{distShort && (
-								<div
-									style={{
-										backgroundColor: distColor,
-										color: 'white',
-										padding: '6px 12px',
-										borderRadius: '6px',
-										fontWeight: 'bold',
-										width: 'fit-content',
-									}}
-								>
-									{distShort}
-								</div>
-							)}
+							{/*Tags Row*/}
+							<div style={{ display: 'flex', gap: '8px' }}>
+								{/* Distribution Area Code */}
+								{distShort && (
+									<div
+										style={{
+											backgroundColor: distColor,
+											color: 'white',
+											padding: '6px 12px',
+											borderRadius: '6px',
+											fontWeight: 'bold',
+											width: 'fit-content',
+										}}
+									>
+										{distShort}
+									</div>
+								)}
+
+								{/* AUdit Tag */}
+								{auditTag && (
+									<div
+										style={{
+											backgroundColor: '#fa9f3e',
+											color: 'white',
+											padding: '6px 12px',
+											borderRadius: '6px',
+											fontWeight: 'bold',
+											width: 'fit-content',
+										}}
+									>
+										{auditTag}
+									</div>
+								)}
+							</div>
 							{/* Course Title */}
 							{courseDetails['Title'] && (
 								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
