@@ -135,44 +135,31 @@ req_list:
         - LIN 360 
         - LIN 406 
         - LIN 412
-    req_list:
     - name: MAE
       min_needed: 1
       max_counted: 1
       course_list: 
         - MAE 345
-    req_list:
-    - name: MUS
-      min_needed: 1
-      max_counted: 1
-      course_list: 
-        - MUS 248
-    req_list:
-    - name: ENE
-      min_needed: 1
-      max_counted: 1
-      course_list: 
         - ENE 475
-    req_list:
-    - name: ECE
-      min_needed: 1
-      max_counted: 1
-      course_list: 
         - ECE 364
-    req_list:
     - name: NEU
       min_needed: 1
       max_counted: 1
       course_list: 
-       - NEU 306
-       - NEU 330 
-       - NEU 437
-    req_list:
+      - NEU 175
+      - NEU 200
+      - NEU 201
+      - NEU 202
+      - NEU 202B
+      - NEU 330
+      - NEU 437
     - name: PHI
       min_needed: 1
       max_counted: 1
       course_list: 
         - PHI 207
+        - PHI 218
+        - PHI 305
         - PHI 311
         - PHI 313
         - PHI 315
@@ -180,13 +167,13 @@ req_list:
         - PHI 321
         - PHI 322
         - PHI 352
+        - PHI 354
         - PHI 380
-    req_list:
     - name: PSY
       min_needed: 1
       max_counted: 1
-      course_list: 
-        - PSY 248
+      course_list:
+        - PSY 209
         - PSY 254
         - PSY 255
         - PSY 304
@@ -197,14 +184,13 @@ req_list:
         - PSY 316
         - PSY 333
         - PSY 337
-        - PSY 338 
+        - PSY 338
         - PSY 340
         - PSY 345
         - PSY 360
         - PSY 400
         - PSY 409
         - PSY 454
-    req_list:
     - name: SPI
       min_needed: 1
       max_counted: 1
@@ -212,19 +198,16 @@ req_list:
         - SPI 305
         - SPI 340
         - SPI 404
-    req_list:
     - name: ECO
       min_needed: 1
       max_counted: 1
       course_list: 
         - ECO 468
-    req_list:
     - name: HIS
       min_needed: 1
       max_counted: 1
       course_list: 
         - HIS 494
-    req_list:
     - name: SML
       min_needed: 1
       max_counted: 1
