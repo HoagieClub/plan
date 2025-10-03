@@ -56,6 +56,11 @@ const teamLeads: HoagieChef[] = [
 
 const contributors: HoagieChef[] = [
 	{
+		name: 'Phu Duong',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/phu-duong/',
+	},
+	{
 		name: 'Lucy Chen',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-c1/',
