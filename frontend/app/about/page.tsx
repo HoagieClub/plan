@@ -131,6 +131,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
 	},
 	{
+		name: 'Emily Tran',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
+	},
+	{
 		name: 'Grace Ding',
 		graduationYear: '2029',
 		link: 'https://www.linkedin.com/in/gracetding/',
