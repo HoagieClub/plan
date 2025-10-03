@@ -71,6 +71,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/tate-hutchins/',
 	},
 	{
+		name: 'Ella Kim',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/kim-ella/',
+	},
+	{
 		name: 'Minjae Kwon',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/minjae-kwon',
@@ -106,6 +111,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/yang-aaron/',
 	},
 	{
+		name: 'Gary Yang',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
 		name: 'Daniel Yeo',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/daniel-yeo-320635248/',
@@ -124,6 +134,11 @@ const contributors: HoagieChef[] = [
 		name: 'Emily Tran',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
+	},
+	{
+		name: 'Grace Ding',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/gracetding/',
 	},
 ];
 
