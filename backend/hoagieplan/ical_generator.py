@@ -2,11 +2,10 @@ import json
 from datetime import date, datetime, timedelta
 from typing import Dict, List
 
-import icalendar
 import pytz
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
-from icalendar import Event
+from icalendar import Calendar, Event
 
 # Maps from day abbreviations to days used in ical rrule
 DAY_DICT = {"M": "MO", "T": "TU", "W": "WE", "Th": "TH", "F": "FR"}
@@ -67,7 +66,7 @@ def export_calendar_view(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-def generate_class_ical(cal: icalendar.Calendar, calendar_event: Dict, semester_code: str) -> icalendar.Calendar:
+def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str) -> Calendar:
     """Add calendar_event in semester_code to cal."""
     # Create event
     event = Event()
@@ -150,7 +149,7 @@ def generate_class_ical(cal: icalendar.Calendar, calendar_event: Dict, semester_
 def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str):
     """Generate an iCalendar file for multiple class sections."""
     # Create a new calendar
-    cal = icalendar.Calendar()
+    cal = Calendar()
 
     # Set calendar properties
     cal.add("prodid", "-//Princeton University Class Schedule//EN")
