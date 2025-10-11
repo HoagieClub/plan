@@ -93,7 +93,6 @@ def generate_class_ical(cal: icalendar.Calendar, calendar_event: Dict, semester_
 
     # Extract description
     course_name = course.get("crosslistings")
-    description = course_name + "\nInstructor: " + instructor
 
     # Validate required fields
     if not all([course_name, section_number, start_time, end_time, days_of_week, start_date, end_date]):
@@ -111,16 +110,21 @@ def generate_class_ical(cal: icalendar.Calendar, calendar_event: Dict, semester_
     event.add("dtstart", start_datetime)
     event.add("dtend", end_datetime)
 
+    # Add course description
+    description = course_name + "\nInstructor: " + instructor
     if description:
         event.add("description", description)
     else:
         print("No description")
 
-    # Weird cancelled name bug
-    # if location:
-    #     event.add('location', location)
-    # else:
-    #     print('No location')
+    # Add location
+    location = section.get("class_meetings")[0].get("building_name")
+    room = section.get("class_meetings")[0].get("room")
+    full_location = location + " " + room
+    if full_location:
+        event.add("location", full_location)
+    else:
+        print("No location")
 
     if instructor:
         event.add("organizer", instructor)
