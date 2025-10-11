@@ -146,7 +146,7 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
     return cal
 
 
-def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str):
+def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str) -> str:
     """Generate an iCalendar file for multiple class sections."""
     # Create a new calendar
     cal = Calendar()
@@ -163,7 +163,7 @@ def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str):
     return cal.to_ical().decode("utf-8")
 
 
-def days_of_week_list(days_of_week):
+def days_of_week_list(days_of_week: str) -> List[str]:
     days_of_week_list = days_of_week.split(",")
     new_days_of_week_list = []
 
