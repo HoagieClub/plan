@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Dict, List
 
 import pytz
@@ -27,6 +27,8 @@ START_DATE = {
     "1254": date(2025, 1, 27),
     "1262": date(2025, 9, 2),
     "1264": date(2026, 1, 26),
+    "1272": date(2026, 9, 2),
+    "1274": date(2027, 1, 25),
 }
 
 # End date for each semester
@@ -37,7 +39,18 @@ END_DATE = {
     "1254": date(2025, 4, 26),
     "1262": date(2025, 12, 4),
     "1264": date(2026, 4, 24),
+    "1272": date(2026, 12, 7),
+    "1274": date(2027, 4, 25),
 }
+
+BREAK_DATES = {
+    "1262": [[date(2025, 10, 11), date(2025, 10, 19)], [date(2025, 11, 26), date(2025, 11, 30)]],
+    "1264": [[date(2026, 3, 7), date(2026, 3, 15)]],
+    "1272": [[date(2026, 10, 17), date(2026, 10, 26)], [date(2026, 11, 25), date(2026, 11, 29)]],
+    "1274": [[date(2027, 3, 6), date(2027, 3, 14)]],
+}
+
+EST_TZ = pytz.timezone("US/Eastern")
 
 
 @require_POST
@@ -102,11 +115,8 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
         print(f"Skipping incomplete section: {course_name}")
         return cal
 
-    # Combine start date, time with EST timezone
-    est_tz = pytz.timezone("US/Eastern")
-
-    start_datetime = est_tz.localize(datetime.combine(start_date, start_time))
-    end_datetime = est_tz.localize(datetime.combine(start_date, end_time))
+    start_datetime = EST_TZ.localize(datetime.combine(start_date, start_time))
+    end_datetime = EST_TZ.localize(datetime.combine(start_date, end_time))
 
     # Set event details
     event.add("summary", f"{course_name} - {section_number}")
@@ -140,9 +150,10 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
         {
             "freq": "WEEKLY",
             "byday": days_of_week_list(days_of_week),
-            "until": est_tz.localize(datetime.combine(end_date, end_time)),
+            "until": EST_TZ.localize(datetime.combine(end_date, end_time)),
         },
     )
+    event = add_break_dates(event, semester_code, start_time)
 
     # Add event to calendar
     cal.add_component(event)
@@ -165,6 +176,17 @@ def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str) 
 
     # Return the calendar as a string
     return cal.to_ical().decode("utf-8")
+
+
+def add_break_dates(event: Event, semester_code: str, start_time: time):
+    """Exclude dates from breaks in event."""
+    for break_start, break_end in BREAK_DATES[semester_code]:
+        current_date = break_start
+        while current_date <= break_end:
+            exclude_datetime = EST_TZ.localize(datetime.combine(current_date, start_time))
+            event.add("exdate", exclude_datetime)
+            current_date += timedelta(days=1)
+    return event
 
 
 def days_of_week_list(days_of_week: str) -> List[str]:
