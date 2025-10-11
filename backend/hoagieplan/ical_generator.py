@@ -1,5 +1,6 @@
 import json
 from datetime import date, datetime, timedelta
+from typing import Dict, List
 
 import icalendar
 import pytz
@@ -42,13 +43,7 @@ END_DATE = {
 
 @require_POST
 def export_calendar_view(request):
-    """API endpoint for exporting calendar as iCal file.
-
-    Args:
-    - request (HttpRequest): Request object containing JSON payload (already
-    filtered)
-
-    """
+    """Export calendar as iCal file."""
     try:
         data = json.loads(request.body)
         term = data.get("term")
@@ -72,47 +67,31 @@ def export_calendar_view(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-def generate_class_ical(cal, calendar_event, semester_code):
-    """Add a single class section to an existing calendar
-
-    Args:
-    - cal (icalendar.Calendar): Calendar to modify
-    - calendar_event (dict): Dictionary containing class section details
-    - semester_code (string): Code that maps to a semester
-
-    Returns:
-    - icalendar.Calendar: Modified calendar
-
-    """
+def generate_class_ical(cal: icalendar.Calendar, calendar_event: Dict, semester_code: str) -> icalendar.Calendar:
+    """Add calendar_event in semester_code to cal."""
     # Create event
     event = Event()
 
+    # Required fields
     section = calendar_event.get("section")
     course = calendar_event.get("course")
-
-    # Required fields
     course_name = course.get("department_code") + course.get("catalog_number")
     section_number = section.get("class_section")
-    # start_time = datetime.strptime(section.get('startTime'), "%H:%M").time()
-    # end_time = datetime.strptime(calendar_event.get('endTime'), "%H:%M").time()
+
     start_time_str = calendar_event.get("startTime") or section.get("class_meetings", [{}])[0].get("start_time")
-
     end_time_str = calendar_event.get("endTime") or section.get("class_meetings", [{}])[0].get("end_time")
-
     start_time = datetime.strptime(start_time_str, "%H:%M").time()
     end_time = datetime.strptime(end_time_str, "%H:%M").time()
 
-    days_of_week = section.get("class_meetings")[0].get("days")
+    instructor = section.get("instructor").get("name")
 
-    # Extracting start date from constants
+    # Extract start and end dates from constants
+    days_of_week = section.get("class_meetings")[0].get("days")
     first_day = days_of_week.split(",")[0]
     start_date = START_DATE[semester_code] + DAYS_OFFSET[first_day]
     end_date = END_DATE[semester_code]
 
-    # location = section.get('class_meetings')[0].get('building_name')
-    instructor = section.get("instructor").get("name")
-
-    # Generate description
+    # Extract description
     course_name = course.get("crosslistings")
     description = course_name + "\nInstructor: " + instructor
 
@@ -164,16 +143,8 @@ def generate_class_ical(cal, calendar_event, semester_code):
     return cal
 
 
-def generate_full_schedule_ical(class_sections, semester_code):
-    """Generate an iCalendar file for multiple class sections
-
-    Args:
-    - class_sections (list): List of dictionaries containing class section details
-
-    Returns:
-    - str: Formatted iCalendar content
-
-    """
+def generate_full_schedule_ical(class_sections: List[Dict], semester_code: str):
+    """Generate an iCalendar file for multiple class sections."""
     # Create a new calendar
     cal = icalendar.Calendar()
 
