@@ -86,6 +86,10 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
 
     # Extract start and end dates from constants
     days_of_week = section.get("class_meetings")[0].get("days")
+    if days_of_week == "":
+        print(f"Skipping section with no meetings: {course_name}")
+        return cal
+
     first_day = days_of_week.split(",")[0]
     start_date = START_DATE[semester_code] + DAYS_OFFSET[first_day]
     end_date = END_DATE[semester_code]
