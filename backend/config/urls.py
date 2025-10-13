@@ -66,5 +66,4 @@ urlpatterns = [
     ),
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
     path('upload/', upload.upload_file, name='upload_file'),
-    path('api/', include('hoagieplan.api.urls')), 
 ]
