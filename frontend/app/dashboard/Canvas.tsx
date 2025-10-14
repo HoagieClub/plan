@@ -21,7 +21,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
-import {SortableItem, getPrimaryColor, getSecondaryColor} from './SortableItem';
 
 import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
@@ -36,6 +35,8 @@ import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
+import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
+import { SEARCH_RESULTS_ID } from './constants';
 
 import type {
 	CollisionDetection,
@@ -172,7 +173,6 @@ type Props = {
 };
 
 export const PLACEHOLDER_ID = 'placeholder';
-export const SEARCH_RESULTS_ID = 'Search Results';
 const defaultClassYear = new Date().getFullYear() + 1;
 
 export function Canvas({
@@ -809,4 +809,3 @@ export function Canvas({
 		});
 	}
 }
-
