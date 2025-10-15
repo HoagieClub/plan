@@ -7,6 +7,7 @@ import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
 import useSearchStore from '@/store/searchSlice';
 import { getDepartmentGradient } from '@/utils/departmentColors';
+
 import { SEARCH_RESULTS_ID } from './constants';
 
 import type { UniqueIdentifier } from '@dnd-kit/core';

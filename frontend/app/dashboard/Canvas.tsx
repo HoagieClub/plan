@@ -34,9 +34,9 @@ import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 
+import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
-import { SEARCH_RESULTS_ID } from './constants';
 
 import type {
 	CollisionDetection,
