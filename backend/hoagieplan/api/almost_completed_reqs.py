@@ -5,7 +5,7 @@ from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequire
 from hoagieplan.api.dashboard.requirements import check_user
 from hoagieplan.api.profile.info import fetch_user_info
 
-TOP_ALMOST_COMPLETED = 10
+TOP_ALMOST_COMPLETED = 100
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
@@ -62,9 +62,9 @@ def count_outstanding_courses(requirement: Requirement) -> int:
 def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) -> int:
     # Base case
     print()
+    print(requirement)
     if requirement.is_leaf:
-        print(requirement)
-        print("Returning ", max(0, requirement.min_needed - requirement.count))
+        print(requirement.req_id, "Returning ", max(0, requirement.min_needed - requirement.count))
         return max(0, requirement.min_needed - requirement.count)
     
     # Top level node
@@ -75,12 +75,11 @@ def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) 
                 for subrequirement in requirement.subrequirements.values()
             ]
         )
-        print("Returning ", val)
+        print(requirement.req_id, "Returning ", val)
         return val
 
     # Return the min if requirement is the parent of a leaf node
     if _is_parent_of_leaf(requirement):
-        print(requirement)
         val = max(
             requirement.min_needed - requirement.count,
             min(
@@ -90,16 +89,27 @@ def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) 
                 ]
             ),
         )
-        print("Returning ", val)
+        print(requirement.req_id, "Returning ", val)
         return val
+    
+    val = max(
+        requirement.min_needed - requirement.count,
+        sum(
+            sorted([
+                count_outstanding_courses_helper(subrequirement, used)
+                for subrequirement in requirement.subrequirements.values()
+            ])[:requirement.min_needed]
+        ),
+    )
 
+    print(requirement.req_id, "Returning ", val)
     return max(
         requirement.min_needed - requirement.count,
         sum(
-            [
+            sorted([
                 count_outstanding_courses_helper(subrequirement, used)
                 for subrequirement in requirement.subrequirements.values()
-            ]
+            ])[:requirement.min_needed]
         ),
     )
 
