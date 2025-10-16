@@ -119,7 +119,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 						{/* Details section with explicit width */}
 						<div
 							style={{
-								height: '485px',
+								height: '100%',
 								overflowWrap: 'break-word',
 								flexWrap: 'wrap',
 								overflowY: 'auto',
@@ -141,9 +141,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									style={{
 										backgroundColor: courseColor,
 										color: 'white',
-										padding: '6px 12px',
+										padding: '8px 14px',
 										borderRadius: '4px',
 										fontWeight: 'bold',
+										fontSize: '1.1rem',
 										width: 'fit-content',
 									}}
 								>
@@ -158,6 +159,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											color='neutral'
 											component='a'
 											href={courseDetails.Registrar}
+											target='_blank'
+											rel='noopener noreferrer'
 											sx={{ ml: 2 }}
 											size='md'
 										>
@@ -172,6 +175,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											new URL(courseDetails.Registrar).searchParams.get('term') +
 											new URL(courseDetails.Registrar).searchParams.get('courseid')
 										}`}
+										target='_blank'
+										rel='noopener noreferrer'
 										sx={{ ml: 2 }}
 										size='md'
 									>
@@ -180,13 +185,20 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 							</div>
 
+							{/* Course Title */}
+							{courseDetails['Title'] && (
+								<h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
+									{courseDetails['Title']}
+								</h2>
+							)}
+
 							{/* Distribution Area Code */}
 							{distShort && (
 								<div
 									style={{
 										backgroundColor: distColor,
 										color: 'white',
-										padding: '6px 12px',
+										padding: '3px 8px',
 										borderRadius: '6px',
 										fontWeight: 'bold',
 										width: 'fit-content',
@@ -194,12 +206,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								>
 									{distShort}
 								</div>
-							)}
-							{/* Course Title */}
-							{courseDetails['Title'] && (
-								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
-									{courseDetails['Title']}
-								</h2>
 							)}
 
 							{/* Instructor Names */}
@@ -209,11 +215,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							<div
 								style={{
 									backgroundColor: '#f5f5f5',
-									padding: '6px 12px',
+									padding: '6px 16px',
 									borderRadius: '6px',
 									fontSize: '0.85rem',
 									display: 'flex',
-									width: 'fit-content',
+									width: '40%',
 									flexDirection: 'column',
 								}}
 							>
@@ -270,31 +276,12 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 						style={{
 							display: 'flex',
 							justifyContent: 'flex-end',
-							width: '100%',
+							width: '90%',
 						}}
 					>
 						<LoadingComponent />
 					</div>
 				)}
-				<div
-					style={{
-						display: 'flex',
-						flexDirection: 'column',
-						marginBottom: '15px',
-					}}
-				>
-					<footer className='mt-auto text-right'>
-						<JoyButton
-							variant='soft'
-							color='neutral'
-							onClick={handleCancel}
-							sx={{ ml: 2 }}
-							size='md'
-						>
-							Close
-						</JoyButton>
-					</footer>
-				</div>
 			</div>
 		</Modal>
 	) : null;
