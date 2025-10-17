@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { LoadingComponent } from '@/components/LoadingComponent';
 import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
+import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
@@ -165,6 +166,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											size='md'
 										>
 											Registrar
+											<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
 										</JoyButton>
 									)}
 									<JoyButton
@@ -181,6 +183,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										size='md'
 									>
 										Princeton Courses
+										<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
 									</JoyButton>
 								</div>
 							</div>
@@ -282,6 +285,25 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 						<LoadingComponent />
 					</div>
 				)}
+				<div
+					style={{
+						display: 'flex',
+						flexDirection: 'column',
+						marginBottom: '15px',
+					}}
+				>
+					<footer className='mt-auto text-right'>
+						<JoyButton
+							variant='soft'
+							color='neutral'
+							onClick={handleCancel}
+							sx={{ ml: 2 }}
+							size='md'
+						>
+							Close
+						</JoyButton>
+					</footer>
+				</div>
 			</div>
 		</Modal>
 	) : null;
