@@ -11,9 +11,9 @@ description: Cognitive science is the interdisciplinary study of the
   and anthropology. The interdisciplinary character of cognitive science is 
   reflected in its reliance on many levels of analysis and its employment of 
   a variety of methodologies appropriate to each level. The goal of cognitive 
-  \science is to integrate the insights from multiple disciplines and modes of
-  research into a unified scientific account of minds – be they human or 
-  non-human, natural or artificial – and their place in nature and society.
+  science is to integrate the insights from multiple disciplines and modes of
+  research into a unified scientific account of minds - be they human or 
+  non-human, natural or artificial - and their place in nature and society.
 contacts:
 - type: Program Director
   name: Anna Colasante
@@ -30,17 +30,8 @@ req_list:
       max_counted: 1
       double_counting_allowed: true
       course_list:
-        - CHV 300
-        - CGS 322
-        - CGS 254
-        - CGS 255
-        - COS 360
-        - LIN 309
-        - MUS 248
-        - NEU 306 
         - PHI 207
         - PHI 322
-        - PSY 248
         - PSY 254
         - PSY 255
         - PSY 306
@@ -49,8 +40,9 @@ req_list:
         - PSY 333
         - PSY 360
         - PSY 454
+        - MUS 248
     - name: Advanced Courses
-      explanation: "Three courses at the 300-level or higher."
+      explanation: Three courses at the 300-level or higher.
       min_needed: 3
       max_counted: 5
       course_list:
@@ -111,25 +103,13 @@ req_list:
     min_needed: 3
     max_counted: 1
     double_counting_allowed: true
-    req-list: 
-    - name: CHV
-      min_needed: 1
-      max_counted: 1
-      course_list: 
-        - CHV 300
-    - name: CGS
-      min_needed: 1
-      max_counted: 1
-      course_list: 
-        - CGS 322
-        - CGS 254
-        - CGS 255
+    req_list:
     - name: COS
       min_needed: 1
       max_counted: 1
       course_list: 
-        - COS 324 
-        - COS 360
+        - COS 126
+        - COS 324
         - COS 402
         - COS 424
         - COS 429
@@ -137,60 +117,49 @@ req_list:
         - COS 484
         - COS 495
         - TRA 301
-    req_list:
     - name: LIN
       min_needed: 1
       max_counted: 1
       course_list: 
-        - LIN 301 
+        - LIN 201
+        - LIN 205
+        - LIN 219
+        - LIN 250
+        - LIN 301
         - LIN 302
         - LIN 303 
         - LIN 306
         - LIN 308
-        - LIN 309
         - LIN 310
         - LIN 355
         - LIN 360 
         - LIN 406 
         - LIN 412
-    req_list:
     - name: MAE
       min_needed: 1
       max_counted: 1
       course_list: 
         - MAE 345
-    req_list:
-    - name: MUS
-      min_needed: 1
-      max_counted: 1
-      course_list: 
-        - MUS 248
-    req_list:
-    - name: ENE
-      min_needed: 1
-      max_counted: 1
-      course_list: 
         - ENE 475
-    req_list:
-    - name: ECE
-      min_needed: 1
-      max_counted: 1
-      course_list: 
         - ECE 364
-    req_list:
     - name: NEU
       min_needed: 1
       max_counted: 1
       course_list: 
-       - NEU 306
-       - NEU 330 
-       - NEU 437
-    req_list:
+      - NEU 175
+      - NEU 200
+      - NEU 201
+      - NEU 202
+      - NEU 202B
+      - NEU 330
+      - NEU 437
     - name: PHI
       min_needed: 1
       max_counted: 1
       course_list: 
         - PHI 207
+        - PHI 218
+        - PHI 305
         - PHI 311
         - PHI 313
         - PHI 315
@@ -198,13 +167,13 @@ req_list:
         - PHI 321
         - PHI 322
         - PHI 352
+        - PHI 354
         - PHI 380
-    req_list:
     - name: PSY
       min_needed: 1
       max_counted: 1
-      course_list: 
-        - PSY 248
+      course_list:
+        - PSY 209
         - PSY 254
         - PSY 255
         - PSY 304
@@ -215,14 +184,13 @@ req_list:
         - PSY 316
         - PSY 333
         - PSY 337
-        - PSY 338 
+        - PSY 338
         - PSY 340
         - PSY 345
         - PSY 360
         - PSY 400
         - PSY 409
         - PSY 454
-    req_list:
     - name: SPI
       min_needed: 1
       max_counted: 1
@@ -230,19 +198,16 @@ req_list:
         - SPI 305
         - SPI 340
         - SPI 404
-    req_list:
     - name: ECO
       min_needed: 1
       max_counted: 1
       course_list: 
         - ECO 468
-    req_list:
     - name: HIS
       min_needed: 1
       max_counted: 1
       course_list: 
         - HIS 494
-    req_list:
     - name: SML
       min_needed: 1
       max_counted: 1

@@ -30,7 +30,7 @@ req_list:
   - JDS 202
 - name: JDS Courses
   max_counted: 1
-  min_needed: 4
+  min_needed: 5
   pdfs_allowed: 0
   explanation: 
     A sound program of study will involve both historical range and disciplinary
@@ -45,16 +45,16 @@ req_list:
     their major.
   req_list:
   - name: Path 1
-    max_counted: 4
-    min_needed: 4
+    max_counted: 5
+    min_needed: 5
     explanation:
       Students can successfully complete five courses (including JDS 202)
       approved to count toward the Judaic studies minor.
     course_list:
     - JDS *
   - name: Path 2
-    max_counted: 4
-    min_needed: 4
+    max_counted: 5
+    min_needed: 5
     explanation:
       Alternatively, students can (a) successfully complete four courses
       (including JDS 202) approved to count toward the Judaic studies minor, 
