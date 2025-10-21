@@ -39,8 +39,6 @@ class CalendarEventPostAction(Enum):
 class CalendarEventView(APIView):
     def get(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Fetch all calendar events associated with a calendar."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         try:
             term_id = get_term(term).id
             user_inst = get_user(net_id)
@@ -55,8 +53,6 @@ class CalendarEventView(APIView):
 
     def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Handle post operations for calendar events for the user."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         action: str = request.query_params.get("action")
         if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
             return self._add_all_calendar_events_for_course(request, net_id, calendar_name, term)
@@ -67,7 +63,6 @@ class CalendarEventView(APIView):
 
     def _add_all_calendar_events_for_course(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Add all calendar events for a course identified by guid."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         guid: str = request.data.get("guid")
 
         try:
@@ -140,8 +135,6 @@ class CalendarEventView(APIView):
 
     def _add_calendar_event(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Add a single calendar event with specified details."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         guid: str = request.data.get("guid")
         section_id: str = request.data.get("section_id")
         start_time: str = request.data.get("start_time")
@@ -176,7 +169,6 @@ class CalendarEventView(APIView):
 
     def delete(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Delete all calendar events associated with a given guid."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         guid: str = request.data.get("guid")
 
         try:
@@ -201,8 +193,6 @@ class CalendarEventView(APIView):
 
     def put(self, request, net_id: str, calendar_name: str, term: int) -> Response:
         """Activates a calendar event."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         guid: str = request.data.get("guid")
 
         # class_section are L01, C01, P01, etc.

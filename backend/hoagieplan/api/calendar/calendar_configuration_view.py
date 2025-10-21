@@ -18,8 +18,6 @@ class CalendarConfigurationView(APIView):
 
     def get(self, request, net_id: str, term: int) -> Response:
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         try:
             user_inst = CustomUser.objects.get(net_id=net_id)
         except CustomUser.DoesNotExist:
@@ -39,7 +37,6 @@ class CalendarConfigurationView(APIView):
 
     def put(self, request, net_id: str, term: int) -> Response:
         """Create a new calendar configuration for the user."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         term_id = AcademicTerm.objects.get(term_code=term).id
 
         calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
@@ -69,8 +66,6 @@ class CalendarConfigurationView(APIView):
 
     def post(self, request, net_id: str, term: int) -> Response:
         """Update an existing calendar configuration."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -107,7 +102,6 @@ class CalendarConfigurationView(APIView):
 
     def delete(self, request, net_id: str, term: int) -> Response:
         """Delete an existing calendar configuration."""
-        print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
         term_id = AcademicTerm.objects.get(term_code=term).id
 
         calendar_name = request.data.get("calendar_name")

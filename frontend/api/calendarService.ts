@@ -78,11 +78,8 @@ export class CalendarService {
 			const validatedData = CalendarConfigurationArraySchema.parse(
 				responseData
 			) as CalendarConfiguration[];
-
-			console.log('Fetched calendars:', validatedData);
 			return validatedData;
-		} catch (error) {
-			console.log('Some other fetch error occurred:', error);
+		} catch {
 			return null;
 		}
 	}
@@ -98,7 +95,6 @@ export class CalendarService {
 		calendarName: string,
 		term: number
 	): Promise<CalendarConfiguration | null> {
-		console.log(`Trying to create calendar with name ${calendarName}`);
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
@@ -108,13 +104,10 @@ export class CalendarService {
 
 			if (!response.ok) {
 				// TODO: Handle error
-				const errorText = await response.text();
-				console.error(`Error response: ${errorText}`);
 				return null;
 			}
 
 			const responseData = await response.json();
-			console.log(`Created calendar with name ${calendarName}`);
 			const validatedData = CalendarConfigurationSchema.parse(
 				responseData
 			) as CalendarConfiguration;
@@ -131,7 +124,6 @@ export class CalendarService {
 		newCalendarName: string,
 		term: number
 	): Promise<void> {
-		console.log(`Trying to update calendar ${calendarName} to ${newCalendarName}`);
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
@@ -148,7 +140,6 @@ export class CalendarService {
 			}
 
 			const responseData = await response.json();
-			console.log(`Updated ${calendarName} to ${newCalendarName}`);
 			return responseData;
 		} catch {
 			// TODO: Handle error
@@ -158,7 +149,6 @@ export class CalendarService {
 
 	// Deletes the calendar with calendarName in term
 	public async deleteCalendar(calendarName: string, term: number): Promise<void> {
-		console.log(`Deleting calendar: ${calendarName}`);
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
@@ -172,7 +162,6 @@ export class CalendarService {
 			}
 
 			const responseData = await response.json();
-			console.log(`Deleted ${calendarName}`);
 			return responseData;
 		} catch {
 			// TODO: Handle error
@@ -193,11 +182,9 @@ export class CalendarService {
 			const responseData = await response.json();
 			const validatedData = CalendarEventArraySchema.parse(responseData) as CalendarEvent[];
 
-			console.log('Fetched calendar events:', validatedData);
 			return validatedData;
-		} catch (error) {
+		} catch {
 			// TODO: Handle error
-			console.log('Some other fetch error occurred:', error);
 			return null;
 		}
 	}
@@ -259,11 +246,9 @@ export class CalendarService {
 
 			const rawData = await response.json();
 			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
-			console.log('Fetched calendar events:', validatedData);
 			return validatedData;
-		} catch (error) {
+		} catch {
 			// TODO: Handle error
-			console.log('Some other fetch error occurred:', error);
 			return null;
 		}
 	}
@@ -275,7 +260,6 @@ export class CalendarService {
 		guid: string
 	): Promise<void> {
 		try {
-			console.log('Deleting course from calendar: ', calendarName, term, guid);
 			const url = this.buildCalendarEventsUrl(calendarName, term);
 			const response = await fetch(url, {
 				...this.getDeleteRequestDetails(),
@@ -286,12 +270,9 @@ export class CalendarService {
 				return null;
 			}
 
-			const rawData = await response.json();
-			console.log(rawData);
 			return null;
-		} catch (error) {
+		} catch {
 			// TODO: Handle error
-			console.log('Some other fetch error occurred:', error);
 			return null;
 		}
 	}
@@ -304,7 +285,6 @@ export class CalendarService {
 		classSection: string
 	): Promise<void> {
 		try {
-			console.log('Activating section in calendar: ', calendarName, term, guid, classSection);
 			const url = this.buildCalendarEventsUrl(calendarName, term);
 			const response = await fetch(url, {
 				...this.getPutRequestDetails(),
@@ -315,12 +295,9 @@ export class CalendarService {
 				return null;
 			}
 
-			const rawData = await response.json();
-			console.log(rawData);
 			return null;
-		} catch (error) {
+		} catch {
 			// TODO: Handle error
-			console.log('Some other fetch error occurred:', error);
 			return null;
 		}
 	}
