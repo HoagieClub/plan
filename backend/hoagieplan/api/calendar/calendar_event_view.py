@@ -192,7 +192,7 @@ class CalendarEventView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, net_id: str, calendar_name: str, term: int) -> Response:
-        """Activates a calendar event."""
+        """Inverts a calendar event (Activates an inactive event or deactivates an active event)."""
         guid: str = request.data.get("guid")
 
         # class_section are L01, C01, P01, etc.
@@ -207,7 +207,7 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieving the event that was clicked
+        # Retrieve the event that was clicked
         clicked_events: List[CalendarEvent] = []
         for section in clicked_sections:
             try:

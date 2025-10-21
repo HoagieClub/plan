@@ -85,7 +85,7 @@ export class CalendarService {
 	}
 
 	// Returns true if user has at least one calendar in the DB for term
-	public async hasCalendarForTerminDB(term: number): Promise<boolean> {
+	public async hasCalendarForTermInDB(term: number): Promise<boolean> {
 		const calendars = await this.getCalendars(term);
 		return calendars && calendars.length > 0;
 	}
@@ -118,8 +118,8 @@ export class CalendarService {
 		}
 	}
 
-	// Updates a calendar from calendarName to newCalendarName in term
-	public async updateCalendar(
+	// Renames a calendar from calendarName to newCalendarName in term
+	public async renameCalendar(
 		calendarName: string,
 		newCalendarName: string,
 		term: number
@@ -277,8 +277,8 @@ export class CalendarService {
 		}
 	}
 
-	// Activates the classSection for course with guid in calendar with calendarName in term
-	public async activateSectionInCalendar(
+	// Inverts the classSection for course with guid in calendar with calendarName in term
+	public async invertSectionInCalendar(
 		calendarName: string,
 		term: number,
 		guid: string,
