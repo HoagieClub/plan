@@ -70,7 +70,7 @@ req_list:
   min_needed: 3
   explanation: Students must take three additional courses in AAS, cross-listed 
     by AAS, or from our approved cognates list (which may be accessed on the 
-    department’s website). At least one of these courses must be situated 
+    department's website). At least one of these courses must be situated 
     in the Global Race and Ethnicity (GRE) subfield.
   max_common_with_major: 1
   req_list:
@@ -150,7 +150,6 @@ req_list:
     - SPI 336
     - VIS 228
     - VIS 424
-
   - name: Global Race and Ethnicity (GRE) subfield
     max_counted: 3
     min_needed: 1
@@ -528,25 +527,25 @@ req_list:
     - AAS 233
     - VIS 234
     - AAS 234
-  - name: Restrictions
-    max_counted: 1
-    min_needed: 1
-    explanation: |-
-      <i>Editor's Note: Only one PDF can be counted towards the minor.</i><br><br>
+- name: Restrictions
+  max_counted: 1
+  min_needed: 1
+  explanation: |-
+    <i>Editor's Note: Only one PDF can be counted towards the minor.</i><br><br>
 
-      Students may count one course taken for their major toward the minor if the course 
-      is cross-listed with AAS or has been approved as a cognate by the AAS Director of 
-      Undergraduate Studies before the course is taken. The PDF option counts toward the minor
-      if the course is primary-listed with AAS, cross-listed with AAS, or has been approved as 
-      a creative or practice-based cognate by the AAS Director of Undergraduate Studies before
-      the course is taken. Only one PDF course may count toward the minor. 
-      Students must receive passing grades in all five courses in order 
-      to complete the program of study for the minor.
+    Students may count one course taken for their major toward the minor if the course 
+    is cross-listed with AAS or has been approved as a cognate by the AAS Director of 
+    Undergraduate Studies before the course is taken. The PDF option counts toward the minor
+    if the course is primary-listed with AAS, cross-listed with AAS, or has been approved as 
+    a creative or practice-based cognate by the AAS Director of Undergraduate Studies before
+    the course is taken. Only one PDF course may count toward the minor. 
+    Students must receive passing grades in all five courses in order 
+    to complete the program of study for the minor.
 
-      Students who have completed the program of study by graduation will compose a 
-      700-word essay describing how the AAS minor has informed their independent 
-      work in the major. The reflection may touch on the Junior Paper, the Senior Thesis, 
-      or both. The reflection essay will be due during reading period of the graduating
-      semester. The AAS Curriculum Committee, which is chaired by the Director of 
-      Undergraduate Studies, will review and assess the essays, thereby approving 
-      the completion of the program of study.
+    Students who have completed the program of study by graduation will compose a 
+    700-word essay describing how the AAS minor has informed their independent 
+    work in the major. The reflection may touch on the Junior Paper, the Senior Thesis, 
+    or both. The reflection essay will be due during reading period of the graduating
+    semester. The AAS Curriculum Committee, which is chaired by the Director of 
+    Undergraduate Studies, will review and assess the essays, thereby approving 
+    the completion of the program of study.
