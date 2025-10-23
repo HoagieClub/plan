@@ -27,6 +27,8 @@ from django.urls import path
 from hoagieplan import ical_generator
 from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import configuration
+from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
+from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
 from hoagieplan.api.dashboard import details, requirements, search, upload
 from hoagieplan.api.profile import info, tutorial
 
@@ -62,4 +64,11 @@ urlpatterns = [
         name="fetch_calendar_classes",
     ),
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
+    path("upload/", upload.upload_file, name="upload_file"),
+    path("calendars/<str:net_id>/<int:term>", CalendarConfigurationView.as_view(), name="calendars"),
+    path(
+        "calendar_events/<str:net_id>/<str:calendar_name>/<int:term>",
+        CalendarEventView.as_view(),
+        name="calendar_events",
+    ),
 ]
