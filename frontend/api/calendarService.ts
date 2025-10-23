@@ -123,7 +123,7 @@ export class CalendarService {
 		calendarName: string,
 		newCalendarName: string,
 		term: number
-	): Promise<void> {
+	): Promise<CalendarConfiguration | null> {
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
@@ -148,7 +148,10 @@ export class CalendarService {
 	}
 
 	// Deletes the calendar with calendarName in term
-	public async deleteCalendar(calendarName: string, term: number): Promise<void> {
+	public async deleteCalendar(
+		calendarName: string,
+		term: number
+	): Promise<CalendarConfiguration | null> {
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
@@ -170,7 +173,10 @@ export class CalendarService {
 	}
 
 	// Returns the list of all events in calendar with calendarName for term
-	public async getCalendarEvents(calendarName: string, term: number): Promise<CalendarEvent[]> {
+	public async getCalendarEvents(
+		calendarName: string,
+		term: number
+	): Promise<CalendarEvent[] | null> {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term);
 			const response = await fetch(url, this.getGetRequestDetails());
@@ -194,7 +200,7 @@ export class CalendarService {
 		calendarName: string,
 		term: number,
 		guid: string
-	): Promise<CalendarEvent[]> {
+	): Promise<CalendarEvent[] | null> {
 		return this.performPostCalendarOperation(
 			calendarName,
 			term,
@@ -208,7 +214,7 @@ export class CalendarService {
 		calendarName: string,
 		term: number,
 		calendarEvent: OldCalendarEvent
-	): Promise<CalendarEvent[]> {
+	): Promise<CalendarEvent[] | null> {
 		return this.performPostCalendarOperation(
 			calendarName,
 			term,
@@ -232,7 +238,7 @@ export class CalendarService {
 		term: number,
 		action: CalendarEventPostAction,
 		payload: CalendarEventPostPayload
-	): Promise<CalendarEvent[]> {
+	): Promise<CalendarEvent[] | null> {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term, { action: action });
 			const response = await fetch(url, {
