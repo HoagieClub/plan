@@ -51,7 +51,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			})
 				.then((response) => response.json())
 				.then((data) => {
-					console.log('Fetched course details:', data);
 					setCourseDetails(data);
 				});
 		}
@@ -216,7 +215,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									</div>
 								)}
 
-								{/* AUdit Tag */}
+								{/* Audit Tag */}
 								{auditTag && (
 									<div
 										style={{
