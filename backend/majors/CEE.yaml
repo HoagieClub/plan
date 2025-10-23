@@ -59,38 +59,38 @@ req_list:
       min_needed: ALL
       explanation:
       req_list:
-      - name:
+      - name: Solid Mechanics
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 205
         - MAE 223
-      - name:
+      - name: Applied Structures
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 262B
         - CEE 345
-      - name:
+      - name: Environmental and Water Resources Engineering
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 207
-        - CEE 302
+        - ENV 302 / CEE 302 / EEB 302
         - CEE 344
         - CEE 306
-      - name:
+      - name: Structural and Systems Engineering
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
-        - CEE 316
+        - CEE 361
         - CEE 374
         - CEE 460
-      - name:
+      - name: Structures, Materials, and Soil
         max_counted: 1
         min_needed: 3
         explanation:
@@ -103,47 +103,51 @@ req_list:
       min_needed: 4
       explanation:
       req_list:
-      - name:
-        max_counted: 3
+      - name: Architectural Thinking
+        max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - ARC 203
-        - ARC 204
-        - ARC 205
-      - name:
+      - name: Geometry and Design
         max_counted: 1
         min_needed: 1
-        excluded_course_list:
-        - ARC 203
-        - ARC 204
+        explanation:
+        course_list:
         - ARC 205
+        - ARC 206
+      - name: Architecture Elective
+        max_counted: 1
+        min_needed: 1
         course_list:
         - ARC *
+        excluded_course_list:
+        - ARC 203
+        - ARC 205
+        - ARC 206
+      - name: CEE Elective
+        max_counted: 1
+        min_needed: 1
+        course_list:
+        - CEE *
     - name: Engineering Design
       max_counted: 1
       min_needed: ALL
       explanation:
       req_list:
-      - name:
+      - name: Steel/Concrete Structures Design
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 366
         - CEE 467
-      - name:
+      - name: Buildings Design
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 461
-    - name: Independent Work
-      max_counted: 1
-      min_needed: 1
-      explanation:
-      course_list:
-      - CEE 478
     - name: Program Elective
       max_counted: 1
       min_needed: 1
@@ -187,54 +191,102 @@ req_list:
       min_needed: ALL
       explanation:
       req_list:
-      - name:
+      - name: Fluid/Solid Mechanics
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 205
         - MAE 223
-      - name:
+      - name: Environmental Systems/Engineering
         max_counted: 1
         min_needed: 1
         course_list:
         - CEE 207
-        - CEE 344
-      - name:
+        - ENV 302 / CEE 302 / EEB 302
+      - name: Water Resources Engineering
         max_counted: 1
         min_needed: 1
         course_list:
-        - CEE 364
-        - CEE 365
-      - name:
-        max_counted: 1
-        min_needed: 5
-        course_list:
-        - ENV 302 / CEE 302 / EEB 302
-        - CEE 305
         - CEE 306
+        - CEE 344
+      - name: Lab Courses
+        max_counted: 1
+        min_needed: 2
+        course_list:
         - CEE 308
         - CEE 311
+        - CEE 325
+    - name: Additional Engineering Science
+      max_counted: 1
+      min_needed: 3
+      explanation:
+      req_list:
+      - name: Solid Mechanics
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 205
+        - MAE 223
+      - name: Urban Planning
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 401
+        - CEE 420
+        - CEE 444
+      - name: Sustainability and Environmental Systems
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 321
+        - CEE 343
+      - name: Seismology and Soil
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 365
+        - GEO 424 / CEE 424
+      - name: Energy
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - ENE 228
+        - ENE 372
+        - ENE 422
+      - name: Materials
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 364
+      - name: Risk Analysis
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 460
     - name: Engineering Design
       max_counted: 1
       min_needed: 2
       course_list:
       - CEE 471
-      - CEE 477
-    - name: Independent Work
-      max_counted: 1
-      min_needed: 1
-      course_list:
-      - CEE 478
+      - CEE 476
+    # I'm confused what is going on with Program Electives
     - name: Program Elective
       max_counted: 1
-      min_needed: 2
+      min_needed: 3
       explanation: |-
         No more than one program elective can be at the 200 level. For 
         the environmental engineering track, at least one of the program 
         electives must be an engineering course.
       req_list:
-      - name:
+      - name: Engineering Courses
         max_counted: 1
         min_needed: 2
         course_list:
@@ -247,130 +299,9 @@ req_list:
         - ORF 309
         - ECE 455
         - ECE 428
-      - name:
+      - name: Geo
         max_counted: 1
         min_needed: 1
-        course_list:
-        - GEO 363
-        - GEO 418
-  - name: Geological Engineering
-    max_counted: 1
-    min_needed: ALL
-    explanation: |-
-      Geological engineering is the application of science to problems and
-      projects involving Earth, its physical environment, Earth materials 
-      and natural resources. The curriculum, offered in cooperation with 
-      the Department of Geosciences, is specially designed for the student
-      who wishes to build upon the first-year and sophomore mathematics 
-      and engineering courses as a basis for studies in the Earth 
-      sciences. Typical areas of study are water resources, engineering 
-      geology, Earth resources, geotechnical engineering, geophysics, 
-      geochemistry and atmospheres and oceans. This track is accredited 
-      by the Engineering Accreditation Commission of ABET under the 
-      program in civil engineering. In addition to the general 
-      requirements of the School of Engineering and Applied Science, 
-      the following courses are required.
-    req_list:
-    - name: Engineering Science
-      max_counted: 1
-      min_needed: ALL
-      explanation:
-      req_list:
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 205
-        - MAE 223
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 207
-        - MAE 344
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 305
-        - CEE 306
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 308
-        - GEO 300
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 365
-        - CEE 370
-      - name:
-        max_counted: 1
-        min_needed: 2
-        explanation:
-        course_list:
-        - CEE 311
-        - CEE 460
-    - name: Track-Specific
-      max_counted: 1
-      min_needed: 1
-      explanation:
-      course_list:
-      - CEE 360
-      - GEO 363
-      - CEE 417
-      - GEO 418
-      - CEE 424
-      - GEO 430
-      - GEO 441
-      - GEO 471
-      - GEO 499
-    - name: Engineering Design
-      max_counted: 1
-      min_needed: 2
-      explanation:
-      course_list:
-      - CEE 471
-      - CEE 477
-    - name: Independent Work
-      max_counted: 1
-      min_needed: 1
-      explanation:
-      course_list:
-      - CEE 478
-    - name: Program Electives
-      max_counted: 1
-      min_needed: 2
-      explanation: |-
-        No more than one program elective can be at the 200 level. For 
-        the geological engineering track, two of the three required 
-        program electives must be engineering courses.
-      req_list:
-      - name:
-        max_counted: 1
-        min_needed: 2
-        explanation:
-        course_list:
-        - CEE 334
-        - CEE 361
-        - CEE 460
-        - CEE 487
-        - CEE 566
-        - MAE 328
-        - ORF 309
-        - ECE 455
-        - ECE 428
-      - name:
-        max_counted: 1
-        min_needed: 1
-        explanation:
         course_list:
         - GEO 363
         - GEO 418
@@ -398,36 +329,36 @@ req_list:
       min_needed: ALL
       explanation: 
       req_list:
-      - name:
-        max_counted:
-        min_needed:
+      - name: Applied Structures
+        max_counted: 1
+        min_needed: 1
         explanation:
         course_list:
         - CEE 262B
         - CEE 345
-      - name:
+      - name: Solid Mechanics
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 205
         - MAE 223
-      - name:
+      - name: Environmental and Water Resources Engineering
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 207
-        - CEE 302
+        - ENV 302 / CEE 302 / EEB 302
         - CEE 344
-      - name:
+      - name: Hydrology and Fluid Mechanics
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 306
         - CEE 305
-      - name:
+      - name: Structural and Systems Engineering
         max_counted: 1
         min_needed: 1
         explanation:
@@ -435,7 +366,7 @@ req_list:
         - CEE 361
         - CEE 374
         - CEE 460
-      - name:
+      - name: Structures, Materials, and Soil
         max_counted: 1
         min_needed: 3
         explanation:
@@ -448,25 +379,19 @@ req_list:
       min_needed: 2
       explanation:  
       req_list:
-      - name:
+      - name: Steel/Concrete Structures Design
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 366
         - CEE 467
-      - name:
+      - name: Buildings Design
         max_counted: 1
         min_needed: 1
         explanation:
         course_list:
         - CEE 461
-    - name: Independent Work
-      max_counted: 1
-      min_needed: 1
-      explanation:
-      course_list:
-      - CEE 478
     - name: Program Electives
       max_counted: 1
       min_needed: 3
@@ -515,15 +440,15 @@ req_list:
         at the 300 level or above. At least one of the 300-level
         courses has to have a laboratory component.
       req_list:
-      - name:
+      - name: 300+ Level CEE
         max_counted: 6
-        min_needed: 1
+        min_needed: 3
         explanation:
         course_list:
         - CEE 3**
         - CEE 4**
         - CEE 5**
-      - name:
+      - name: 200- Level CEE
         max_counted: 3
         min_needed: 1
         explanation:
@@ -542,7 +467,7 @@ req_list:
         program of study, which needs to be approved by the adviser. 
         At least eight of these courses must be the 300 level or above.
       req_list:
-      - name:
+      - name: 300+ Level Liberal Arts
         max_counted: 7
         min_needed: 1
         explanation:
@@ -550,16 +475,17 @@ req_list:
         - CEE 3**
         - CEE 4**
         - CEE 5**
-      - name:
+      - name: 200+ Level Liberal Arts
         max_counted: 4
         min_needed: 1
         explanation:
         course_list:
         - CEE 1**
         - CEE 2**
-    - name: Independent Work
-      max_counted: 1
-      min_needed: 1
-      explanation:
-      course_list:
-      - CEE 478
+- name: Independent Work
+  max_counted: 1
+  min_needed: 2
+  explanation:
+  course_list:
+  - CEE 498
+  - CEE 499
