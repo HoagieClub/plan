@@ -161,42 +161,38 @@ req_list:
       - name: Germanic Linguistics
         max_counted: 1
         min_needed: ALL
-        explanation: This track concentrates on the history and structure of
-          the German language. Majors who select this track are required to
-          take the following courses; LIN 201 Introduction to Language and
-          Linguistics or a comparable course in linguistics; GER 505 History
-          of the German Language; and either GER 506 Second Language
-          Acquisition and Pedagogy or GER 316, with the same title. In
-          addition, students will take at least three courses in German
-          literature and culture and two cognate courses pertaining to
+        explanation: This program concentrates on the history and structure of the
+          German language. Majors who select this track are required to take the following courses:
+          LIN 201 Introduction to Language and Linguistics, LIN 210 Intro to Historical and
+          Comparative Linguistics, GER 316 Second Language Acquisition: Theory and Practice, GER
+          508 Middle High German Literature. In addition, students in this concentration will take at
+          least two courses in German Literature & Culture plus two cognate courses pertaining to
           linguistics.
         req_list:
           - name: Linguistics
             max_counted: 1
             min_needed: 2
-            explanation: Majors who select this track are required to
-              take the following courses; LIN 201 Introduction to Language and
-              Linguistics or a comparable course in linguistics; GER 505
-              History of the German Language; and either GER 506 Second
-              Language Acquisition and Pedagogy or GER 316, with the same
-              title.
+            explanation: Majors who select this track are required to take the following courses:
+              LIN 201 Introduction to Language and Linguistics, LIN 210 Intro to Historical and
+              Comparative Linguistics, GER 316 Second Language Acquisition: Theory and Practice, GER
+              508 Middle High German Literature.
             req_list:
               - name: Linguistics & Language History
                 max_counted: 1
                 min_needed: 2
                 course_list:
                   - LIN 201
-                  - GER 505
+                  - LIN 210
               - name: Second Language Acquisition
                 max_counted: 1
                 min_needed: 1
                 course_list:
-                  - GER 506
                   - GER 316
+                  - GER 508
           - name: German
             max_counted: 1
-            min_needed: 3
-            explanation: At least three courses in German literature and
+            min_needed: 2
+            explanation: At least two courses in German literature and
               culture.
             course_list:
               - GER 2*
@@ -272,10 +268,10 @@ req_list:
           courses in German/European politics or political theory will be
           taken in the Department of Politics (at least two of which should
           be 300-level courses). Recommended departmental courses are GER
-          207, 208, 211, 306, 307, 309 and 324. Recommended cognates in
-          politics include POL 210, 230, 240 and 385. The senior thesis may
-          focus on any political topic with a substantive German-related
-          component.
+          207, 208, 211, 306, 307, 309 and 324. Recommended cognates in 
+          Politics include POL 210, 230, 240, 301, 303, 313, 316, 349,
+          385, and 388. The senior thesis may focus on any political 
+          topic with a substantive German-related component. 
         req_list:
           - name: German
             max_counted: 1
@@ -303,8 +299,7 @@ req_list:
             explanation: |-
               <i>Editor's Note: Not all of these courses fall under this requirement and hoagieplan does not verify this.</i><br><br>
 
-              Four cognate courses in German/European politics or political theory will be taken in the Department of Politics (at least two of which should be 300-level courses). Recommended cognates in politics include POL 210, 230, 240 and 385.
-            req_list:
+              Four cognate courses in German/European politics or political theory will be taken in the Department of Politics (at least two of which should be 300-level courses). Recommended cognates in Politics include POL 210, 230, 240, 301, 303, 313, 316, 349, 385, and 388.
               - name:
                 max_counted: 4
                 min_needed: 1
