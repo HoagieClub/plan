@@ -191,13 +191,6 @@ req_list:
       min_needed: ALL
       explanation:
       req_list:
-      - name: Fluid/Solid Mechanics
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 205
-        - MAE 223
       - name: Environmental Systems/Engineering
         max_counted: 1
         min_needed: 1
@@ -210,6 +203,13 @@ req_list:
         course_list:
         - CEE 306
         - CEE 344
+      - name: Fluid/Solid Mechanics
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 305
+        - MAE 223
       - name: Lab Courses
         max_counted: 1
         min_needed: 2
@@ -259,17 +259,12 @@ req_list:
         - ENE 228
         - ENE 372
         - ENE 422
-      - name: Materials
+      - name: Materials and Risk Analysis
         max_counted: 1
-        min_needed: 1
+        min_needed: 2
         explanation:
         course_list:
         - CEE 364
-      - name: Risk Analysis
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
         - CEE 460
     - name: Engineering Design
       max_counted: 1
@@ -277,7 +272,6 @@ req_list:
       course_list:
       - CEE 471
       - CEE 476
-    # I'm confused what is going on with Program Electives
     - name: Program Elective
       max_counted: 1
       min_needed: 3
@@ -329,13 +323,6 @@ req_list:
       min_needed: ALL
       explanation: 
       req_list:
-      - name: Applied Structures
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 262B
-        - CEE 345
       - name: Solid Mechanics
         max_counted: 1
         min_needed: 1
@@ -343,6 +330,21 @@ req_list:
         course_list:
         - CEE 205
         - MAE 223
+      - name: Applied Structures
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 262B
+        - CEE 345
+      - name: Structural and Systems Engineering
+        max_counted: 1
+        min_needed: 1
+        explanation:
+        course_list:
+        - CEE 361
+        - CEE 374
+        - CEE 460
       - name: Environmental and Water Resources Engineering
         max_counted: 1
         min_needed: 1
@@ -358,14 +360,6 @@ req_list:
         course_list:
         - CEE 306
         - CEE 305
-      - name: Structural and Systems Engineering
-        max_counted: 1
-        min_needed: 1
-        explanation:
-        course_list:
-        - CEE 361
-        - CEE 374
-        - CEE 460
       - name: Structures, Materials, and Soil
         max_counted: 1
         min_needed: 3
