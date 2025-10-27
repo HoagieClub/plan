@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
-import { Button as JoyButton } from '@mui/joy';
+import { Button as JoyButton, Tooltip} from '@mui/joy';
 import { createPortal } from 'react-dom';
 
 import { LoadingComponent } from '@/components/LoadingComponent';
@@ -10,7 +10,7 @@ import { ReviewMenu } from '@/components/ReviewMenu';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
-import { getAuditTag } from '@/utils/auditTag';
+import { getAuditTag, getAuditColor } from '@/utils/auditTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -36,6 +36,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const gradingBasis = courseDetails?.['Grading Basis'];
 	const auditTag = getAuditTag(gradingBasis);
+	const auditColor = getAuditColor(auditTag);
+	const auditTitle = auditTag === 'A' ? "Audit Available": "Audit Unavailable";
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -217,18 +219,20 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 								{/* Audit Tag */}
 								{auditTag && (
-									<div
-										style={{
-											backgroundColor: '#fa9f3e',
-											color: 'white',
-											padding: '6px 12px',
-											borderRadius: '6px',
-											fontWeight: 'bold',
-											width: 'fit-content',
-										}}
-									>
-										{auditTag}
-									</div>
+									<Tooltip title = {auditTitle} variant='soft' >
+										<div 
+											style={{
+												backgroundColor: auditColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{auditTag}
+										</div>
+									</Tooltip>
 								)}
 							</div>
 							{/* Course Title */}
