@@ -94,6 +94,11 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set({ loading: true, error: null });
 
 		try {
+			const profile = get().Profile;
+			if (!profile) {
+				throw new Error('User profile not set');
+			}
+
 			const term = course.guid.substring(0, 4);
 			const course_id = course.guid.substring(4);
 			// console.log(`Fetching course details from backend for ${term}-${course_id}`);
@@ -104,19 +109,20 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 				throw new Error('Failed to fetch course details');
 			}
 
-			const profile = get().Profile;
-			if (!profile) {
-				throw new Error('User profile not set');
-			}
-
 			const calendarService = new CalendarService(profile);
+			const calendars = await calendarService.getCalendars(termInt);
 			const hasCalendar = await calendarService.hasCalendarForTermInDB(termInt);
-			const defaultCalendarName = `${profile.firstName}'s Calendar for ${termInt}`;
+
+			let calendarName: string;
+
 			if (!hasCalendar) {
 				// console.log(`No calendar found for term ${termInt}, creating default calendar.`);
-				await calendarService.createCalendar(defaultCalendarName, termInt);
+				calendarName = `${termInt}`;
+				await calendarService.createCalendar(calendarName, termInt);
+			} else {
+				calendarName = calendars[0].name;
 			}
-			await calendarService.addCourseToCalendar(defaultCalendarName, termInt, course.guid);
+			await calendarService.addCourseToCalendar(calendarName, termInt, course.guid);
 
 			const sections = await response.json();
 			// console.log('Fetched sections:', sections.length);
