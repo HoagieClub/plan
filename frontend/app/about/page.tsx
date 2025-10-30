@@ -81,6 +81,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/kim-ella/',
 	},
 	{
+		name: 'Niyathi Kukkapalli',
+		graduationYear: '2028',
+		link: 'www.linkedin.com/in/niyathi-kukkapalli',
+	},
+	{
 		name: 'Minjae Kwon',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/minjae-kwon',
