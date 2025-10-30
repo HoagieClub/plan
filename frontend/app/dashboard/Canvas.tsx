@@ -36,7 +36,8 @@ import { fetchCsrfToken } from '@/utils/csrf';
 
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
-import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
+import { SortableItem } from './SortableItem';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import type {
 	CollisionDetection,
