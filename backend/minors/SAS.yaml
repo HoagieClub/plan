@@ -42,16 +42,17 @@ req_list:
   max_common_with_major: 2
   pdfs_allowed: 1
   course_list:
-  - ANT *
-  - COM *
-  - ENG *
-  - ECO *
-  - HIS *
-  - NES *
-  - POL *
-  - REL *
-  - SPI *
-  - SAS *
+  - ANT 232
+  - GSS 232
+  - HUM 232
+  - SAS 232
+  - ART 250
+  - SAS 250
+  - REL 313
+  - SAS 313
+  - SAS 200
+  - SAS 210
+  - LIN 213
 - name: Senior thesis or Independent Work
   max_counted: 1
   min_needed: 1
