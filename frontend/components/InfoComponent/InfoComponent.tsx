@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
-import { Button as JoyButton } from '@mui/joy';
+import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { createPortal } from 'react-dom';
 
 import { LoadingComponent } from '@/components/LoadingComponent';
@@ -11,6 +11,7 @@ import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
+import { getPdfTag, getPdfColor } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -33,6 +34,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
 	const distColor = getDistributionColors(distShort);
+
+	const gradingBasis = courseDetails?.['Grading Basis'];
+	const pdfTag = getPdfTag(gradingBasis);
+	const pdfColor = getPdfColor(pdfTag);
+	const pdfTitle = pdfTag === 'PDF' ? 'PDF Available' : 'PDF Unavailable';
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -195,21 +201,42 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</h2>
 							)}
 
-							{/* Distribution Area Code */}
-							{distShort && (
-								<div
-									style={{
-										backgroundColor: distColor,
-										color: 'white',
-										padding: '3px 8px',
-										borderRadius: '6px',
-										fontWeight: 'bold',
-										width: 'fit-content',
-									}}
-								>
-									{distShort}
-								</div>
-							)}
+							{/* Tags Row */}
+							<div style={{ display: 'flex', gap: '8px' }}>
+								{/* Distribution Area Code */}
+								{distShort && (
+									<Tooltip title={pdfTitle} variant='soft'>
+										<div
+											style={{
+												backgroundColor: distColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{distShort}
+										</div>
+									</Tooltip>
+								)}
+
+								{/* PDF Tag Code */}
+								{pdfTag && (
+									<div
+										style={{
+											backgroundColor: pdfColor,
+											color: 'white',
+											padding: '6px 12px',
+											borderRadius: '6px',
+											fontWeight: 'bold',
+											width: 'fit-content',
+										}}
+									>
+										{pdfTag}
+									</div>
+								)}
+							</div>
 
 							{/* Instructor Names */}
 							<strong style={modalTitleStyle}>Instructors</strong>
