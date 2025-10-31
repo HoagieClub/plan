@@ -2,8 +2,9 @@ import argparse
 import csv
 import os
 import time
-from data.req_lib import ReqLib
 from concurrent.futures import ThreadPoolExecutor
+
+from data.req_lib import ReqLib
 
 # Note to future developers: This script can be made much faster if made asynchronous.
 
@@ -11,26 +12,20 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def fetch_course_detail(course_id, term, req_lib):
-    """Fetches course details for a given course_id and term.
-    """
+    """Fetches course details for a given course_id and term."""
     # if course_id == '010855':
     #     return course_id, {}
-    return course_id, req_lib.getJSON(
-        req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id
-    )
+    return course_id, req_lib.getJSON(req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id)
 
 
 def fetch_data(subject, term, req_lib):
-    """Fetches course and seat information for a given subject and term.
-    """
+    """Fetches course and seat information for a given subject and term."""
     # if subject in ['EEB', 'GHP', 'SPI']:
     #     print(f'Skipping department {subject} for now.')
     #     return {}, {}, {}
 
     # Fetch all offered courses from a department
-    courses = req_lib.getJSON(
-        req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject
-    )
+    courses = req_lib.getJSON(req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject)
 
     # Extract the course IDs
     course_ids = [
@@ -44,20 +39,12 @@ def fetch_data(subject, term, req_lib):
 
     # Parallel fetching of course details
     with ThreadPoolExecutor(max_workers=16) as executor:
-        futures = [
-            executor.submit(fetch_course_detail, course_id, term, req_lib)
-            for course_id in course_ids
-        ]
-        course_details = {
-            course_id: detail
-            for course_id, detail in (future.result() for future in futures)
-        }
+        futures = [executor.submit(fetch_course_detail, course_id, term, req_lib) for course_id in course_ids]
+        course_details = {course_id: detail for course_id, detail in (future.result() for future in futures)}
 
     # Reserved seats endpoint requires the course IDs to be a comma separated list
     course_ids = ",".join(course_ids)
-    seat_info = req_lib.getJSON(
-        req_lib.configs.COURSES_RESSEATS, fmt="json", term=term, course_ids=course_ids
-    )
+    seat_info = req_lib.getJSON(req_lib.configs.COURSES_RESSEATS, fmt="json", term=term, course_ids=course_ids)
 
     if not seat_info.get("course"):
         print(f"No reserved seating info found for course_ids: {course_ids}")
@@ -106,8 +93,7 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
 
 
 def process_courses(courses, seat_info, course_details, writer):
-    """Processes all courses from the courses/courses endpoint.
-    """
+    """Processes all courses from the courses/courses endpoint."""
     seat_mapping = {seat["course_id"]: seat for seat in seat_info.get("course", [])}
     for term in courses.get("term", []):  # Loop through each term
         for subject in term.get("subjects", []):  # Loop through each subject
@@ -119,14 +105,10 @@ def process_courses(courses, seat_info, course_details, writer):
                 course_id = course.get("course_id", "")
                 course_dict = course_details.get(course_id)
                 if course_dict is None:
-                    print(
-                        f"Data for course ID {course_id} not found. Possible issue with the server."
-                    )
+                    print(f"Data for course ID {course_id} not found. Possible issue with the server.")
                     continue
                 course_detail = course_dict.get("course_details", {})
-                process_course(
-                    term, subject, course, seat_mapping, course_detail, writer
-                )
+                process_course(term, subject, course, seat_mapping, course_detail, writer)
 
 
 # --------------------------------------------------------------------------------------
@@ -166,8 +148,7 @@ def extract_common_data(term, subject, course):
 
 
 def extract_instructor_data(instructor):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     return {
         "Instructor EmplID": instructor.get("emplid", ""),
         "Instructor First Name": instructor.get("first_name", ""),
@@ -180,14 +161,9 @@ def extract_instructor_data(instructor):
 
 
 def extract_crosslisting_data(crosslistings):
-    """CPU-bound function.
-    """
-    crosslisting_subjects = [
-        crosslisting.get("subject", "") for crosslisting in crosslistings
-    ]
-    crosslisting_catalog_numbers = [
-        crosslisting.get("catalog_number", "") for crosslisting in crosslistings
-    ]
+    """CPU-bound function."""
+    crosslisting_subjects = [crosslisting.get("subject", "") for crosslisting in crosslistings]
+    crosslisting_catalog_numbers = [crosslisting.get("catalog_number", "") for crosslisting in crosslistings]
     return {
         "Crosslisting Subjects": ",".join(crosslisting_subjects),
         "Crosslisting Catalog Numbers": ",".join(crosslisting_catalog_numbers),
@@ -220,15 +196,12 @@ def extract_class_data(course_class, seat_mapping):
 
         # Extract and format class year enrollments
         class_year_enrollments = [
-            f"Year {enrollment['class_year']}: {enrollment['enrl_seats']} students"
-            for enrollment in enrollments
+            f"Year {enrollment['class_year']}: {enrollment['enrl_seats']} students" for enrollment in enrollments
         ]
     else:
         class_year_enrollments = []
 
-    class_year_enrollments_str = (
-        ", ".join(class_year_enrollments) or "Class year demographics unavailable"
-    )
+    class_year_enrollments_str = ", ".join(class_year_enrollments) or "Class year demographics unavailable"
 
     return {
         "Class Number": class_number,
@@ -245,8 +218,7 @@ def extract_class_data(course_class, seat_mapping):
 
 
 def extract_course_details(course_details):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     if not course_details:
         print("No course details provided. Possible issue with the server. Skipping...")
         return {}
@@ -269,9 +241,7 @@ def extract_course_details(course_details):
         "Subject": course_detail.get("subject", ""),
         "Seat Reservations": seat_reservations_formatted,
         "Catnum": course_detail.get("catnum", ""),
-        "Reading Writing Assignment": (
-            course_detail.get("reading_writing_assignment") or ""
-        ),
+        "Reading Writing Assignment": (course_detail.get("reading_writing_assignment") or ""),
         "Grading Quizzes": course_detail.get("grading_quizzes", ""),
         "Distribution Area Long": course_detail.get("distribution_area_long", ""),
         "Grading Home Mid Exam": course_detail.get("grading_home_mid_exam", ""),
@@ -321,8 +291,7 @@ def extract_course_details(course_details):
 
 
 def extract_meeting_data(meeting):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     days = ",".join(meeting.get("days", []))
     return {
         "Meeting Number": meeting.get("meeting_number", ""),
@@ -338,18 +307,12 @@ def extract_meeting_data(meeting):
 
 
 def get_semesters_from_args():
-    parser = argparse.ArgumentParser(
-        description="Fetch academic course data for specified semesters."
-    )
-    parser.add_argument(
-        "semesters", nargs="*", help="Semesters to generate CSVs for, e.g. f2019 s2022."
-    )
+    parser = argparse.ArgumentParser(description="Fetch academic course data for specified semesters.")
+    parser.add_argument("semesters", nargs="*", help="Semesters to generate CSVs for, e.g. f2019 s2022.")
     args = parser.parse_args()
 
     if not args.semesters:
-        print(
-            "No semesters provided as arguments. Please enter the semesters separated by spaces:"
-        )
+        print("No semesters provided as arguments. Please enter the semesters separated by spaces:")
         args.semesters = input().split()
 
     return args.semesters
@@ -372,9 +335,7 @@ def generate_csv(semester, subjects, query, fieldnames, req_lib):
         writer.writeheader()
 
         for subject in subjects:
-            term_info, seat_info, course_details = fetch_data(
-                subject, int(query[semester]), req_lib
-            )
+            term_info, seat_info, course_details = fetch_data(subject, int(query[semester]), req_lib)
             process_courses(term_info, seat_info, course_details, writer)
 
 
@@ -390,6 +351,7 @@ def main():
         "f2022": "1232",
         "f2021": "1222",
         "f2020": "1212",
+        "s2026": "1264",
         "s2025": "1254",
         "s2024": "1244",
         "s2023": "1234",
@@ -616,9 +578,7 @@ def main():
         if semester in available_semesters:
             generate_csv(semester, subjects, query, fieldnames, req_lib)
         else:
-            print(
-                f"Warning: Semester '{semester}' not found in available semesters. Skipping."
-            )
+            print(f"Warning: Semester '{semester}' not found in available semesters. Skipping.")
 
 
 if __name__ == "__main__":

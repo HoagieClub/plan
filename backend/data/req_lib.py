@@ -1,6 +1,8 @@
 import json
-from typing import Dict, Any
+from typing import Any, Dict
+
 import requests
+
 from .configs import Configs
 
 
