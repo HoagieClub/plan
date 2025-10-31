@@ -12,18 +12,12 @@ from data.req_lib import ReqLib
 
 
 def fetch_course_detail(course_id, term, req_lib):
-    """Fetches course details for a given course_id and term."""
-    # if course_id == '010855':
-    #     return course_id, {}
+    """Fetch course details for a given course_id and term."""
     return course_id, req_lib.getJSON(req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id)
 
 
 def fetch_data(subject, term, req_lib):
-    """Fetches course and seat information for a given subject and term."""
-    # if subject in ['EEB', 'GHP', 'SPI']:
-    #     print(f'Skipping department {subject} for now.')
-    #     return {}, {}, {}
-
+    """Fetch course and seat information for a given subject and term."""
     # Fetch all offered courses from a department
     courses = req_lib.getJSON(req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject)
 
@@ -56,8 +50,9 @@ def fetch_data(subject, term, req_lib):
 
 
 def process_course(term, subject, course, seat_mapping, course_details, writer):
-    """Extracts information from each course from the courses/courses endpoint,
-    and course details from the courses/details endpoint. Handles courses with multiple instructors gracefully.
+    """Extract information from each course from the courses/courses endpoint, and course details from the courses/details endpoint.
+
+    Handles courses with multiple instructors gracefully.
     """
     common_data = extract_common_data(term, subject, course)
     course_details_data = extract_course_details(course_details)
@@ -93,7 +88,7 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
 
 
 def process_courses(courses, seat_info, course_details, writer):
-    """Processes all courses from the courses/courses endpoint."""
+    """Process all courses from the courses/courses endpoint."""
     seat_mapping = {seat["course_id"]: seat for seat in seat_info.get("course", [])}
     for term in courses.get("term", []):  # Loop through each term
         for subject in term.get("subjects", []):  # Loop through each subject
@@ -115,9 +110,7 @@ def process_courses(courses, seat_info, course_details, writer):
 
 
 def extract_common_data(term, subject, course):
-    """Extracts data from the /courses/courses endpoint
-    given a subject and its corresponding course.
-    """
+    """Extract data from the /courses/courses endpoint given a subject and its corresponding course."""
     course_detail = course.get("detail", {})
 
     data = {
