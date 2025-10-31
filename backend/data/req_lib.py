@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any, Dict
 
 import requests
@@ -8,6 +9,7 @@ from .configs import Configs
 
 class ReqLib:
     def __init__(self):
+        """Create Configs object."""
         self.configs = Configs()
 
     def _make_request(self, endpoint: str, **kwargs: Any) -> requests.Response:
@@ -36,6 +38,14 @@ class ReqLib:
                 if e.response.status_code == 401 and attempts == 0:
                     self.configs._refreshToken(grant_type="client_credentials")
                     attempts += 1
+                elif e.response.status_code >= 500:
+                    print(
+                        f"req_lib.py: Server error {e.response.status_code}. Attempting again... ({attempts + 1}/{max_attempts})"
+                    )
+                    attempts += 1
+                    time.sleep(2**attempts)
+                    if attempts == max_attempts:
+                        print(f"req_lib.py: Maximum retry attempts reached for {url}")
                 else:
                     raise
             except requests.exceptions.RequestException as e:
@@ -45,6 +55,7 @@ class ReqLib:
         return None
 
     def getJSON(self, endpoint: str, **kwargs: Any) -> Dict:
+        """Return the response from endpoint as JSON."""
         req = self._make_request(endpoint, **kwargs)
         if req is not None:
             try:
