@@ -3,6 +3,7 @@ import csv
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple
 
 from constants import DEPTS, SEMESTER_TO_TERM_CODE
 from data.req_lib import ReqLib
@@ -398,22 +399,30 @@ def extract_meeting_data(meeting):
 # --------------------------------------------------------------------------------------
 
 
-def get_semesters_from_args():
+def get_semesters_and_depts_from_args() -> Tuple[List[str], List[str]]:
     parser = argparse.ArgumentParser(description="Fetch academic course data for specified semesters.")
-    parser.add_argument("semesters", nargs="*", help="Semesters to generate CSVs for, e.g. f2019 s2022.")
+    parser.add_argument(
+        "-s", "--semesters", nargs="+", metavar="SEM", help="Semesters to generate CSVs for, e.g. f2019 s2022"
+    )
+    parser.add_argument(
+        "-d", "--departments", nargs="+", metavar="DEPT", help="Departments to generate CSVs for, e.g. COS MAT"
+    )
     args = parser.parse_args()
 
     if not args.semesters:
         print("No semesters provided as arguments. Please enter the semesters separated by spaces:")
         args.semesters = input().split()
+    if not args.departments:
+        print("No departments provided as arguments. Using all departments by default.")
+        args.departments = list(DEPTS.keys())
 
-    return args.semesters
+    return args.semesters, args.departments
 
 
 # --------------------------------------------------------------------------------------
 
 
-def generate_csv(semester, subjects, req_lib):
+def generate_csv(semester, subject, req_lib):
     copy_n = 0
     csv_file = f"{semester}.csv"
 
@@ -426,25 +435,27 @@ def generate_csv(semester, subjects, req_lib):
         writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES)
         writer.writeheader()
 
-        for subject in subjects:
-            term_info, seat_info, course_details = fetch_data(subject, SEMESTER_TO_TERM_CODE[semester], req_lib)
-            process_courses(term_info, seat_info, course_details, writer)
+        term_info, seat_info, course_details = fetch_data(subject, SEMESTER_TO_TERM_CODE[semester], req_lib)
+        process_courses(term_info, seat_info, course_details, writer)
 
 
 # --------------------------------------------------------------------------------------
 
 
+# Usage: python fetch_data.py -s s2026 -d COS MAT
+# Usage: python fetch_data.py -s s2026 -d
+# A list of departments can be specified. If none are given, all departments will be used.
 def main():
     req_lib = ReqLib()
 
-    semesters = get_semesters_from_args()
-    available_semesters = SEMESTER_TO_TERM_CODE.keys()
+    semesters, departments = get_semesters_and_depts_from_args()
 
     for semester in semesters:
-        if semester in available_semesters:
-            generate_csv(semester, list(DEPTS.keys()), req_lib)
-        else:
-            print(f"Warning: Semester '{semester}' not found in available semesters. Skipping.")
+        for department in departments:
+            if semester in SEMESTER_TO_TERM_CODE.keys() and department in DEPTS.keys():
+                generate_csv(semester, department, req_lib)
+            else:
+                print(f"Warning: Semester '{semester}' not found in available semesters. Skipping.")
 
 
 if __name__ == "__main__":
