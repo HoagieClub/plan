@@ -184,4 +184,19 @@ LANG_DEPTS = {
     "TUR": "Turkish",
     "TWI": "Twi",
     "URD": "Urdu",
-} # unsure if some of these can count for AB foreign language requirement. --George
+}  # unsure if some of these can count for AB foreign language requirement. --George
+
+SEMESTER_TO_TERM_CODE = {
+    "f2025": 1262,
+    "f2024": 1252,
+    "f2023": 1242,
+    "f2022": 1232,
+    "f2021": 1222,
+    "f2020": 1212,
+    "s2026": 1264,
+    "s2025": 1254,
+    "s2024": 1244,
+    "s2023": 1234,
+    "s2022": 1224,
+    "s2021": 1214,
+}

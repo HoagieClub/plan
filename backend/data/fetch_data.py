@@ -4,11 +4,110 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from constants import DEPTS, SEMESTER_TO_TERM_CODE
 from data.req_lib import ReqLib
 
 # Note to future developers: This script can be made much faster if made asynchronous.
 
 # -------------------------------------------------------------------------------------#
+
+TERM_FIELDS = ["Term Code", "Term Name"]
+
+SUBJECT_FIELDS = ["Subject Code", "Subject Name"]
+
+COURSE_FIELDS = [
+    "Course ID",
+    "Course GUID",
+    "Catalog Number",
+    "Course Title",
+    "Course Start Date",
+    "Course End Date",
+    "Course Track",
+    "Course Description",
+    "Has Seat Reservations",
+]
+
+INSTRUCTOR_FIELDS = [
+    "Instructor EmplID",
+    "Instructor First Name",
+    "Instructor Last Name",
+    "Instructor Full Name",
+]
+
+CROSSLISTING_FIELDS = ["Crosslisting Subjects", "Crosslisting Catalog Numbers"]
+
+CLASS_FIELDS = [
+    "Class Number",
+    "Class Section",
+    "Class Status",
+    "Class Type",
+    "Class Capacity",
+    "Class Enrollment",
+    "Class Year Enrollments",
+]
+
+MEETING_FIELDS = [
+    "Meeting Number",
+    "Meeting Start Time",
+    "Meeting End Time",
+    "Meeting Days",
+    "Building Name",
+    "Meeting Room",
+]
+
+COURSE_DETAILS_FIELDS = [
+    "Drop Consent",
+    "Grading Oral Presentation",
+    "Other Information",
+    "Subject",
+    "Catnum",
+    "Seat Reservations",
+    "Reading Writing Assignment",
+    "Grading Quizzes",
+    "Distribution Area Long",
+    "Grading Home Mid Exam",
+    "Transcript Title",
+    "Add Consent",
+    "Web Address",
+    "Grading Other Exam",
+    "Topic Title",
+    "Grading Lab Reports",
+    "Other Requirements",
+    "Other Restrictions",
+    "Grading Paper Final Exam",
+    "Grading Paper Midterm Exam",
+    "Crosslistings",
+    "Grading Papers",
+    "Grading Mid Exam",
+    "Grading Prog Assign",
+    "Grading Basis",
+    "Grading Final Exam",
+    "Grading Design Projects",
+    "Grading Other",
+    "Long Title",
+    "Grading Home Final Exam",
+    "Grading Problem Sets",
+    "Distribution Area Short",
+    "Grading Precept Part",
+    "Grading Term Papers",
+]
+READING_LIST_FIELDS = [f"Reading List Title {i}" for i in range(1, 7)] + [
+    f"Reading List Author {i}" for i in range(1, 7)
+]
+
+FIELDS = [
+    TERM_FIELDS,
+    SUBJECT_FIELDS,
+    COURSE_FIELDS,
+    INSTRUCTOR_FIELDS,
+    CROSSLISTING_FIELDS,
+    CLASS_FIELDS,
+    MEETING_FIELDS,
+    COURSE_DETAILS_FIELDS,
+    READING_LIST_FIELDS,
+]
+
+FIELD_NAMES = sum(FIELDS, [])
 
 
 def fetch_course_detail(course_id, term, req_lib):
@@ -314,7 +413,7 @@ def get_semesters_from_args():
 # --------------------------------------------------------------------------------------
 
 
-def generate_csv(semester, subjects, query, fieldnames, req_lib):
+def generate_csv(semester, subjects, req_lib):
     copy_n = 0
     csv_file = f"{semester}.csv"
 
@@ -324,11 +423,11 @@ def generate_csv(semester, subjects, query, fieldnames, req_lib):
         csv_file = f"{semester}_{copy_n}.csv"
 
     with open(csv_file, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES)
         writer.writeheader()
 
         for subject in subjects:
-            term_info, seat_info, course_details = fetch_data(subject, int(query[semester]), req_lib)
+            term_info, seat_info, course_details = fetch_data(subject, SEMESTER_TO_TERM_CODE[semester], req_lib)
             process_courses(term_info, seat_info, course_details, writer)
 
 
@@ -337,239 +436,13 @@ def generate_csv(semester, subjects, query, fieldnames, req_lib):
 
 def main():
     req_lib = ReqLib()
-    query = {
-        "f2025": "1262",
-        "f2024": "1252",
-        "f2023": "1242",
-        "f2022": "1232",
-        "f2021": "1222",
-        "f2020": "1212",
-        "s2026": "1264",
-        "s2025": "1254",
-        "s2024": "1244",
-        "s2023": "1234",
-        "s2022": "1224",
-        "s2021": "1214",
-    }
 
-    # TODO: Standardize this with backend/constants.py
-    subjects = [
-        "AAS",
-        "AFS",
-        "AMS",
-        "ANT",
-        "AOS",
-        "APC",
-        "ARA",
-        "ARC",
-        "ART",
-        "ASA",
-        "ASL",
-        "AST",
-        "ATL",
-        "BCS",
-        "BNG",
-        "CBE",
-        "CDH",
-        "CEE",
-        "CGS",
-        "CHI",
-        "CHM",
-        "CHV",
-        "CLA",
-        "CLG",
-        "COM",
-        "COS",
-        "CSE",
-        "CWR",
-        "CZE",
-        "DAN",
-        "EAS",
-        "ECE",
-        "ECO",
-        "ECS",
-        "EEB",
-        "EGR",
-        "ENE",
-        "ENG",
-        "ENT",
-        "ENV",
-        "EPS",
-        "FIN",
-        "FRE",
-        "FRS",
-        "GEO",
-        "GER",
-        "GEZ",
-        "GHP",
-        "GSS",
-        "HEB",
-        "HIN",
-        "HIS",
-        "HLS",
-        "HOS",
-        "HUM",
-        "ISC",
-        "ITA",
-        "JDS",
-        "JPN",
-        "JRN",
-        "KOR",
-        "LAO",
-        "LAS",
-        "LAT",
-        "LCA",
-        "LIN",
-        "MAE",
-        "MAT",
-        "MED",
-        "MOD",
-        "MOG",
-        "MOL",
-        "MPP",
-        "MSE",
-        "MTD",
-        "MUS",
-        "NES",
-        "NEU",
-        "ORF",
-        "PAW",
-        "PER",
-        "PHI",
-        "PHY",
-        "PLS",
-        "POL",
-        "POP",
-        "POR",
-        "PSY",
-        "QCB",
-        "REL",
-        "RES",
-        "RUS",
-        "SAN",
-        "SLA",
-        "SML",
-        "SOC",
-        "SPA",
-        "SPI",
-        "STC",
-        "SWA",
-        "THR",
-        "TPP",
-        "TRA",
-        "TUR",
-        "TWI",
-        "UKR",
-        "URB",
-        "URD",
-        "VIS",
-        "WRI",
-    ]
-
-    term_fields = ["Term Code", "Term Name"]
-
-    subject_fields = ["Subject Code", "Subject Name"]
-
-    course_fields = [
-        "Course ID",
-        "Course GUID",
-        "Catalog Number",
-        "Course Title",
-        "Course Start Date",
-        "Course End Date",
-        "Course Track",
-        "Course Description",
-        "Has Seat Reservations",
-    ]
-
-    instructor_fields = [
-        "Instructor EmplID",
-        "Instructor First Name",
-        "Instructor Last Name",
-        "Instructor Full Name",
-    ]
-
-    crosslisting_fields = ["Crosslisting Subjects", "Crosslisting Catalog Numbers"]
-
-    class_fields = [
-        "Class Number",
-        "Class Section",
-        "Class Status",
-        "Class Type",
-        "Class Capacity",
-        "Class Enrollment",
-        "Class Year Enrollments",
-    ]
-
-    meeting_fields = [
-        "Meeting Number",
-        "Meeting Start Time",
-        "Meeting End Time",
-        "Meeting Days",
-        "Building Name",
-        "Meeting Room",
-    ]
-
-    course_details_fields = [
-        "Drop Consent",
-        "Grading Oral Presentation",
-        "Other Information",
-        "Subject",
-        "Catnum",
-        "Seat Reservations",
-        "Reading Writing Assignment",
-        "Grading Quizzes",
-        "Distribution Area Long",
-        "Grading Home Mid Exam",
-        "Transcript Title",
-        "Add Consent",
-        "Web Address",
-        "Grading Other Exam",
-        "Topic Title",
-        "Grading Lab Reports",
-        "Other Requirements",
-        "Other Restrictions",
-        "Grading Paper Final Exam",
-        "Grading Paper Midterm Exam",
-        "Crosslistings",
-        "Grading Papers",
-        "Grading Mid Exam",
-        "Grading Prog Assign",
-        "Grading Basis",
-        "Grading Final Exam",
-        "Grading Design Projects",
-        "Grading Other",
-        "Long Title",
-        "Grading Home Final Exam",
-        "Grading Problem Sets",
-        "Distribution Area Short",
-        "Grading Precept Part",
-        "Grading Term Papers",
-    ]
-
-    reading_list_fields = [f"Reading List Title {i}" for i in range(1, 7)] + [
-        f"Reading List Author {i}" for i in range(1, 7)
-    ]
-
-    fields = [
-        term_fields,
-        subject_fields,
-        course_fields,
-        instructor_fields,
-        crosslisting_fields,
-        class_fields,
-        meeting_fields,
-        course_details_fields,
-        reading_list_fields,
-    ]
-
-    fieldnames = sum(fields, [])
     semesters = get_semesters_from_args()
-    available_semesters = query.keys()
+    available_semesters = SEMESTER_TO_TERM_CODE.keys()
 
     for semester in semesters:
         if semester in available_semesters:
-            generate_csv(semester, subjects, query, fieldnames, req_lib)
+            generate_csv(semester, list(DEPTS.keys()), req_lib)
         else:
             print(f"Warning: Semester '{semester}' not found in available semesters. Skipping.")
 
