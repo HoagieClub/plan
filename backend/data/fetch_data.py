@@ -423,13 +423,15 @@ def get_semesters_and_depts_from_args() -> Tuple[List[str], List[str]]:
 
 
 def generate_csv(semester, subject, req_lib):
+    os.makedirs(semester, exist_ok=True)
+
     copy_n = 0
-    csv_file = f"{semester}.csv"
+    csv_file = f"{semester}/{subject}.csv"
 
     # Check if file already exists
     while os.path.exists(csv_file):
         copy_n += 1
-        csv_file = f"{semester}_{copy_n}.csv"
+        csv_file = f"{semester}/{subject}_{copy_n}.csv"
 
     with open(csv_file, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES)
