@@ -81,6 +81,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/kim-ella/',
 	},
 	{
+		name: 'Niyathi Kukkapalli',
+		graduationYear: '2028',
+		link: 'www.linkedin.com/in/niyathi-kukkapalli',
+	},
+	{
 		name: 'Minjae Kwon',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/minjae-kwon',
@@ -160,6 +165,12 @@ const contributors: HoagieChef[] = [
 		graduationYear: '2029',
 		link: 'https://www.linkedin.com/in/albert-rho-956b012b3',
 	},
+
+	{
+		name: 'Patrick Fu',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/patrickfu25/',
+	}
 ];
 
 const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (

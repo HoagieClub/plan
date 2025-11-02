@@ -9,6 +9,7 @@ import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
+import { getAuditTag, getAuditColor } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfTag, getPdfColor } from '@/utils/pdfTag';
@@ -39,6 +40,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const pdfTag = getPdfTag(gradingBasis);
 	const pdfColor = getPdfColor(pdfTag);
 	const pdfTitle = pdfTag === 'PDF' ? 'PDF Available' : 'PDF Unavailable';
+	const auditTag = getAuditTag(gradingBasis);
+	const auditColor = getAuditColor(auditTag);
+	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -194,38 +198,13 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 							</div>
 
-							{/* Course Title */}
-							{courseDetails['Title'] && (
-								<h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
-									{courseDetails['Title']}
-								</h2>
-							)}
-
 							{/* Tags Row */}
 							<div style={{ display: 'flex', gap: '8px' }}>
 								{/* Distribution Area Code */}
 								{distShort && (
-									<Tooltip title={pdfTitle} variant='soft'>
-										<div
-											style={{
-												backgroundColor: distColor,
-												color: 'white',
-												padding: '6px 12px',
-												borderRadius: '6px',
-												fontWeight: 'bold',
-												width: 'fit-content',
-											}}
-										>
-											{distShort}
-										</div>
-									</Tooltip>
-								)}
-
-								{/* PDF Tag Code */}
-								{pdfTag && (
 									<div
 										style={{
-											backgroundColor: pdfColor,
+											backgroundColor: distColor,
 											color: 'white',
 											padding: '6px 12px',
 											borderRadius: '6px',
@@ -233,10 +212,52 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											width: 'fit-content',
 										}}
 									>
-										{pdfTag}
+										{distShort}
 									</div>
 								)}
+
+								{/* PDF Tag Code */}
+								{pdfTag && (
+									<Tooltip title={pdfTitle} variant='soft'>
+										<div
+											style={{
+												backgroundColor: pdfColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{pdfTag}
+										</div>
+									</Tooltip>
+								)}
+
+								{/* Audit Tag */}
+								{auditTag && (
+									<Tooltip title={auditTitle} variant='soft'>
+										<div
+											style={{
+												backgroundColor: auditColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{auditTag}
+										</div>
+									</Tooltip>
+								)}
 							</div>
+							{/* Course Title */}
+							{courseDetails['Title'] && (
+								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
+									{courseDetails['Title']}
+								</h2>
+							)}
 
 							{/* Instructor Names */}
 							<strong style={modalTitleStyle}>Instructors</strong>
