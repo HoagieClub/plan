@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
-import { Button as JoyButton } from '@mui/joy';
+import { Button as JoyButton, Tooltip} from '@mui/joy';
 import { createPortal } from 'react-dom';
 
 import { LoadingComponent } from '@/components/LoadingComponent';
@@ -11,6 +11,7 @@ import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
+import { getAuditTag, getAuditColor } from '@/utils/auditTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -33,6 +34,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
 	const distColor = getDistributionColors(distShort);
+
+	const gradingBasis = courseDetails?.['Grading Basis'];
+	const auditTag = getAuditTag(gradingBasis);
+	const auditColor = getAuditColor(auditTag);
+	const auditTitle = auditTag === 'A' ? "Audit Available": "Audit Unavailable";
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -188,27 +194,47 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 							</div>
 
+							{/* Tags Row */}
+							<div style={{ display: 'flex', gap: '8px' }}>
+								{/* Distribution Area Code */}
+								{distShort && (
+									<div
+										style={{
+											backgroundColor: distColor,
+											color: 'white',
+											padding: '6px 12px',
+											borderRadius: '6px',
+											fontWeight: 'bold',
+											width: 'fit-content',
+										}}
+									>
+										{distShort}
+									</div>
+								)}
+
+								{/* Audit Tag */}
+								{auditTag && (
+									<Tooltip title = {auditTitle} variant='soft' >
+										<div 
+											style={{
+												backgroundColor: auditColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{auditTag}
+										</div>
+									</Tooltip>
+								)}
+							</div>
 							{/* Course Title */}
 							{courseDetails['Title'] && (
-								<h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
+								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
 									{courseDetails['Title']}
 								</h2>
-							)}
-
-							{/* Distribution Area Code */}
-							{distShort && (
-								<div
-									style={{
-										backgroundColor: distColor,
-										color: 'white',
-										padding: '3px 8px',
-										borderRadius: '6px',
-										fontWeight: 'bold',
-										width: 'fit-content',
-									}}
-								>
-									{distShort}
-								</div>
 							)}
 
 							{/* Instructor Names */}
