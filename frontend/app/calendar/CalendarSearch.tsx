@@ -464,7 +464,7 @@ export const CalendarSearch: FC = () => {
 					<div className='recent-searches'>
 						<div className='recent-searches-label'>Recent searches:</div>
 						<div className='recent-searches-list'>
-							{recentSearches.map((search, index) => (
+							{recentSearches.slice(-5).map((search, index) => (
 								<button
 									key={index}
 									className='recent-search-item'
