@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
-import { Button as JoyButton, Tooltip} from '@mui/joy';
+import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { createPortal } from 'react-dom';
 
 import { LoadingComponent } from '@/components/LoadingComponent';
@@ -9,9 +9,10 @@ import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
+import { getAuditTag, getAuditColor } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
-import { getAuditTag, getAuditColor } from '@/utils/auditTag';
+import { getPdfTag, getPdfColor } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -36,9 +37,12 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const distColor = getDistributionColors(distShort);
 
 	const gradingBasis = courseDetails?.['Grading Basis'];
+	const pdfTag = getPdfTag(gradingBasis);
+	const pdfColor = getPdfColor(pdfTag);
+	const pdfTitle = pdfTag === 'PDF' ? 'PDF Available' : 'PDF Unavailable';
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
-	const auditTitle = auditTag === 'A' ? "Audit Available": "Audit Unavailable";
+	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -212,10 +216,28 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									</div>
 								)}
 
+								{/* PDF Tag Code */}
+								{pdfTag && (
+									<Tooltip title={pdfTitle} variant='soft'>
+										<div
+											style={{
+												backgroundColor: pdfColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{pdfTag}
+										</div>
+									</Tooltip>
+								)}
+
 								{/* Audit Tag */}
 								{auditTag && (
-									<Tooltip title = {auditTitle} variant='soft' >
-										<div 
+									<Tooltip title={auditTitle} variant='soft'>
+										<div
 											style={{
 												backgroundColor: auditColor,
 												color: 'white',
