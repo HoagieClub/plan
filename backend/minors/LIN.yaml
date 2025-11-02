@@ -31,7 +31,7 @@ contacts:
 req_list:
 - name: Prerequisite
   max_counted: 1
-  min_needed:
+  min_needed: 1
   explanation: Permission may be granted to substitute a different LIN 
     course in place of 201; decisions will be made by the Director of 
     Undergraduate Studies on a case-by-case basis.
@@ -45,7 +45,7 @@ req_list:
   - name: Core Courses
     max_counted: 1
     min_needed: 1
-    explanation: At least one course from the set of “core” courses 
+    explanation: At least one course from the set of "core" courses 
       (LIN 301, LIN 302, LIN 303, LIN 306; LIN 303 may be substituted 
       with PHI/LIN 334)
     pdfs_allowed: 1
@@ -58,7 +58,7 @@ req_list:
   - name: Methods Courses
     max_counted: 1
     min_needed: 1
-    explanation: At least one course from the set of “methods” courses 
+    explanation: At least one course from the set of "methods" courses 
       (LIN 210, LIN 310, LIN 355, LIN 356.
     pdfs_allowed: 1
     course_list:
@@ -86,8 +86,8 @@ req_list:
   max_counted: 1
   min_needed: 1
   explanation: |-
-    Some substantial aspect of linguistics should be incorporated either into the student’s junior independent work or into their senior thesis. 
+    Some substantial aspect of linguistics should be incorporated either into the student's junior independent work or into their senior thesis. 
     
-    This requirement is typically met either by writing a junior paper or senior thesis on a linguistics topic or topic related to linguistics (i.e., a topic that satisfies the requirements of both the student’s major and minor), or by including a chapter on a linguistics topic in a senior thesis whose general topic is not directly related to linguistics. 
+    This requirement is typically met either by writing a junior paper or senior thesis on a linguistics topic or topic related to linguistics (i.e., a topic that satisfies the requirements of both the student's major and minor), or by including a chapter on a linguistics topic in a senior thesis whose general topic is not directly related to linguistics. 
     
     If this is not feasible, students should contact the director of undergraduate program for alternative arrangements, which in most cases will involve writing a short piece of independent work on a topic related to linguistics, supervised by a member of the LIN faculty.

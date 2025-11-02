@@ -56,6 +56,11 @@ const teamLeads: HoagieChef[] = [
 
 const contributors: HoagieChef[] = [
 	{
+		name: 'Phu Duong',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/phu-duong/',
+	},
+	{
 		name: 'Lucy Chen',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-c1/',
@@ -71,6 +76,16 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/tate-hutchins/',
 	},
 	{
+		name: 'Ella Kim',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/kim-ella/',
+	},
+	{
+		name: 'Niyathi Kukkapalli',
+		graduationYear: '2028',
+		link: 'www.linkedin.com/in/niyathi-kukkapalli',
+	},
+	{
 		name: 'Minjae Kwon',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/minjae-kwon',
@@ -79,6 +94,11 @@ const contributors: HoagieChef[] = [
 		name: 'Henry Li',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/henryli0508/',
+	},
+	{
+		name: 'David Lee',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/davidlee08/',
 	},
 	{
 		name: 'Luke Sanborn',
@@ -106,6 +126,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/yang-aaron/',
 	},
 	{
+		name: 'Gary Yang',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
 		name: 'Daniel Yeo',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/daniel-yeo-320635248/',
@@ -121,10 +146,31 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
 	},
 	{
+		name: 'Emily Tran',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
+	},
+	{
 		name: 'Grace Ding',
 		graduationYear: '2029',
 		link: 'https://www.linkedin.com/in/gracetding/',
 	},
+	{
+		name: 'Shawn Li',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/shawnli14',
+	},
+	{
+		name: 'Albert Rho',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/albert-rho-956b012b3',
+	},
+
+	{
+		name: 'Patrick Fu',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/patrickfu25/',
+	}
 ];
 
 const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
