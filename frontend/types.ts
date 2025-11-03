@@ -197,7 +197,7 @@ export type Course = {
 	department_code: string;
 	sections: Section[];
 	crosslistings: string;
-    rating?: number; // Add course review rating (optional)
+	rating?: number; // Add course review rating (optional)
 };
 
 export type Section = {
