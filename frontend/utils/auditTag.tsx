@@ -6,4 +6,4 @@ export const getAuditTag = (gradingBasis: string): string => {
 
 export const getAuditColor = (auditTag: string): string => {
 	return auditTag === 'A' ? '#fa9f3e' : '#ff6161';
-}
+};
