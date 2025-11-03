@@ -1,20 +1,11 @@
-from django.db import IntegrityError
 from django.db.models.query import Prefetch
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.logger import logger
 from hoagieplan.models import (
-    CalendarConfiguration,
     ClassMeeting,
-    CustomUser,
     Section,
-    CalendarEvent,
-)
-from hoagieplan.serializers import (
-    CalendarConfigurationSerializer,
-    CalendarEventSerializer,
 )
 
 
@@ -117,75 +108,3 @@ class FetchCalendarClasses(APIView):
             "room": meeting.room,
         }
         return class_meeting_data
-
-
-class CalendarConfigurationsView(APIView):
-    def get(self, request):
-        term_code = request.query_params.get("term_code")
-        net_id = request.headers.get("X-NetId")
-        user_inst = CustomUser.objects.get(net_id=net_id)
-
-        # print(f"Method: {request.method}, Path: {request.path}, Params: {request.query_params}")
-        # print("net_id: ", net_id)
-
-        if term_code:
-            queryset = CalendarConfiguration.objects.filter(
-                user=user_inst, semester_configurations__term__term_code=term_code
-            )
-        else:
-            queryset = CalendarConfiguration.objects.filter(user=user_inst)
-
-        serializer = CalendarConfigurationSerializer(queryset, many=True)
-        # print("Response data: ", serializer.data)
-        # print("Serializer type: ", type(serializer))
-        # print("Serializer.data type: ", type(serializer.data))
-        return Response(serializer.data)
-
-    def post(self, request):
-        user = request.user
-        name = request.data.get("name", "Default Schedule")
-
-        try:
-            calendar_config, created = CalendarConfiguration.objects.get_or_create(
-                user=user, name=name, defaults={"user": user, "name": name}
-            )
-            serializer = CalendarConfigurationSerializer(calendar_config)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except IntegrityError:
-            return Response(
-                {"detail": "Calendar configuration with this name already exists."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception as e:
-            logger.error("An error occurred: %s", str(e))
-            return Response(
-                {"detail": "An internal error has occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-class CalendarEventView(APIView):
-    def get_object(self, request, configuration_id, term_code, index):
-        try:
-            return CalendarEvent.objects.get(
-                semester_configuration__calendar_configuration_id=configuration_id,
-                semester_configuration__calendar_configuration__user=request.user,
-                semester_configuration__term__term_code=term_code,
-                index=index,
-            )
-        except CalendarEvent.DoesNotExist:
-            return None
-
-    def put(self, request, configuration_id, term_code, index):
-        schedule_selection = self.get_object(request, configuration_id, term_code, index)
-        if schedule_selection:
-            serializer = CalendarEventSerializer(schedule_selection, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(
-                {"detail": "Schedule selection not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )

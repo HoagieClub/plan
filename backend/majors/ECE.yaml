@@ -137,6 +137,7 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
+      - ECE 302
       - ECE 304
       - ECE 445
       - ECE 368
@@ -242,6 +243,7 @@ req_list:
       - COS 402
       - COS 424
       - COS 429
+      - ECE 302
       - ECE 346
       - ECE 364
       - ECE 368
@@ -336,6 +338,7 @@ req_list:
       - COS 320
       - COS 417
       - COS 461
+      - ECE 302
       - ECE 368
       - ECE 462
       - ECE 464
@@ -401,6 +404,7 @@ req_list:
       - ECE 4**
       excluded_course_list:
       - COS 324
+      - ECE 302
       - ECE 364
       - ECE 433 / COS435
       - ECE 435
@@ -472,6 +476,7 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
+      - ECE 302
       - ECE 342
       - PHY 208
       - PHY 305
@@ -553,6 +558,7 @@ req_list:
       - COS 432 / ECE 432
       - COS 324
       - COS 424
+      - ECE 302
       - ECE 364
       - ECE 435
       - COS 375 / ECE 375
@@ -643,9 +649,10 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
-      - ECE 445
+      - ECE 302
       - ECE 304
       - ECE 373 / ENE 373
+      - ECE 445
       - ECE 481
       - ECE 308
       - ECE 342
@@ -707,6 +714,7 @@ req_list:
       excluded_course_list:
       - COS 429
       - COS 455
+      - ECE 302
       - ECE 304
       - ECE 451
       - ECE 452
@@ -766,6 +774,7 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
+      - ECE 302
       - ECE 351
       - ECE 342
       - ECE 431
@@ -793,7 +802,7 @@ req_list:
       ECE 481 Power Electronics (F)<br>
 
       ECE 483 Signal Processing and Optimization in Smart Grids
-      –ONE-TIME COURSE (S ’23)<br>
+      -ONE-TIME COURSE (S '23)<br>
       ECE 557 Solar Cells: Physics, Materials, and Technology 
       (not offered '21-22)<br>
       MAE 424 Energy Storage Systems<br><br>
@@ -821,6 +830,7 @@ req_list:
       - ECE 3**
       - ECE 4**
       excluded_course_list:
+      - ECE 302
       - ECE 373 / ENE 373
       - ECE 431
       - ECE 445
