@@ -1,5 +1,6 @@
 class UserRequirements:
     def __init__(self, data: dict):
+        """Initialize UserRequirements with degree type, degree, minors, and certificates."""
         self.degree_type: Requirement
         self.degree: Requirement
         self.minors: dict[str, Requirement]
@@ -12,8 +13,8 @@ class UserRequirements:
         elif "AB" in data:
             self.degree_type = Requirement(data["AB"]["requirements"])
             keys.remove("AB")
-        else: # TODO: handle this case, when calling almost_completed_reqs w/non-BSE/AB users, may be a problem
-            raise ValueError("UserRequirements must have either a BSE or AB field")
+        else:
+            self.degree_type = "Undeclared"
 
         if "Minors" in data:
             self.minors = {
@@ -48,6 +49,7 @@ class UserRequirements:
 
 class Requirement:
     def __init__(self, requirements: dict):
+        """Initialize a Requirement with its properties. It will have either subrequirements or settled/unsettled courses."""
         self.code: str | None
         self.req_id: int
         self.manually_satisfied: bool
