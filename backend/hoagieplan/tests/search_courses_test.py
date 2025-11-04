@@ -1,5 +1,5 @@
 from data.req_lib import ReqLib
-from hoagieplan.api.search import search_courses
+from hoagieplan.api.dashboard.search import search_courses
 from django.http import HttpRequest
 from django.test.client import RequestFactory
 import json

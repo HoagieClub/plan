@@ -30,7 +30,7 @@ req_list:
   - JDS 202
 - name: JDS Courses
   max_counted: 1
-  min_needed: 5
+  min_needed: 1
   pdfs_allowed: 0
   explanation: 
     A sound program of study will involve both historical range and disciplinary

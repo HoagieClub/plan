@@ -7,7 +7,7 @@ const COLOR_STOPS = [
 	{ rating: 3.5, color: '#c4ce37' },
 	{ rating: 4.0, color: '#8bc44c' },
 	{ rating: 4.5, color: '#4dae50' },
-	{ rating: 5.0, color: '#2f7f32' }
+	{ rating: 5.0, color: '#2f7f32' },
 ];
 
 // Helper functions for RGB extraction from hex colors
@@ -36,12 +36,11 @@ function interpolateRgb(color1: number, color2: number, ratio: number): number {
 export function getRatingColor(rating: number): string {
 	// Clamp rating between 0 and 5
 	const clampedRating = Math.max(0, Math.min(5, rating));
-	
+
 	// Find the two color stops to interpolate between
 	let lowerStop = COLOR_STOPS[0];
 	let upperStop = COLOR_STOPS[COLOR_STOPS.length - 1];
-	
-	
+
 	for (let i = 0; i < COLOR_STOPS.length - 1; i++) {
 		if (clampedRating >= COLOR_STOPS[i].rating && clampedRating <= COLOR_STOPS[i + 1].rating) {
 			lowerStop = COLOR_STOPS[i];
@@ -49,7 +48,7 @@ export function getRatingColor(rating: number): string {
 			break;
 		}
 	}
-	
+
 	// If rating is exactly at a stop point, return that color
 	if (clampedRating === lowerStop.rating) {
 		return lowerStop.color;
@@ -57,7 +56,7 @@ export function getRatingColor(rating: number): string {
 	if (clampedRating === upperStop.rating) {
 		return upperStop.color;
 	}
-	
+
 	// Interpolate between the two colors
 	const ratio = (clampedRating - lowerStop.rating) / (upperStop.rating - lowerStop.rating);
 	return interpolateColor(lowerStop.color, upperStop.color, ratio);
@@ -68,11 +67,11 @@ function interpolateColor(color1: string, color2: string, ratio: number): string
 	const r1 = getRed(color1);
 	const g1 = getGreen(color1);
 	const b1 = getBlue(color1);
-	
+
 	const r2 = getRed(color2);
 	const g2 = getGreen(color2);
 	const b2 = getBlue(color2);
-	
+
 	// Interpolate each component
 	const r = interpolateRgb(r1, r2, ratio);
 	const g = interpolateRgb(g1, g2, ratio);
