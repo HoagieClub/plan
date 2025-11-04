@@ -29,6 +29,7 @@ import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
 import { useUploadModal } from '@/components/UploadModal/Upload';
 import { ButtonWidget } from '@/components/Widgets/Widget';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
@@ -80,52 +81,6 @@ if (typeof window === 'undefined') {
 	void (async () => {
 		csrfToken = await fetchCsrfToken();
 	})();
-}
-
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function DroppableContainer({
-	children,
-	columns = 1,
-	disabled,
-	id,
-	items,
-	style,
-	...props
-}: ContainerProps & {
-	disabled?: boolean;
-	id: UniqueIdentifier;
-	items: UniqueIdentifier[];
-	style?: CSSProperties;
-}) {
-	const { active, over, setNodeRef, transition, transform } = useSortable({
-		id,
-		data: {
-			type: 'container',
-			children: items,
-		},
-		animateLayoutChanges,
-	});
-	const isOverContainer = over
-		? (id === over.id && active.data.current.type !== 'container') || items.includes(over.id)
-		: false;
-
-	return (
-		<Container
-			ref={disabled ? undefined : setNodeRef}
-			style={{
-				...style,
-				transition,
-				transform: CSS.Translate.toString(transform),
-			}}
-			hover={isOverContainer}
-			columns={columns}
-			{...props}
-		>
-			{children}
-		</Container>
-	);
 }
 
 const dropAnimation: DropAnimation = {
