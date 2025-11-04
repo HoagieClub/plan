@@ -284,7 +284,7 @@ req_list:
           - name: Regional or Ethnic Studies
             max_counted: 1
             min_needed: 2
-            explanation: Comparative work in literature and regional or ethnic studies (that is, African [AFS], African American [AAS], American [AMS], East Asian [EAP or EAS], European [ECS or EPS], Hellenic [HLS], Judaic [JDS], Latin American [LAS], Latino [LAO], Near Eastern [NES] or South Asian [SAS]). Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed in comparative literature (one of which is COM 300); and two courses in the relevant region or ethnicity.
+            explanation: Comparative work in literature and regional or ethnic studies (that is, African [AFS], African American [AAS], American [AMS], East Asian [EAS], European [ECS or EPS], Hellenic [HLS], Judaic [JDS], Latin American [LAS], Latino [LAO], Near Eastern [NES] or South Asian [SAS]). Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed in comparative literature (one of which is COM 300); and two courses in the relevant region or ethnicity.
             course_list:
               - AFS 3*
               - AFS 4*
@@ -292,9 +292,6 @@ req_list:
               - AAS 3*
               - AAS 4*
               - AAS 5*
-              - EAP 3*
-              - EAP 4*
-              - EAP 5*
               - EAS 3*
               - EAS 4*
               - EAS 5*

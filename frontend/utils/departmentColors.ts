@@ -1,3 +1,5 @@
+import { UniqueIdentifier } from '@dnd-kit/core';
+
 export const departmentColors: Record<string, string> = {
 	AAS: '#ff5f6d',
 	AFS: '#edb200',
@@ -144,3 +146,25 @@ export const getDepartmentGradient = (departmentCode: string, angle: number) => 
 	const colors = [color, lightenColor(color)];
 	return `linear-gradient(${angle}deg, ${colors[0]}, ${colors[1]})`;
 };
+
+export function getPrimaryColor(id: UniqueIdentifier) {
+	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+	const gradient = getDepartmentGradient(dept, 90);
+
+	// Extract the first color
+	const colors = gradient.split(',');
+	const firstColor = colors[1]?.trim();
+
+	return firstColor;
+}
+
+export function getSecondaryColor(id: UniqueIdentifier) {
+	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
+	const gradient = getDepartmentGradient(dept, 90);
+
+	// Extract the second color
+	const colors = gradient.split(',');
+	const secondColor = colors[2]?.trim().split(')')[0];
+
+	return secondColor;
+}

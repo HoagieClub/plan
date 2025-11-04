@@ -97,5 +97,11 @@
 		"@vercel/speed-insights",
 		"esbuild",
 		"sharp"
-	]
+	],
+	"overrides": {
+		"evergreen-ui": {
+			"react": "$react",
+			"react-dom": "$react-dom"
+		}
+	}
 }
