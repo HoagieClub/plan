@@ -51,7 +51,6 @@ def check_user(net_id, major, minors, certificates):
     # Check for minors
     output["Minors"] = {}
     for minor in minors:
-        print("Checking minor " + minor["code"])
         minor_code = minor["code"]
         output["Minors"][minor_code] = {}
         formatted_req = check_requirements(user_inst, "Minor", minor_code, copy.deepcopy(user_courses))
@@ -60,7 +59,6 @@ def check_user(net_id, major, minors, certificates):
     # Check for certificates
     output["Certificates"] = {}
     for certificate in certificates:
-        print("Checking certificate " + certificate["code"])
         certificate_code = certificate["code"]
         output["Certificates"][certificate_code] = {}
         formatted_req = check_requirements(user_inst, "Certificate", certificate_code, copy.deepcopy(user_courses))
