@@ -124,7 +124,7 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
     location = section.get("class_meetings")[0].get("building_name")
     room = section.get("class_meetings")[0].get("room")
     full_location = location + " " + room
-    if full_location:
+    if full_location and full_location != "Canceled":
         event.add("location", full_location)
     else:
         print("No location")
