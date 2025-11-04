@@ -245,12 +245,12 @@ export const CalendarSearch: FC = () => {
 			(course) => course.isChosen || !course.needsChoice
 		);
 
-		const seenCourseIds = new Set<number>();
+		const seenSectionIds = new Set<number>();
 		const uniqueCourseSections = class_sections.filter((section) => {
-			if (seenCourseIds.has(section.course.course_id)) {
+			if (seenSectionIds.has(section.section.id)) {
 				return false;
 			}
-			seenCourseIds.add(section.course.course_id);
+			seenSectionIds.add(section.section.id);
 			return true;
 		});
 
