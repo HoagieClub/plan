@@ -43,37 +43,37 @@ const foundingTeam: HoagieChef[] = [
 
 const teamLeads: HoagieChef[] = [
 	{
-		name: 'Issac Li',
-		graduationYear: '2026',
-		link: 'https://www.linkedin.com/in/issactli/',
+		name: 'Hannah Choi',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/hannah-e-choi/',
 	},
 	{
-		name: 'Gabriel Marin',
-		graduationYear: '2025',
-		link: 'https://www.linkedin.com/in/gabriel-marin-/',
+		name: 'Emily You',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
 	},
 ];
 
 const contributors: HoagieChef[] = [
-	{
-		name: 'Phu Duong',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/phu-duong/',
-	},
 	{
 		name: 'Lucy Chen',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-c1/',
 	},
 	{
-		name: 'Hannah Choi',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/hannah-e-choi/',
+		name: 'Grace Ding',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/gracetding/',
 	},
 	{
-		name: 'Tate Hutchins',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/tate-hutchins/',
+		name: 'Phu Duong',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/phu-duong/',
+	},
+	{
+		name: 'Patrick Fu',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/patrickfu25/',
 	},
 	{
 		name: 'Ella Kim',
@@ -83,17 +83,7 @@ const contributors: HoagieChef[] = [
 	{
 		name: 'Niyathi Kukkapalli',
 		graduationYear: '2028',
-		link: 'www.linkedin.com/in/niyathi-kukkapalli',
-	},
-	{
-		name: 'Minjae Kwon',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/minjae-kwon',
-	},
-	{
-		name: 'Henry Li',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/henryli0508/',
+		link: 'https://www.linkedin.com/in/niyathi-kukkapalli',
 	},
 	{
 		name: 'David Lee',
@@ -101,64 +91,19 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/davidlee08/',
 	},
 	{
-		name: 'Luke Sanborn',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/luke-sanborn/',
-	},
-	{
-		name: 'Jennifer Sanmartin',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/jennifer-sanmartin-115094279/',
-	},
-	{
-		name: 'Grace Tan',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/grace-tan-00449132a/',
-	},
-	{
-		name: 'Lucy Wang',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/lucy-wang-50895126a/',
-	},
-	{
-		name: 'Aaron Yang',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/yang-aaron/',
-	},
-	{
-		name: 'Gary Yang',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
-	},
-	{
-		name: 'Daniel Yeo',
-		graduationYear: '2026',
-		link: 'https://www.linkedin.com/in/daniel-yeo-320635248/',
-	},
-	{
-		name: 'Emily You',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
-	},
-	{
-		name: 'Linsey Zhong',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
-	},
-	{
-		name: 'Emily Tran',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
-	},
-	{
-		name: 'Grace Ding',
-		graduationYear: '2029',
-		link: 'https://www.linkedin.com/in/gracetding/',
-	},
-	{
 		name: 'Shawn Li',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/shawnli14',
+	},
+	{
+		name: 'Vikram Meyyappan',
+		graduationYear: '2026',
+		link: 'https://www.linkedin.com/in/vikram-meyyappan',
+	},
+	{
+		name: 'Rishabh Mohapatra',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/rmohapatra06',
 	},
 	{
 		name: 'Albert Rho',
@@ -166,9 +111,39 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/albert-rho-956b012b3',
 	},
 	{
-		name: 'Patrick Fu',
-		graduationYear: '2029',
-		link: 'https://www.linkedin.com/in/patrickfu25/',
+		name: 'Luke Sanborn',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/luke-sanborn/',
+	},
+	{
+		name: 'Luke Schreiber',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/lukekschreiber',
+	},
+	{
+		name: 'Grace Tan',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/grace-tan-00449132a/',
+	},
+	{
+		name: 'Emily Tran',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
+	},
+	{
+		name: 'Lucy Wang',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/lucy-wang-50895126a/',
+	},
+	{
+		name: 'Gary Yang',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
+		name: 'Linsey Zhong',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
 	},
 ];
 
