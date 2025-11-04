@@ -119,6 +119,14 @@ const useCalendarStore = create<CalendarStore>()(
 						lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
 					);
 
+					const seminarSections = sections.filter(
+						(section) => section.class_type === 'Seminar' && /^S0\d+/.test(section.class_section)
+					);
+
+					const uniqueSeminarNumbers = new Set(
+						seminarSections.map((section) => section.class_section.match(/^S0(\d+)/)?.[1])
+					);
+
 					const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
 						section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
 							const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
@@ -134,7 +142,8 @@ const useCalendarStore = create<CalendarStore>()(
 								isActive: true,
 								needsChoice:
 									(!exceptions.includes(section.class_type) && uniqueCount > 1) ||
-									(uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture'),
+									(uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture') ||
+									(uniqueSeminarNumbers.size > 1 && section.class_type === 'Seminar'),
 								isChosen: false,
 							}));
 						})
