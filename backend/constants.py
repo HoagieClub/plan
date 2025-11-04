@@ -104,7 +104,7 @@ DEPTS: Dict[str, str] = {
     "SWA": "Swahili",
     "THR": "Theater",
     "TPP": "Teacher Preparation",
-    "PTIC": "Translation and Intercultural Communication",
+    "TRA": "Translation and Intercultural Communication",
     "TUR": "Turkish",
     "TWI": "Twi",
     "URB": "Urban Studies",
