@@ -16,29 +16,27 @@ import {
 	MeasuringStrategy,
 	defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
-import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
 import { useUploadModal } from '@/components/UploadModal/Upload';
 import { ButtonWidget } from '@/components/Widgets/Widget';
-import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 import { SortableItem } from './SortableItem';
-import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import type {
 	CollisionDetection,
@@ -47,7 +45,6 @@ import type {
 	UniqueIdentifier,
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';

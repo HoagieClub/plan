@@ -1,13 +1,13 @@
 import React from 'react';
-
 import type { CSSProperties } from 'react';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
-import type { UniqueIdentifier } from '@dnd-kit/core';
 
-import { defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
+import { defaultAnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
 import { Container, type ContainerProps } from '@/components/Container';
+
+import type { UniqueIdentifier } from '@dnd-kit/core';
+import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
 	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
