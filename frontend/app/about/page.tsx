@@ -41,6 +41,19 @@ const foundingTeam: HoagieChef[] = [
 	},
 ];
 
+const prevteamLeads: HoagieChef[] = [
+	{
+		name: 'Issac Li',
+		graduationYear: '2026',
+		link: 'https://www.linkedin.com/in/issactli/',
+	},
+	{
+		name: 'Gabriel Marin',
+		graduationYear: '2025',
+		link: 'https://www.linkedin.com/in/gabriel-marin-/',
+	},
+];
+
 const teamLeads: HoagieChef[] = [
 	{
 		name: 'Hannah Choi',
@@ -217,13 +230,27 @@ const About = () => {
 								</div>
 							</div>
 							<div className='mt-16'>
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>
+									Previous Team Leads
+								</h2>
+								<div className='flex flex-wrap justify-center gap-6'>
+									{prevteamLeads.map((member, index) => (
+										<TeamMemberCard
+											key={member.name}
+											member={member}
+											index={foundingTeam.length + index}
+										/>
+									))}
+								</div>
+							</div>
+							<div className='mt-16'>
 								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Team Leads</h2>
 								<div className='flex flex-wrap justify-center gap-6'>
 									{teamLeads.map((member, index) => (
 										<TeamMemberCard
 											key={member.name}
 											member={member}
-											index={foundingTeam.length + index}
+											index={foundingTeam.length + prevteamLeads.length + index}
 										/>
 									))}
 								</div>
