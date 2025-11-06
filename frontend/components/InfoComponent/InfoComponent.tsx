@@ -11,6 +11,7 @@ import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
 import { getAuditTag, getAuditColor } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
+import { distributionAreas, distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfTag, getPdfColor } from '@/utils/pdfTag';
 
@@ -35,6 +36,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
 	const distColor = getDistributionColors(distShort);
+	const distTitle = distributionAreasInverse[distShort];
 
 	const gradingBasis = courseDetails?.['Grading Basis'];
 	const pdfTag = getPdfTag(gradingBasis);
@@ -202,18 +204,20 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							<div style={{ display: 'flex', gap: '8px' }}>
 								{/* Distribution Area Code */}
 								{distShort && (
-									<div
-										style={{
-											backgroundColor: distColor,
-											color: 'white',
-											padding: '6px 12px',
-											borderRadius: '6px',
-											fontWeight: 'bold',
-											width: 'fit-content',
-										}}
-									>
-										{distShort}
-									</div>
+									<Tooltip title={distTitle} variant='soft'>
+										<div
+											style={{
+												backgroundColor: distColor,
+												color: 'white',
+												padding: '6px 12px',
+												borderRadius: '6px',
+												fontWeight: 'bold',
+												width: 'fit-content',
+											}}
+										>
+											{distShort}
+										</div>
+									</Tooltip>
 								)}
 
 								{/* PDF Tag Code */}
