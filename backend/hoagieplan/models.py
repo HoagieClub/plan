@@ -389,6 +389,9 @@ class CalendarEvent(models.Model):
     def __str__(self):
         return f"{self.course} - {self.section}"
 
+    def get_key(self):
+        return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
+
 
 class CourseEvaluations(models.Model):
     course_guid = models.CharField(max_length=15, db_index=True, null=True)

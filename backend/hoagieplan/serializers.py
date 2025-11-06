@@ -120,42 +120,30 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
 
 
 class CalendarEventSerializer(serializers.ModelSerializer):
-    section_details = serializers.SerializerMethodField()
-
-    def get_section_details(self, obj):
-        return {
-            "id": obj.section.id,
-            "course": {
-                "guid": obj.section.course.guid,
-                "title": obj.section.course.title,
-                "catalog_number": obj.section.course.catalog_number,
-                "distribution_area_long": obj.section.course.distribution_area_long,
-                "distribution_area_short": obj.section.course.distribution_area_short,
-                "grading_basis": obj.section.course.grading_basis,
-            },
-            "class_number": obj.section.class_number,
-            "class_meetings": [
-                {
-                    "id": meeting.id,
-                    "days": meeting.days,
-                    "start_time": meeting.start_time,
-                    "end_time": meeting.end_time,
-                    # "start_date": meeting.start_date,
-                    # "end_date": meeting.end_date,
-                }
-                for meeting in obj.section.classmeeting_set.all()
-            ],
-        }
+    calendar = serializers.IntegerField(source="calendar_configuration.id", read_only=True)
+    course = serializers.IntegerField(source="course.id", read_only=True)
+    section = serializers.IntegerField(source="section.id", read_only=True)
 
     class Meta:
         model = CalendarEvent
-        fields = ["id", "section_details", "is_active"]
+        fields = [
+            "id",
+            "calendar",
+            "course",
+            "section",
+            "start_time",
+            "end_time",
+            "start_column_index",
+            "is_active",
+            "needs_choice",
+            "is_chosen",
+        ]
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    user_calendar_section = CalendarEventSerializer(many=True, read_only=True)
+    calendar_events = CalendarEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
-        fields = ["id", "user", "name", "term", "user_calendar_section"]
+        fields = ["id", "user", "name", "term", "calendar_events"]
         read_only_fields = ["id", "user"]

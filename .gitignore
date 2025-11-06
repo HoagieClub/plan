@@ -5,6 +5,7 @@ bun.lockb
 node_modules/
 /.pnp
 .pnp.js
+bun.lock
 
 # testing
 /coverage
@@ -17,6 +18,8 @@ node_modules/
 
 # course data
 [f,s][0-9][0-9][0-9][0-9].csv
+[f,s][0-9][0-9][0-9][0-9]_[0-9]*.csv
+[f,s][0-9][0-9][0-9][0-9]
 evals.csv
 
 # django

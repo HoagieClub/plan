@@ -1,5 +1,6 @@
 DEPTS = {
     "AAS": "African American Studies",
+    "ASL": "American Sign Language",
     "AFS": "African Studies",
     "AMS": "American Studies",
     "ANT": "Anthropology",
@@ -12,8 +13,10 @@ DEPTS = {
     "AST": "Astrophysical Sciences",
     "ATL": "Atelier",
     "BCS": "Bosnian-Croatian-Serbian",
+    "BNG": "Bioengineering",
     "CBE": "Chemical and Biological Engr",
     "CEE": "Civil and Environmental Engr",
+    "CDH": "Computational/Data Humanities",
     "CGS": "Cognitive Science",
     "CHI": "Chinese",
     "CHM": "Chemistry",
@@ -33,7 +36,6 @@ DEPTS = {
     "ECS": "European Cultural Studies",
     "EEB": "Ecology and Evol Biology",
     "EGR": "Engineering",
-    "ELE": "Electrical Engineering",
     "ENE": "Energy Studies",
     "ENG": "English",
     "ENT": "Entrepreneurship",
@@ -44,15 +46,14 @@ DEPTS = {
     "FRS": "Freshman Seminars",
     "GEO": "Geosciences",
     "GER": "German",
+    "GEZ": "Ge'ez",
     "GHP": "Global Health & Health Policy",
-    "GLS": "Global Seminar",
     "GSS": "Gender and Sexuality Studies",
     "HEB": "Hebrew",
     "HIN": "Hindi",
     "HIS": "History",
     "HLS": "Hellenic Studies",
     "HOS": "History of Science",
-    "HPD": "History/Practice of Diplomacy",
     "HUM": "Humanistic Studies",
     "ISC": "Integrated Science Curriculum",
     "ITA": "Italian",
@@ -105,11 +106,11 @@ DEPTS = {
     "TRA": "Translation, Intercultural Com",
     "TUR": "Turkish",
     "TWI": "Twi",
+    "UKR": "Ukrainian",
     "URB": "Urban Studies",
     "URD": "Urdu",
     "VIS": "Visual Arts",
     "WRI": "Princeton Writing Program",
-    "WWS": "Public and International Affairs",
 }
 
 AB_MAJORS = {
@@ -183,4 +184,19 @@ LANG_DEPTS = {
     "TUR": "Turkish",
     "TWI": "Twi",
     "URD": "Urdu",
-} # unsure if some of these can count for AB foreign language requirement. --George
+}  # unsure if some of these can count for AB foreign language requirement. --George
+
+SEMESTER_TO_TERM_CODE = {
+    "f2025": 1262,
+    "f2024": 1252,
+    "f2023": 1242,
+    "f2022": 1232,
+    "f2021": 1222,
+    "f2020": 1212,
+    "s2026": 1264,
+    "s2025": 1254,
+    "s2024": 1244,
+    "s2023": 1234,
+    "s2022": 1224,
+    "s2021": 1214,
+}

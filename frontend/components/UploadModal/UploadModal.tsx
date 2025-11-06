@@ -55,7 +55,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 		});
 
 		try {
-			const response = await fetch(`${process.env.BACKEND}/api/upload/`, {
+			const response = await fetch(`${process.env.BACKEND}/upload/`, {
 				method: 'POST',
 				body: formData,
 				headers: {
