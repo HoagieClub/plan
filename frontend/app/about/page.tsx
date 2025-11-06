@@ -181,10 +181,14 @@ const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
 	</svg>
 );
 
-const TeamMemberCard = ({ member, index }: { member: HoagieChef; index: number }) => (
+const getImagePath = (name: string) => {
+	return `/team/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+};
+
+const TeamMemberCard = ({ member }: { member: HoagieChef }) => (
 	<div className='rounded-lg bg-white p-6 shadow-sm'>
 		<div className='h-[180px] w-[180px] overflow-hidden rounded-lg'>
-			<Image src={`/member${index + 1}.jpg`} alt={member.name} width={180} height={180} />
+			<Image src={getImagePath(member.name)} alt={member.name} width={180} height={180} />
 		</div>
 		<h3 className='mt-6 text-xl font-semibold'>{member.name}</h3>
 		<div className='flow-root'>
@@ -222,10 +226,18 @@ const About = () => {
 								</p>
 							</div>
 							<div className='mt-16'>
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Team Leads</h2>
+								<div className='flex flex-wrap justify-center gap-6'>
+									{teamLeads.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
+									))}
+								</div>
+							</div>
+							<div className='mt-16'>
 								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Founding Team</h2>
 								<div className='flex justify-center gap-4 overflow-auto'>
-									{foundingTeam.map((member, index) => (
-										<TeamMemberCard key={member.name} member={member} index={index} />
+									{foundingTeam.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
 									))}
 								</div>
 							</div>
@@ -234,24 +246,8 @@ const About = () => {
 									Previous Team Leads
 								</h2>
 								<div className='flex flex-wrap justify-center gap-6'>
-									{prevteamLeads.map((member, index) => (
-										<TeamMemberCard
-											key={member.name}
-											member={member}
-											index={foundingTeam.length + index}
-										/>
-									))}
-								</div>
-							</div>
-							<div className='mt-16'>
-								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Team Leads</h2>
-								<div className='flex flex-wrap justify-center gap-6'>
-									{teamLeads.map((member, index) => (
-										<TeamMemberCard
-											key={member.name}
-											member={member}
-											index={foundingTeam.length + prevteamLeads.length + index}
-										/>
+									{prevteamLeads.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
 									))}
 								</div>
 							</div>
