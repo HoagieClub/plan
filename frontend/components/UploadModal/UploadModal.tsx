@@ -120,7 +120,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 	const modalContent = (
 		<TutorialModal>
 			<div className={styles.modal}>
-				<div className={styles.header}>Upload Transcript</div>
+				<div className={styles.header}>Upload Unofficial Transcript</div>
 
 				<div className={styles.content}>
 					<div
@@ -133,7 +133,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 							<div style={{ display: 'flex', justifyContent: 'center' }}>
 								<CloudArrowUpIcon className={styles.uploadIcon} />
 							</div>
-							<p>Drag and drop your transcript PDF here</p>
+							<p>Drag and drop your unofficial transcript PDF here</p>
 							<span>or</span>
 						</div>
 						<label className={styles.fileInput}>
