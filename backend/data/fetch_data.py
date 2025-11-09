@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple
 
 from constants import DEPTS, SEMESTER_TO_TERM_CODE
+from data.courses_api_responses_models import Course, Courses_Courses_Response, Term
 from data.req_lib import ReqLib
 
 # Note to future developers: This script can be made much faster if made asynchronous.
@@ -111,25 +112,33 @@ FIELDS = [
 FIELD_NAMES = sum(FIELDS, [])
 
 
+def fetch_list_of_courses(subject, term, req_lib) -> Courses_Courses_Response:
+    # Fetch all offered courses from a department
+    courses = req_lib.getJSON(req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject)
+    courses_response = Courses_Courses_Response(courses["term"])
+    return courses_response
+
+
 def fetch_course_detail(course_id, term, req_lib):
     """Fetch course details for a given course_id and term."""
     return course_id, req_lib.getJSON(req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id)
 
 
-def fetch_data(subject, term, req_lib):
+def fetch_data(subject, term: int, req_lib) -> Tuple[Courses_Courses_Response, dict, dict]:
     """Fetch course and seat information for a given subject and term."""
     # Fetch all offered courses from a department
-    courses = req_lib.getJSON(req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject)
+    courses = fetch_list_of_courses(subject, term, req_lib)
 
     # Extract the course IDs
     course_ids = [
-        course_id.get("course_id", "")
-        for subjects in courses.get("term", [])
-        for courses in subjects.get("subjects", [])
-        for course_id in courses.get("courses", [])
+        course_id.course_id
+        for subjects in courses.term
+        for courses in subjects.subjects
+        for course_id in courses.courses
     ]
 
     print(f"Fetched {len(course_ids)} course IDs from {subject}.")
+    print(f"Course IDs: {course_ids}")
 
     # Parallel fetching of course details
     with ThreadPoolExecutor(max_workers=16) as executor:
@@ -149,27 +158,27 @@ def fetch_data(subject, term, req_lib):
 # --------------------------------------------------------------------------------------
 
 
-def process_course(term, subject, course, seat_mapping, course_details, writer):
+def process_course(term: Term, subject, course: Course, seat_mapping, course_details, writer):
     """Extract information from each course from the courses/courses endpoint, and course details from the courses/details endpoint.
 
     Handles courses with multiple instructors gracefully.
     """
     common_data = extract_common_data(term, subject, course)
     course_details_data = extract_course_details(course_details)
-    crosslisting_data = extract_crosslisting_data(course.get("crosslistings", []))
+    crosslisting_data = extract_crosslisting_data(course.crosslistings)
 
     # Pre-process class and meeting data since it's not instructor-dependent
     classes_data = []
-    for course_class in course.get("classes", []):
+    for course_class in course.classes:
         class_data = extract_class_data(course_class, seat_mapping)
 
-        for meeting in course_class.get("schedule", {}).get("meetings", []):
+        for meeting in course_class.schedule.meetings:
             meeting_data = extract_meeting_data(meeting)
             # Combine class data with each of its meeting data
             classes_data.append({**class_data, **meeting_data})
 
     # Process instructor-dependent data
-    for instructor in course.get("instructors", []):
+    for instructor in course.instructors:
         instructor_data = extract_instructor_data(instructor)
 
         # For each class and meeting combination, add instructor data and write row
@@ -187,17 +196,17 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
 # --------------------------------------------------------------------------------------
 
 
-def process_courses(courses, seat_info, course_details, writer):
+def process_courses(courses: Courses_Courses_Response, seat_info, course_details, writer):
     """Process all courses from the courses/courses endpoint."""
     seat_mapping = {seat["course_id"]: seat for seat in seat_info.get("course", [])}
-    for term in courses.get("term", []):  # Loop through each term
-        for subject in term.get("subjects", []):  # Loop through each subject
-            for course in subject.get("courses", []):  # Loop through each course
+    for term in courses.term:  # Loop through each term
+        for subject in term.subjects:  # Loop through each subject
+            for course in subject.courses:  # Loop through each course
                 if not course_details:
                     print("No course details provided Possible issue with the server.")
                     continue
                 # Fetch the course details and process each course
-                course_id = course.get("course_id", "")
+                course_id = course.course_id
                 course_dict = course_details.get(course_id)
                 if course_dict is None:
                     print(f"Data for course ID {course_id} not found. Possible issue with the server.")
@@ -209,24 +218,24 @@ def process_courses(courses, seat_info, course_details, writer):
 # --------------------------------------------------------------------------------------
 
 
-def extract_common_data(term, subject, course):
+def extract_common_data(term, subject, course: Course):
     """Extract data from the /courses/courses endpoint given a subject and its corresponding course."""
-    course_detail = course.get("detail", {})
+    course_detail = course.detail
 
     data = {
-        "Term Code": term.get("code", ""),
-        "Term Name": term.get("suffix", ""),
-        "Subject Code": subject.get("code", ""),
-        "Subject Name": subject.get("name", ""),
-        "Course ID": course.get("course_id", ""),
-        "Course GUID": course.get("guid", ""),
-        "Catalog Number": course.get("catalog_number", ""),
-        "Course Title": course.get("title", ""),
-        "Course Start Date": course_detail.get("start_date", ""),
-        "Course End Date": course_detail.get("end_date", ""),
-        "Course Track": course_detail.get("track", ""),
-        "Course Description": course_detail.get("description", ""),
-        "Has Seat Reservations": course_detail.get("seat_reservations", ""),
+        "Term Code": term.code,
+        "Term Name": term.suffix,
+        "Subject Code": subject.code,
+        "Subject Name": subject.name,
+        "Course ID": course.course_id,
+        "Course GUID": course.guid,
+        "Catalog Number": course.catalog_number,
+        "Course Title": course.title,
+        "Course Start Date": course_detail.start_date,
+        "Course End Date": course_detail.end_date,
+        "Course Track": course_detail.track,
+        "Course Description": course_detail.description,
+        "Has Seat Reservations": course_detail.seat_reservations,
     }
 
     # Handle newline characters
@@ -243,10 +252,10 @@ def extract_common_data(term, subject, course):
 def extract_instructor_data(instructor):
     """CPU-bound function."""
     return {
-        "Instructor EmplID": instructor.get("emplid", ""),
-        "Instructor First Name": instructor.get("first_name", ""),
-        "Instructor Last Name": instructor.get("last_name", ""),
-        "Instructor Full Name": instructor.get("full_name", ""),
+        "Instructor EmplID": instructor.emplid,
+        "Instructor First Name": instructor.first_name,
+        "Instructor Last Name": instructor.last_name,
+        "Instructor Full Name": instructor.full_name,
     }
 
 
@@ -255,8 +264,8 @@ def extract_instructor_data(instructor):
 
 def extract_crosslisting_data(crosslistings):
     """CPU-bound function."""
-    crosslisting_subjects = [crosslisting.get("subject", "") for crosslisting in crosslistings]
-    crosslisting_catalog_numbers = [crosslisting.get("catalog_number", "") for crosslisting in crosslistings]
+    crosslisting_subjects = [crosslisting.subject for crosslisting in crosslistings]
+    crosslisting_catalog_numbers = [crosslisting.catalog_number for crosslisting in crosslistings]
     return {
         "Crosslisting Subjects": ",".join(crosslisting_subjects),
         "Crosslisting Catalog Numbers": ",".join(crosslisting_catalog_numbers),
@@ -267,7 +276,7 @@ def extract_crosslisting_data(crosslistings):
 
 
 def extract_class_data(course_class, seat_mapping):
-    class_number = course_class.get("class_number", "")
+    class_number = course_class.class_number
     seat_mapping_data = next(iter(seat_mapping.values()), {}) if seat_mapping else {}
 
     # Find the class information based on class_number
@@ -298,11 +307,11 @@ def extract_class_data(course_class, seat_mapping):
 
     return {
         "Class Number": class_number,
-        "Class Section": course_class.get("section", ""),
-        "Class Status": course_class.get("status", ""),
-        "Class Type": course_class.get("type_name", ""),
-        "Class Capacity": course_class.get("capacity", ""),
-        "Class Enrollment": course_class.get("enrollment", ""),
+        "Class Section": course_class.section,
+        "Class Status": course_class.status,
+        "Class Type": course_class.type_name,
+        "Class Capacity": course_class.capacity,
+        "Class Enrollment": course_class.enrollment,
         "Class Year Enrollments": class_year_enrollments_str,
     }
 
@@ -385,14 +394,14 @@ def extract_course_details(course_details):
 
 def extract_meeting_data(meeting):
     """CPU-bound function."""
-    days = ",".join(meeting.get("days", []))
+    days = ",".join(meeting.days)
     return {
-        "Meeting Number": meeting.get("meeting_number", ""),
-        "Meeting Start Time": meeting.get("start_time", ""),
-        "Meeting End Time": meeting.get("end_time", ""),
+        "Meeting Number": meeting.meeting_number,
+        "Meeting Start Time": meeting.start_time,
+        "Meeting End Time": meeting.end_time,
         "Meeting Days": days,
-        "Building Name": meeting.get("building", {}).get("name", "Canceled"),
-        "Meeting Room": meeting.get("room", "TBD"),
+        "Building Name": meeting.building.name if meeting.building else "Canceled",
+        "Meeting Room": meeting.room if meeting.room else "TBD",
     }
 
 
@@ -422,7 +431,7 @@ def get_semesters_and_depts_from_args() -> Tuple[List[str], List[str]]:
 # --------------------------------------------------------------------------------------
 
 
-def generate_csv(semester, subject, req_lib):
+def generate_csv(semester: str, subject: str, req_lib: ReqLib):
     os.makedirs(semester, exist_ok=True)
 
     copy_n = 0
