@@ -219,15 +219,13 @@ class Courses_Courses_Response:
 
     def __str__(self):
         """Return string representation of Courses_Courses_Response."""
-        term_summaries = []
-        for t in self.term:
-            total_subjects = len(t.subjects)
-            total_courses = sum(len(s.courses) for s in t.subjects)
-            term_summaries.append(
-                f"Term {t.name} ({t.code}): {total_subjects} subjects, {total_courses} courses"
-            )
+        course_names = []
+        for term in self.term:
+            for subject in term.subjects:
+                for course in subject.courses:
+                    course_names.append(f"{subject.code} {course.catalog_number}")
 
-        return "Courses_Courses_Response(\n  " + "\n  ".join(term_summaries) + "\n)"
+        return f"Courses_Courses_Response({len(course_names)} Courses, {course_names})"
 
 
 if __name__ == "__main__":
