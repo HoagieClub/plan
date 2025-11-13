@@ -16,14 +16,13 @@ import {
 	MeasuringStrategy,
 	defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
-import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -33,10 +32,11 @@ import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
-import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
+import { SortableItem } from './SortableItem';
 
 import type {
 	CollisionDetection,
@@ -45,7 +45,6 @@ import type {
 	UniqueIdentifier,
 	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -79,52 +78,6 @@ if (typeof window === 'undefined') {
 	void (async () => {
 		csrfToken = await fetchCsrfToken();
 	})();
-}
-
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function DroppableContainer({
-	children,
-	columns = 1,
-	disabled,
-	id,
-	items,
-	style,
-	...props
-}: ContainerProps & {
-	disabled?: boolean;
-	id: UniqueIdentifier;
-	items: UniqueIdentifier[];
-	style?: CSSProperties;
-}) {
-	const { active, over, setNodeRef, transition, transform } = useSortable({
-		id,
-		data: {
-			type: 'container',
-			children: items,
-		},
-		animateLayoutChanges,
-	});
-	const isOverContainer = over
-		? (id === over.id && active.data.current.type !== 'container') || items.includes(over.id)
-		: false;
-
-	return (
-		<Container
-			ref={disabled ? undefined : setNodeRef}
-			style={{
-				...style,
-				transition,
-				transform: CSS.Translate.toString(transform),
-			}}
-			hover={isOverContainer}
-			columns={columns}
-			{...props}
-		>
-			{children}
-		</Container>
-	);
 }
 
 const dropAnimation: DropAnimation = {
