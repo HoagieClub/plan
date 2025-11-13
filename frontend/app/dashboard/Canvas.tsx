@@ -228,6 +228,7 @@ export function Canvas({
 	}));
 
 	type Dictionary = {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any; // TODO: Aim to replace 'any' with more specific types.
 	};
 
@@ -655,7 +656,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu profile={profile} csrfToken={csrfToken} />
+							<TabbedMenu csrfToken={csrfToken} />
 						</div>
 					</div>
 				</SortableContext>

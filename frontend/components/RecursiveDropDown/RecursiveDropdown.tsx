@@ -18,17 +18,16 @@ import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/utils';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
-import type { Profile } from '@/types';
 
 interface Dictionary {
 	// TODO: Address this typing eventually.
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[key: string]: any;
 }
 
 interface DropdownProps {
 	academicPlan: Dictionary;
-	profile: Profile;
 	csrfToken: string;
 }
 
@@ -111,7 +110,7 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
 };
 
 // Dropdown component with refined styling
-const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
+const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 	// Subscribe to user slice to access the same updateRequirements hook everywhere
 	// This allows us to re-render TabbedMenu without reloading the entire page
 	const { updateRequirements } = useUserSlice((state) => ({
@@ -555,14 +554,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 // Recursive dropdown component
 interface RecursiveDropdownProps {
 	academicPlan: Dictionary;
-	profile: Profile;
 	csrfToken: string;
 }
 
-export const RecursiveDropdown: FC<RecursiveDropdownProps> = ({
-	academicPlan,
-	profile,
-	csrfToken,
-}) => {
-	return <Dropdown academicPlan={academicPlan} profile={profile} csrfToken={csrfToken} />;
+export const RecursiveDropdown: FC<RecursiveDropdownProps> = ({ academicPlan, csrfToken }) => {
+	return <Dropdown academicPlan={academicPlan} csrfToken={csrfToken} />;
 };

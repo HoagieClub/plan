@@ -84,7 +84,7 @@ async function mapUserProfileToProfile(userProfile: User): Promise<Profile> {
 	};
 }
 
-const useUserSlice = create<UserState>((set, get) => ({
+const useUserSlice = create<UserState>((set) => ({
 	profile: {
 		firstName: '',
 		lastName: '',

@@ -40,8 +40,8 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 			...fetchReq.headers,
 			Authorization: `Bearer ${accessToken.token}`,
 		};
-	} catch (error: any) {
-		return NextResponse.json({ error: error.message }, { status: 401 });
+	} catch (error: unknown) {
+		return NextResponse.json({ error: (error as Error).message }, { status: 401 });
 	}
 
 	const searchParams = request.nextUrl.searchParams.toString();
@@ -76,8 +76,8 @@ async function proxyRequest(url: string, fetchReq: RequestInit) {
 				return NextResponse.json(data, { status: response.status });
 			}
 		}
-	} catch (error: any) {
-		return NextResponse.json({ error: error.message }, { status: 404 });
+	} catch (error: unknown) {
+		return NextResponse.json({ error: (error as Error).message }, { status: 404 });
 	}
 }
 

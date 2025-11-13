@@ -26,6 +26,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const [courseDetails, setCourseDetails] = useState<{
 		// TODO: Address this typing eventually.
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
 	} | null>(null);
 

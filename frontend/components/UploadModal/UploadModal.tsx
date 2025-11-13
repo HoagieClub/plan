@@ -13,17 +13,14 @@ import { TutorialModal } from '../Modal';
 // Changed name
 import styles from './UploadModal.module.css';
 
-import type { Profile } from '../../types';
-
 interface Upload {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => Promise<void>;
 	onError: (error: string) => void;
-	profile: Profile;
 }
 
-const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
