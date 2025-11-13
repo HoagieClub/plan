@@ -64,14 +64,14 @@ const CalendarUI: FC = () => {
 	const endIndex = startIndex + semestersPerPage;
 	const displayedSemesters = semesterList.slice(startIndex, endIndex);
 
-	const handleCreate = async () => {
-		try {
-			const data = await calendarService.createCalendar('New Calendar', 1262);
-			console.log('Data:', data);
-		} catch (error) {
-			console.error('Error creating calendars:', error);
-		}
-	};
+	// const handleCreate = async () => {
+	// 	try {
+	// 		const data = await calendarService.createCalendar('New Calendar', 1262);
+	// 		console.log('Data:', data);
+	// 	} catch (error) {
+	// 		console.error('Error creating calendars:', error);
+	// 	}
+	// };
 	return (
 		<>
 			<div className='flex justify-center p-4'>
@@ -119,7 +119,7 @@ const CalendarUI: FC = () => {
 					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
 				</div>
 			</main>
-			<button onClick={handleCreate}>Create Calendar</button>
+			{/* <button onClick={handleCreate}>Create Calendar</button> */}
 		</>
 	);
 };
