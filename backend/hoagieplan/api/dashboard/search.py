@@ -3,7 +3,7 @@ from re import IGNORECASE, compile, split, sub
 
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
 
 from hoagieplan.logger import logger
 from hoagieplan.models import (
@@ -37,7 +37,7 @@ def make_sort_key(dept):
     return sort_key
 
 
-@require_GET
+@api_view(["GET"])
 def search_courses(request):
     """Handle search queries for courses."""
     if request.method != "GET":

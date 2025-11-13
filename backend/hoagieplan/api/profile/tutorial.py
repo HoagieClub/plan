@@ -1,8 +1,9 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET, require_POST
+from rest_framework.decorators import api_view
 from hoagieplan.models import CustomUser
 
 
+@api_view(["GET"])
 def get_status(request):
     net_id = request.headers.get("X-NetId")
     print(f"NETID: {net_id}")
@@ -18,6 +19,7 @@ def get_status(request):
         return JsonResponse({"error": "An internal error occurred"}, status=500)
 
 
+@api_view(["POST"])
 def set_status(request):
     net_id = request.headers.get("X-NetId")
     if not net_id:

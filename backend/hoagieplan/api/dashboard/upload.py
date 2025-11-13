@@ -1,15 +1,13 @@
 import json
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from rest_framework.decorators import api_view
 from django.test import RequestFactory
 from data.transcript_to_json import transcript_to_json, convert_to_guids
 from hoagieplan.models import Course, UserCourses
 from hoagieplan.api.dashboard.requirements import update_transcript_courses
 from django.test import RequestFactory
 
-@csrf_exempt
-@require_POST
+@api_view(["POST"])
 def upload_file(request):
     if "file" not in request.FILES:
         return JsonResponse({"error": "No file uploaded"}, status=400)
