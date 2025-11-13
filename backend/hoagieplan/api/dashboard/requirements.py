@@ -879,6 +879,8 @@ def update_courses(request):
                 .first()
             )
 
+        message = ""
+
         if container == "Search Results":
             if not course_inst:
                 return JsonResponse({'status': 'error', 'message': f"Course '{crosslistings}' not found"}, status=404)

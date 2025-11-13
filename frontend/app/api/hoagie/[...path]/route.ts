@@ -60,8 +60,21 @@ async function proxyRequest(url: string, fetchReq: RequestInit) {
 		} else if (response.status === 204) {
 			return NextResponse.json({}, { status: 204 });
 		} else {
-			const data = await response.json();
-			return NextResponse.json(data, { status: response.status });
+			// Decode based on content-type (for json and calendar files)
+			const contentType = response.headers.get('content-type');
+
+			if (contentType && contentType.includes('text/calendar')) {
+				const calendarText = await response.text();
+				return new NextResponse(calendarText, {
+					status: response.status,
+					headers: {
+						'Content-Type': 'text/calendar',
+					},
+				});
+			} else {
+				const data = await response.json();
+				return NextResponse.json(data, { status: response.status });
+			}
 		}
 	} catch (error: any) {
 		return NextResponse.json({ error: error.message }, { status: 404 });
