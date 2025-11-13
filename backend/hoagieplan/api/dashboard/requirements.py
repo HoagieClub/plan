@@ -5,6 +5,7 @@ import json
 import orjson as oj
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 from hoagieplan.api.dashboard.utils import cumulative_time
 from hoagieplan.api.profile.info import fetch_user_info
@@ -570,6 +571,7 @@ def transform_data(data):
     return transformed_data
 
 
+@api_view(["POST"])
 def manually_settle(request):
     data = oj.loads(request.body)
     crosslistings = data.get("crosslistings")
@@ -599,6 +601,7 @@ def manually_settle(request):
         return JsonResponse({"Manually settled": user_course_inst.id})
 
 
+@api_view(["POST"])
 def mark_satisfied(request):
     data = oj.loads(request.body)
     req_id = int(data.get("reqId"))
@@ -621,6 +624,7 @@ def mark_satisfied(request):
     return JsonResponse({"Manually satisfied": req_id, "action": action})
 
 
+@api_view(["GET"])
 def update_requirements(request):
     net_id = request.user.net_id
     user_info = fetch_user_info(net_id)
@@ -658,6 +662,7 @@ def update_requirements(request):
 # ---------------------------- FETCH REQUIREMENT INFO -----------------------------------#
 
 
+@api_view(["GET"])
 def requirement_info(request):
     req_id = request.GET.get("reqId", "")
     net_id = request.user.net_id
@@ -772,6 +777,7 @@ def parse_transcript_semester(semester_name):
     except ValueError:
         raise ValueError(f"Invalid semester format: {semester_name}")
 
+@api_view(["POST"])
 def update_transcript_courses(request):
     try:
         body_data = request.body.decode('utf-8')
@@ -844,6 +850,7 @@ def update_transcript_courses(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+@api_view(["POST"])
 def update_courses(request):
     try:
         # update_transcript_courses(request)
