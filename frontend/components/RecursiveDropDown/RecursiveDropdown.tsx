@@ -249,7 +249,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 		})
 			.then((response) => response.json())
 			.then(() => {
-				setMarkedSatisfied(true);
+				setMarkedSatisfied(false);
 				void updateRequirements();
 			})
 			.catch((error) => {
