@@ -1,11 +1,7 @@
-import json
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from django.test import RequestFactory
 from data.transcript_to_json import transcript_to_json, convert_to_guids
-from hoagieplan.models import Course, UserCourses
-from hoagieplan.api.dashboard.requirements import update_transcript_courses
-from django.test import RequestFactory
+from hoagieplan.api.dashboard.requirements import update_transcript_courses_helper
 
 @api_view(["POST"])
 def upload_file(request):
@@ -46,14 +42,8 @@ def upload_file(request):
 
     # Simulate an HTTP request with correct JSON structure
     try:
-        factory = RequestFactory()
-        fake_request = factory.post(
-            "/update_courses/",
-            data=json.dumps(transcript_output),
-            content_type="application/json",
-        )
+        response = update_transcript_courses_helper(request.user, transcript_output)
 
-        response = update_transcript_courses(fake_request)
         print("✅ Transcript processed successfully")
         return response
 
