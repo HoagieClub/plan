@@ -146,10 +146,8 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 
 	const handleExplanationClick = (event, reqId) => {
 		setIsLoading(true);
-		const url = new URL(`/api/hoagie/requirement_info/`);
-		url.searchParams.append('reqId', reqId);
-
-		fetch(url.toString())
+		const params = new URLSearchParams({ reqId });
+		fetch(`/api/hoagie/requirement_info/?${params}`)
 			.then((response) => response.json())
 			.then((academicPlan) => {
 				setExplanation(academicPlan);
