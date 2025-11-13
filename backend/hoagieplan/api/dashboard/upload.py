@@ -45,7 +45,7 @@ def upload_file(request):
         return JsonResponse({"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500)
     
     # Ensure we extract NetID correctly
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Missing NetID in request headers"}, status=400)
 

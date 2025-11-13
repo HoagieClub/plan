@@ -15,7 +15,7 @@ UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 VALID_CLASS_YEAR_RANGE = range(2023, 2031)
 
 
-# turn this into a GET request and simply return the user based on access token
+# TODO: turn this into a GET request and simply return the user based on access token
 @api_view(["POST"])
 def get_user(request):
     """Create or fetch a user based on email prefix (NetID)."""
@@ -69,7 +69,7 @@ def fetch_user_info(net_id):
 @api_view(["GET"])
 def get_user_courses(request):
     """Retrieve user's courses for frontend."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({})
 
@@ -92,7 +92,7 @@ def get_user_courses(request):
 @api_view(["GET"])
 def profile(request):
     """Get user profile information."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
@@ -110,7 +110,7 @@ def profile(request):
 @api_view(["POST"])
 def update_profile(request):
     """Update user profile information."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
@@ -160,7 +160,7 @@ def update_profile(request):
 @api_view(["POST"])
 def update_class_year(request):
     """Update user's class year."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 

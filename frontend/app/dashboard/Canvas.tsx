@@ -3,18 +3,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
 	closestCenter,
-	pointerWithin,
-	rectIntersection,
+	defaultDropAnimationSideEffects,
 	DndContext,
 	DragOverlay,
 	getFirstCollision,
 	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensors,
-	useSensor,
 	MeasuringStrategy,
-	defaultDropAnimationSideEffects,
+	MouseSensor,
+	pointerWithin,
+	rectIntersection,
+	TouchSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
@@ -41,9 +41,9 @@ import { SortableItem } from './SortableItem';
 import type {
 	CollisionDetection,
 	DropAnimation,
+	KeyboardCoordinateGetter,
 	Modifiers,
 	UniqueIdentifier,
-	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 
 // Heights are relative to viewport height
@@ -268,19 +268,13 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`${process.env.BACKEND}/fetch_courses/`, {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'X-NetId': profile.netId,
-				},
-			});
+			const response = await fetch(`/api/hoagie/fetch_courses/`);
 			const data = await response.json();
 			return data;
 		} catch {
 			return null; // TODO: Handle error appropriately
 		}
-	}, [profile.netId]);
+	}, []);
 
 	// Fetch user courses and check requirements on initial render
 	useEffect(() => {
@@ -508,12 +502,9 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							void fetch(`${process.env.BACKEND}/update_courses/`, {
+							void fetch(`/api/hoagie/update_courses/`, {
 								method: 'POST',
-								credentials: 'include',
 								headers: {
-									'Content-Type': 'application/json',
-									'X-NetId': profile.netId,
 									'X-CSRFToken': csrfToken,
 								},
 								body: JSON.stringify({
@@ -744,13 +735,10 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		void fetch(`${process.env.BACKEND}/update_courses/`, {
+		void fetch(`/api/hoagie/update_courses/`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
 				'X-CSRFToken': csrfToken,
-				'X-NetId': profile.netId,
 			},
 			body: JSON.stringify({
 				crosslistings: value.toString().split('|')[1],

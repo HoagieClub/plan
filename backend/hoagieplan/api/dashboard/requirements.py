@@ -574,7 +574,7 @@ def manually_settle(request):
     data = oj.loads(request.body)
     crosslistings = data.get("crosslistings")
     req_id = int(data.get("reqId"))
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user_inst = CustomUser.objects.get(net_id=net_id)
     course_inst = (
         Course.objects.select_related("department")
@@ -603,7 +603,7 @@ def mark_satisfied(request):
     data = oj.loads(request.body)
     req_id = int(data.get("reqId"))
     marked_satisfied = data.get("markedSatisfied")
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
 
     user_inst = CustomUser.objects.get(net_id=net_id)
     req_inst = Requirement.objects.get(id=req_id)
@@ -622,7 +622,7 @@ def mark_satisfied(request):
 
 
 def update_requirements(request):
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user_info = fetch_user_info(net_id)
 
     this_major = user_info["major"]["code"]
@@ -660,7 +660,7 @@ def update_requirements(request):
 
 def requirement_info(request):
     req_id = request.GET.get("reqId", "")
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     explanation = ""
     completed_by_semester = 8
     dist_req = []
@@ -780,7 +780,7 @@ def update_transcript_courses(request):
         if not isinstance(data, dict):
             raise TypeError(f"Expected dictionary but got {type(data)}")
 
-        net_id = request.headers.get("X-NetId")
+        net_id = request.user.net_id
         user_inst = CustomUser.objects.get(net_id=net_id)
         
         # Clean up old UserCourses records for this user
@@ -850,7 +850,7 @@ def update_courses(request):
         data = json.loads(request.body)
         crosslistings = data.get("crosslistings")
         container = data.get("semesterId")
-        net_id = request.headers.get("X-NetId")
+        net_id = request.user.net_id
         user_inst = CustomUser.objects.get(net_id=net_id)
         class_year = user_inst.class_year
     

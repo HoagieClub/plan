@@ -95,9 +95,7 @@ const useCalendarStore = create<CalendarStore>()(
 					const term = course.guid.substring(0, 4);
 					const course_id = course.guid.substring(4);
 					// console.log(`Fetching course details from backend for ${term}-${course_id}`);
-					const response = await fetch(
-						`${process.env.BACKEND}/fetch_calendar_classes/${term}/${course_id}`
-					);
+					const response = await fetch(`/api/hoagie/fetch_calendar_classes/${term}/${course_id}`);
 					if (!response.ok) {
 						throw new Error('Failed to fetch course details');
 					}

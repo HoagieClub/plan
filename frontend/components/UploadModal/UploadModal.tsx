@@ -55,12 +55,11 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 		});
 
 		try {
-			const response = await fetch(`${process.env.BACKEND}/upload/`, {
+			const response = await fetch(`/api/hoagie/upload/`, {
 				method: 'POST',
 				body: formData,
 				headers: {
 					Accept: 'application/json',
-					'X-NetId': profile.netId,
 				},
 			});
 

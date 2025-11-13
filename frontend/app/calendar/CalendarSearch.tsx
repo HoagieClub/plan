@@ -1,14 +1,14 @@
 import type { ChangeEvent, FC } from 'react';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
+	Autocomplete,
+	AutocompleteOption,
 	Button,
 	Checkbox,
-	Autocomplete,
 	FormLabel,
-	AutocompleteOption,
 	ListItemContent,
 	Snackbar,
 } from '@mui/joy';
@@ -115,7 +115,7 @@ export const CalendarSearch: FC = () => {
 			setLoading(true);
 			try {
 				const queryString = buildQuery(searchQuery, filter);
-				const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search/?${queryString}`);
 
 				if (!response.ok) {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
@@ -186,13 +186,11 @@ export const CalendarSearch: FC = () => {
 
 			const csrfToken = await fetchCsrfToken();
 
-			const response = await fetch(`${process.env.BACKEND}/export-calendar/`, {
+			const response = await fetch(`/api/hoagie/export-calendar/`, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
 					'X-CSRFToken': csrfToken,
 				},
-				credentials: 'include',
 				body: JSON.stringify(calendarData),
 			});
 
