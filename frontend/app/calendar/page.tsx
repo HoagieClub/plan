@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
+import { CalendarService } from '@/api/calendarService';
 import { Calendar } from '@/app/calendar/Calendar';
 import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
@@ -23,6 +24,7 @@ const CalendarUI: FC = () => {
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
+	const calendarService = new CalendarService(userProfile);
 
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
@@ -39,10 +41,37 @@ const CalendarUI: FC = () => {
 		}
 	};
 
+	useEffect(() => {
+		const createUserCalendarData = async (sem: number) => {
+			try {
+				// check if calendars user has calendars already
+				if (calendarService.getCalendars(sem) || calendarService.hasCalendarForTermInDB(sem)) {
+					return;
+				}
+
+				// create a new calendar
+				const newCalendar = await calendarService.createCalendar('New Calendar', sem);
+				return newCalendar;
+			} catch (error) {
+				console.error('Error creating calendar:', error);
+			}
+		};
+		const currentSemester = parseInt(Object.values(terms)[0]);
+		void createUserCalendarData(currentSemester);
+	}, [calendarService]);
+
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;
 	const displayedSemesters = semesterList.slice(startIndex, endIndex);
 
+	const handleCreate = async () => {
+		try {
+			const data = await calendarService.createCalendar('New Calendar', 1262);
+			console.log('Data:', data);
+		} catch (error) {
+			console.error('Error creating calendars:', error);
+		}
+	};
 	return (
 		<>
 			<div className='flex justify-center p-4'>
@@ -90,6 +119,7 @@ const CalendarUI: FC = () => {
 					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
 				</div>
 			</main>
+			<button onClick={handleCreate}>Create Calendar</button>
 		</>
 	);
 };
