@@ -39,6 +39,8 @@ dependencies = [
     "bs4>=0.0.2",
     "selenium>=4.31.0",
     "webdriver-manager>=4.0.2",
+    "pyjwt>=2.10.1",
+    "cryptography>=44.0.2",
 ]
 
 # ===============================

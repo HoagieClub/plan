@@ -15,37 +15,15 @@ UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 VALID_CLASS_YEAR_RANGE = range(2023, 2031)
 
 
+# turn this into a GET request and simply return the user based on access token
 @require_POST
 def get_user(request):
     """Create or fetch a user based on email prefix (NetID)."""
-    user = oj.loads(request.body)
-    net_id = user.get("netId")
-    first_name = user.get("firstName")
-    last_name = user.get("lastName")
-    email = user.get("email")
+    net_id = request.user.net_id
+    email = request.user.email
 
     try:
-        user_inst, created = CustomUser.objects.get_or_create(
-            email=email,
-            defaults={
-                "role": "student",
-                "net_id": "",
-                "first_name": "",
-                "last_name": "",
-                "class_year": datetime.now().year + 1,
-            },
-        )
-        if created:
-            user_inst.first_name = first_name
-            user_inst.last_name = last_name
-            user_inst.net_id = net_id
-            user_inst.username = net_id
-            user_inst.save()
-        else:
-            email_prefix = email.split("@")[0]
-            user_inst.net_id = email_prefix
-            user_inst.username = email_prefix
-            user_inst.save()
+        user_inst = CustomUser.objects.get(email=email)
 
         return JsonResponse(format_user_data(user_inst))
 
