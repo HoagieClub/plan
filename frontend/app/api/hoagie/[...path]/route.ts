@@ -9,13 +9,27 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 
 	const fetchReq: RequestInit = {
 		method: request.method,
-		headers: {
-			'Content-Type': 'application/json',
-		},
+		headers: {},
 	};
 
+	// Check if this is a file upload
+	const contentType = request.headers.get('content-type');
+	const isMultipart = contentType?.includes('multipart/form-data');
+
 	if (request.method !== 'GET') {
-		fetchReq.body = await request.text();
+		if (isMultipart) {
+			// For file uploads, preserve FormData
+			fetchReq.body = await request.formData();
+		} else {
+			// For JSON requests, convert to text and set content-type
+			fetchReq.body = await request.text();
+			fetchReq.headers['Content-Type'] = 'application/json';
+			fetchReq.headers['Accept'] = 'application/json';
+		}
+	}
+
+	if (request.headers.has('X-CSRFToken')) {
+		fetchReq.headers['X-CSRFToken'] = request.headers.get('X-CSRFToken');
 	}
 
 	try {
@@ -30,7 +44,10 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 		return NextResponse.json({ error: error.message }, { status: 401 });
 	}
 
-	return await proxyRequest(`${process.env.BACKEND}/${path}/`, fetchReq);
+	const searchParams = request.nextUrl.searchParams.toString();
+	const backendUrl = `${process.env.BACKEND}/${path}/${searchParams ? `?${searchParams}` : ''}`;
+
+	return await proxyRequest(backendUrl, fetchReq);
 }
 
 async function proxyRequest(url: string, fetchReq: RequestInit) {

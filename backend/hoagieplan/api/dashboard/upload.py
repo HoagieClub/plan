@@ -43,11 +43,6 @@ def upload_file(request):
     except Exception as e:
         print(f"Error processing transcript: {e}")
         return JsonResponse({"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500)
-    
-    # Ensure we extract NetID correctly
-    net_id = request.user.net_id
-    if not net_id:
-        return JsonResponse({"error": "Missing NetID in request headers"}, status=400)
 
     # Simulate an HTTP request with correct JSON structure
     try:
@@ -56,7 +51,6 @@ def upload_file(request):
             "/update_courses/",
             data=json.dumps(transcript_output),
             content_type="application/json",
-            HTTP_X_NetId=net_id
         )
 
         response = update_transcript_courses(fake_request)

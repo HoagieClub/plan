@@ -1,9 +1,11 @@
 /* eslint-disable no-undef */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
+
+import { fetchCsrfToken } from '@/utils/csrf';
 
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
@@ -25,6 +27,14 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+
+	const [csrfToken, setCsrfToken] = useState('');
+	useEffect(() => {
+		void (async () => {
+			const token = await fetchCsrfToken();
+			setCsrfToken(token);
+		})();
+	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,7 +69,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 				method: 'POST',
 				body: formData,
 				headers: {
-					Accept: 'application/json',
+					'X-CSRFToken': csrfToken,
 				},
 			});
 
