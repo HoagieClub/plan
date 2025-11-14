@@ -196,7 +196,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 		if (explanation === null) {
 			return;
 		}
-		fetch(`/api/hoagie/mark_satisfied/`, {
+		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken,
@@ -220,7 +220,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 		if (explanation === null) {
 			return;
 		}
-		fetch(`/api/hoagie/mark_satisfied/`, {
+		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken,
@@ -386,7 +386,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 	) : null;
 
 	const handleClick = (crosslistings, reqId) => {
-		fetch(`/api/hoagie/manually_settle/`, {
+		fetch(`/api/hoagie/manually_settle`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken,

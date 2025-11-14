@@ -1,6 +1,6 @@
 export async function fetchCsrfToken() {
 	try {
-		const response = await fetch(`/api/hoagie/csrf/`);
+		const response = await fetch(`/api/hoagie/csrf`);
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch CSRF token. HTTP status: ${response.status}`);

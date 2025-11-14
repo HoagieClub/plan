@@ -186,7 +186,7 @@ export const CalendarSearch: FC = () => {
 
 			const csrfToken = await fetchCsrfToken();
 
-			const response = await fetch(`/api/hoagie/export-calendar/`, {
+			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
 				headers: {
 					'X-CSRFToken': csrfToken,

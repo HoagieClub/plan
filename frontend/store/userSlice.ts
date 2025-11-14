@@ -18,7 +18,7 @@ async function fetchCustomUser(
 	try {
 		const csrfToken = await fetchCsrfToken();
 
-		const response = await fetch(`/api/hoagie/profile/get_user/`, {
+		const response = await fetch(`/api/hoagie/profile/get_user`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken,
@@ -105,7 +105,7 @@ const useUserSlice = create<UserState>((set) => ({
 	setAcademicPlan: (plan: Record<string, any>) => set(() => ({ academicPlan: plan })),
 	updateRequirements: async () => {
 		try {
-			const response = await fetch(`/api/hoagie/update_requirements/`, {
+			const response = await fetch(`/api/hoagie/update_requirements`, {
 				cache: 'no-store',
 			});
 			const data = await response.json();

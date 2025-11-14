@@ -503,7 +503,7 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							void fetch(`/api/hoagie/update_courses/`, {
+							void fetch(`/api/hoagie/update_courses`, {
 								method: 'POST',
 								headers: {
 									'X-CSRFToken': csrfToken,
@@ -736,7 +736,7 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		void fetch(`/api/hoagie/update_courses/`, {
+		void fetch(`/api/hoagie/update_courses`, {
 			method: 'POST',
 			headers: {
 				'X-CSRFToken': csrfToken,
