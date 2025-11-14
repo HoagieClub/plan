@@ -1,22 +1,21 @@
-import { type FC } from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState, type FC } from 'react';
 
 import {
 	Autocomplete,
 	AutocompleteOption,
+	FormLabel,
+	Input,
 	Button as JoyButton,
 	ListItemContent,
-	Input,
-	Typography,
-	FormLabel,
 	Snackbar,
+	Typography,
 } from '@mui/joy';
 
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType, ProfileProps } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 
-import { smartSearch, isOptionEqual } from './MajorMinorSearch';
+import { isOptionEqual, smartSearch } from './MajorMinorSearch';
 
 function generateClassYears() {
 	const currentYear = new Date().getFullYear();
@@ -240,12 +239,9 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		};
 
 		try {
-			const response = await fetch(`${process.env.BACKEND}/profile/update/`, {
+			const response = await fetch(`/api/hoagie/profile/update/`, {
 				method: 'POST',
-				credentials: 'include',
 				headers: {
-					'Content-Type': 'application/json',
-					'X-NetId': profile.netId,
 					'X-CSRFToken': csrfToken,
 				},
 				body: JSON.stringify(profile),

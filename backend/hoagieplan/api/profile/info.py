@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db import transaction
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET, require_POST
+from rest_framework.decorators import api_view
 
 from hoagieplan.api.errors.errors import UserProfileNotFoundError
 from hoagieplan.logger import logger
@@ -15,37 +15,15 @@ UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 VALID_CLASS_YEAR_RANGE = range(2023, 2031)
 
 
-@require_POST
+# TODO: turn this into a GET request and simply return the user based on access token
+@api_view(["POST"])
 def get_user(request):
     """Create or fetch a user based on email prefix (NetID)."""
-    user = oj.loads(request.body)
-    net_id = user.get("netId")
-    first_name = user.get("firstName")
-    last_name = user.get("lastName")
-    email = user.get("email")
+    net_id = request.user.net_id
+    email = request.user.email
 
     try:
-        user_inst, created = CustomUser.objects.get_or_create(
-            email=email,
-            defaults={
-                "role": "student",
-                "net_id": "",
-                "first_name": "",
-                "last_name": "",
-                "class_year": datetime.now().year + 1,
-            },
-        )
-        if created:
-            user_inst.first_name = first_name
-            user_inst.last_name = last_name
-            user_inst.net_id = net_id
-            user_inst.username = net_id
-            user_inst.save()
-        else:
-            email_prefix = email.split("@")[0]
-            user_inst.net_id = email_prefix
-            user_inst.username = email_prefix
-            user_inst.save()
+        user_inst = CustomUser.objects.get(email=email)
 
         return JsonResponse(format_user_data(user_inst))
 
@@ -88,10 +66,10 @@ def fetch_user_info(net_id):
         raise UserProfileNotFoundError("Failed to update user profile") from e
 
 
-@require_GET
+@api_view(["GET"])
 def get_user_courses(request):
     """Retrieve user's courses for frontend."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({})
 
@@ -111,10 +89,10 @@ def get_user_courses(request):
         return JsonResponse({"error": "Internal Server Error"}, status=500)
 
 
-@require_GET
+@api_view(["GET"])
 def profile(request):
     """Get user profile information."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
@@ -129,10 +107,10 @@ def profile(request):
         return JsonResponse({"error": "Internal server error"}, status=500)
 
 
-@require_POST
+@api_view(["POST"])
 def update_profile(request):
     """Update user profile information."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
@@ -179,10 +157,10 @@ def update_profile(request):
         return JsonResponse({"error": "Internal server error"}, status=500)
 
 
-@require_POST
+@api_view(["POST"])
 def update_class_year(request):
     """Update user's class year."""
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({"error": "Not authenticated"}, status=401)
 

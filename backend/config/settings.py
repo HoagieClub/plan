@@ -75,13 +75,6 @@ DASHBOARD = urljoin(os.getenv("HOAGIEPLAN"), "dashboard")
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_HEADERS = [
-    "X-NetId",
-    "Content-Type",
-    "X-CSRFToken",
-    "Authorization",
-]
-
 CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
 CSRF_TRUSTED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
@@ -132,6 +125,20 @@ DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL")
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 AUTH_USER_MODEL = "hoagieplan.CustomUser"
+
+# Auth0 Configuration
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")  # Your Auth0 domain
+AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE")  # Your API audience (for JWT verification)
+AUTH0_ALGORITHMS = ["RS256"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "hoagieplan.api.auth.auth.Auth0JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
