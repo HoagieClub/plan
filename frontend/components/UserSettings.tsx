@@ -239,7 +239,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		};
 
 		try {
-			const response = await fetch(`/api/hoagie/profile/update/`, {
+			const response = await fetch(`/api/hoagie/profile/update`, {
 				method: 'POST',
 				headers: {
 					'X-CSRFToken': csrfToken,

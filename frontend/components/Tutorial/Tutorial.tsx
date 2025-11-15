@@ -49,7 +49,7 @@ export function useTutorialModal() {
 
 		async function fetchTutorialStatus() {
 			try {
-				const response = await fetch(`/api/hoagie/tutorial/get-status/`);
+				const response = await fetch(`/api/hoagie/tutorial/get-status`);
 				const data = await response.json();
 				if (data.hasSeenTutorial === false) {
 					setIsModalOpen(true);
@@ -73,7 +73,7 @@ export function useTutorialModal() {
 
 	const finishTutorial = async () => {
 		try {
-			await fetch(`/api/hoagie/tutorial/set-status/`, {
+			await fetch(`/api/hoagie/tutorial/set-status`, {
 				method: 'POST',
 				headers: {
 					'X-CSRFToken': csrfToken,

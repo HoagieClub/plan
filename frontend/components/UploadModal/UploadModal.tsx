@@ -62,7 +62,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError }) => {
 		});
 
 		try {
-			const response = await fetch(`/api/hoagie/upload/`, {
+			const response = await fetch(`/api/hoagie/upload`, {
 				method: 'POST',
 				body: formData,
 				headers: {
