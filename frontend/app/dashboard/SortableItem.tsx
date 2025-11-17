@@ -5,7 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 
 import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
-import useSearchStore from '@/store/searchSlice';
+import type { Course } from '@/types';
 import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
@@ -34,6 +34,8 @@ export type SortableItemProps = {
 	onRemove?(): void;
 
 	wrapperStyle({ index }: { index: number }): CSSProperties;
+
+	course: Course;
 };
 
 export function SortableItem({
@@ -46,8 +48,8 @@ export function SortableItem({
 	containerId,
 	getIndex,
 	wrapperStyle,
+	course,
 }: SortableItemProps) {
-	const staticSearchResults = useSearchStore((state) => state.searchResults);
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
@@ -67,39 +69,36 @@ export function SortableItem({
 	// For search results, render DashboardSearchItem with Item as child
 	if (containerId === SEARCH_RESULTS_ID) {
 		const cleanId = id.toString().replace('|disabled', '');
-		const course = staticSearchResults.find((c) => `${c.course_id}|${c.crosslistings}` === cleanId);
-		if (course) {
-			return (
-				<DashboardSearchItem course={course}>
-					<Item
-						disabled={disabled}
-						ref={disabled ? undefined : setNodeRef}
-						value={cleanId}
-						dragging={isDragging}
-						sorting={isSorting}
-						handle={handle && !disabled}
-						handleProps={disabled ? undefined : setActivatorNodeRef}
-						index={index}
-						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
-						style={style({
-							index,
-							value: cleanId,
-							isDragging,
-							isSorting,
-							overIndex: over ? getIndex(over.id) : overIndex,
-							containerId,
-						})}
-						color_primary={getPrimaryColor(cleanId)}
-						color_secondary={getSecondaryColor(cleanId)}
-						transition={transition}
-						transform={transform}
-						fadeIn={mountedWhileDragging}
-						listeners={disabled ? undefined : listeners}
-						onRemove={() => {}}
-					/>
-				</DashboardSearchItem>
-			);
-		}
+		return (
+			<DashboardSearchItem course={course}>
+				<Item
+					disabled={disabled}
+					ref={disabled ? undefined : setNodeRef}
+					value={cleanId}
+					dragging={isDragging}
+					sorting={isSorting}
+					handle={handle && !disabled}
+					handleProps={disabled ? undefined : setActivatorNodeRef}
+					index={index}
+					wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+					style={style({
+						index,
+						value: cleanId,
+						isDragging,
+						isSorting,
+						overIndex: over ? getIndex(over.id) : overIndex,
+						containerId,
+					})}
+					color_primary={getPrimaryColor(cleanId)}
+					color_secondary={getSecondaryColor(cleanId)}
+					transition={transition}
+					transform={transform}
+					fadeIn={mountedWhileDragging}
+					listeners={disabled ? undefined : listeners}
+					onRemove={() => {}}
+				/>
+			</DashboardSearchItem>
+		);
 	}
 
 	return (

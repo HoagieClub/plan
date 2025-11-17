@@ -590,6 +590,7 @@ export function Canvas({
 													onRemove={isIncluded ? () => {} : undefined}
 													getIndex={getIndex}
 													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
+													course={course}
 												/>
 											);
 										})}
