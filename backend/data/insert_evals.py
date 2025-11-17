@@ -1,3 +1,4 @@
+import argparse
 import csv
 import os
 import sys
@@ -13,9 +14,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 django.setup()
 
-from hoagieplan.models import CourseComments, CourseEvaluations
-
-evals = "./evals.csv"
+from hoagieplan.models import Course, CourseComments, CourseEvaluations
 
 
 def map_evaluation_fields(eval_data):
@@ -70,6 +69,11 @@ def count_rows(file_path):
 
 @transaction.atomic
 def import_data(evals):
+    # Clear existing data
+    print("Clearing existing CourseEvaluations and CourseComments...")
+    CourseEvaluations.objects.all().delete()
+    CourseComments.objects.all().delete()
+
     total_rows = count_rows(evals)
     course_eval_batch = []
     comment_batch = []
@@ -80,16 +84,17 @@ def import_data(evals):
 
         for row in tqdm(reader, total=total_rows - 1, desc="Inserting data", unit="row"):
             course_id, term, evals_str, comments = row[:4]
+            course_guid = f"{term}{course_id}"
 
             # Create CourseEvaluations object
             eval_data = parse_evaluations(evals_str)
-            course_eval = CourseEvaluations(course_guid=f"{term}{course_id}", **eval_data)
+            course_eval = CourseEvaluations(course_guid=course_guid, **eval_data)
             course_eval_batch.append(course_eval)
 
             # Create CourseComments objects
             comment_texts = parse_comments(comments)
             for text in comment_texts:
-                comment = CourseComments(course_guid=f"{term}{course_id}", comment=text)
+                comment = CourseComments(course_guid=course_guid, comment=text)
                 comment_batch.append(comment)
 
             # Bulk create in batches
@@ -105,7 +110,17 @@ def import_data(evals):
 
 
 def main():
-    import_data(evals)
+    parser = argparse.ArgumentParser(description="Import course evaluations from a CSV file")
+    parser.add_argument(
+        "filename",
+        nargs="?",
+        default="./evals.csv",
+        help="Path to the evaluations CSV file (default: ./evals.csv)"
+    )
+    args = parser.parse_args()
+
+    print(f"Importing evaluations from: {args.filename}")
+    import_data(args.filename)
 
 
 if __name__ == "__main__":
