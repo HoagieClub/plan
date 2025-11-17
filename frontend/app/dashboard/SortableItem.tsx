@@ -6,7 +6,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
 import useSearchStore from '@/store/searchSlice';
-import { getDepartmentGradient } from '@/utils/departmentColors';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 
@@ -142,26 +142,4 @@ function useMountStatus() {
 	}, []);
 
 	return isMounted;
-}
-
-export function getPrimaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the first color
-	const colors = gradient.split(',');
-	const firstColor = colors[1]?.trim();
-
-	return firstColor;
-}
-
-export function getSecondaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the second color
-	const colors = gradient.split(',');
-	const secondColor = colors[2]?.trim().split(')')[0];
-
-	return secondColor;
 }

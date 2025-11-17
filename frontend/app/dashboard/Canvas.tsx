@@ -3,27 +3,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
 	closestCenter,
-	pointerWithin,
-	rectIntersection,
+	defaultDropAnimationSideEffects,
 	DndContext,
 	DragOverlay,
 	getFirstCollision,
 	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensors,
-	useSensor,
 	MeasuringStrategy,
-	defaultDropAnimationSideEffects,
+	MouseSensor,
+	pointerWithin,
+	rectIntersection,
+	TouchSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 
-import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -33,19 +32,19 @@ import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
-import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
+import { SortableItem } from './SortableItem';
 
 import type {
 	CollisionDetection,
 	DropAnimation,
+	KeyboardCoordinateGetter,
 	Modifiers,
 	UniqueIdentifier,
-	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -79,52 +78,6 @@ if (typeof window === 'undefined') {
 	void (async () => {
 		csrfToken = await fetchCsrfToken();
 	})();
-}
-
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function DroppableContainer({
-	children,
-	columns = 1,
-	disabled,
-	id,
-	items,
-	style,
-	...props
-}: ContainerProps & {
-	disabled?: boolean;
-	id: UniqueIdentifier;
-	items: UniqueIdentifier[];
-	style?: CSSProperties;
-}) {
-	const { active, over, setNodeRef, transition, transform } = useSortable({
-		id,
-		data: {
-			type: 'container',
-			children: items,
-		},
-		animateLayoutChanges,
-	});
-	const isOverContainer = over
-		? (id === over.id && active.data.current.type !== 'container') || items.includes(over.id)
-		: false;
-
-	return (
-		<Container
-			ref={disabled ? undefined : setNodeRef}
-			style={{
-				...style,
-				transition,
-				transform: CSS.Translate.toString(transform),
-			}}
-			hover={isOverContainer}
-			columns={columns}
-			{...props}
-		>
-			{children}
-		</Container>
-	);
 }
 
 const dropAnimation: DropAnimation = {
@@ -275,6 +228,7 @@ export function Canvas({
 	}));
 
 	type Dictionary = {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any; // TODO: Aim to replace 'any' with more specific types.
 	};
 
@@ -315,19 +269,13 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`${process.env.BACKEND}/fetch_courses/`, {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'X-NetId': profile.netId,
-				},
-			});
+			const response = await fetch(`/api/hoagie/fetch_courses/`);
 			const data = await response.json();
 			return data;
 		} catch {
 			return null; // TODO: Handle error appropriately
 		}
-	}, [profile.netId]);
+	}, []);
 
 	// Fetch user courses and check requirements on initial render
 	useEffect(() => {
@@ -555,12 +503,9 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							void fetch(`${process.env.BACKEND}/update_courses/`, {
+							void fetch(`/api/hoagie/update_courses`, {
 								method: 'POST',
-								credentials: 'include',
 								headers: {
-									'Content-Type': 'application/json',
-									'X-NetId': profile.netId,
 									'X-CSRFToken': csrfToken,
 								},
 								body: JSON.stringify({
@@ -711,7 +656,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu profile={profile} csrfToken={csrfToken} />
+							<TabbedMenu csrfToken={csrfToken} />
 						</div>
 					</div>
 				</SortableContext>
@@ -791,13 +736,10 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		void fetch(`${process.env.BACKEND}/update_courses/`, {
+		void fetch(`/api/hoagie/update_courses`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
 				'X-CSRFToken': csrfToken,
-				'X-NetId': profile.netId,
 			},
 			body: JSON.stringify({
 				crosslistings: value.toString().split('|')[1],

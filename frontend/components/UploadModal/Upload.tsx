@@ -47,7 +47,6 @@ export function useUploadModal(profile: Profile, refreshData: () => Promise<void
 			onClose={() => setIsModalOpen(false)}
 			onSuccess={handleUploadSuccess}
 			onError={handleUploadError}
-			profile={profile}
 		/>
 	) : null;
 

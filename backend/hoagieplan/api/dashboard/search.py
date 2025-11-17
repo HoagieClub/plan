@@ -3,7 +3,7 @@ from re import IGNORECASE, compile, split, sub
 
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
 
 from hoagieplan.logger import logger
 from hoagieplan.models import (
@@ -37,7 +37,7 @@ def make_sort_key(dept):
     return sort_key
 
 
-@require_GET
+@api_view(["GET"])
 def search_courses(request):
     """Handle search queries for courses."""
     if request.method != "GET":
@@ -52,8 +52,9 @@ def search_courses(request):
     if not query:
         return JsonResponse({"courses": []})
 
-    init_time = time.time()
-    # process queries
+    return search_courses_helper(query, term, distribution, levels, grading_options)
+
+def search_courses_helper(query, term=None, distribution=None, levels=None, grading_options=None):
     trimmed_query = sub(r"\s", "", query)
     if DEPT_NUM_SUFFIX_REGEX.match(trimmed_query):
         result = split(r"(\d+[a-zA-Z])", string=trimmed_query, maxsplit=1)
@@ -134,7 +135,6 @@ def search_courses(request):
         if courses:
             serialized_courses = CourseSerializer(courses, many=True)
             sorted_data = sorted(serialized_courses.data, key=make_sort_key(dept))
-            # print(f"Search time: {time.time() - init_time}")
             return JsonResponse({"courses": sorted_data})
         return JsonResponse({"courses": []})
     except Exception as e:

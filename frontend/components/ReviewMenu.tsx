@@ -1,7 +1,6 @@
-import { type FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState, type FC } from 'react';
 
-import { Rating, CircularProgress } from '@mui/material';
+import { CircularProgress, Rating } from '@mui/material';
 
 interface ReviewMenuProps {
 	dept: string;
@@ -18,17 +17,9 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 			const fetchReviews = async () => {
 				try {
 					setLoading(true);
-					const url = new URL(`${process.env.BACKEND}/course/comments/`);
-					url.searchParams.append('dept', dept);
-					url.searchParams.append('coursenum', coursenum);
 
-					const response = await fetch(url.toString(), {
-						method: 'GET',
-						credentials: 'include',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					});
+					const params = new URLSearchParams({ dept, coursenum });
+					const response = await fetch(`/api/hoagie/course/comments/?${params}`);
 
 					const data = await response.json();
 					if (data && data.reviews) {

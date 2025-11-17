@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import type { Profile, CalendarEvent as OldCalendarEvent } from '@/types';
+import type { CalendarEvent as OldCalendarEvent, Profile } from '@/types';
 
 import { HttpRequestType } from './common';
 
-const CALENDARS_URL = `${process.env.BACKEND}/calendars/`;
-const CALENDAR_EVENTS_URL = `${process.env.BACKEND}/calendar_events/`;
+const CALENDARS_URL = `/api/hoagie/calendars/`;
+const CALENDAR_EVENTS_URL = `/api/hoagie/calendar_events/`;
 
 const CalendarEventSchema = z.object({
 	id: z.number(),
@@ -68,7 +68,7 @@ export class CalendarService {
 	public async getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
 		try {
 			const url = this.buildCalendarsUrl(term);
-			const response = await fetch(url, this.getGetRequestDetails());
+			const response = await fetch(url);
 
 			if (!response.ok) {
 				return null;
@@ -98,7 +98,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
-				...this.getPutRequestDetails(),
+				method: HttpRequestType.PUT,
 				body: JSON.stringify({ calendar_name: calendarName }),
 			});
 
@@ -127,7 +127,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
-				...this.getPostRequestDetails(),
+				method: HttpRequestType.POST,
 				body: JSON.stringify({
 					calendar_name: calendarName,
 					new_calendar_name: newCalendarName,
@@ -155,7 +155,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarsUrl(term);
 			const response = await fetch(url, {
-				...this.getDeleteRequestDetails(),
+				method: HttpRequestType.DELETE,
 				body: JSON.stringify({ calendar_name: calendarName }),
 			});
 
@@ -179,7 +179,7 @@ export class CalendarService {
 	): Promise<CalendarEvent[] | null> {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term);
-			const response = await fetch(url, this.getGetRequestDetails());
+			const response = await fetch(url);
 
 			if (!response.ok) {
 				return null;
@@ -242,7 +242,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term, { action: action });
 			const response = await fetch(url, {
-				...this.getPostRequestDetails(),
+				method: HttpRequestType.POST,
 				body: JSON.stringify(payload),
 			});
 
@@ -268,7 +268,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term);
 			const response = await fetch(url, {
-				...this.getDeleteRequestDetails(),
+				method: HttpRequestType.DELETE,
 				body: JSON.stringify({ guid: guid }),
 			});
 
@@ -293,7 +293,7 @@ export class CalendarService {
 		try {
 			const url = this.buildCalendarEventsUrl(calendarName, term);
 			const response = await fetch(url, {
-				...this.getPutRequestDetails(),
+				method: HttpRequestType.PUT,
 				body: JSON.stringify({ guid: guid, classSection: classSection }),
 			});
 
@@ -335,42 +335,5 @@ export class CalendarService {
 		}
 
 		return baseUrl;
-	}
-
-	private getRequestDetails(): RequestInit {
-		return {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			credentials: 'include',
-		};
-	}
-
-	private getGetRequestDetails(): RequestInit {
-		return {
-			method: HttpRequestType.GET,
-			...this.getRequestDetails(),
-		};
-	}
-
-	private getPostRequestDetails(): RequestInit {
-		return {
-			method: HttpRequestType.POST,
-			...this.getRequestDetails(),
-		};
-	}
-
-	private getPutRequestDetails(): RequestInit {
-		return {
-			method: HttpRequestType.PUT,
-			...this.getRequestDetails(),
-		};
-	}
-
-	private getDeleteRequestDetails(): RequestInit {
-		return {
-			method: HttpRequestType.DELETE,
-			...this.getRequestDetails(),
-		};
 	}
 }

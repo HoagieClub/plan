@@ -1,5 +1,4 @@
-import { type FC } from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 
 import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { createPortal } from 'react-dom';
@@ -9,10 +8,10 @@ import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
-import { getAuditTag, getAuditColor } from '@/utils/auditTag';
+import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
 import { getDistributionColors } from '@/utils/distributionColors';
-import { getPdfTag, getPdfColor } from '@/utils/pdfTag';
+import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -27,6 +26,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const [courseDetails, setCourseDetails] = useState<{
 		// TODO: Address this typing eventually.
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
 	} | null>(null);
 
@@ -46,16 +46,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	useEffect(() => {
 		if (showPopup && value) {
-			const url = new URL(`${process.env.BACKEND}/course/details/`);
-			url.searchParams.append('crosslistings', value);
-
-			void fetch(url.toString(), {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			})
+			const params = new URLSearchParams({ crosslistings: value });
+			void fetch(`/api/hoagie/course/details/?${params}`)
 				.then((response) => response.json())
 				.then((data) => {
 					setCourseDetails(data);

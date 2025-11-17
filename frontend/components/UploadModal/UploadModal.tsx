@@ -1,9 +1,11 @@
 /* eslint-disable no-undef */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { Button as JoyButton } from '@mui/joy';
 import { createPortal } from 'react-dom';
+
+import { fetchCsrfToken } from '@/utils/csrf';
 
 import { LoadingComponent } from '../LoadingComponent';
 import { TutorialModal } from '../Modal';
@@ -11,20 +13,25 @@ import { TutorialModal } from '../Modal';
 // Changed name
 import styles from './UploadModal.module.css';
 
-import type { Profile } from '../../types';
-
 interface Upload {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => Promise<void>;
 	onError: (error: string) => void;
-	profile: Profile;
 }
 
-const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile }) => {
+const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError }) => {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+
+	const [csrfToken, setCsrfToken] = useState('');
+	useEffect(() => {
+		void (async () => {
+			const token = await fetchCsrfToken();
+			setCsrfToken(token);
+		})();
+	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -55,12 +62,11 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 		});
 
 		try {
-			const response = await fetch(`${process.env.BACKEND}/upload/`, {
+			const response = await fetch(`/api/hoagie/upload`, {
 				method: 'POST',
 				body: formData,
 				headers: {
-					Accept: 'application/json',
-					'X-NetId': profile.netId,
+					'X-CSRFToken': csrfToken,
 				},
 			});
 
@@ -120,7 +126,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 	const modalContent = (
 		<TutorialModal>
 			<div className={styles.modal}>
-				<div className={styles.header}>Upload Transcript</div>
+				<div className={styles.header}>Upload Unofficial Transcript</div>
 
 				<div className={styles.content}>
 					<div
@@ -133,7 +139,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError, profile
 							<div style={{ display: 'flex', justifyContent: 'center' }}>
 								<CloudArrowUpIcon className={styles.uploadIcon} />
 							</div>
-							<p>Drag and drop your transcript PDF here</p>
+							<p>Drag and drop your unofficial transcript PDF here</p>
 							<span>or</span>
 						</div>
 						<label className={styles.fileInput}>
