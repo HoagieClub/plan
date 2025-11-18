@@ -24,8 +24,7 @@ const CalendarUI: FC = () => {
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
-	const calendarService = new CalendarService(userProfile);
-
+	const calendarService = useMemo(() => new CalendarService(userProfile), [userProfile]);
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
 		setTermFilter(currentSemester);
@@ -45,7 +44,9 @@ const CalendarUI: FC = () => {
 		const createUserCalendarData = async (sem: number) => {
 			try {
 				// check if calendars user has calendars already
-				if (calendarService.getCalendars(sem) || calendarService.hasCalendarForTermInDB(sem)) {
+				const existingCalendars = await calendarService.getCalendars(sem);
+				const existingDBCalendars = await calendarService.hasCalendarForTermInDB(sem);
+				if (existingCalendars || existingDBCalendars) {
 					return;
 				}
 
@@ -56,22 +57,15 @@ const CalendarUI: FC = () => {
 				console.error('Error creating calendar:', error);
 			}
 		};
-		const currentSemester = parseInt(Object.values(terms)[0]);
-		void createUserCalendarData(currentSemester);
-	}, [calendarService]);
+		for (const sem of semesterList) {
+			void createUserCalendarData(parseInt(semesterList[sem]));
+		}
+	}, [calendarService, semesterList]);
 
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;
 	const displayedSemesters = semesterList.slice(startIndex, endIndex);
 
-	// const handleCreate = async () => {
-	// 	try {
-	// 		const data = await calendarService.createCalendar('New Calendar', 1262);
-	// 		console.log('Data:', data);
-	// 	} catch (error) {
-	// 		console.error('Error creating calendars:', error);
-	// 	}
-	// };
 	return (
 		<>
 			<div className='flex justify-center p-4'>
