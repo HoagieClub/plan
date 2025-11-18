@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
 
 from hoagieplan.models import (
     Course,
@@ -132,7 +132,7 @@ def get_course_info(crosslistings):
     return course_dict
 
 
-@require_GET
+@api_view(["GET"])
 def course_details(request):
     """API endpoint for course details."""
     crosslistings = request.GET.get("crosslistings")
@@ -146,7 +146,7 @@ def course_details(request):
     return JsonResponse(course_info)
 
 
-@require_GET
+@api_view(["GET"])
 def course_comments_view(request):
     """API endpoint for course comments."""
     dept = request.GET.get("dept")
