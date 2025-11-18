@@ -5,11 +5,11 @@ import { useEffect, useState, useMemo } from 'react';
 
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
-import { CalendarService } from '@/api/calendarService';
 import { Calendar } from '@/app/calendar/Calendar';
 import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
 import { SkeletonApp } from '@/components/SkeletonApp';
+import { CalendarService } from '@/services/calendarService';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import { terms } from '@/utils/terms';
