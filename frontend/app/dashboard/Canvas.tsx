@@ -40,6 +40,7 @@ import { coordinateGetter as multipleContainersCoordinateGetter } from './multip
 import { SortableItem } from './SortableItem';
 import { VirtualRow } from './VirtualRow';
 
+import type { CustomRowProps } from './VirtualRow';
 import type {
 	CollisionDetection,
 	DropAnimation,
@@ -309,7 +310,7 @@ export function Canvas({
 		defaultRowHeight: 120,
 	});
 
-	const rowRendererProps = useMemo(
+	const rowRendererProps: CustomRowProps = useMemo(
 		() => ({
 			staticSearchResults,
 			enabledCourseIds,
@@ -588,7 +589,7 @@ export function Canvas({
 										items={items[SEARCH_RESULTS_ID]}
 										strategy={staticRectSortingStrategy}
 									>
-										<List
+										<List<CustomRowProps>
 											/* match the searchGridHeight since it is expressed with vh units */
 											defaultHeight={parseInt(searchGridHeight) * (window.innerHeight / 100)}
 											rowCount={staticSearchResults.length}
