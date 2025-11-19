@@ -62,7 +62,7 @@ def get_course_comments(dept, num):
         Course.objects
         .filter(department=department, catalog_number=str(num))
         .filter(quality_of_course__isnull=False) # Extract only courses with non-null rating
-        .order_by("course_id", "-guid")[0]
+        .order_by("course_id", "-guid").first()
     )
 
     if evaluation and evaluation.quality_of_course:
