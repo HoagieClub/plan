@@ -19,18 +19,6 @@ export type SortableItemProps = {
 	handle: boolean;
 	disabled?: boolean;
 
-	style(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay?: boolean;
-	}): CSSProperties;
-
-	getIndex(id: UniqueIdentifier): number;
-
 	onRemove?(): void;
 
 	wrapperStyle({ index }: { index: number }): CSSProperties;
@@ -44,9 +32,7 @@ export function SortableItem({
 	index,
 	handle,
 	onRemove,
-	style,
 	containerId,
-	getIndex,
 	wrapperStyle,
 	course,
 }: SortableItemProps) {
@@ -56,8 +42,6 @@ export function SortableItem({
 		listeners,
 		isDragging,
 		isSorting,
-		over,
-		overIndex,
 		transform,
 		transition,
 	} = useSortable({
@@ -81,14 +65,6 @@ export function SortableItem({
 					handleProps={disabled ? undefined : setActivatorNodeRef}
 					index={index}
 					wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
-					style={style({
-						index,
-						value: cleanId,
-						isDragging,
-						isSorting,
-						overIndex: over ? getIndex(over.id) : overIndex,
-						containerId,
-					})}
 					color_primary={getPrimaryColor(cleanId)}
 					color_secondary={getSecondaryColor(cleanId)}
 					transition={transition}
@@ -112,14 +88,6 @@ export function SortableItem({
 			handleProps={handle ? setActivatorNodeRef : undefined}
 			index={index}
 			wrapperStyle={wrapperStyle({ index })}
-			style={style({
-				index,
-				value: id,
-				isDragging,
-				isSorting,
-				overIndex: over ? getIndex(over.id) : overIndex,
-				containerId,
-			})}
 			color_primary={getPrimaryColor(id)}
 			color_secondary={getSecondaryColor(id)}
 			transition={transition}

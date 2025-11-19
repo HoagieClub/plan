@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
 	closestCenter,
@@ -20,6 +20,7 @@ import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
+import { List, useDynamicRowHeight } from 'react-window';
 
 import containerStyles from '@/components/Container/Container.module.css';
 import { DroppableContainer } from '@/components/DashboardDroppableContainer';
@@ -37,6 +38,7 @@ import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 import { SortableItem } from './SortableItem';
+import { VirtualRow } from './VirtualRow';
 
 import type {
 	CollisionDetection,
@@ -104,16 +106,6 @@ type Props = {
 
 	coordinateGetter?: KeyboardCoordinateGetter;
 
-	getItemStyles?(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay: boolean;
-	}): CSSProperties;
-
 	itemCount?: number;
 	items?: Items;
 	handle?: boolean;
@@ -135,7 +127,6 @@ export function Canvas({
 	handle = true,
 	containerStyle,
 	coordinateGetter = multipleContainersCoordinateGetter,
-	getItemStyles = () => ({}),
 	minimal = false,
 	scrollable,
 }: Props) {
@@ -164,15 +155,21 @@ export function Canvas({
 	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
 
 	// This limits the width of the course cards
-	const wrapperStyle = () => ({
-		width: courseWidth,
-	});
-	const searchWrapperStyle = () => ({
-		width: '100%',
-		overflow: 'hidden', // Ensure overflow is hidden
-		whiteSpace: 'nowrap', // Keep the text on a single line
-		textOverflow: 'ellipsis', // Add ellipsis to text overflow
-	});
+	const wrapperStyle = useCallback(
+		() => ({
+			width: courseWidth,
+		}),
+		[]
+	);
+	const searchWrapperStyle = useCallback(
+		() => ({
+			width: '100%',
+			overflow: 'hidden', // Ensure overflow is hidden
+			whiteSpace: 'nowrap', // Keep the text on a single line
+			textOverflow: 'ellipsis', // Add ellipsis to text overflow
+		}),
+		[]
+	);
 
 	// The width of the semester bins
 	const semesterStyle = {
@@ -303,6 +300,34 @@ export function Canvas({
 		setSearchResults(staticSearchResults);
 	}, [staticSearchResults]);
 
+	// Memoize the enabled course IDs set for fast lookup
+	const enabledCourseIds = useMemo(() => {
+		return new Set(items[SEARCH_RESULTS_ID]);
+	}, [items]);
+
+	const dynamicRowHeight = useDynamicRowHeight({
+		defaultRowHeight: 120,
+	});
+
+	const rowRendererProps = useMemo(
+		() => ({
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		}),
+		[
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		]
+	);
+
 	useEffect(() => {
 		setItems((prevItems) => {
 			const userCurrentCourses: Set<string> = new Set<string>();
@@ -404,18 +429,6 @@ export function Canvas({
 			return id;
 		}
 		return Object.keys(items).find((key) => items[key].includes(id));
-	};
-
-	const getIndex = (id: UniqueIdentifier) => {
-		const container = findContainer(id);
-
-		if (!container) {
-			return -1;
-		}
-
-		const index = items[container].indexOf(id);
-
-		return index;
 	};
 
 	const onDragCancel = () => {
@@ -575,25 +588,15 @@ export function Canvas({
 										items={items[SEARCH_RESULTS_ID]}
 										strategy={staticRectSortingStrategy}
 									>
-										{staticSearchResults.map((course, index) => {
-											const courseId = `${course.course_id}|${course.crosslistings}`;
-											const isIncluded = items[SEARCH_RESULTS_ID].includes(courseId);
-											return (
-												<SortableItem
-													disabled={!isIncluded}
-													key={isIncluded ? courseId : index}
-													id={isIncluded ? courseId : courseId + '|disabled'}
-													index={index}
-													containerId={SEARCH_RESULTS_ID}
-													handle={handle}
-													style={getItemStyles}
-													onRemove={isIncluded ? () => {} : undefined}
-													getIndex={getIndex}
-													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
-													course={course}
-												/>
-											);
-										})}
+										<List
+											/* match the searchGridHeight since it is expressed with vh units */
+											defaultHeight={parseInt(searchGridHeight) * (window.innerHeight / 100)}
+											rowCount={staticSearchResults.length}
+											rowHeight={dynamicRowHeight}
+											overscanCount={5}
+											rowComponent={VirtualRow}
+											rowProps={rowRendererProps}
+										/>
 									</SortableContext>
 								</DroppableContainer>
 							</div>
@@ -635,11 +638,9 @@ export function Canvas({
 															id={course}
 															index={index}
 															handle={handle}
-															style={getItemStyles}
 															wrapperStyle={wrapperStyle}
 															onRemove={() => handleRemove(course, containerId)}
 															containerId={containerId}
-															getIndex={getIndex}
 														/>
 													))}
 											</SortableContext>
@@ -695,15 +696,6 @@ export function Canvas({
 			<Item
 				value={id}
 				handle={handle}
-				style={getItemStyles({
-					containerId: findContainer(id) as UniqueIdentifier,
-					overIndex: -1,
-					index: getIndex(id),
-					value: id,
-					isSorting: true,
-					isDragging: true,
-					isDragOverlay: true,
-				})}
 				color_primary={getPrimaryColor(id)}
 				color_secondary={getSecondaryColor(id)}
 				wrapperStyle={dynamicWrapperStyle}
