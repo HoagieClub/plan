@@ -35,7 +35,7 @@ export type SortableItemProps = {
 
 	wrapperStyle({ index }: { index: number }): CSSProperties;
 
-	course: Course;
+	course?: Course;
 };
 
 export function SortableItem({
