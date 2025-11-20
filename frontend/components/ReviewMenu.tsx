@@ -67,7 +67,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 							<strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
 						</td>
 						<td width='120px' />
-						<td>{rating}</td>
+						<td>{rating.toFixed(2)}</td>
 						<td>
 							{' '}
 							<Rating name='course rating' value={rating} precision={0.1} readOnly />{' '}

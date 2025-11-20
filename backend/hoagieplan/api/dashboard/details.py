@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from hoagieplan.models import (
     Course,
     CourseComments,
-    CourseEvaluations,
     Department,
     Section,
 )
@@ -59,7 +58,12 @@ def get_course_comments(dept, num):
     result = {"reviews": cleaned_comments}
 
     # Try to get course evaluation
-    evaluation = CourseEvaluations.objects.filter(course_guid__endswith=course_guid_suffix).first()
+    evaluation = (
+        Course.objects
+        .filter(department=department, catalog_number=str(num))
+        .filter(quality_of_course__isnull=False) # Extract only courses with non-null rating
+        .order_by("course_id", "-guid").first()
+    )
 
     if evaluation and evaluation.quality_of_course:
         result["rating"] = evaluation.quality_of_course
