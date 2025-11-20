@@ -132,7 +132,7 @@ def fetch_data(subject, term, req_lib):
     print(f"Fetched {len(course_ids)} course IDs from {subject}.")
 
     # Parallel fetching of course details
-    with ThreadPoolExecutor(max_workers=16) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = [executor.submit(fetch_course_detail, course_id, term, req_lib) for course_id in course_ids]
         course_details = {course_id: detail for course_id, detail in (future.result() for future in futures)}
 
@@ -169,10 +169,14 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
             classes_data.append({**class_data, **meeting_data})
 
     # Process instructor-dependent data
-    for instructor in course.get("instructors", []):
-        instructor_data = extract_instructor_data(instructor)
-
-        # For each class and meeting combination, add instructor data and write row
+    # If no instructors, write rows with empty instructor data
+    if not course.instructors:
+        instructor_data = {
+            "Instructor EmplID": "",
+            "Instructor First Name": "",
+            "Instructor Last Name": "",
+            "Instructor Full Name": "",
+        }
         for class_meeting_data in classes_data:
             row_data = {
                 **common_data,
@@ -182,6 +186,20 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
                 **course_details_data,
             }
             writer.writerow(row_data)
+    else:
+        for instructor in course.instructors:
+            instructor_data = extract_instructor_data(instructor)
+
+            # For each class and meeting combination, add instructor data and write row
+            for class_meeting_data in classes_data:
+                row_data = {
+                    **common_data,
+                    **instructor_data,
+                    **crosslisting_data,
+                    **class_meeting_data,  # This now includes both class and meeting data
+                    **course_details_data,
+                }
+                writer.writerow(row_data)
 
 
 # --------------------------------------------------------------------------------------
