@@ -170,7 +170,8 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
 
     # Process instructor-dependent data
     # If no instructors, write rows with empty instructor data
-    if not course.instructors:
+    instructors = course.get("instructors", [])
+    if not instructors:
         instructor_data = {
             "Instructor EmplID": "",
             "Instructor First Name": "",
@@ -187,7 +188,7 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
             }
             writer.writerow(row_data)
     else:
-        for instructor in course.instructors:
+        for instructor in instructors:
             instructor_data = extract_instructor_data(instructor)
 
             # For each class and meeting combination, add instructor data and write row
