@@ -379,8 +379,9 @@ def push_certificates(certificates_path):
 def clear_user_requirements():
     logging.info("Clearing CustomUser_requirements table...")
     with transaction.atomic():
-        for user_inst in CustomUser.objects.all():
-            user_inst.requirements.clear()
+        CustomUser.requirements.through.objects.all().delete()
+        # for user_inst in CustomUser.objects.all():
+        #     user_inst.requirements.clear()
     logging.info("CustomUser_requirements table cleared!")
 
 
@@ -392,9 +393,10 @@ def clear_user_req_dict():
 
 def clear_requirement_ids():
     logging.info("Clearing requirement_id column in UserCourses...")
-    for user_course in UserCourses.objects.all():
-        user_course.requirements.clear()
-    logging.info("requirement_id column cleared!")
+    # for user_course in UserCourses.objects.all():
+    #     user_course.requirements.clear()
+    UserCourses.requirements.through.objects.all().delete()
+    logging.info("UserCourses_requirements table cleared!")
 
 
 def clear_requirements():
@@ -410,10 +412,10 @@ if __name__ == "__main__":
         clear_user_requirements()
         clear_user_req_dict()
         clear_requirement_ids()
-        clear_requirements()
-        push_degrees(Path("../degrees").resolve())
-        push_majors(Path("../majors").resolve())
-        push_certificates(Path("../certificates").resolve())
-        push_minors(Path("../minors").resolve())
+        # clear_requirements()
+        # push_degrees(Path("../degrees").resolve())
+        # push_majors(Path("../majors").resolve())
+        # push_certificates(Path("../certificates").resolve())
+        # push_minors(Path("../minors").resolve())
     end_time = time.time()
     print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
