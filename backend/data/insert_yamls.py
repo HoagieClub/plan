@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import re
+import time
 from datetime import date
 from pathlib import Path
 
@@ -404,6 +405,7 @@ def clear_requirements():
 
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == "__main__":
+    start_time = time.time()
     with transaction.atomic():
         clear_user_requirements()
         clear_user_req_dict()
@@ -413,3 +415,5 @@ if __name__ == "__main__":
         push_majors(Path("../majors").resolve())
         push_certificates(Path("../certificates").resolve())
         push_minors(Path("../minors").resolve())
+    end_time = time.time()
+    print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
