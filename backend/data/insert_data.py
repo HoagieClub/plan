@@ -324,7 +324,7 @@ def insert_sections(rows):
 
     # Load existing sections to facilitate updates and prevent duplicates
     existing_sections = {
-        (section.course.guid, section.class_number, section.instructor.emplid): section
+        (section.course.guid, section.class_number): section
         for section in Section.objects.select_related("course", "term", "instructor").all()
     }
     existing_instructors = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
@@ -344,7 +344,7 @@ def insert_sections(rows):
         if not term or not course:
             continue
 
-        section_key = (course_guid, class_number, instructor_emplid)
+        section_key = (course_guid, class_number)
         section_data = {
             "class_number": class_number,
             "class_type": row.get("Class Type", ""),
@@ -396,7 +396,7 @@ def insert_class_meetings(rows):
     logger.info("Starting ClassMeeting insertions and updates...")
 
     section_cache = {
-        (section.course.guid, section.class_number, section.instructor.emplid): section
+        (section.course.guid, section.class_number): section
         for section in Section.objects.select_related("course", "term", "instructor").all()
     }
 
@@ -416,8 +416,7 @@ def insert_class_meetings(rows):
         term_code = int(course_guid[:4])
         class_number = int(row["Class Number"].strip())
         meeting_number = int(row["Meeting Number"].strip())
-        instructor_emplid = row.get("Instructor EmplID", "").strip()
-        section_key = (course_guid, class_number, instructor_emplid)
+        section_key = (course_guid, class_number)
         section = section_cache.get(section_key)
 
         if section is None:
@@ -579,36 +578,36 @@ def insert_class_year_enrollments(rows):
 # -------------------------------------------------------------------------------------#
 
 
-def get_semesters_from_args():
-    parser = argparse.ArgumentParser(description="Fetch academic course data for specified semesters.")
+def get_csv_paths_from_args():
+    parser = argparse.ArgumentParser(description="Insert academic course data from CSV files.")
     parser.add_argument(
-        "semesters",
+        "csv_paths",
         nargs="*",
-        help="Semesters to generate CSVs for, e.g., f2019 s2022.",
+        help="Paths to CSV files to insert, e.g., s2026.csv ",
     )
     args = parser.parse_args()
 
-    if not args.semesters:
-        print("No semesters provided as arguments. Please enter the semesters separated by spaces:")
-        args.semesters = input().strip().split(" ")
+    if not args.csv_paths:
+        print("No CSV paths provided as arguments. Please enter the CSV file paths separated by spaces:")
+        args.csv_paths = input().strip().split(" ")
 
-    return args.semesters
+    return args.csv_paths
 
 
 # -------------------------------------------------------------------------------------#
 
 
-def insert_course_data(semester):
-    # NOTE: It's recommended to run the script on one semester at a time.
+def insert_course_data(csv_path):
+    # NOTE: It's recommended to run the script on one file at a time.
     # Strange database race-like conditions are observed if you try to,
-    # for example, input all semesters as an argument (e.g. not all data get inserted)
-    # It has also been observed that all-semesters-as-args takes about 2m28s
-    # whereas individual semesters takes about ~7s x 9 semesters = 1 minute or so.
+    # for example, input all files as an argument (e.g. not all data get inserted)
+    # It has also been observed that all-files-as-args takes about 2m28s
+    # whereas individual files takes about ~7s x 9 files = 1 minute or so.
 
-    data = Path(f"{semester}.csv")
+    data = Path(csv_path)
 
     if not data.exists():
-        print(f"The file {data} does not exist in the data directory. Skipping.")
+        print(f"The file {data} does not exist. Skipping.")
         return
 
     with data.open("r") as file:
@@ -646,12 +645,12 @@ def insert_course_data(semester):
 
 # -------------------------------------------------------------------------------------#
 
-
+# Usage: python insert_data.py ../s2026.csv
 def main():
     start_time = datetime.now()
-    semesters = get_semesters_from_args()
-    for semester in semesters:
-        insert_course_data(semester)
+    csv_paths = get_csv_paths_from_args()
+    for csv_path in csv_paths:
+        insert_course_data(csv_path)
     end_time = datetime.now()
 
     print(f"Finished in {_format_duration(start_time, end_time)}.")
