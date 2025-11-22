@@ -412,10 +412,14 @@ def insert_class_meetings(rows):
     updated_meetings = []
 
     for row in tqdm(rows, desc="Processing Class Meetings..."):
-        course_guid = row["Course GUID"].strip()
-        term_code = int(course_guid[:4])
-        class_number = int(row["Class Number"].strip())
-        meeting_number = int(row["Meeting Number"].strip())
+        try:
+            course_guid = row["Course GUID"].strip()
+            term_code = int(course_guid[:4])
+            class_number = int(row["Class Number"].strip())
+            meeting_number = int(row["Meeting Number"].strip())
+        except (ValueError, KeyError) as e:
+            logger.warning(f"Skipping row due to {e}: {row}")
+            continue
         section_key = (course_guid, class_number)
         section = section_cache.get(section_key)
 
