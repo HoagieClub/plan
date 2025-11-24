@@ -217,15 +217,12 @@ export function useAlmostCompletedMinorsModal() {
 	};
 
 	const almostCompletedModal = isOpen ? (
-		<Modal className='w-11/12 max-w-6xl p-6'>
+		<Modal className='w-11/12 max-w-6xl p-6' onClose={() => setIsOpen(false)}>
 			<div className='flex flex-row gap-6' style={{ height: '640px' }}>
 				{/* Left column: list of suggested minors/certificates */}
 				<div className='flex w-1/2 flex-col pr-4'>
 					<div className='mb-4'>
 						<h2 className='text-2xl font-bold'>Minors and Certificates</h2>
-						<div className='text-sm text-gray-600'>
-							The following are your suggested minors and certificates.
-						</div>
 					</div>
 
 					<div className='mb-4'>

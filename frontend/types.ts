@@ -65,6 +65,7 @@ export type ProfileProps = {
 export type ModalProps = {
 	children?: ReactNode;
 	className?: string;
+	onClose?: () => void;
 	setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
 	setTermFilter?: (term: string) => void;
 	setDistributionFilters?: (distribution: string[]) => void;
