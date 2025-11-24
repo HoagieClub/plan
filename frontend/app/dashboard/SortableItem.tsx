@@ -5,8 +5,8 @@ import { useSortable } from '@dnd-kit/sortable';
 
 import { DashboardSearchItem } from '@/components/DashboardSearchItem';
 import { Item } from '@/components/Item';
-import useSearchStore from '@/store/searchSlice';
-import { getDepartmentGradient } from '@/utils/departmentColors';
+import type { Course } from '@/types';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 
@@ -19,21 +19,11 @@ export type SortableItemProps = {
 	handle: boolean;
 	disabled?: boolean;
 
-	style(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay?: boolean;
-	}): CSSProperties;
-
-	getIndex(id: UniqueIdentifier): number;
-
 	onRemove?(): void;
 
 	wrapperStyle({ index }: { index: number }): CSSProperties;
+
+	course?: Course;
 };
 
 export function SortableItem({
@@ -42,20 +32,16 @@ export function SortableItem({
 	index,
 	handle,
 	onRemove,
-	style,
 	containerId,
-	getIndex,
 	wrapperStyle,
+	course,
 }: SortableItemProps) {
-	const staticSearchResults = useSearchStore((state) => state.searchResults);
 	const {
 		setNodeRef,
 		setActivatorNodeRef,
 		listeners,
 		isDragging,
 		isSorting,
-		over,
-		overIndex,
 		transform,
 		transition,
 	} = useSortable({
@@ -67,39 +53,28 @@ export function SortableItem({
 	// For search results, render DashboardSearchItem with Item as child
 	if (containerId === SEARCH_RESULTS_ID) {
 		const cleanId = id.toString().replace('|disabled', '');
-		const course = staticSearchResults.find((c) => `${c.course_id}|${c.crosslistings}` === cleanId);
-		if (course) {
-			return (
-				<DashboardSearchItem course={course}>
-					<Item
-						disabled={disabled}
-						ref={disabled ? undefined : setNodeRef}
-						value={cleanId}
-						dragging={isDragging}
-						sorting={isSorting}
-						handle={handle && !disabled}
-						handleProps={disabled ? undefined : setActivatorNodeRef}
-						index={index}
-						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
-						style={style({
-							index,
-							value: cleanId,
-							isDragging,
-							isSorting,
-							overIndex: over ? getIndex(over.id) : overIndex,
-							containerId,
-						})}
-						color_primary={getPrimaryColor(cleanId)}
-						color_secondary={getSecondaryColor(cleanId)}
-						transition={transition}
-						transform={transform}
-						fadeIn={mountedWhileDragging}
-						listeners={disabled ? undefined : listeners}
-						onRemove={() => {}}
-					/>
-				</DashboardSearchItem>
-			);
-		}
+		return (
+			<DashboardSearchItem course={course}>
+				<Item
+					disabled={disabled}
+					ref={disabled ? undefined : setNodeRef}
+					value={cleanId}
+					dragging={isDragging}
+					sorting={isSorting}
+					handle={handle && !disabled}
+					handleProps={disabled ? undefined : setActivatorNodeRef}
+					index={index}
+					wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+					color_primary={getPrimaryColor(cleanId)}
+					color_secondary={getSecondaryColor(cleanId)}
+					transition={transition}
+					transform={transform}
+					fadeIn={mountedWhileDragging}
+					listeners={disabled ? undefined : listeners}
+					onRemove={() => {}}
+				/>
+			</DashboardSearchItem>
+		);
 	}
 
 	return (
@@ -113,14 +88,6 @@ export function SortableItem({
 			handleProps={handle ? setActivatorNodeRef : undefined}
 			index={index}
 			wrapperStyle={wrapperStyle({ index })}
-			style={style({
-				index,
-				value: id,
-				isDragging,
-				isSorting,
-				overIndex: over ? getIndex(over.id) : overIndex,
-				containerId,
-			})}
 			color_primary={getPrimaryColor(id)}
 			color_secondary={getSecondaryColor(id)}
 			transition={transition}
@@ -142,26 +109,4 @@ function useMountStatus() {
 	}, []);
 
 	return isMounted;
-}
-
-export function getPrimaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the first color
-	const colors = gradient.split(',');
-	const firstColor = colors[1]?.trim();
-
-	return firstColor;
-}
-
-export function getSecondaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the second color
-	const colors = gradient.split(',');
-	const secondColor = colors[2]?.trim().split(')')[0];
-
-	return secondColor;
 }

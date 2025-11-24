@@ -64,7 +64,6 @@ urlpatterns = [
         name="fetch_calendar_classes",
     ),
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
-    path("upload/", upload.upload_file, name="upload_file"),
     path("calendars/<str:net_id>/<int:term>", CalendarConfigurationView.as_view(), name="calendars"),
     path(
         "calendar_events/<str:net_id>/<str:calendar_name>/<int:term>",

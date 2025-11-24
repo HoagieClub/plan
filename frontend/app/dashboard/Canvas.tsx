@@ -1,29 +1,29 @@
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
 	closestCenter,
-	pointerWithin,
-	rectIntersection,
+	defaultDropAnimationSideEffects,
 	DndContext,
 	DragOverlay,
 	getFirstCollision,
 	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensors,
-	useSensor,
 	MeasuringStrategy,
-	defaultDropAnimationSideEffects,
+	MouseSensor,
+	pointerWithin,
+	rectIntersection,
+	TouchSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableContext } from '@dnd-kit/sortable';
 import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
+import { List, useDynamicRowHeight } from 'react-window';
 
-import { Container, type ContainerProps } from '@/components/Container';
 import containerStyles from '@/components/Container/Container.module.css';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -33,19 +33,21 @@ import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
-import { SortableItem, getPrimaryColor, getSecondaryColor } from './SortableItem';
+import { SortableItem } from './SortableItem';
+import { VirtualRow } from './VirtualRow';
 
+import type { CustomRowProps } from './VirtualRow';
 import type {
 	CollisionDetection,
 	DropAnimation,
+	KeyboardCoordinateGetter,
 	Modifiers,
 	UniqueIdentifier,
-	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -81,52 +83,6 @@ if (typeof window === 'undefined') {
 	})();
 }
 
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function DroppableContainer({
-	children,
-	columns = 1,
-	disabled,
-	id,
-	items,
-	style,
-	...props
-}: ContainerProps & {
-	disabled?: boolean;
-	id: UniqueIdentifier;
-	items: UniqueIdentifier[];
-	style?: CSSProperties;
-}) {
-	const { active, over, setNodeRef, transition, transform } = useSortable({
-		id,
-		data: {
-			type: 'container',
-			children: items,
-		},
-		animateLayoutChanges,
-	});
-	const isOverContainer = over
-		? (id === over.id && active.data.current.type !== 'container') || items.includes(over.id)
-		: false;
-
-	return (
-		<Container
-			ref={disabled ? undefined : setNodeRef}
-			style={{
-				...style,
-				transition,
-				transform: CSS.Translate.toString(transform),
-			}}
-			hover={isOverContainer}
-			columns={columns}
-			{...props}
-		>
-			{children}
-		</Container>
-	);
-}
-
 const dropAnimation: DropAnimation = {
 	duration: 200,
 	sideEffects: defaultDropAnimationSideEffects({
@@ -151,16 +107,6 @@ type Props = {
 
 	coordinateGetter?: KeyboardCoordinateGetter;
 
-	getItemStyles?(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay: boolean;
-	}): CSSProperties;
-
 	itemCount?: number;
 	items?: Items;
 	handle?: boolean;
@@ -182,7 +128,6 @@ export function Canvas({
 	handle = true,
 	containerStyle,
 	coordinateGetter = multipleContainersCoordinateGetter,
-	getItemStyles = () => ({}),
 	minimal = false,
 	scrollable,
 }: Props) {
@@ -211,15 +156,21 @@ export function Canvas({
 	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
 
 	// This limits the width of the course cards
-	const wrapperStyle = () => ({
-		width: courseWidth,
-	});
-	const searchWrapperStyle = () => ({
-		width: '100%',
-		overflow: 'hidden', // Ensure overflow is hidden
-		whiteSpace: 'nowrap', // Keep the text on a single line
-		textOverflow: 'ellipsis', // Add ellipsis to text overflow
-	});
+	const wrapperStyle = useCallback(
+		() => ({
+			width: courseWidth,
+		}),
+		[]
+	);
+	const searchWrapperStyle = useCallback(
+		() => ({
+			width: '100%',
+			overflow: 'hidden', // Ensure overflow is hidden
+			whiteSpace: 'nowrap', // Keep the text on a single line
+			textOverflow: 'ellipsis', // Add ellipsis to text overflow
+		}),
+		[]
+	);
 
 	// The width of the semester bins
 	const semesterStyle = {
@@ -275,6 +226,7 @@ export function Canvas({
 	}));
 
 	type Dictionary = {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any; // TODO: Aim to replace 'any' with more specific types.
 	};
 
@@ -315,19 +267,13 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`${process.env.BACKEND}/fetch_courses/`, {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'X-NetId': profile.netId,
-				},
-			});
+			const response = await fetch(`/api/hoagie/fetch_courses/`);
 			const data = await response.json();
 			return data;
 		} catch {
 			return null; // TODO: Handle error appropriately
 		}
-	}, [profile.netId]);
+	}, []);
 
 	// Fetch user courses and check requirements on initial render
 	useEffect(() => {
@@ -354,6 +300,34 @@ export function Canvas({
 	useEffect(() => {
 		setSearchResults(staticSearchResults);
 	}, [staticSearchResults]);
+
+	// Memoize the enabled course IDs set for fast lookup
+	const enabledCourseIds = useMemo(() => {
+		return new Set(items[SEARCH_RESULTS_ID]);
+	}, [items]);
+
+	const dynamicRowHeight = useDynamicRowHeight({
+		defaultRowHeight: 120,
+	});
+
+	const rowRendererProps: CustomRowProps = useMemo(
+		() => ({
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		}),
+		[
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		]
+	);
 
 	useEffect(() => {
 		setItems((prevItems) => {
@@ -458,18 +432,6 @@ export function Canvas({
 		return Object.keys(items).find((key) => items[key].includes(id));
 	};
 
-	const getIndex = (id: UniqueIdentifier) => {
-		const container = findContainer(id);
-
-		if (!container) {
-			return -1;
-		}
-
-		const index = items[container].indexOf(id);
-
-		return index;
-	};
-
 	const onDragCancel = () => {
 		if (clonedItems) {
 			// Reset items to their original state in case items have been
@@ -555,12 +517,9 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							void fetch(`${process.env.BACKEND}/update_courses/`, {
+							void fetch(`/api/hoagie/update_courses`, {
 								method: 'POST',
-								credentials: 'include',
 								headers: {
-									'Content-Type': 'application/json',
-									'X-NetId': profile.netId,
 									'X-CSRFToken': csrfToken,
 								},
 								body: JSON.stringify({
@@ -630,24 +589,15 @@ export function Canvas({
 										items={items[SEARCH_RESULTS_ID]}
 										strategy={staticRectSortingStrategy}
 									>
-										{staticSearchResults.map((course, index) => {
-											const courseId = `${course.course_id}|${course.crosslistings}`;
-											const isIncluded = items[SEARCH_RESULTS_ID].includes(courseId);
-											return (
-												<SortableItem
-													disabled={!isIncluded}
-													key={isIncluded ? courseId : index}
-													id={isIncluded ? courseId : courseId + '|disabled'}
-													index={index}
-													containerId={SEARCH_RESULTS_ID}
-													handle={handle}
-													style={getItemStyles}
-													onRemove={isIncluded ? () => {} : undefined}
-													getIndex={getIndex}
-													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
-												/>
-											);
-										})}
+										<List<CustomRowProps>
+											/* match the searchGridHeight since it is expressed with vh units */
+											defaultHeight={parseInt(searchGridHeight) * (window.innerHeight / 100)}
+											rowCount={staticSearchResults.length}
+											rowHeight={dynamicRowHeight}
+											overscanCount={5}
+											rowComponent={VirtualRow}
+											rowProps={rowRendererProps}
+										/>
 									</SortableContext>
 								</DroppableContainer>
 							</div>
@@ -689,11 +639,9 @@ export function Canvas({
 															id={course}
 															index={index}
 															handle={handle}
-															style={getItemStyles}
 															wrapperStyle={wrapperStyle}
 															onRemove={() => handleRemove(course, containerId)}
 															containerId={containerId}
-															getIndex={getIndex}
 														/>
 													))}
 											</SortableContext>
@@ -711,7 +659,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu profile={profile} csrfToken={csrfToken} />
+							<TabbedMenu csrfToken={csrfToken} />
 						</div>
 					</div>
 				</SortableContext>
@@ -749,15 +697,6 @@ export function Canvas({
 			<Item
 				value={id}
 				handle={handle}
-				style={getItemStyles({
-					containerId: findContainer(id) as UniqueIdentifier,
-					overIndex: -1,
-					index: getIndex(id),
-					value: id,
-					isSorting: true,
-					isDragging: true,
-					isDragOverlay: true,
-				})}
 				color_primary={getPrimaryColor(id)}
 				color_secondary={getSecondaryColor(id)}
 				wrapperStyle={dynamicWrapperStyle}
@@ -791,13 +730,10 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		void fetch(`${process.env.BACKEND}/update_courses/`, {
+		void fetch(`/api/hoagie/update_courses`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
 				'X-CSRFToken': csrfToken,
-				'X-NetId': profile.netId,
 			},
 			body: JSON.stringify({
 				crosslistings: value.toString().split('|')[1],

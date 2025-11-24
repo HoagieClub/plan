@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, CourseEvaluations, Section
+from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, Section
 
 
 class ClassMeetingSerializer(serializers.ModelSerializer):
@@ -41,7 +41,6 @@ class CourseSerializer(serializers.ModelSerializer):
     # Nested SectionSerializer to include section details in the course data
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -64,26 +63,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "department_code",
             "sections",
             "crosslistings",
-            "rating",
+            "quality_of_course",
         )
-
-    def get_rating(self, obj):
-        """Get the most recent quality_of_course rating for this course."""
-        # Get the course_id part from guid (last 6 characters)
-        if not obj.course_id:
-            return None
-
-        # Find the most recent evaluation for this course_id across all terms
-        # The course_guid in CourseEvaluations is in format: {term}{course_id}
-        # We want to find all evaluations for this course_id and get the most recent one
-        evaluations = CourseEvaluations.objects.filter(
-            course_guid__endswith=obj.course_id, quality_of_course__isnull=False
-        ).order_by("-course_guid")  # Order by course_guid descending to get most recent term
-
-        evaluation = evaluations.first()
-        if evaluation and evaluation.quality_of_course:
-            return round(evaluation.quality_of_course, 2)
-        return None
 
 
 # Calendar (temporary serializer)

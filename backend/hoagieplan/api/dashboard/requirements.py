@@ -5,6 +5,7 @@ import json
 import orjson as oj
 from django.db.models import Prefetch, Q
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 from hoagieplan.api.dashboard.utils import cumulative_time
 from hoagieplan.api.profile.info import fetch_user_info
@@ -571,11 +572,12 @@ def transform_data(data):
     return transformed_data
 
 
+@api_view(["POST"])
 def manually_settle(request):
     data = oj.loads(request.body)
     crosslistings = data.get("crosslistings")
     req_id = int(data.get("reqId"))
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user_inst = CustomUser.objects.get(net_id=net_id)
     course_inst = (
         Course.objects.select_related("department")
@@ -600,11 +602,12 @@ def manually_settle(request):
         return JsonResponse({"Manually settled": user_course_inst.id})
 
 
+@api_view(["POST"])
 def mark_satisfied(request):
     data = oj.loads(request.body)
     req_id = int(data.get("reqId"))
     marked_satisfied = data.get("markedSatisfied")
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
 
     user_inst = CustomUser.objects.get(net_id=net_id)
     req_inst = Requirement.objects.get(id=req_id)
@@ -622,8 +625,9 @@ def mark_satisfied(request):
     return JsonResponse({"Manually satisfied": req_id, "action": action})
 
 
+@api_view(["GET"])
 def update_requirements(request):
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user_info = fetch_user_info(net_id)
 
     this_major = user_info["major"]["code"]
@@ -659,9 +663,10 @@ def update_requirements(request):
 # ---------------------------- FETCH REQUIREMENT INFO -----------------------------------#
 
 
+@api_view(["GET"])
 def requirement_info(request):
     req_id = request.GET.get("reqId", "")
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     explanation = ""
     completed_by_semester = 8
     dist_req = []
@@ -773,7 +778,9 @@ def parse_transcript_semester(semester_name):
     except ValueError:
         raise ValueError(f"Invalid semester format: {semester_name}")
 
+@api_view(["POST"])
 def update_transcript_courses(request):
+
     try:
         body_data = request.body.decode('utf-8')
         data = json.loads(body_data)
@@ -781,12 +788,19 @@ def update_transcript_courses(request):
         if not isinstance(data, dict):
             raise TypeError(f"Expected dictionary but got {type(data)}")
 
-        net_id = request.headers.get("X-NetId")
+        net_id = request.user.net_id
         user_inst = CustomUser.objects.get(net_id=net_id)
-        
+
+        return update_transcript_courses_helper(user_inst, data)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+def update_transcript_courses_helper(user_inst, data):
+    try:
         # Clean up old UserCourses records for this user
         UserCourses.objects.filter(user=user_inst).delete()
-        
+
         missing_courses = []
         semester_mapping = assign_sequential_semesters(data)
 
@@ -796,62 +810,58 @@ def update_transcript_courses(request):
             for course_name in courses:
                 # Try finding course by GUID first
                 course_inst = (
-                    Course.objects.select_related('department')
-                    .filter(guid=course_name)
-                    .order_by('-guid')
-                    .first()
+                    Course.objects.select_related("department").filter(guid=course_name).order_by("-guid").first()
                 )
-                
+
                 # If not found by GUID, try finding by course_id
                 if not course_inst and len(course_name) >= 6:
                     course_id = course_name[-6:]
                     course_inst = (
-                        Course.objects.select_related('department')
+                        Course.objects.select_related("department")
                         .filter(course_id=course_id)
-                        .order_by('-guid')  # Get the most recent version
+                        .order_by("-guid")  # Get the most recent version
                         .first()
                     )
-                
+
                 if not course_inst:
-                    missing_courses.append({
-                        'guid': course_name,
-                        'course_id': course_name[-6:] if len(course_name) >= 6 else course_name,
-                        'semester': semester
-                    })
+                    missing_courses.append(
+                        {
+                            "guid": course_name,
+                            "course_id": course_name[-6:] if len(course_name) >= 6 else course_name,
+                            "semester": semester,
+                        }
+                    )
                     continue
-                
+
                 # Create new UserCourses record
-                UserCourses.objects.create(
-                    user=user_inst, 
-                    course=course_inst, 
-                    semester=semester_number
-                )
+                UserCourses.objects.create(user=user_inst, course=course_inst, semester=semester_number)
 
         response_data = {
-            'status': 'success',
-            'message': 'Courses updated successfully',
-            'processed_courses': len(data),
-            'missing_courses': missing_courses
+            "status": "success",
+            "message": "Courses updated successfully",
+            "processed_courses": len(data),
+            "missing_courses": missing_courses,
         }
 
         return JsonResponse(response_data)
 
     except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format'}, status=400)
+        return JsonResponse({"status": "error", "message": "Invalid JSON format"}, status=400)
     except CustomUser.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': f"User with NetID {net_id} not found"}, status=404)
+        return JsonResponse({"status": "error", "message": f"User with NetID {net_id} not found"}, status=404)
     except Exception as e:
-        logger.error(f'❌ Internal error: {e}', exc_info=True)
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        logger.error(f"❌ Internal error: {e}", exc_info=True)
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
+@api_view(["POST"])
 def update_courses(request):
     try:
         # update_transcript_courses(request)
         data = json.loads(request.body)
         crosslistings = data.get("crosslistings")
         container = data.get("semesterId")
-        net_id = request.headers.get("X-NetId")
+        net_id = request.user.net_id
         user_inst = CustomUser.objects.get(net_id=net_id)
         class_year = user_inst.class_year
     
@@ -869,6 +879,8 @@ def update_courses(request):
                 .order_by("-guid")
                 .first()
             )
+
+        message = ""
 
         if container == "Search Results":
             if not course_inst:
