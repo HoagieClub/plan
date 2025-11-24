@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.api.model_getters import get_calendar, get_term, get_user
+from hoagieplan.api.model_getters import get_calendar, get_term
 from hoagieplan.models import (
     AcademicTerm,
     CalendarConfiguration,
@@ -16,12 +16,9 @@ from hoagieplan.serializers import (
 class CalendarConfigurationView(APIView):
     DEFAULT_CALENDAR_NAME = "My Calendar"
 
-    def get(self, request, net_id: str, term: int) -> Response:
+    def get(self, request, term: int) -> Response:
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
-        try:
-            user_inst = CustomUser.objects.get(net_id=net_id)
-        except CustomUser.DoesNotExist:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        user_inst: CustomUser = request.user
 
         if term:
             try:
@@ -35,7 +32,7 @@ class CalendarConfigurationView(APIView):
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def put(self, request, net_id: str, term: int) -> Response:
+    def put(self, request, term: int) -> Response:
         """Create a new calendar configuration for the user."""
         term_id = AcademicTerm.objects.get(term_code=term).id
 
@@ -43,10 +40,7 @@ class CalendarConfigurationView(APIView):
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user_inst = get_user(net_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        user_inst: CustomUser = request.user
 
         try:
             calendar_config, created = CalendarConfiguration.objects.get_or_create(
@@ -64,15 +58,15 @@ class CalendarConfigurationView(APIView):
         except Exception:
             return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def post(self, request, net_id: str, term: int) -> Response:
+    def post(self, request, term: int) -> Response:
         """Update an existing calendar configuration."""
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        user_inst: CustomUser = request.user
         try:
             term_id = get_term(term).id
-            user_inst = get_user(net_id)
             calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -100,7 +94,7 @@ class CalendarConfigurationView(APIView):
         except Exception:
             return Response({"detail": "Failed to update calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def delete(self, request, net_id: str, term: int) -> Response:
+    def delete(self, request, term: int) -> Response:
         """Delete an existing calendar configuration."""
         term_id = AcademicTerm.objects.get(term_code=term).id
 
@@ -108,8 +102,8 @@ class CalendarConfigurationView(APIView):
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        user_inst: CustomUser = request.user
         try:
-            user_inst = get_user(net_id)
             calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
