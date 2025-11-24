@@ -216,7 +216,7 @@ MINORS: Dict[str, str] = {
     "CHI": "Chinese Language",
     "CLA": "Classics",
     "COS": "Computer Science",
-    "CS": "Climate Science",
+    "CLS": "Climate Science",
     "CWR": "Creative Writing",
     "DAN": "Dance",
     "EAS": "East Asian Studies",
