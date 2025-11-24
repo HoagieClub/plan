@@ -4,40 +4,14 @@ import { Snackbar } from '@mui/joy';
 import Image from 'next/image';
 
 import { Modal } from '@/components/Modal';
+import {
+	ProgramDetailsService,
+	type Program,
+	type ProgramDetails,
+} from '@/services/programDetailsService';
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
-
-type Program = {
-	code: string;
-	name: string;
-	needed: number;
-	count: number;
-	min_needed: number;
-	type: string;
-	prereqFulfilled: boolean | null;
-	independentWorkRequired: boolean;
-};
-
-type ProgramRequirement = {
-	name: string;
-	explanation?: string;
-	min_needed?: string | number;
-};
-
-type ProgramDetails = {
-	code: string;
-	name: string;
-	type: string;
-	description: string;
-	urls: string[];
-	contacts: Array<{
-		type: string;
-		name: string;
-		email?: string;
-	}>;
-	requirements: ProgramRequirement[];
-};
 
 /**
  * Hook to open the "Almost Completed Minors" modal.
@@ -59,6 +33,10 @@ export function useAlmostCompletedMinorsModal() {
 	const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 	const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
 	const [loadingDetails, setLoadingDetails] = useState(false);
+	const [loadingPrograms, setLoadingPrograms] = useState(false);
+
+	// Service instance
+	const programDetailsService = useMemo(() => new ProgramDetailsService(), []);
 
 	// Fetch CSRF token on mount
 	useEffect(() => {
@@ -77,44 +55,17 @@ export function useAlmostCompletedMinorsModal() {
 		if (!isOpen) {
 			return;
 		}
+
 		// Fetch almost-completed programs from backend API
-		void fetch('/api/hoagie/almost_completed/', { credentials: 'include' })
-			.then((res) => {
-				if (!res.ok) {
-					throw new Error(`HTTP ${res.status}`);
-				}
-				return res.json();
-			})
-			.then((data) => {
-				if (data && Array.isArray(data.programs)) {
-					const mapped = data.programs.map(
-						(p: {
-							code: string;
-							name: string;
-							needed: number;
-							count: number;
-							min_needed: number;
-							type: string;
-							prereqFulfilled?: boolean | null;
-							independentWorkRequired?: boolean;
-						}) => ({
-							code: p.code,
-							name: p.name,
-							needed: p.needed,
-							count: p.count,
-							min_needed: p.min_needed,
-							type: p.type,
-							prereqFulfilled: p.prereqFulfilled,
-							independentWorkRequired: p.independentWorkRequired ?? false,
-						})
-					);
-					setMinors(mapped);
-				}
-			})
-			.catch(() => {
-				setMinors([]);
-			});
-	}, [isOpen]);
+		const fetchPrograms = async () => {
+			setLoadingPrograms(true);
+			const programs = await programDetailsService.getAlmostCompletedPrograms();
+			setMinors(programs ?? []);
+			setLoadingPrograms(false);
+		};
+
+		void fetchPrograms();
+	}, [isOpen, programDetailsService]);
 
 	// Handle adding/removing a minor
 	const handleToggleMinor = async (minorCode: string, minorName: string) => {
@@ -166,19 +117,9 @@ export function useAlmostCompletedMinorsModal() {
 		setLoadingDetails(true);
 		setProgramDetails(null);
 
-		try {
-			const response = await fetch(`/api/hoagie/program_details/${program.code}/`, {
-				credentials: 'include',
-			});
-			if (response.ok) {
-				const data = await response.json();
-				setProgramDetails(data as ProgramDetails);
-			}
-		} catch (error) {
-			console.error('Failed to fetch program details:', error);
-		} finally {
-			setLoadingDetails(false);
-		}
+		const details = await programDetailsService.getProgramDetails(program.code);
+		setProgramDetails(details);
+		setLoadingDetails(false);
 	};
 
 	const handleCloseProgramDetails = () => {
@@ -196,6 +137,7 @@ export function useAlmostCompletedMinorsModal() {
 		);
 	}, [query, minors]);
 
+	/*
 	const getPrereqClass = (prereq: boolean | null) => {
 		if (prereq === true) {
 			return 'inline-block rounded-full px-3 py-1 text-xs text-white';
@@ -215,8 +157,13 @@ export function useAlmostCompletedMinorsModal() {
 		}
 		return 'No Prerequisites';
 	};
+	*/
 
-	const almostCompletedModal = isOpen ? (
+	if (!isOpen) {
+		return { openAlmostCompletedMinorsModal, almostCompletedModal: null };
+	}
+
+	const almostCompletedModal = (
 		<Modal className='w-11/12 max-w-6xl p-6' onClose={() => setIsOpen(false)}>
 			<div className='flex flex-row gap-6' style={{ height: '640px' }}>
 				{/* Left column: list of suggested minors/certificates */}
@@ -237,72 +184,102 @@ export function useAlmostCompletedMinorsModal() {
 
 					{/* Scrollable list - height for approximately 3 items */}
 					<div className='flex-1 space-y-4 overflow-y-auto pr-2'>
-						{filteredMinors.map((m) => (
-							<div key={m.code} className='rounded-md border bg-white p-4 shadow-sm'>
-								<div className='flex items-center justify-between'>
-									<div>
-										<div className='text-lg font-semibold'>{m.code}</div>
-										<div className='text-sm text-gray-600'>{m.name}</div>
+						{loadingPrograms ? (
+							<div className='flex h-full items-center justify-center'>
+								<div className='flex flex-col items-center gap-3'>
+									<div className='h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500' />
+									<div className='text-sm text-gray-500'>Loading programs...</div>
+								</div>
+							</div>
+						) : (
+							filteredMinors.map((m) => (
+								<div key={m.code} className='rounded-md border bg-white p-4 shadow-sm'>
+									<div className='flex items-center justify-between'>
+										<div>
+											<div className='text-lg font-semibold'>{m.code}</div>
+											<div className='text-sm text-gray-600'>{m.name}</div>
+										</div>
+										<div className='flex items-center gap-2'>
+											<button
+												className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'
+												onClick={() => handleShowProgramDetails(m)}
+												title='Show program details'
+											>
+												<svg
+													xmlns='http://www.w3.org/2000/svg'
+													width='16'
+													height='16'
+													viewBox='0 0 24 24'
+													fill='none'
+													stroke='currentColor'
+													strokeWidth='2'
+													strokeLinecap='round'
+													strokeLinejoin='round'
+												>
+													<circle cx='12' cy='12' r='10' />
+													<line x1='12' y1='16' x2='12' y2='12' />
+													<line x1='12' y1='8' x2='12.01' y2='8' />
+												</svg>
+											</button>
+											{isMinorAdded(m.code) ? (
+												<button
+													className='cursor-pointer rounded bg-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-400'
+													onClick={() => handleToggleMinor(m.code, m.name)}
+												>
+													Added
+												</button>
+											) : (
+												<button
+													className='rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600'
+													onClick={() => handleToggleMinor(m.code, m.name)}
+												>
+													Add
+												</button>
+											)}
+										</div>
 									</div>
-									<div className='flex items-center gap-2'>
-										<button
-											className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'
-											onClick={() => handleShowProgramDetails(m)}
-											title='Show program details'
-										>
-											<svg
-												xmlns='http://www.w3.org/2000/svg'
-												width='16'
-												height='16'
-												viewBox='0 0 24 24'
-												fill='none'
-												stroke='currentColor'
-												strokeWidth='2'
-												strokeLinecap='round'
-												strokeLinejoin='round'
-											>
-												<circle cx='12' cy='12' r='10' />
-												<line x1='12' y1='16' x2='12' y2='12' />
-												<line x1='12' y1='8' x2='12.01' y2='8' />
-											</svg>
-										</button>
-										{isMinorAdded(m.code) ? (
-											<button
-												className='cursor-pointer rounded bg-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-400'
-												onClick={() => handleToggleMinor(m.code, m.name)}
-											>
-												Added
-											</button>
-										) : (
-											<button
-												className='rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600'
-												onClick={() => handleToggleMinor(m.code, m.name)}
-											>
-												Add
-											</button>
+
+									{/* Progress info */}
+									<div className='mt-3'>
+										<div className='text-xs text-gray-600'>
+											{(() => {
+												if (m.needed === 0) {
+													return <span className='font-semibold text-green-600'>Completed!</span>;
+												}
+												if (m.needed === 1) {
+													return <span>1 more course needed</span>;
+												}
+												return <span>{m.needed} more courses needed</span>;
+											})()}
+										</div>
+										{m.incompleteRequirements && m.incompleteRequirements.length > 0 && (
+											<div className='mt-2 space-y-1'>
+												{m.incompleteRequirements.map((req, idx) => (
+													<div
+														key={idx}
+														className='flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2'
+													>
+														<svg
+															xmlns='http://www.w3.org/2000/svg'
+															width='14'
+															height='14'
+															viewBox='0 0 24 24'
+															fill='none'
+															stroke='currentColor'
+															strokeWidth='2'
+															className='mt-0.5 flex-shrink-0 text-amber-600'
+														>
+															<circle cx='12' cy='12' r='10' />
+															<line x1='12' y1='8' x2='12' y2='12' />
+															<line x1='12' y1='16' x2='12.01' y2='16' />
+														</svg>
+														<span className='text-xs text-gray-700'>{req}</span>
+													</div>
+												))}
+											</div>
 										)}
 									</div>
-								</div>
-
-								{/* Progress bar */}
-								<div className='mb-3 mt-3'>
-									<div className='mb-1 flex items-center justify-between text-xs text-gray-600'>
-										<span>Progress</span>
-										<span>
-											{m.count} / {m.min_needed} courses
-										</span>
-									</div>
-									<div className='h-2 w-full overflow-hidden rounded-full bg-gray-200'>
-										<div
-											className='h-full transition-all'
-											style={{
-												width: `${m.min_needed > 0 ? Math.max(0, Math.min(100, (m.count / m.min_needed) * 100)) : 0}%`,
-												backgroundColor: '#56a265',
-											}}
-										/>
-									</div>
-								</div>
-
+									{/*
 								<div className='mt-3 flex flex-wrap gap-2'>
 									<div
 										className={getPrereqClass(m.prereqFulfilled)}
@@ -322,8 +299,10 @@ export function useAlmostCompletedMinorsModal() {
 											: 'Independent Work Not Required'}
 									</div>
 								</div>
-							</div>
-						))}
+								*/}
+								</div>
+							))
+						)}
 					</div>
 				</div>
 
@@ -339,9 +318,24 @@ export function useAlmostCompletedMinorsModal() {
 											href={programDetails.urls[0]}
 											target='_blank'
 											rel='noopener noreferrer'
-											className='mt-1 text-sm text-blue-600 hover:underline'
+											className='mt-1 flex items-center gap-1.5 text-sm text-blue-600 hover:underline'
 										>
 											{selectedProgram.code}
+											<svg
+												xmlns='http://www.w3.org/2000/svg'
+												width='14'
+												height='14'
+												viewBox='0 0 24 24'
+												fill='none'
+												stroke='currentColor'
+												strokeWidth='2'
+												strokeLinecap='round'
+												strokeLinejoin='round'
+											>
+												<path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' />
+												<polyline points='15 3 21 3 21 9' />
+												<line x1='10' y1='14' x2='21' y2='3' />
+											</svg>
 										</a>
 									) : (
 										<div className='mt-1 text-sm text-gray-500'>{selectedProgram.code}</div>
@@ -374,34 +368,52 @@ export function useAlmostCompletedMinorsModal() {
 
 							{!loadingDetails && programDetails && (
 								<>
-									{/* Progress bar */}
+									{/* Progress info */}
 									<div className='mb-6'>
-										<div className='mb-2 flex items-center justify-between text-sm'>
-											<span className='font-semibold text-gray-700'>Progress</span>
+										<div className='flex items-center gap-2 text-sm'>
+											<span className='font-semibold text-gray-700'>Status:</span>
 											<span className='text-gray-600'>
-												{selectedProgram.count} / {selectedProgram.min_needed} courses (
-												{selectedProgram.needed} more needed)
+												{(() => {
+													if (selectedProgram.needed === 0) {
+														return <span className='font-semibold text-green-600'>Completed!</span>;
+													}
+													if (selectedProgram.needed === 1) {
+														return <span>1 more course needed</span>;
+													}
+													return <span>{selectedProgram.needed} more courses needed</span>;
+												})()}
 											</span>
 										</div>
-										<div className='h-2 w-full overflow-hidden rounded-full bg-gray-200'>
-											<div
-												className='h-full transition-all'
-												style={{
-													width: `${
-														selectedProgram.min_needed > 0
-															? Math.max(
-																	0,
-																	Math.min(
-																		100,
-																		(selectedProgram.count / selectedProgram.min_needed) * 100
-																	)
-																)
-															: 0
-													}%`,
-													backgroundColor: '#56a265',
-												}}
-											/>
-										</div>
+										{selectedProgram.incompleteRequirements &&
+											selectedProgram.incompleteRequirements.length > 0 && (
+												<div className='mt-3 space-y-2'>
+													<div className='text-xs font-semibold text-gray-700'>
+														Incomplete requirements:
+													</div>
+													{selectedProgram.incompleteRequirements.map((req, idx) => (
+														<div
+															key={idx}
+															className='flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2'
+														>
+															<svg
+																xmlns='http://www.w3.org/2000/svg'
+																width='14'
+																height='14'
+																viewBox='0 0 24 24'
+																fill='none'
+																stroke='currentColor'
+																strokeWidth='2'
+																className='mt-0.5 flex-shrink-0 text-amber-600'
+															>
+																<circle cx='12' cy='12' r='10' />
+																<line x1='12' y1='8' x2='12' y2='12' />
+																<line x1='12' y1='16' x2='12.01' y2='16' />
+															</svg>
+															<span className='text-xs text-gray-700'>{req}</span>
+														</div>
+													))}
+												</div>
+											)}
 									</div>
 
 									{/* Description */}
@@ -422,9 +434,10 @@ export function useAlmostCompletedMinorsModal() {
 												</svg>
 												Description
 											</div>
-											<div className='rounded-lg bg-gray-50 p-4 text-sm leading-relaxed text-gray-700'>
-												{programDetails.description}
-											</div>
+											<div
+												className='rounded-lg bg-gray-50 p-4 text-sm leading-relaxed text-gray-700'
+												dangerouslySetInnerHTML={{ __html: programDetails.description }}
+											/>
 										</div>
 									)}
 
@@ -497,14 +510,10 @@ export function useAlmostCompletedMinorsModal() {
 													<div key={index} className='rounded-lg bg-gray-50 p-4'>
 														<div className='mb-2 text-sm font-medium text-gray-900'>{req.name}</div>
 														{req.explanation && (
-															<div className='text-xs leading-relaxed text-gray-600'>
-																{req.explanation}
-															</div>
-														)}
-														{req.min_needed && (
-															<div className='mt-2 text-xs text-gray-500'>
-																Minimum needed: {req.min_needed === 'ALL' ? 'All' : req.min_needed}
-															</div>
+															<div
+																className='text-xs leading-relaxed text-gray-600'
+																dangerouslySetInnerHTML={{ __html: req.explanation }}
+															/>
 														)}
 													</div>
 												))}
@@ -562,7 +571,7 @@ export function useAlmostCompletedMinorsModal() {
 				<div className='text-center'>You can only minor in two programs and plan up to three.</div>
 			</Snackbar>
 		</Modal>
-	) : null;
+	);
 
 	return { openAlmostCompletedMinorsModal, almostCompletedModal };
 }

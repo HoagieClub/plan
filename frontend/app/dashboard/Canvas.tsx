@@ -17,7 +17,7 @@ import {
 	useSensors,
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
-import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
+import { AcademicCapIcon, CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 import { List, useDynamicRowHeight } from 'react-window';
@@ -580,6 +580,7 @@ export function Canvas({
 									<div className='mt-2'>
 										<ButtonWidget
 											text='Almost Completed Minors'
+											icon={<AcademicCapIcon className='h-5 w-5' />}
 											onClick={() => openAlmostCompletedMinorsModal()}
 										/>
 									</div>

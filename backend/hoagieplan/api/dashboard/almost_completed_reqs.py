@@ -58,6 +58,33 @@ def _check_independent_work_required(requirement: Requirement) -> bool:
     return False
 
 
+def _get_incomplete_subrequirements(requirement: Requirement, max_items: int = 3) -> list[str]:
+    """Get a list of incomplete subrequirement names for better progress visibility.
+    
+    Returns up to max_items incomplete subrequirement names.
+    """
+    if requirement.subrequirements is None:
+        return []
+    
+    incomplete = []
+    for name, subreq in requirement.subrequirements.items():
+        # Skip Prerequisites and Independent Work as they're shown separately
+        if name.lower() in ['prerequisites', 'prerequisite', 'independent work']:
+            continue
+        
+        # Check if this subrequirement is incomplete
+        # A subrequirement is incomplete if it's not satisfied OR if count < min_needed
+        if not subreq.satisfied or subreq.count < subreq.min_needed:
+            needed = subreq.min_needed - subreq.count
+            if needed > 0:  # Only include if actually needs more courses
+                incomplete.append(f"{name} ({needed} more)")
+                
+                if len(incomplete) >= max_items:
+                    break
+    
+    return incomplete
+
+
 def _get_all_outstanding_reqs_for_user(net_id: str) -> Dict[str, int]:
     user_info = fetch_user_info(net_id)
     user_major = user_info["major"]
@@ -164,7 +191,9 @@ def _is_parent_of_leaf(requirement: Requirement) -> bool:
 def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED):
     """Optimized function that computes all program data in a single pass.
     
-    Returns a tuple of (almost_completed_dict, prereq_status_dict, iw_status_dict, completion_info_dict)
+    Returns a tuple of (almost_completed_dict, prereq_status_dict, iw_status_dict, incomplete_subreqs_dict)
+    where almost_completed_dict contains {code: courses_needed_to_complete}
+    and incomplete_subreqs_dict contains {code: [list of incomplete subrequirement descriptions]}
     """
     user_info = fetch_user_info(net_id)
     user_major = user_info["major"]
@@ -183,55 +212,29 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
 
     # Compute almost completed requirements
     all_outstanding_reqs = {}
+    prereq_status_dict = {}
+    iw_status_dict = {}
+    incomplete_subreqs_dict = {}
+    
     for minor_code in MINORS.keys():
         req = output_requirements.minors[minor_code]
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[minor_code] = outstanding
+        prereq_status_dict[minor_code] = _check_prereq_satisfied(req)
+        iw_status_dict[minor_code] = _check_independent_work_required(req)
+        incomplete_subreqs_dict[minor_code] = _get_incomplete_subrequirements(req)
 
     for cert_code in CERTIFICATES.keys():
         req = output_requirements.certificates[cert_code]
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[cert_code] = outstanding
+        prereq_status_dict[cert_code] = _check_prereq_satisfied(req)
+        iw_status_dict[cert_code] = _check_independent_work_required(req)
+        incomplete_subreqs_dict[cert_code] = _get_incomplete_subrequirements(req)
 
     pairs = sorted(all_outstanding_reqs.items(), key=lambda item: item[1])
     top_pairs = pairs[:top_almost_completed]
     almost_completed_dict = dict(top_pairs)
 
-    # Compute prerequisite status
-    prereq_status_dict = {}
-    for minor_code in MINORS.keys():
-        req = output_requirements.minors[minor_code]
-        prereq_status_dict[minor_code] = _check_prereq_satisfied(req)
-
-    for cert_code in CERTIFICATES.keys():
-        req = output_requirements.certificates[cert_code]
-        prereq_status_dict[cert_code] = _check_prereq_satisfied(req)
-
-    # Compute independent work status
-    iw_status_dict = {}
-    for minor_code in MINORS.keys():
-        req = output_requirements.minors[minor_code]
-        iw_status_dict[minor_code] = _check_independent_work_required(req)
-
-    for cert_code in CERTIFICATES.keys():
-        req = output_requirements.certificates[cert_code]
-        iw_status_dict[cert_code] = _check_independent_work_required(req)
-
-    # Compute completion info
-    completion_info_dict = {}
-    for minor_code in MINORS.keys():
-        req = output_requirements.minors[minor_code]
-        completion_info_dict[minor_code] = {
-            "count": req.count,
-            "min_needed": req.min_needed
-        }
-
-    for cert_code in CERTIFICATES.keys():
-        req = output_requirements.certificates[cert_code]
-        completion_info_dict[cert_code] = {
-            "count": req.count,
-            "min_needed": req.min_needed
-        }
-
-    return almost_completed_dict, prereq_status_dict, iw_status_dict, completion_info_dict
+    return almost_completed_dict, prereq_status_dict, iw_status_dict, incomplete_subreqs_dict
 
