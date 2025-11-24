@@ -130,6 +130,11 @@ def load_course_list(course_list):
 def push_requirement(req):
     logging.info(f"{req['name']}")
     req_fields = {}
+    
+    # If this is a no_req requirement, set min_needed to 0
+    if "no_req" in req:
+        req["min_needed"] = 0
+    
     for field in REQUIREMENT_FIELDS:
         if field in req:
             if field == "min_needed":
