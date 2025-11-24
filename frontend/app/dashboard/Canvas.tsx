@@ -22,6 +22,7 @@ import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
 import { List, useDynamicRowHeight } from 'react-window';
 
+import useAlmostCompletedMinorsModal from '@/components/AlmostCompletedMinorsModal/AlmostCompletedMinorsModal';
 import containerStyles from '@/components/Container/Container.module.css';
 import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
@@ -154,6 +155,7 @@ export function Canvas({
 	};
 
 	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
+	const { openAlmostCompletedMinorsModal, almostCompletedModal } = useAlmostCompletedMinorsModal();
 
 	// This limits the width of the course cards
 	const wrapperStyle = useCallback(
@@ -574,6 +576,13 @@ export function Canvas({
 									</Pane>
 									{uploadModal}
 									{notification}
+									{almostCompletedModal}
+									<div className='mt-2'>
+										<ButtonWidget
+											text='Almost Completed Minors'
+											onClick={() => openAlmostCompletedMinorsModal()}
+										/>
+									</div>
 								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
