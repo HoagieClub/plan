@@ -31,13 +31,14 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
     "description",
     "urls",
+    "contacts",
     "apply_by_semester",
     "active_until",
 ]
@@ -242,7 +243,7 @@ def push_major(yaml_file):
 
     for field in MAJOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 major_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 major_fields[field] = data[field]
@@ -277,7 +278,7 @@ def push_minor(yaml_file):
 
     for field in MINOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 minor_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 minor_fields[field] = data[field]
@@ -321,7 +322,7 @@ def push_certificate(yaml_file):
 
     for field in CERTIFICATE_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 certificate_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 certificate_fields[field] = data[field]
