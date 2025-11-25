@@ -1,7 +1,7 @@
 import logging
 import os
-import sys
 import re
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -89,18 +89,16 @@ def load_course_list(course_list):
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif re.match(r'^\d\d\*$', course_num):
+                elif re.match(r"^\d\d\*$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[:2]
                     )
-                elif re.match(r'^\d\*{1,2}$', course_num):
+                elif re.match(r"^\d\*{1,2}$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[0]
-                        )
-                else:
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number=course_num
                     )
+                else:
+                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
         else:
             try:
                 dept_id = Department.objects.get(code=dept_code).id
@@ -112,30 +110,28 @@ def load_course_list(course_list):
                 continue
 
             if course_num in ["*", "***"]:
-                    dept_list.append(dept_code)
-            elif re.match(r'^\d\d\*$', course_num):
+                dept_list.append(dept_code)
+            elif re.match(r"^\d\d\*$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[:2]
                 )
-            elif re.match(r'^\d\*{1,2}$', course_num):
+            elif re.match(r"^\d\*{1,2}$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
-            else:
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number=course_num
                 )
+            else:
+                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
     return course_inst_list, dept_list
 
 
 def push_requirement(req):
     logging.info(f"{req['name']}")
     req_fields = {}
-    
+
     # If this is a no_req requirement, set min_needed to 0
     if "no_req" in req:
         req["min_needed"] = 0
-    
+
     for field in REQUIREMENT_FIELDS:
         if field in req:
             if field == "min_needed":
