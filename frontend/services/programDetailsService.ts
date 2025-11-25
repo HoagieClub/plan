@@ -15,7 +15,7 @@ const ProgramSchema = z.object({
 
 const ProgramRequirementSchema = z.object({
 	name: z.string(),
-	explanation: z.string().optional(),
+	explanation: z.string().nullable().optional(),
 	min_needed: z.union([z.string(), z.number()]).optional(),
 });
 
@@ -23,16 +23,18 @@ const ProgramDetailsSchema = z.object({
 	code: z.string(),
 	name: z.string(),
 	type: z.string(),
-	description: z.string(),
-	urls: z.array(z.string()),
-	contacts: z.array(
-		z.object({
-			type: z.string(),
-			name: z.string(),
-			email: z.string().optional(),
-		})
-	),
-	requirements: z.array(ProgramRequirementSchema),
+	description: z.string().default(''),
+	urls: z.array(z.string()).default([]),
+	contacts: z
+		.array(
+			z.object({
+				type: z.string(),
+				name: z.string(),
+				email: z.string().optional(),
+			})
+		)
+		.default([]),
+	requirements: z.array(ProgramRequirementSchema).default([]),
 });
 
 const AlmostCompletedResponseSchema = z.object({
