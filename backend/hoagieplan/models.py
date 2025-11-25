@@ -54,6 +54,7 @@ class Major(models.Model):
     degree = models.ManyToManyField("Degree")
     description = models.TextField(db_index=True, null=True)
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(db_index=True, null=True)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
 
@@ -69,6 +70,7 @@ class Minor(models.Model):
     excluded_majors = models.ManyToManyField("Major")
     excluded_minors = models.ManyToManyField("Minor")
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(db_index=True, null=True)
     apply_by_semester = models.IntegerField(default=6)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
@@ -84,6 +86,7 @@ class Certificate(models.Model):
     description = models.TextField(db_index=True, null=True)
     excluded_majors = models.ManyToManyField("Major")
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(db_index=True, null=True)
     apply_by_semester = models.IntegerField(default=8)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
