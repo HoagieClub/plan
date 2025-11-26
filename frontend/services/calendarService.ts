@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { CalendarEvent as OldCalendarEvent } from '@/types';
 
-import { HttpRequestType } from './common';
+import { HttpRequestType, buildRequest } from './common';
 
 const CALENDARS_URL = `/api/hoagie/calendars/`;
 const CALENDAR_EVENTS_URL = `/api/hoagie/calendar_events/`;
@@ -89,10 +89,10 @@ export async function createCalendar(
 ): Promise<CalendarConfiguration | null> {
 	try {
 		const url = buildCalendarsUrl(term);
-		const response = await fetch(url, {
-			method: HttpRequestType.PUT,
-			body: JSON.stringify({ calendar_name: calendarName }),
-		});
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.PUT, { calendar_name: calendarName })
+		);
 
 		if (!response.ok) {
 			// TODO: Handle error
@@ -116,13 +116,13 @@ export async function renameCalendar(
 ): Promise<CalendarConfiguration | null> {
 	try {
 		const url = buildCalendarsUrl(term);
-		const response = await fetch(url, {
-			method: HttpRequestType.POST,
-			body: JSON.stringify({
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.POST, {
 				calendar_name: calendarName,
 				new_calendar_name: newCalendarName,
-			}),
-		});
+			})
+		);
 
 		if (!response.ok) {
 			// TODO: Handle error
@@ -130,7 +130,8 @@ export async function renameCalendar(
 		}
 
 		const responseData = await response.json();
-		return responseData;
+		const validatedData = CalendarConfigurationSchema.parse(responseData) as CalendarConfiguration;
+		return validatedData;
 	} catch {
 		// TODO: Handle error
 		return null;
@@ -144,10 +145,10 @@ export async function deleteCalendar(
 ): Promise<CalendarConfiguration | null> {
 	try {
 		const url = buildCalendarsUrl(term);
-		const response = await fetch(url, {
-			method: HttpRequestType.DELETE,
-			body: JSON.stringify({ calendar_name: calendarName }),
-		});
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.DELETE, { calendar_name: calendarName })
+		);
 
 		if (!response.ok) {
 			// TODO: Handle error
@@ -155,7 +156,8 @@ export async function deleteCalendar(
 		}
 
 		const responseData = await response.json();
-		return responseData;
+		const validatedData = CalendarConfigurationSchema.parse(responseData) as CalendarConfiguration;
+		return validatedData;
 	} catch {
 		// TODO: Handle error
 		return null;
@@ -169,7 +171,6 @@ export async function getCalendarEvents(
 ): Promise<CalendarEvent[] | null> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term);
-		console.log(url);
 		const response = await fetch(url);
 
 		if (!response.ok) {
@@ -232,10 +233,7 @@ async function performPostCalendarOperation(
 ): Promise<CalendarEvent[] | null> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term, { action: action });
-		const response = await fetch(url, {
-			method: HttpRequestType.POST,
-			body: JSON.stringify(payload),
-		});
+		const response = await fetch(url, buildRequest(HttpRequestType.POST, payload));
 
 		if (!response.ok) {
 			return null;
@@ -258,10 +256,7 @@ export async function deleteCourseFromCalendar(
 ): Promise<void> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(url, {
-			method: HttpRequestType.DELETE,
-			body: JSON.stringify({ guid: guid }),
-		});
+		const response = await fetch(url, buildRequest(HttpRequestType.DELETE, { guid: guid }));
 
 		if (!response.ok) {
 			return null;
@@ -283,10 +278,10 @@ export async function invertSectionInCalendar(
 ): Promise<void> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(url, {
-			method: HttpRequestType.PUT,
-			body: JSON.stringify({ guid: guid, classSection: classSection }),
-		});
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.PUT, { guid: guid, classSection: classSection })
+		);
 
 		if (!response.ok) {
 			return null;
