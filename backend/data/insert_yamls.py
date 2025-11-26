@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+import time
 from datetime import date
 from pathlib import Path
 
@@ -380,8 +381,7 @@ def push_certificates(certificates_path):
 def clear_user_requirements():
     logging.info("Clearing CustomUser_requirements table...")
     with transaction.atomic():
-        for user_inst in CustomUser.objects.all():
-            user_inst.requirements.clear()
+        CustomUser.requirements.through.objects.all().delete()
     logging.info("CustomUser_requirements table cleared!")
 
 
@@ -393,9 +393,8 @@ def clear_user_req_dict():
 
 def clear_requirement_ids():
     logging.info("Clearing requirement_id column in UserCourses...")
-    for user_course in UserCourses.objects.all():
-        user_course.requirements.clear()
-    logging.info("requirement_id column cleared!")
+    UserCourses.requirements.through.objects.all().delete()
+    logging.info("UserCourses_requirements table cleared!")
 
 
 def clear_requirements():
@@ -406,6 +405,7 @@ def clear_requirements():
 
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == "__main__":
+    start_time = time.time()
     with transaction.atomic():
         clear_user_requirements()
         clear_user_req_dict()
@@ -415,3 +415,5 @@ if __name__ == "__main__":
         push_majors(Path("../majors").resolve())
         push_certificates(Path("../certificates").resolve())
         push_minors(Path("../minors").resolve())
+    end_time = time.time()
+    print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
