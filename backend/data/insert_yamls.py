@@ -1,7 +1,8 @@
 import logging
 import os
-import sys
 import re
+import sys
+import time
 from datetime import date
 from pathlib import Path
 
@@ -31,13 +32,14 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
     "description",
     "urls",
+    "contacts",
     "apply_by_semester",
     "active_until",
 ]
@@ -88,18 +90,16 @@ def load_course_list(course_list):
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif re.match(r'^\d\d\*$', course_num):
+                elif re.match(r"^\d\d\*$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[:2]
                     )
-                elif re.match(r'^\d\*{1,2}$', course_num):
+                elif re.match(r"^\d\*{1,2}$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[0]
-                        )
-                else:
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number=course_num
                     )
+                else:
+                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
         else:
             try:
                 dept_id = Department.objects.get(code=dept_code).id
@@ -111,25 +111,28 @@ def load_course_list(course_list):
                 continue
 
             if course_num in ["*", "***"]:
-                    dept_list.append(dept_code)
-            elif re.match(r'^\d\d\*$', course_num):
+                dept_list.append(dept_code)
+            elif re.match(r"^\d\d\*$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[:2]
                 )
-            elif re.match(r'^\d\*{1,2}$', course_num):
+            elif re.match(r"^\d\*{1,2}$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
-            else:
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number=course_num
                 )
+            else:
+                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
     return course_inst_list, dept_list
 
 
 def push_requirement(req):
     logging.info(f"{req['name']}")
     req_fields = {}
+
+    # If this is a no_req requirement, set min_needed to 0
+    if "no_req" in req:
+        req["min_needed"] = 0
+
     for field in REQUIREMENT_FIELDS:
         if field in req:
             if field == "min_needed":
@@ -237,7 +240,7 @@ def push_major(yaml_file):
 
     for field in MAJOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 major_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 major_fields[field] = data[field]
@@ -272,7 +275,7 @@ def push_minor(yaml_file):
 
     for field in MINOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 minor_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 minor_fields[field] = data[field]
@@ -316,7 +319,7 @@ def push_certificate(yaml_file):
 
     for field in CERTIFICATE_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 certificate_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 certificate_fields[field] = data[field]
@@ -378,8 +381,7 @@ def push_certificates(certificates_path):
 def clear_user_requirements():
     logging.info("Clearing CustomUser_requirements table...")
     with transaction.atomic():
-        for user_inst in CustomUser.objects.all():
-            user_inst.requirements.clear()
+        CustomUser.requirements.through.objects.all().delete()
     logging.info("CustomUser_requirements table cleared!")
 
 
@@ -391,9 +393,8 @@ def clear_user_req_dict():
 
 def clear_requirement_ids():
     logging.info("Clearing requirement_id column in UserCourses...")
-    for user_course in UserCourses.objects.all():
-        user_course.requirements.clear()
-    logging.info("requirement_id column cleared!")
+    UserCourses.requirements.through.objects.all().delete()
+    logging.info("UserCourses_requirements table cleared!")
 
 
 def clear_requirements():
@@ -404,6 +405,7 @@ def clear_requirements():
 
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == "__main__":
+    start_time = time.time()
     with transaction.atomic():
         clear_user_requirements()
         clear_user_req_dict()
@@ -413,3 +415,5 @@ if __name__ == "__main__":
         push_majors(Path("../majors").resolve())
         push_certificates(Path("../certificates").resolve())
         push_minors(Path("../minors").resolve())
+    end_time = time.time()
+    print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")

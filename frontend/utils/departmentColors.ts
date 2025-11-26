@@ -1,4 +1,4 @@
-import { UniqueIdentifier } from '@dnd-kit/core';
+import type { UniqueIdentifier } from '@dnd-kit/core';
 
 export const departmentColors: Record<string, string> = {
 	AAS: '#ff5f6d',

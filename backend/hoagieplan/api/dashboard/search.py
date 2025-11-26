@@ -1,9 +1,8 @@
-import time
 from re import IGNORECASE, compile, split, sub
 
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
 
 from hoagieplan.logger import logger
 from hoagieplan.models import (
@@ -37,7 +36,7 @@ def make_sort_key(dept):
     return sort_key
 
 
-@require_GET
+@api_view(["GET"])
 def search_courses(request):
     """Handle search queries for courses."""
     if request.method != "GET":
@@ -52,8 +51,9 @@ def search_courses(request):
     if not query:
         return JsonResponse({"courses": []})
 
-    init_time = time.time()
-    # process queries
+    return search_courses_helper(query, term, distribution, levels, grading_options)
+
+def search_courses_helper(query, term=None, distribution=None, levels=None, grading_options=None):
     trimmed_query = sub(r"\s", "", query)
     if DEPT_NUM_SUFFIX_REGEX.match(trimmed_query):
         result = split(r"(\d+[a-zA-Z])", string=trimmed_query, maxsplit=1)
@@ -104,17 +104,36 @@ def search_courses(request):
         for grading in grading_filters:
             grading_query |= Q(grading_basis__iexact=grading)
         query_conditions &= grading_query
-
+    
     try:
         filtered_query = query_conditions
         filtered_query &= Q(department__code__iexact=dept)
         filtered_query &= Q(catalog_number__iexact=num)
-        exact_match_course = (
+
+        # Get courses with ratings (most recent offering with non-null rating)
+        exact_match_with_rating = (
             Course.objects.select_related("department")
             .filter(filtered_query)
+            .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
             .distinct("course_id")
         )
+
+        # Get course_ids that have ratings
+        course_ids_with_ratings = set(exact_match_with_rating.values_list("course_id", flat=True))
+
+        # Get courses without any rated offerings (most recent offering regardless of rating)
+        exact_match_without_rating = (
+            Course.objects.select_related("department")
+            .filter(filtered_query)
+            .exclude(course_id__in=course_ids_with_ratings)
+            .order_by("course_id", "-guid")
+            .distinct("course_id")
+        )
+
+        # Combine both querysets
+        exact_match_course = list(exact_match_with_rating) + list(exact_match_without_rating)
+
         if exact_match_course:
             # If an exact match is found, return only that course
             serialized_course = CourseSerializer(exact_match_course, many=True)
@@ -125,16 +144,34 @@ def search_courses(request):
             filtered_query &= Q(crosslistings__icontains=search_key) | Q(title__icontains=query)
         else:
             filtered_query &= Q(crosslistings__icontains=search_key)
-        courses = (
+
+        # Get courses with ratings (most recent offering with non-null rating)
+        courses_with_rating = (
             Course.objects.select_related("department")
             .filter(filtered_query)
+            .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
             .distinct("course_id")
         )
+
+        # Get course_ids that have ratings
+        course_ids_with_ratings = set(courses_with_rating.values_list("course_id", flat=True))
+
+        # Get courses without any rated offerings (most recent offering regardless of rating)
+        courses_without_rating = (
+            Course.objects.select_related("department")
+            .filter(filtered_query)
+            .exclude(course_id__in=course_ids_with_ratings)
+            .order_by("course_id", "-guid")
+            .distinct("course_id")
+        )
+
+        # Combine both querysets
+        courses = list(courses_with_rating) + list(courses_without_rating)
+
         if courses:
             serialized_courses = CourseSerializer(courses, many=True)
             sorted_data = sorted(serialized_courses.data, key=make_sort_key(dept))
-            # print(f"Search time: {time.time() - init_time}")
             return JsonResponse({"courses": sorted_data})
         return JsonResponse({"courses": []})
     except Exception as e:

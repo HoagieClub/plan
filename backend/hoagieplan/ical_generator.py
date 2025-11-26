@@ -3,7 +3,7 @@ import pytz
 import icalendar
 from icalendar import Event
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_POST
+from rest_framework.decorators import api_view
 import json
 
 # Maps from day abbreviations to days used in ical rrule
@@ -38,7 +38,7 @@ END_DATE = {
         '1264': date(2026, 4, 24),
     }
 
-@require_POST
+@api_view(["POST"])
 def export_calendar_view(request):
     """
     API endpoint for exporting calendar as iCal file.
