@@ -10,7 +10,7 @@ import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
-import { distributionAreas, distributionAreasInverse } from '@/utils/distributionAreas';
+import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 
