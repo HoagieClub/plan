@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { CalendarEvent as OldCalendarEvent, Profile } from '@/types';
+import type { CalendarEvent as OldCalendarEvent } from '@/types';
 
 import { HttpRequestType } from './common';
 
@@ -56,284 +56,272 @@ interface AddCalendarEventPayload {
 
 type CalendarEventPostPayload = AddCoursePayload | AddCalendarEventPayload;
 
-// Intermediate class to handle HTTP requests related to calendars and calendar events
-export class CalendarService {
-	private netId: string;
+// Returns the list of all calendars for the user in term
+export async function getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(url);
 
-	constructor(profile: Profile) {
-		this.netId = profile.netId;
-	}
-
-	// Returns the list of all calendars for the user in term
-	public async getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
-		try {
-			const url = this.buildCalendarsUrl(term);
-			const response = await fetch(url);
-
-			if (!response.ok) {
-				return null;
-			}
-
-			const responseData = await response.json();
-			const validatedData = CalendarConfigurationArraySchema.parse(
-				responseData
-			) as CalendarConfiguration[];
-			return validatedData;
-		} catch {
+		if (!response.ok) {
 			return null;
 		}
+
+		const responseData = await response.json();
+		const validatedData = CalendarConfigurationArraySchema.parse(
+			responseData
+		) as CalendarConfiguration[];
+		return validatedData;
+	} catch {
+		return null;
 	}
+}
 
-	// Returns true if user has at least one calendar in the DB for term
-	public async hasCalendarForTermInDB(term: number): Promise<boolean> {
-		const calendars = await this.getCalendars(term);
-		return calendars && calendars.length > 0;
-	}
+// Returns true if user has at least one calendar in the DB for term
+export async function hasCalendarForTermInDB(term: number): Promise<boolean> {
+	const calendars = await getCalendars(term);
+	return calendars && calendars.length > 0;
+}
 
-	// Creates a calendar with the name calendarName in term
-	public async createCalendar(
-		calendarName: string,
-		term: number
-	): Promise<CalendarConfiguration | null> {
-		try {
-			const url = this.buildCalendarsUrl(term);
-			const response = await fetch(url, {
-				method: HttpRequestType.PUT,
-				body: JSON.stringify({ calendar_name: calendarName }),
-			});
+// Creates a calendar with the name calendarName in term
+export async function createCalendar(
+	calendarName: string,
+	term: number
+): Promise<CalendarConfiguration | null> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(url, {
+			method: HttpRequestType.PUT,
+			body: JSON.stringify({ calendar_name: calendarName }),
+		});
 
-			if (!response.ok) {
-				// TODO: Handle error
-				return null;
-			}
-
-			const responseData = await response.json();
-			const validatedData = CalendarConfigurationSchema.parse(
-				responseData
-			) as CalendarConfiguration;
-			return validatedData;
-		} catch {
+		if (!response.ok) {
 			// TODO: Handle error
 			return null;
 		}
+
+		const responseData = await response.json();
+		const validatedData = CalendarConfigurationSchema.parse(responseData) as CalendarConfiguration;
+		return validatedData;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	// Renames a calendar from calendarName to newCalendarName in term
-	public async renameCalendar(
-		calendarName: string,
-		newCalendarName: string,
-		term: number
-	): Promise<CalendarConfiguration | null> {
-		try {
-			const url = this.buildCalendarsUrl(term);
-			const response = await fetch(url, {
-				method: HttpRequestType.POST,
-				body: JSON.stringify({
-					calendar_name: calendarName,
-					new_calendar_name: newCalendarName,
-				}),
-			});
+// Renames a calendar from calendarName to newCalendarName in term
+export async function renameCalendar(
+	calendarName: string,
+	newCalendarName: string,
+	term: number
+): Promise<CalendarConfiguration | null> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(url, {
+			method: HttpRequestType.POST,
+			body: JSON.stringify({
+				calendar_name: calendarName,
+				new_calendar_name: newCalendarName,
+			}),
+		});
 
-			if (!response.ok) {
-				// TODO: Handle error
-				return null;
-			}
-
-			const responseData = await response.json();
-			return responseData;
-		} catch {
+		if (!response.ok) {
 			// TODO: Handle error
 			return null;
 		}
+
+		const responseData = await response.json();
+		return responseData;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	// Deletes the calendar with calendarName in term
-	public async deleteCalendar(
-		calendarName: string,
-		term: number
-	): Promise<CalendarConfiguration | null> {
-		try {
-			const url = this.buildCalendarsUrl(term);
-			const response = await fetch(url, {
-				method: HttpRequestType.DELETE,
-				body: JSON.stringify({ calendar_name: calendarName }),
-			});
+// Deletes the calendar with calendarName in term
+export async function deleteCalendar(
+	calendarName: string,
+	term: number
+): Promise<CalendarConfiguration | null> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(url, {
+			method: HttpRequestType.DELETE,
+			body: JSON.stringify({ calendar_name: calendarName }),
+		});
 
-			if (!response.ok) {
-				// TODO: Handle error
-				return null;
-			}
-
-			const responseData = await response.json();
-			return responseData;
-		} catch {
+		if (!response.ok) {
 			// TODO: Handle error
 			return null;
 		}
+
+		const responseData = await response.json();
+		return responseData;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	// Returns the list of all events in calendar with calendarName for term
-	public async getCalendarEvents(
-		calendarName: string,
-		term: number
-	): Promise<CalendarEvent[] | null> {
-		try {
-			const url = this.buildCalendarEventsUrl(calendarName, term);
-			const response = await fetch(url);
+// Returns the list of all events in calendar with calendarName for term
+export async function getCalendarEvents(
+	calendarName: string,
+	term: number
+): Promise<CalendarEvent[] | null> {
+	try {
+		const url = buildCalendarEventsUrl(calendarName, term);
+		console.log(url);
+		const response = await fetch(url);
 
-			if (!response.ok) {
-				return null;
-			}
-
-			const responseData = await response.json();
-			const validatedData = CalendarEventArraySchema.parse(responseData) as CalendarEvent[];
-
-			return validatedData;
-		} catch {
-			// TODO: Handle error
+		if (!response.ok) {
 			return null;
 		}
+
+		const responseData = await response.json();
+		const validatedData = CalendarEventArraySchema.parse(responseData) as CalendarEvent[];
+
+		return validatedData;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	// Adds the course with guid to calendar with calendarName in term
-	public async addCourseToCalendar(
-		calendarName: string,
-		term: number,
-		guid: string
-	): Promise<CalendarEvent[] | null> {
-		return this.performPostCalendarOperation(
-			calendarName,
-			term,
-			CalendarEventPostAction.AddAllCalendarEventsForCourse,
-			{ guid: guid }
-		);
-	}
+// Adds the course with guid to calendar with calendarName in term
+export async function addCourseToCalendar(
+	calendarName: string,
+	term: number,
+	guid: string
+): Promise<CalendarEvent[] | null> {
+	return performPostCalendarOperation(
+		calendarName,
+		term,
+		CalendarEventPostAction.AddAllCalendarEventsForCourse,
+		{ guid: guid }
+	);
+}
 
-	// Adds calendarEvent to calendar with calendarName in term
-	public async addCalendarEventObjectToCalendar(
-		calendarName: string,
-		term: number,
-		calendarEvent: OldCalendarEvent
-	): Promise<CalendarEvent[] | null> {
-		return this.performPostCalendarOperation(
-			calendarName,
-			term,
-			CalendarEventPostAction.AddCalendarEvent,
-			{
-				guid: calendarEvent.course.guid,
-				section_id: calendarEvent.section.id,
-				start_time: calendarEvent.startTime,
-				end_time: calendarEvent.endTime,
-				start_column_index: calendarEvent.startColumnIndex,
-				is_active: calendarEvent.isActive,
-				needs_choice: calendarEvent.needsChoice,
-				is_chosen: calendarEvent.isChosen,
-			}
-		);
-	}
+// Adds calendarEvent to calendar with calendarName in term
+export async function addCalendarEventObjectToCalendar(
+	calendarName: string,
+	term: number,
+	calendarEvent: OldCalendarEvent
+): Promise<CalendarEvent[] | null> {
+	return performPostCalendarOperation(
+		calendarName,
+		term,
+		CalendarEventPostAction.AddCalendarEvent,
+		{
+			guid: calendarEvent.course.guid,
+			section_id: calendarEvent.section.id,
+			start_time: calendarEvent.startTime,
+			end_time: calendarEvent.endTime,
+			start_column_index: calendarEvent.startColumnIndex,
+			is_active: calendarEvent.isActive,
+			needs_choice: calendarEvent.needsChoice,
+			is_chosen: calendarEvent.isChosen,
+		}
+	);
+}
 
-	// Helper function to perform POST operations for calendar events
-	private async performPostCalendarOperation(
-		calendarName: string,
-		term: number,
-		action: CalendarEventPostAction,
-		payload: CalendarEventPostPayload
-	): Promise<CalendarEvent[] | null> {
-		try {
-			const url = this.buildCalendarEventsUrl(calendarName, term, { action: action });
-			const response = await fetch(url, {
-				method: HttpRequestType.POST,
-				body: JSON.stringify(payload),
-			});
+// Helper function to perform POST operations for calendar events
+async function performPostCalendarOperation(
+	calendarName: string,
+	term: number,
+	action: CalendarEventPostAction,
+	payload: CalendarEventPostPayload
+): Promise<CalendarEvent[] | null> {
+	try {
+		const url = buildCalendarEventsUrl(calendarName, term, { action: action });
+		const response = await fetch(url, {
+			method: HttpRequestType.POST,
+			body: JSON.stringify(payload),
+		});
 
-			if (!response.ok) {
-				return null;
-			}
-
-			const rawData = await response.json();
-			const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
-			return validatedData;
-		} catch {
-			// TODO: Handle error
+		if (!response.ok) {
 			return null;
 		}
+
+		const rawData = await response.json();
+		const validatedData = CalendarEventArraySchema.parse(rawData) as CalendarEvent[];
+		return validatedData;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	// Deletes the course with guid from calendar with calendarName in term
-	public async deleteCourseFromCalendar(
-		calendarName: string,
-		term: number,
-		guid: string
-	): Promise<void> {
-		try {
-			const url = this.buildCalendarEventsUrl(calendarName, term);
-			const response = await fetch(url, {
-				method: HttpRequestType.DELETE,
-				body: JSON.stringify({ guid: guid }),
-			});
+// Deletes the course with guid from calendar with calendarName in term
+export async function deleteCourseFromCalendar(
+	calendarName: string,
+	term: number,
+	guid: string
+): Promise<void> {
+	try {
+		const url = buildCalendarEventsUrl(calendarName, term);
+		const response = await fetch(url, {
+			method: HttpRequestType.DELETE,
+			body: JSON.stringify({ guid: guid }),
+		});
 
-			if (!response.ok) {
-				return null;
-			}
-
-			return null;
-		} catch {
-			// TODO: Handle error
-			return null;
-		}
-	}
-
-	// Inverts the classSection for course with guid in calendar with calendarName in term
-	public async invertSectionInCalendar(
-		calendarName: string,
-		term: number,
-		guid: string,
-		classSection: string
-	): Promise<void> {
-		try {
-			const url = this.buildCalendarEventsUrl(calendarName, term);
-			const response = await fetch(url, {
-				method: HttpRequestType.PUT,
-				body: JSON.stringify({ guid: guid, classSection: classSection }),
-			});
-
-			if (!response.ok) {
-				return null;
-			}
-
-			return null;
-		} catch {
-			// TODO: Handle error
+		if (!response.ok) {
 			return null;
 		}
+
+		return null;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
 
-	private buildCalendarsUrl(term: number): string {
-		const encodedNetId = encodeURIComponent(this.netId);
-		const encodedTerm = encodeURIComponent(term.toString());
+// Inverts the classSection for course with guid in calendar with calendarName in term
+export async function invertSectionInCalendar(
+	calendarName: string,
+	term: number,
+	guid: string,
+	classSection: string
+): Promise<void> {
+	try {
+		const url = buildCalendarEventsUrl(calendarName, term);
+		const response = await fetch(url, {
+			method: HttpRequestType.PUT,
+			body: JSON.stringify({ guid: guid, classSection: classSection }),
+		});
 
-		return `${CALENDARS_URL}${encodedNetId}/${encodedTerm}`;
-	}
-
-	private buildCalendarEventsUrl(
-		calendarName: string,
-		term: number,
-		queryParams?: Record<string, string | number | boolean>
-	): string {
-		const encodedNetId = encodeURIComponent(this.netId);
-		const encodedCalendarName = encodeURIComponent(calendarName.toString());
-		const encodedTerm = encodeURIComponent(term.toString());
-
-		const baseUrl = `${CALENDAR_EVENTS_URL}${encodedNetId}/${encodedCalendarName}/${encodedTerm}`;
-
-		if (queryParams && Object.keys(queryParams).length > 0) {
-			const searchParams = new URLSearchParams();
-			Object.entries(queryParams).forEach(([key, value]) => {
-				searchParams.append(key, String(value));
-			});
-			return `${baseUrl}?${searchParams.toString()}`;
+		if (!response.ok) {
+			return null;
 		}
 
-		return baseUrl;
+		return null;
+	} catch {
+		// TODO: Handle error
+		return null;
 	}
+}
+
+function buildCalendarsUrl(term: number): string {
+	const encodedTerm = encodeURIComponent(term.toString());
+
+	return `${CALENDARS_URL}${encodedTerm}/`;
+}
+
+function buildCalendarEventsUrl(
+	calendarName: string,
+	term: number,
+	queryParams?: Record<string, string | number | boolean>
+): string {
+	const encodedCalendarName = encodeURIComponent(calendarName.toString());
+	const encodedTerm = encodeURIComponent(term.toString());
+
+	const baseUrl = `${CALENDAR_EVENTS_URL}${encodedCalendarName}/${encodedTerm}/`;
+
+	if (queryParams && Object.keys(queryParams).length > 0) {
+		const searchParams = new URLSearchParams();
+		Object.entries(queryParams).forEach(([key, value]) => {
+			searchParams.append(key, String(value));
+		});
+		return `${baseUrl}?${searchParams.toString()}`;
+	}
+
+	return baseUrl;
 }
