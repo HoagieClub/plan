@@ -2,7 +2,6 @@ import logging
 import os
 import re
 import sys
-import re
 import time
 from datetime import date
 from pathlib import Path
