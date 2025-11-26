@@ -91,7 +91,7 @@ export async function createCalendar(
 		const url = buildCalendarsUrl(term);
 		const response = await fetch(
 			url,
-			buildRequest(HttpRequestType.PUT, { calendar_name: calendarName })
+			buildRequest(HttpRequestType.PUT, null, { calendar_name: calendarName })
 		);
 
 		if (!response.ok) {
@@ -118,7 +118,7 @@ export async function renameCalendar(
 		const url = buildCalendarsUrl(term);
 		const response = await fetch(
 			url,
-			buildRequest(HttpRequestType.POST, {
+			buildRequest(HttpRequestType.POST, null, {
 				calendar_name: calendarName,
 				new_calendar_name: newCalendarName,
 			})
@@ -147,7 +147,7 @@ export async function deleteCalendar(
 		const url = buildCalendarsUrl(term);
 		const response = await fetch(
 			url,
-			buildRequest(HttpRequestType.DELETE, { calendar_name: calendarName })
+			buildRequest(HttpRequestType.DELETE, null, { calendar_name: calendarName })
 		);
 
 		if (!response.ok) {
@@ -233,7 +233,7 @@ async function performPostCalendarOperation(
 ): Promise<CalendarEvent[] | null> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term, { action: action });
-		const response = await fetch(url, buildRequest(HttpRequestType.POST, payload));
+		const response = await fetch(url, buildRequest(HttpRequestType.POST, null, payload));
 
 		if (!response.ok) {
 			return null;
@@ -256,7 +256,7 @@ export async function deleteCourseFromCalendar(
 ): Promise<void> {
 	try {
 		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(url, buildRequest(HttpRequestType.DELETE, { guid: guid }));
+		const response = await fetch(url, buildRequest(HttpRequestType.DELETE, null, { guid: guid }));
 
 		if (!response.ok) {
 			return null;
@@ -280,7 +280,7 @@ export async function invertSectionInCalendar(
 		const url = buildCalendarEventsUrl(calendarName, term);
 		const response = await fetch(
 			url,
-			buildRequest(HttpRequestType.PUT, { guid: guid, classSection: classSection })
+			buildRequest(HttpRequestType.PUT, null, { guid: guid, classSection: classSection })
 		);
 
 		if (!response.ok) {
