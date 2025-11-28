@@ -1,14 +1,14 @@
 import type { ChangeEvent, FC } from 'react';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import {
+	Autocomplete,
+	AutocompleteOption,
 	Button,
 	Checkbox,
-	Autocomplete,
 	FormLabel,
-	AutocompleteOption,
 	ListItemContent,
 } from '@mui/joy';
 import { LRUCache } from 'typescript-lru-cache';
@@ -107,7 +107,7 @@ export const Search: FC = () => {
 			try {
 				const queryString = buildQuery(searchQuery, filter);
 
-				const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search/?${queryString}`);
 
 				if (response.ok) {
 					const data: { courses: Course[] } = await response.json();

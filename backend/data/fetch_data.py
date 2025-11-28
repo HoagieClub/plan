@@ -2,35 +2,124 @@ import argparse
 import csv
 import os
 import time
-from data.req_lib import ReqLib
 from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple
+
+from constants import DEPTS, SEMESTER_TO_TERM_CODE
+from data.req_lib import ReqLib
 
 # Note to future developers: This script can be made much faster if made asynchronous.
 
 # -------------------------------------------------------------------------------------#
 
+TERM_FIELDS = ["Term Code", "Term Name"]
+
+SUBJECT_FIELDS = ["Subject Code", "Subject Name"]
+
+COURSE_FIELDS = [
+    "Course ID",
+    "Course GUID",
+    "Catalog Number",
+    "Course Title",
+    "Course Start Date",
+    "Course End Date",
+    "Course Track",
+    "Course Description",
+    "Has Seat Reservations",
+]
+
+INSTRUCTOR_FIELDS = [
+    "Instructor EmplID",
+    "Instructor First Name",
+    "Instructor Last Name",
+    "Instructor Full Name",
+]
+
+CROSSLISTING_FIELDS = ["Crosslisting Subjects", "Crosslisting Catalog Numbers"]
+
+CLASS_FIELDS = [
+    "Class Number",
+    "Class Section",
+    "Class Status",
+    "Class Type",
+    "Class Capacity",
+    "Class Enrollment",
+    "Class Year Enrollments",
+]
+
+MEETING_FIELDS = [
+    "Meeting Number",
+    "Meeting Start Time",
+    "Meeting End Time",
+    "Meeting Days",
+    "Building Name",
+    "Meeting Room",
+]
+
+COURSE_DETAILS_FIELDS = [
+    "Drop Consent",
+    "Grading Oral Presentation",
+    "Other Information",
+    "Subject",
+    "Catnum",
+    "Seat Reservations",
+    "Reading Writing Assignment",
+    "Grading Quizzes",
+    "Distribution Area Long",
+    "Grading Home Mid Exam",
+    "Transcript Title",
+    "Add Consent",
+    "Web Address",
+    "Grading Other Exam",
+    "Topic Title",
+    "Grading Lab Reports",
+    "Other Requirements",
+    "Other Restrictions",
+    "Grading Paper Final Exam",
+    "Grading Paper Midterm Exam",
+    "Crosslistings",
+    "Grading Papers",
+    "Grading Mid Exam",
+    "Grading Prog Assign",
+    "Grading Basis",
+    "Grading Final Exam",
+    "Grading Design Projects",
+    "Grading Other",
+    "Long Title",
+    "Grading Home Final Exam",
+    "Grading Problem Sets",
+    "Distribution Area Short",
+    "Grading Precept Part",
+    "Grading Term Papers",
+]
+READING_LIST_FIELDS = [f"Reading List Title {i}" for i in range(1, 7)] + [
+    f"Reading List Author {i}" for i in range(1, 7)
+]
+
+FIELDS = [
+    TERM_FIELDS,
+    SUBJECT_FIELDS,
+    COURSE_FIELDS,
+    INSTRUCTOR_FIELDS,
+    CROSSLISTING_FIELDS,
+    CLASS_FIELDS,
+    MEETING_FIELDS,
+    COURSE_DETAILS_FIELDS,
+    READING_LIST_FIELDS,
+]
+
+FIELD_NAMES = sum(FIELDS, [])
+
 
 def fetch_course_detail(course_id, term, req_lib):
-    """Fetches course details for a given course_id and term.
-    """
-    # if course_id == '010855':
-    #     return course_id, {}
-    return course_id, req_lib.getJSON(
-        req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id
-    )
+    """Fetch course details for a given course_id and term."""
+    return course_id, req_lib.getJSON(req_lib.configs.COURSES_DETAILS, fmt="json", term=term, course_id=course_id)
 
 
 def fetch_data(subject, term, req_lib):
-    """Fetches course and seat information for a given subject and term.
-    """
-    # if subject in ['EEB', 'GHP', 'SPI']:
-    #     print(f'Skipping department {subject} for now.')
-    #     return {}, {}, {}
-
+    """Fetch course and seat information for a given subject and term."""
     # Fetch all offered courses from a department
-    courses = req_lib.getJSON(
-        req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject
-    )
+    courses = req_lib.getJSON(req_lib.configs.COURSES_COURSES, fmt="json", term=term, subject=subject)
 
     # Extract the course IDs
     course_ids = [
@@ -43,21 +132,13 @@ def fetch_data(subject, term, req_lib):
     print(f"Fetched {len(course_ids)} course IDs from {subject}.")
 
     # Parallel fetching of course details
-    with ThreadPoolExecutor(max_workers=16) as executor:
-        futures = [
-            executor.submit(fetch_course_detail, course_id, term, req_lib)
-            for course_id in course_ids
-        ]
-        course_details = {
-            course_id: detail
-            for course_id, detail in (future.result() for future in futures)
-        }
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(fetch_course_detail, course_id, term, req_lib) for course_id in course_ids]
+        course_details = {course_id: detail for course_id, detail in (future.result() for future in futures)}
 
     # Reserved seats endpoint requires the course IDs to be a comma separated list
     course_ids = ",".join(course_ids)
-    seat_info = req_lib.getJSON(
-        req_lib.configs.COURSES_RESSEATS, fmt="json", term=term, course_ids=course_ids
-    )
+    seat_info = req_lib.getJSON(req_lib.configs.COURSES_RESSEATS, fmt="json", term=term, course_ids=course_ids)
 
     if not seat_info.get("course"):
         print(f"No reserved seating info found for course_ids: {course_ids}")
@@ -69,8 +150,9 @@ def fetch_data(subject, term, req_lib):
 
 
 def process_course(term, subject, course, seat_mapping, course_details, writer):
-    """Extracts information from each course from the courses/courses endpoint,
-    and course details from the courses/details endpoint. Handles courses with multiple instructors gracefully.
+    """Extract information from each course from the courses/courses endpoint, and course details from the courses/details endpoint.
+
+    Handles courses with multiple instructors gracefully.
     """
     common_data = extract_common_data(term, subject, course)
     course_details_data = extract_course_details(course_details)
@@ -87,10 +169,15 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
             classes_data.append({**class_data, **meeting_data})
 
     # Process instructor-dependent data
-    for instructor in course.get("instructors", []):
-        instructor_data = extract_instructor_data(instructor)
-
-        # For each class and meeting combination, add instructor data and write row
+    # If no instructors, write rows with empty instructor data
+    instructors = course.get("instructors", [])
+    if not instructors:
+        instructor_data = {
+            "Instructor EmplID": "",
+            "Instructor First Name": "",
+            "Instructor Last Name": "",
+            "Instructor Full Name": "",
+        }
         for class_meeting_data in classes_data:
             row_data = {
                 **common_data,
@@ -100,14 +187,27 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
                 **course_details_data,
             }
             writer.writerow(row_data)
+    else:
+        for instructor in instructors:
+            instructor_data = extract_instructor_data(instructor)
+
+            # For each class and meeting combination, add instructor data and write row
+            for class_meeting_data in classes_data:
+                row_data = {
+                    **common_data,
+                    **instructor_data,
+                    **crosslisting_data,
+                    **class_meeting_data,  # This now includes both class and meeting data
+                    **course_details_data,
+                }
+                writer.writerow(row_data)
 
 
 # --------------------------------------------------------------------------------------
 
 
 def process_courses(courses, seat_info, course_details, writer):
-    """Processes all courses from the courses/courses endpoint.
-    """
+    """Process all courses from the courses/courses endpoint."""
     seat_mapping = {seat["course_id"]: seat for seat in seat_info.get("course", [])}
     for term in courses.get("term", []):  # Loop through each term
         for subject in term.get("subjects", []):  # Loop through each subject
@@ -119,23 +219,17 @@ def process_courses(courses, seat_info, course_details, writer):
                 course_id = course.get("course_id", "")
                 course_dict = course_details.get(course_id)
                 if course_dict is None:
-                    print(
-                        f"Data for course ID {course_id} not found. Possible issue with the server."
-                    )
+                    print(f"Data for course ID {course_id} not found. Possible issue with the server.")
                     continue
                 course_detail = course_dict.get("course_details", {})
-                process_course(
-                    term, subject, course, seat_mapping, course_detail, writer
-                )
+                process_course(term, subject, course, seat_mapping, course_detail, writer)
 
 
 # --------------------------------------------------------------------------------------
 
 
 def extract_common_data(term, subject, course):
-    """Extracts data from the /courses/courses endpoint
-    given a subject and its corresponding course.
-    """
+    """Extract data from the /courses/courses endpoint given a subject and its corresponding course."""
     course_detail = course.get("detail", {})
 
     data = {
@@ -166,8 +260,7 @@ def extract_common_data(term, subject, course):
 
 
 def extract_instructor_data(instructor):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     return {
         "Instructor EmplID": instructor.get("emplid", ""),
         "Instructor First Name": instructor.get("first_name", ""),
@@ -180,14 +273,9 @@ def extract_instructor_data(instructor):
 
 
 def extract_crosslisting_data(crosslistings):
-    """CPU-bound function.
-    """
-    crosslisting_subjects = [
-        crosslisting.get("subject", "") for crosslisting in crosslistings
-    ]
-    crosslisting_catalog_numbers = [
-        crosslisting.get("catalog_number", "") for crosslisting in crosslistings
-    ]
+    """CPU-bound function."""
+    crosslisting_subjects = [crosslisting.get("subject", "") for crosslisting in crosslistings]
+    crosslisting_catalog_numbers = [crosslisting.get("catalog_number", "") for crosslisting in crosslistings]
     return {
         "Crosslisting Subjects": ",".join(crosslisting_subjects),
         "Crosslisting Catalog Numbers": ",".join(crosslisting_catalog_numbers),
@@ -220,15 +308,12 @@ def extract_class_data(course_class, seat_mapping):
 
         # Extract and format class year enrollments
         class_year_enrollments = [
-            f"Year {enrollment['class_year']}: {enrollment['enrl_seats']} students"
-            for enrollment in enrollments
+            f"Year {enrollment['class_year']}: {enrollment['enrl_seats']} students" for enrollment in enrollments
         ]
     else:
         class_year_enrollments = []
 
-    class_year_enrollments_str = (
-        ", ".join(class_year_enrollments) or "Class year demographics unavailable"
-    )
+    class_year_enrollments_str = ", ".join(class_year_enrollments) or "Class year demographics unavailable"
 
     return {
         "Class Number": class_number,
@@ -245,8 +330,7 @@ def extract_class_data(course_class, seat_mapping):
 
 
 def extract_course_details(course_details):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     if not course_details:
         print("No course details provided. Possible issue with the server. Skipping...")
         return {}
@@ -269,9 +353,7 @@ def extract_course_details(course_details):
         "Subject": course_detail.get("subject", ""),
         "Seat Reservations": seat_reservations_formatted,
         "Catnum": course_detail.get("catnum", ""),
-        "Reading Writing Assignment": (
-            course_detail.get("reading_writing_assignment") or ""
-        ),
+        "Reading Writing Assignment": (course_detail.get("reading_writing_assignment") or ""),
         "Grading Quizzes": course_detail.get("grading_quizzes", ""),
         "Distribution Area Long": course_detail.get("distribution_area_long", ""),
         "Grading Home Mid Exam": course_detail.get("grading_home_mid_exam", ""),
@@ -321,8 +403,7 @@ def extract_course_details(course_details):
 
 
 def extract_meeting_data(meeting):
-    """CPU-bound function.
-    """
+    """CPU-bound function."""
     days = ",".join(meeting.get("days", []))
     return {
         "Meeting Number": meeting.get("meeting_number", ""),
@@ -337,288 +418,65 @@ def extract_meeting_data(meeting):
 # --------------------------------------------------------------------------------------
 
 
-def get_semesters_from_args():
-    parser = argparse.ArgumentParser(
-        description="Fetch academic course data for specified semesters."
+def get_semesters_and_depts_from_args() -> Tuple[List[str], List[str]]:
+    parser = argparse.ArgumentParser(description="Fetch academic course data for specified semesters.")
+    parser.add_argument(
+        "-s", "--semesters", nargs="+", metavar="SEM", help="Semesters to generate CSVs for, e.g. f2019 s2022"
     )
     parser.add_argument(
-        "semesters", nargs="*", help="Semesters to generate CSVs for, e.g. f2019 s2022."
+        "-d", "--departments", nargs="+", metavar="DEPT", help="Departments to generate CSVs for, e.g. COS MAT"
     )
     args = parser.parse_args()
 
     if not args.semesters:
-        print(
-            "No semesters provided as arguments. Please enter the semesters separated by spaces:"
-        )
+        print("No semesters provided as arguments. Please enter the semesters separated by spaces:")
         args.semesters = input().split()
+    if not args.departments:
+        print("No departments provided as arguments. Using all departments by default.")
+        args.departments = list(DEPTS.keys())
 
-    return args.semesters
+    return args.semesters, args.departments
 
 
 # --------------------------------------------------------------------------------------
 
 
-def generate_csv(semester, subjects, query, fieldnames, req_lib):
+def generate_csv(semester, subject, req_lib):
+    os.makedirs(semester, exist_ok=True)
+
     copy_n = 0
-    csv_file = f"{semester}.csv"
+    csv_file = f"{semester}/{subject}.csv"
 
     # Check if file already exists
     while os.path.exists(csv_file):
         copy_n += 1
-        csv_file = f"{semester}_{copy_n}.csv"
+        csv_file = f"{semester}/{subject}_{copy_n}.csv"
 
     with open(csv_file, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames=FIELD_NAMES)
         writer.writeheader()
 
-        for subject in subjects:
-            term_info, seat_info, course_details = fetch_data(
-                subject, int(query[semester]), req_lib
-            )
-            process_courses(term_info, seat_info, course_details, writer)
+        term_info, seat_info, course_details = fetch_data(subject, SEMESTER_TO_TERM_CODE[semester], req_lib)
+        process_courses(term_info, seat_info, course_details, writer)
 
 
 # --------------------------------------------------------------------------------------
 
 
+# Usage: python fetch_data.py -s s2026 -d COS MAT
+# Usage: python fetch_data.py -s s2026 -d
+# A list of departments can be specified. If none are given, all departments will be used.
 def main():
     req_lib = ReqLib()
-    query = {
-        "f2025": "1262",
-        "f2024": "1252",
-        "f2023": "1242",
-        "f2022": "1232",
-        "f2021": "1222",
-        "f2020": "1212",
-        "s2025": "1254",
-        "s2024": "1244",
-        "s2023": "1234",
-        "s2022": "1224",
-        "s2021": "1214",
-    }
 
-    # TODO: Standardize this with backend/constants.py
-    subjects = [
-        "AAS",
-        "AFS",
-        "AMS",
-        "ANT",
-        "AOS",
-        "APC",
-        "ARA",
-        "ARC",
-        "ART",
-        "ASA",
-        "ASL",
-        "AST",
-        "ATL",
-        "BCS",
-        "BNG",
-        "CBE",
-        "CDH",
-        "CEE",
-        "CGS",
-        "CHI",
-        "CHM",
-        "CHV",
-        "CLA",
-        "CLG",
-        "COM",
-        "COS",
-        "CSE",
-        "CWR",
-        "CZE",
-        "DAN",
-        "EAS",
-        "ECE",
-        "ECO",
-        "ECS",
-        "EEB",
-        "EGR",
-        "ENE",
-        "ENG",
-        "ENT",
-        "ENV",
-        "EPS",
-        "FIN",
-        "FRE",
-        "FRS",
-        "GEO",
-        "GER",
-        "GEZ",
-        "GHP",
-        "GSS",
-        "HEB",
-        "HIN",
-        "HIS",
-        "HLS",
-        "HOS",
-        "HUM",
-        "ISC",
-        "ITA",
-        "JDS",
-        "JPN",
-        "JRN",
-        "KOR",
-        "LAO",
-        "LAS",
-        "LAT",
-        "LCA",
-        "LIN",
-        "MAE",
-        "MAT",
-        "MED",
-        "MOD",
-        "MOG",
-        "MOL",
-        "MPP",
-        "MSE",
-        "MTD",
-        "MUS",
-        "NES",
-        "NEU",
-        "ORF",
-        "PAW",
-        "PER",
-        "PHI",
-        "PHY",
-        "PLS",
-        "POL",
-        "POP",
-        "POR",
-        "PSY",
-        "QCB",
-        "REL",
-        "RES",
-        "RUS",
-        "SAN",
-        "SLA",
-        "SML",
-        "SOC",
-        "SPA",
-        "SPI",
-        "STC",
-        "SWA",
-        "THR",
-        "TPP",
-        "TRA",
-        "TUR",
-        "TWI",
-        "UKR",
-        "URB",
-        "URD",
-        "VIS",
-        "WRI",
-    ]
-
-    term_fields = ["Term Code", "Term Name"]
-
-    subject_fields = ["Subject Code", "Subject Name"]
-
-    course_fields = [
-        "Course ID",
-        "Course GUID",
-        "Catalog Number",
-        "Course Title",
-        "Course Start Date",
-        "Course End Date",
-        "Course Track",
-        "Course Description",
-        "Has Seat Reservations",
-    ]
-
-    instructor_fields = [
-        "Instructor EmplID",
-        "Instructor First Name",
-        "Instructor Last Name",
-        "Instructor Full Name",
-    ]
-
-    crosslisting_fields = ["Crosslisting Subjects", "Crosslisting Catalog Numbers"]
-
-    class_fields = [
-        "Class Number",
-        "Class Section",
-        "Class Status",
-        "Class Type",
-        "Class Capacity",
-        "Class Enrollment",
-        "Class Year Enrollments",
-    ]
-
-    meeting_fields = [
-        "Meeting Number",
-        "Meeting Start Time",
-        "Meeting End Time",
-        "Meeting Days",
-        "Building Name",
-        "Meeting Room",
-    ]
-
-    course_details_fields = [
-        "Drop Consent",
-        "Grading Oral Presentation",
-        "Other Information",
-        "Subject",
-        "Catnum",
-        "Seat Reservations",
-        "Reading Writing Assignment",
-        "Grading Quizzes",
-        "Distribution Area Long",
-        "Grading Home Mid Exam",
-        "Transcript Title",
-        "Add Consent",
-        "Web Address",
-        "Grading Other Exam",
-        "Topic Title",
-        "Grading Lab Reports",
-        "Other Requirements",
-        "Other Restrictions",
-        "Grading Paper Final Exam",
-        "Grading Paper Midterm Exam",
-        "Crosslistings",
-        "Grading Papers",
-        "Grading Mid Exam",
-        "Grading Prog Assign",
-        "Grading Basis",
-        "Grading Final Exam",
-        "Grading Design Projects",
-        "Grading Other",
-        "Long Title",
-        "Grading Home Final Exam",
-        "Grading Problem Sets",
-        "Distribution Area Short",
-        "Grading Precept Part",
-        "Grading Term Papers",
-    ]
-
-    reading_list_fields = [f"Reading List Title {i}" for i in range(1, 7)] + [
-        f"Reading List Author {i}" for i in range(1, 7)
-    ]
-
-    fields = [
-        term_fields,
-        subject_fields,
-        course_fields,
-        instructor_fields,
-        crosslisting_fields,
-        class_fields,
-        meeting_fields,
-        course_details_fields,
-        reading_list_fields,
-    ]
-
-    fieldnames = sum(fields, [])
-    semesters = get_semesters_from_args()
-    available_semesters = query.keys()
+    semesters, departments = get_semesters_and_depts_from_args()
 
     for semester in semesters:
-        if semester in available_semesters:
-            generate_csv(semester, subjects, query, fieldnames, req_lib)
-        else:
-            print(
-                f"Warning: Semester '{semester}' not found in available semesters. Skipping."
-            )
+        for department in departments:
+            if semester in SEMESTER_TO_TERM_CODE.keys() and department in DEPTS.keys():
+                generate_csv(semester, department, req_lib)
+            else:
+                print(f"Warning: Semester '{semester}' not found in available semesters. Skipping.")
 
 
 if __name__ == "__main__":

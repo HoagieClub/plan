@@ -1,10 +1,9 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.decorators import api_view
 
 from hoagieplan.models import (
     Course,
     CourseComments,
-    CourseEvaluations,
     Department,
     Section,
 )
@@ -59,7 +58,12 @@ def get_course_comments(dept, num):
     result = {"reviews": cleaned_comments}
 
     # Try to get course evaluation
-    evaluation = CourseEvaluations.objects.filter(course_guid__endswith=course_guid_suffix).first()
+    evaluation = (
+        Course.objects
+        .filter(department=department, catalog_number=str(num))
+        .filter(quality_of_course__isnull=False) # Extract only courses with non-null rating
+        .order_by("course_id", "-guid").first()
+    )
 
     if evaluation and evaluation.quality_of_course:
         result["rating"] = evaluation.quality_of_course
@@ -132,7 +136,7 @@ def get_course_info(crosslistings):
     return course_dict
 
 
-@require_GET
+@api_view(["GET"])
 def course_details(request):
     """API endpoint for course details."""
     crosslistings = request.GET.get("crosslistings")
@@ -146,7 +150,7 @@ def course_details(request):
     return JsonResponse(course_info)
 
 
-@require_GET
+@api_view(["GET"])
 def course_comments_view(request):
     """API endpoint for course comments."""
     dept = request.GET.get("dept")

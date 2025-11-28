@@ -54,6 +54,7 @@ class Major(models.Model):
     degree = models.ManyToManyField("Degree")
     description = models.TextField(db_index=True, null=True)
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(null=True)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
 
@@ -69,6 +70,7 @@ class Minor(models.Model):
     excluded_majors = models.ManyToManyField("Major")
     excluded_minors = models.ManyToManyField("Minor")
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(null=True)
     apply_by_semester = models.IntegerField(default=6)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
@@ -84,6 +86,7 @@ class Certificate(models.Model):
     description = models.TextField(db_index=True, null=True)
     excluded_majors = models.ManyToManyField("Major")
     urls = models.JSONField(db_index=True, null=True)
+    contacts = models.JSONField(null=True)
     apply_by_semester = models.IntegerField(default=8)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
@@ -142,6 +145,30 @@ class Course(models.Model):
     reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
     grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
     reading_list = models.TextField(blank=True, db_index=True, null=True)
+
+    # Course evaluation fields
+    quality_of_course = models.FloatField(null=True)
+    quality_of_lectures = models.FloatField(null=True)
+    quality_of_readings = models.FloatField(null=True)
+    quality_of_written_assignments = models.FloatField(null=True)
+    recommend_to_other_students = models.FloatField(null=True)
+    quality_of_language = models.FloatField(null=True)
+    quality_of_classes = models.FloatField(null=True)
+    quality_of_the_classes = models.FloatField(null=True)
+    quality_of_seminar = models.FloatField(null=True)
+    quality_of_precepts = models.FloatField(null=True)
+    quality_of_laboratories = models.FloatField(null=True)
+    quality_of_studios = models.FloatField(null=True)
+    quality_of_ear_training = models.FloatField(null=True)
+    overall_course_quality_rating = models.FloatField(null=True)
+    overall_quality_of_the_course = models.FloatField(null=True)
+    interest_in_subject_matter = models.FloatField(null=True)
+    overall_quality_of_the_lecture = models.FloatField(null=True)
+    papers_and_problem_sets = models.FloatField(null=True)
+    readings = models.FloatField(null=True)
+    oral_presentation_skills = models.FloatField(null=True)
+    workshop_structure = models.FloatField(null=True)
+    written_work = models.FloatField(null=True)
 
     class Meta:
         db_table = "Course"
@@ -391,38 +418,6 @@ class CalendarEvent(models.Model):
 
     def get_key(self):
         return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
-
-
-class CourseEvaluations(models.Model):
-    course_guid = models.CharField(max_length=15, db_index=True, null=True)
-    quality_of_course = models.FloatField(null=True)
-    quality_of_lectures = models.FloatField(null=True)
-    quality_of_readings = models.FloatField(null=True)
-    quality_of_written_assignments = models.FloatField(null=True)
-    recommend_to_other_students = models.FloatField(null=True)
-    quality_of_language = models.FloatField(null=True)
-    quality_of_classes = models.FloatField(null=True)
-    quality_of_the_classes = models.FloatField(null=True)
-    quality_of_seminar = models.FloatField(null=True)
-    quality_of_precepts = models.FloatField(null=True)
-    quality_of_laboratories = models.FloatField(null=True)
-    quality_of_studios = models.FloatField(null=True)
-    quality_of_ear_training = models.FloatField(null=True)
-    overall_course_quality_rating = models.FloatField(null=True)
-    overall_quality_of_the_course = models.FloatField(null=True)
-    interest_in_subject_matter = models.FloatField(null=True)
-    overall_quality_of_the_lecture = models.FloatField(null=True)
-    papers_and_problem_sets = models.FloatField(null=True)
-    readings = models.FloatField(null=True)
-    oral_presentation_skills = models.FloatField(null=True)
-    workshop_structure = models.FloatField(null=True)
-    written_work = models.FloatField(null=True)
-
-    class Meta:
-        db_table = "CourseEvaluations"
-
-    def __str__(self):
-        return f"Evaluation for {self.course.name} - {self.term.name}"
 
 
 class CourseComments(models.Model):
