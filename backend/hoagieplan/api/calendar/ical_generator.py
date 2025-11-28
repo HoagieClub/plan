@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import pytz
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.http import require_POST
+from rest_framework.decorators import api_view
 from icalendar import Calendar, Event
 
 # Maps from day abbreviations to days used in ical rrule
@@ -40,7 +40,7 @@ END_DATE = {
 }
 
 
-@require_POST
+@api_view(["POST"])
 def export_calendar_view(request):
     """Export calendar as iCal file."""
     try:
