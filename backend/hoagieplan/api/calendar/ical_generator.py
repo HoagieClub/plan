@@ -117,8 +117,6 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
     description = course_name + "\nInstructor: " + instructor
     if description:
         event.add("description", description)
-    else:
-        print("No description")
 
     # Add location
     location = section.get("class_meetings")[0].get("building_name")
@@ -126,14 +124,9 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
     full_location = location + " " + room
     if full_location and "Canceled" not in full_location:
         event.add("location", full_location)
-        print(full_location)
-    else:
-        print("No location")
 
     if instructor:
         event.add("organizer", instructor)
-    else:
-        print("No instructor")
 
     # Add recurrence rule
     event.add(
