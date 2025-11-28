@@ -179,26 +179,12 @@ const useCalendarStore = create<CalendarStore>()(
 				set((state) => {
 					const term = clickedSection.course.guid.substring(0, 4);
 					const selectedCourses = state.selectedCourses[term] || [];
-					// const typeExceptions = ['Seminar'];
 
 					const sectionsPerGroupping = selectedCourses.filter(
 						(section) =>
 							section.course.guid === clickedSection.course.guid &&
 							section.section.id === clickedSection.section.id
 					).length;
-
-					// Determine if this is a special exception
-					// const isException =
-					// 	typeExceptions.includes(clickedSection.section.class_type) &&
-					// 	!(
-					// 		clickedSection.section.class_type === 'Seminar' &&
-					// 		clickedSection.course.title.includes('Independent Work')
-					// 	);
-
-					// If the clicked section is an exception, do nothing and return the existing state unchanged
-					// if (isException) {
-					// 	return { selectedCourses: state.selectedCourses };
-					// }
 
 					const isActiveSingle =
 						selectedCourses.filter(
