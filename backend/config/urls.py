@@ -24,9 +24,8 @@ limitations under the License.
 from django.contrib import admin
 from django.urls import path
 
-from hoagieplan import ical_generator
 from hoagieplan.api.auth import csrf
-from hoagieplan.api.calendar import configuration
+from hoagieplan.api.calendar import configuration, ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
 from hoagieplan.api.dashboard import details, requirements, search, upload

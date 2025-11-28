@@ -117,6 +117,14 @@ const useCalendarStore = create<CalendarStore>()(
 						lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
 					);
 
+					const seminarSections = sections.filter(
+						(section) => section.class_type === 'Seminar' && /^S0\d+/.test(section.class_section)
+					);
+
+					const uniqueSeminarNumbers = new Set(
+						seminarSections.map((section) => section.class_section.match(/^S0(\d+)/)?.[1])
+					);
+
 					const calendarEvents: CalendarEvent[] = sections.flatMap((section: Section) =>
 						section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
 							const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
@@ -132,7 +140,8 @@ const useCalendarStore = create<CalendarStore>()(
 								isActive: true,
 								needsChoice:
 									(!exceptions.includes(section.class_type) && uniqueCount > 1) ||
-									(uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture'),
+									(uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture') ||
+									(uniqueSeminarNumbers.size > 1 && section.class_type === 'Seminar'),
 								isChosen: false,
 							}));
 						})
@@ -170,26 +179,12 @@ const useCalendarStore = create<CalendarStore>()(
 				set((state) => {
 					const term = clickedSection.course.guid.substring(0, 4);
 					const selectedCourses = state.selectedCourses[term] || [];
-					const typeExceptions = ['Seminar'];
 
 					const sectionsPerGroupping = selectedCourses.filter(
 						(section) =>
 							section.course.guid === clickedSection.course.guid &&
 							section.section.id === clickedSection.section.id
 					).length;
-
-					// Determine if this is a special exception
-					const isException =
-						typeExceptions.includes(clickedSection.section.class_type) &&
-						!(
-							clickedSection.section.class_type === 'Seminar' &&
-							clickedSection.course.title.includes('Independent Work')
-						);
-
-					// If the clicked section is an exception, do nothing and return the existing state unchanged
-					if (isException) {
-						return { selectedCourses: state.selectedCourses };
-					}
 
 					const isActiveSingle =
 						selectedCourses.filter(
