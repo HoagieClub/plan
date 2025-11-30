@@ -62,6 +62,16 @@ export function useAlmostCompletedMinorsModal() {
 		void fetchPrograms();
 	}, [isOpen]);
 
+	// Reset state when modal closes
+	useEffect(() => {
+		if (!isOpen) {
+			setSelectedProgram(null);
+			setProgramDetails(null);
+			setQuery('');
+			setOpenSnackbar(false);
+		}
+	}, [isOpen]);
+
 	// Handle adding/removing a minor
 	const handleToggleMinor = async (minorCode: string, minorName: string) => {
 		const currentMinors = profile.minors || [];
@@ -163,10 +173,14 @@ export function useAlmostCompletedMinorsModal() {
 			<div className='flex flex-row gap-6' style={{ height: '640px' }}>
 				{/* Left column: list of suggested minors/certificates */}
 				<div className='flex w-1/2 flex-col pr-4'>
-					<div className='mb-4'>
+					<div className='mb-3'>
 						<h2 className='text-2xl font-bold'>Minors and Certificates</h2>
 					</div>
-
+					<div className='mb-4 rounded-md bg-red-50 p-2 text-xs'>
+						HoagiePlan displays the maximum number of courses you need to take to obtain the
+						minor/cert, and the actual number of courses needed may be lower. IW requirements are
+						not taken into account.
+					</div>
 					<div className='mb-4'>
 						<input
 							type='search'
@@ -324,28 +338,10 @@ export function useAlmostCompletedMinorsModal() {
 					},
 					backgroundColor: '#0F1E2F',
 					color: '#f6f6f6',
-					bottom: '80px',
 				}}
 			>
 				<div className='text-center'>You can only minor in two programs and plan up to three.</div>
-			</Snackbar>
-			<Snackbar
-				open={true}
-				color='primary'
-				variant='soft'
-				sx={{
-					'.MuiSnackbar-root': {
-						borderRadius: '16px',
-					},
-					backgroundColor: '#0F1E2F',
-					color: '#f6f6f6',
-				}}
-			>
-				<div className='text-center'>
-					HoagiePlan displays the maximum number of courses you need to take to obtain the
-					minor/cert, and the actual number of courses needed may be lower. IW requirements are not
-					taken into account.
-				</div>
+				<div className='text-center'>You can only minor in two programs and plan up to three.</div>
 			</Snackbar>
 		</Modal>
 	);
