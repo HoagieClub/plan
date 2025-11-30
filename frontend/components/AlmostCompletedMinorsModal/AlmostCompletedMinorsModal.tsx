@@ -341,7 +341,6 @@ export function useAlmostCompletedMinorsModal() {
 				}}
 			>
 				<div className='text-center'>You can only minor in two programs and plan up to three.</div>
-				<div className='text-center'>You can only minor in two programs and plan up to three.</div>
 			</Snackbar>
 		</Modal>
 	);
