@@ -9,8 +9,8 @@ import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
 
+import { MinorDetailsPanel } from './MinorDetailsPanel';
 import { MinorsList } from './MinorsList';
-import { ProgramDetailsPanel } from './ProgramDetailsPanel';
 
 /**
  * Hook to open the "Almost Completed Minors" modal.
@@ -184,15 +184,13 @@ export function useAlmostCompletedMinorsModal() {
 				/>
 
 				{/* Right column: illustration + info OR program details */}
-				<div className='flex flex-1 flex-col border-l px-8'>
-					<ProgramDetailsPanel
-						selectedProgram={selectedProgram}
-						programDetails={programDetails}
-						loadingDetails={loadingDetails}
-						onClose={handleCloseProgramDetails}
-						onCloseModal={() => setIsOpen(false)}
-					/>
-				</div>
+				<MinorDetailsPanel
+					selectedProgram={selectedProgram}
+					programDetails={programDetails}
+					loadingDetails={loadingDetails}
+					onClose={handleCloseProgramDetails}
+					onCloseModal={() => setIsOpen(false)}
+				/>
 			</div>
 			<Snackbar
 				open={openSnackbar}

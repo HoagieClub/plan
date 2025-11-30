@@ -3,7 +3,7 @@ import Image from 'next/image';
 import type { Program } from '@/services/almostCompletedService';
 import type { ProgramDetails } from '@/services/programDetailsService';
 
-interface ProgramDetailsPanelProps {
+interface MinorDetailsPanelProps {
 	selectedProgram: Program | null;
 	programDetails: ProgramDetails | null;
 	loadingDetails: boolean;
@@ -11,16 +11,17 @@ interface ProgramDetailsPanelProps {
 	onCloseModal: () => void;
 }
 
-export function ProgramDetailsPanel({
+export function MinorDetailsPanel({
 	selectedProgram,
 	programDetails,
 	loadingDetails,
 	onClose,
 	onCloseModal,
-}: ProgramDetailsPanelProps) {
+}: MinorDetailsPanelProps) {
 	if (!selectedProgram) {
 		return (
-			<div className='flex h-full flex-col items-center justify-center'>
+			<div className='flex flex-1 flex-col border-l px-8'>
+				<div className='flex h-full flex-col items-center justify-center'>
 				<div className='flex h-80 w-full items-center justify-center bg-white'>
 					<div className='flex h-full w-full items-center justify-center rounded-lg'>
 						<Image
@@ -43,12 +44,14 @@ export function ProgramDetailsPanel({
 						Close
 					</button>
 				</div>
+				</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className='flex h-full flex-col overflow-y-auto py-6'>
+		<div className='flex flex-1 flex-col border-l px-8'>
+			<div className='flex h-full flex-col overflow-y-auto py-6'>
 			<div className='mb-4 flex items-start justify-between'>
 				<div>
 					<h2 className='text-2xl font-bold'>{selectedProgram.name}</h2>
@@ -256,6 +259,7 @@ export function ProgramDetailsPanel({
 					)}
 				</>
 			)}
+			</div>
 		</div>
 	);
 }
