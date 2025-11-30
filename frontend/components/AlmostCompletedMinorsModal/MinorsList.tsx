@@ -25,9 +25,9 @@ export function MinorsList({
 				<h2 className='text-2xl font-bold'>Minors and Certificates</h2>
 			</div>
 			<div className='mb-4 rounded-md bg-red-50 p-2 text-xs'>
-				HoagiePlan displays the maximum number of courses you need to take to obtain the
-				minor/cert, and the actual number of courses needed may be lower. IW requirements are
-				not taken into account.
+				HoagiePlan displays the maximum number of courses you need to take to obtain the minor/cert,
+				and the actual number of courses needed may be lower. IW requirements are not taken into
+				account.
 			</div>
 			<div className='mb-4'>
 				<input
