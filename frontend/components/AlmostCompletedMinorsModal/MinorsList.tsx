@@ -27,18 +27,39 @@ export function MinorsList({
 				<h2 className='text-2xl font-bold'>Minors and Certificates</h2>
 			</div>
 			<div className='mb-4 rounded-md bg-red-50 p-2 text-xs'>
-				HoagiePlan displays the maximum number of courses you need to take to obtain the minor/cert,
-				and the actual number of courses needed may be lower. IW requirements are not taken into
-				account.
+				Shows maximum courses needed for minors/certificates. Actual requirements may be lower. IW
+				requirements excluded.
 			</div>
-			<div className='mb-4'>
+			<div className='relative mb-4'>
 				<input
-					type='search'
+					type='text'
 					placeholder='Search here'
 					value={query}
 					onChange={(e) => onQueryChange(e.target.value)}
-					className='w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none'
+					className='w-full rounded-lg border border-gray-300 px-4 py-2 pr-10 text-sm focus:outline-none'
 				/>
+				{query && (
+					<button
+						onClick={() => onQueryChange('')}
+						className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+						title='Clear search'
+					>
+						<svg
+							xmlns='http://www.w3.org/2000/svg'
+							width='16'
+							height='16'
+							viewBox='0 0 24 24'
+							fill='none'
+							stroke='currentColor'
+							strokeWidth='2'
+							strokeLinecap='round'
+							strokeLinejoin='round'
+						>
+							<line x1='18' y1='6' x2='6' y2='18' />
+							<line x1='6' y1='6' x2='18' y2='18' />
+						</svg>
+					</button>
+				)}
 			</div>
 
 			{/* Scrollable list - height for approximately 3 items */}

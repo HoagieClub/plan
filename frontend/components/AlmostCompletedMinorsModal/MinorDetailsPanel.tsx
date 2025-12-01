@@ -23,18 +23,35 @@ export function MinorDetailsPanel({
 					<div className='flex h-80 w-full items-center justify-center bg-white'>
 						<div className='flex h-full w-full items-center justify-center rounded-lg'>
 							<Image
-								src='/MinorsIcon.png'
+								src='/MinorsIcon.svg'
 								alt='Minors illustration'
-								width={160}
-								height={160}
+								width={320}
+								height={320}
 								className='object-contain'
 							/>
 						</div>
 					</div>
 					<div className='mt-6 text-center'>
 						<div className='text-xl font-semibold'>
-							Click <span className='inline-block rounded-full bg-gray-200 px-2 py-1'>i</span> for
-							more info on minors and certificates
+							Click{' '}
+							<span className='inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-200'>
+								<svg
+									xmlns='http://www.w3.org/2000/svg'
+									width='16'
+									height='16'
+									viewBox='0 0 24 24'
+									fill='none'
+									stroke='currentColor'
+									strokeWidth='2'
+									strokeLinecap='round'
+									strokeLinejoin='round'
+								>
+									<circle cx='12' cy='12' r='10' />
+									<line x1='12' y1='16' x2='12' y2='12' />
+									<line x1='12' y1='8' x2='12.01' y2='8' />
+								</svg>
+							</span>{' '}
+							for more info on minors and certificates
 						</div>
 					</div>
 				</div>
