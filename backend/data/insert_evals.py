@@ -75,6 +75,7 @@ def import_data(evals):
     total_rows = count_rows(evals)
     course_batch = []
     comment_batch = []
+    missing_courses = []
 
     # Fetch existing courses to minimize DB hits
     courses_map = {course.guid: course for course in Course.objects.all()}
@@ -91,13 +92,14 @@ def import_data(evals):
             eval_data = parse_evaluations(evals_str)
             curr_course = courses_map.get(course_guid)
 
-            # Raise an error if this evaluation does not have a corresponding course
+            # Skip and track if this evaluation does not have a corresponding course
             if not curr_course:
-                raise ValueError(f"Course with GUID {course_guid} not found in database.")
+                missing_courses.append(course_guid)
+                continue
 
             for field, value in eval_data.items():
                 setattr(curr_course, field, value)
-            
+
             course_batch.append(curr_course)
 
             # Create CourseComments objects
@@ -116,6 +118,14 @@ def import_data(evals):
     if course_batch:
         Course.objects.bulk_update(course_batch, fields=list(EVALUATION_FIELD_MAPPING.values()))
         CourseComments.objects.bulk_create(comment_batch)
+
+    # Print summary of missing courses
+    if missing_courses:
+        print(f"\nWarning: {len(missing_courses)} course(s) not found in database:")
+        for guid in missing_courses[:10]:  # Show first 10
+            print(f"  - {guid}")
+        if len(missing_courses) > 10:
+            print(f"  ... and {len(missing_courses) - 10} more")
 
 
 def main():

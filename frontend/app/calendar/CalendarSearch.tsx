@@ -243,9 +243,18 @@ export const CalendarSearch: FC = () => {
 			(course) => course.isChosen || !course.needsChoice
 		);
 
+		const seenSectionIds = new Set<number>();
+		const uniqueCourseSections = class_sections.filter((section) => {
+			if (seenSectionIds.has(section.section.id)) {
+				return false;
+			}
+			seenSectionIds.add(section.section.id);
+			return true;
+		});
+
 		return {
 			term: termFilter,
-			class_sections,
+			class_sections: uniqueCourseSections,
 		};
 	};
 
