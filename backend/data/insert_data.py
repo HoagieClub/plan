@@ -324,7 +324,7 @@ def insert_sections(rows):
 
     # Load existing sections to facilitate updates and prevent duplicates
     existing_sections = {
-        (section.course.guid, section.class_number): section
+        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section
         for section in Section.objects.select_related("course", "term", "instructor").all()
     }
     existing_instructors = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
@@ -339,12 +339,12 @@ def insert_sections(rows):
         instructor_emplid = row.get("Instructor EmplID", "").strip()
         course = course_cache.get(course_guid) if course_cache else Course.objects.get(guid=course_guid)
         term = term_cache.get(term_code) if term_cache else AcademicTerm.objects.get(term_code=term_code)
-        instructor = existing_instructors.get(instructor_emplid)
+        instructor = existing_instructors.get(instructor_emplid) if instructor_emplid else None
         # Skip if mandatory information is missing
         if not term or not course:
             continue
 
-        section_key = (course_guid, class_number)
+        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
         section_data = {
             "class_number": class_number,
             "class_type": row.get("Class Type", ""),
@@ -396,7 +396,7 @@ def insert_class_meetings(rows):
     logger.info("Starting ClassMeeting insertions and updates...")
 
     section_cache = {
-        (section.course.guid, section.class_number): section
+        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section
         for section in Section.objects.select_related("course", "term", "instructor").all()
     }
 
@@ -417,10 +417,11 @@ def insert_class_meetings(rows):
             term_code = int(course_guid[:4])
             class_number = int(row["Class Number"].strip())
             meeting_number = int(row["Meeting Number"].strip())
+            instructor_emplid = row.get("Instructor EmplID", "").strip()
         except (ValueError, KeyError) as e:
             logger.warning(f"Skipping row due to {e}: {row}")
             continue
-        section_key = (course_guid, class_number)
+        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
         section = section_cache.get(section_key)
 
         if section is None:
@@ -516,8 +517,8 @@ def insert_class_year_enrollments(rows):
 
     # Initial cache of Section IDs to minimize database queries.
     section_cache = {
-        (section.course.guid, section.class_number): section.id
-        for section in Section.objects.select_related("course", "term").all()
+        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section.id
+        for section in Section.objects.select_related("course", "term", "instructor").all()
     }
 
     # Fetch existing enrollments in bulk and create a dictionary for faster lookup
@@ -532,7 +533,8 @@ def insert_class_year_enrollments(rows):
     for row in tqdm(rows, desc="Processing Class Year Enrollments..."):
         course_guid = row["Course GUID"].strip()
         class_number = int(row["Class Number"].strip())
-        section_key = (course_guid, class_number)
+        instructor_emplid = row.get("Instructor EmplID", "").strip()
+        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
         section_id = section_cache.get(section_key)
 
         if section_id:
