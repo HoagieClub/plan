@@ -59,7 +59,7 @@ export function useAlmostCompletedMinorsModal() {
 			setErrorMessage(null);
 			const result = await getAlmostCompletedPrograms();
 
-			if (result.success) {
+			if (result.success === true) {
 				setMinors(result.programs);
 			} else {
 				setMinors([]);
