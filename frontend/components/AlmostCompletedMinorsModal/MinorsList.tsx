@@ -8,6 +8,7 @@ interface MinorsListProps {
 	isMinorAdded: (code: string) => boolean;
 	onToggleMinor: (minorCode: string, minorName: string) => void;
 	onShowProgramDetails: (program: Program) => void;
+	errorMessage?: string | null;
 }
 
 export function MinorsList({
@@ -18,6 +19,7 @@ export function MinorsList({
 	isMinorAdded,
 	onToggleMinor,
 	onShowProgramDetails,
+	errorMessage,
 }: MinorsListProps) {
 	return (
 		<div className='flex w-1/2 flex-col pr-4'>
@@ -41,14 +43,43 @@ export function MinorsList({
 
 			{/* Scrollable list - height for approximately 3 items */}
 			<div className='flex-1 space-y-4 overflow-y-auto pr-2'>
-				{loadingPrograms ? (
+				{/* Loading screen */}
+				{loadingPrograms && (
 					<div className='flex h-full items-center justify-center'>
 						<div className='flex flex-col items-center gap-3'>
 							<div className='h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500' />
 							<div className='text-sm text-gray-500'>Loading programs...</div>
 						</div>
 					</div>
-				) : (
+				)}
+
+				{/* Error message */}
+				{!loadingPrograms && errorMessage && (
+					<div className='flex h-full items-center justify-center'>
+						<div className='rounded-lg border border-red-300 bg-red-50 p-6 text-center'>
+							<svg
+								xmlns='http://www.w3.org/2000/svg'
+								className='mx-auto mb-3 h-12 w-12 text-red-500'
+								fill='none'
+								viewBox='0 0 24 24'
+								stroke='currentColor'
+								strokeWidth={2}
+							>
+								<path
+									strokeLinecap='round'
+									strokeLinejoin='round'
+									d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+								/>
+							</svg>
+							<h3 className='mb-2 text-lg font-semibold text-red-900'>Error Loading Programs</h3>
+						</div>
+					</div>
+				)}
+
+				{/* Success state */}
+				{!loadingPrograms &&
+					!errorMessage &&
+					filteredMinors.length > 0 &&
 					filteredMinors.map((m) => (
 						<div key={m.code} className='rounded-md border bg-white p-4 shadow-sm'>
 							<div className='flex items-center justify-between'>
@@ -158,8 +189,7 @@ export function MinorsList({
 							</div>
 							*/}
 						</div>
-					))
-				)}
+					))}
 			</div>
 		</div>
 	);

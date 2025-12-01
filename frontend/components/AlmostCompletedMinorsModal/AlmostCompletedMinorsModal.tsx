@@ -33,6 +33,7 @@ export function useAlmostCompletedMinorsModal() {
 	const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
 	const [loadingDetails, setLoadingDetails] = useState(false);
 	const [loadingPrograms, setLoadingPrograms] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	// Fetch CSRF token on mount
 	useEffect(() => {
@@ -55,8 +56,16 @@ export function useAlmostCompletedMinorsModal() {
 		// Fetch almost-completed programs from backend API
 		const fetchPrograms = async () => {
 			setLoadingPrograms(true);
-			const programs = await getAlmostCompletedPrograms();
-			setMinors(programs ?? []);
+			setErrorMessage(null);
+			const result = await getAlmostCompletedPrograms();
+
+			if (result.success === true) {
+				setMinors(result.programs);
+			} else {
+				setMinors([]);
+				setErrorMessage(result.error);
+			}
+
 			setLoadingPrograms(false);
 		};
 
@@ -70,6 +79,7 @@ export function useAlmostCompletedMinorsModal() {
 			setProgramDetails(null);
 			setQuery('');
 			setOpenSnackbar(false);
+			setErrorMessage(null);
 			return;
 		}
 
@@ -213,6 +223,7 @@ export function useAlmostCompletedMinorsModal() {
 					isMinorAdded={isMinorAdded}
 					onToggleMinor={handleToggleMinor}
 					onShowProgramDetails={handleShowProgramDetails}
+					errorMessage={errorMessage}
 				/>
 
 				{/* Right column: illustration + info OR program details */}
