@@ -1,5 +1,6 @@
 class UserRequirements:
     def __init__(self, data: dict):
+        print(data)
         """Initialize UserRequirements with degree type, degree, minors, and certificates."""
         self.degree_type: Requirement
         self.degree: Requirement
@@ -68,12 +69,20 @@ class Requirement:
             return requirements[key]
         
         self.code = requirements.get("code", None)
-        self.req_id = int(require("req_id"))
-        self.manually_satisfied = require("manually_satisfied")
-        self.satisfied = bool(require("satisfied"))
-        self.count = int(require("count"))
-        self.min_needed = int(require("min_needed"))
-        self.max_counted = require("max_counted")
+        if self.code == "Undeclared":
+            self.req_id = -1
+            self.manually_satisfied = False
+            self.satisfied = False
+            self.count = -1
+            self.min_needed = -1
+            self.max_counted = -1
+        else:
+            self.req_id = int(require("req_id"))
+            self.manually_satisfied = require("manually_satisfied")
+            self.satisfied = bool(require("satisfied"))
+            self.count = int(require("count"))
+            self.min_needed = int(require("min_needed"))
+            self.max_counted = require("max_counted")
 
         if "subrequirements" in requirements:
             self.subrequirements = {
@@ -87,6 +96,8 @@ class Requirement:
             self.unsettled = CourseList(requirements["unsettled"])
             self.subrequirements = None
             self.is_leaf = True
+        elif self.code == "Undeclared":
+            self.subrequirements = {}
         else:
             raise ValueError("Requirements must have either subrequirements or settled/unsettled fields")
 
