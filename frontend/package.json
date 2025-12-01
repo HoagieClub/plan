@@ -28,7 +28,7 @@
 		"@geist-ui/react": "^2.2.5",
 		"@headlessui/react": "^2.2.0",
 		"@heroicons/react": "^2.2.0",
-		"@mui/icons-material": "^6.1.10",
+		"@mui/icons-material": "^7.3.5",
 		"@mui/joy": "^5.0.0-beta.51",
 		"@mui/material": "^6.4.4",
 		"@mui/system": "^6.1.9",
