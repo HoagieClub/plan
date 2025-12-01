@@ -1,6 +1,5 @@
 class UserRequirements:
     def __init__(self, data: dict):
-        print(data)
         """Initialize UserRequirements with degree type, degree, minors, and certificates."""
         self.degree_type: Requirement
         self.degree: Requirement
