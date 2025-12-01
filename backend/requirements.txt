@@ -28,7 +28,7 @@ python-dotenv==1.0.1
     # via hoagie-plan (pyproject.toml)
 pytz==2025.2
     # via hoagie-plan (pyproject.toml)
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via hoagie-plan (pyproject.toml)
 requests==2.32.3
     # via hoagie-plan (pyproject.toml)
