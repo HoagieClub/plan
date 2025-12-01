@@ -15,8 +15,6 @@ export function MinorDetailsPanel({
 	selectedProgram,
 	programDetails,
 	loadingDetails,
-	onClose,
-	onCloseModal,
 }: MinorDetailsPanelProps) {
 	if (!selectedProgram) {
 		return (
@@ -38,11 +36,6 @@ export function MinorDetailsPanel({
 							Click <span className='inline-block rounded-full bg-gray-200 px-2 py-1'>i</span> for
 							more info on minors and certificates
 						</div>
-					</div>
-					<div className='mt-6'>
-						<button className='rounded bg-gray-800 px-4 py-2 text-white' onClick={onCloseModal}>
-							Close
-						</button>
 					</div>
 				</div>
 			</div>
@@ -83,20 +76,6 @@ export function MinorDetailsPanel({
 							<div className='mt-1 text-sm text-gray-500'>{selectedProgram.code}</div>
 						)}
 					</div>
-					<button className='rounded-full p-1 hover:bg-gray-100' onClick={onClose}>
-						<svg
-							xmlns='http://www.w3.org/2000/svg'
-							width='24'
-							height='24'
-							viewBox='0 0 24 24'
-							fill='none'
-							stroke='currentColor'
-							strokeWidth='2'
-						>
-							<line x1='18' y1='6' x2='6' y2='18' />
-							<line x1='6' y1='6' x2='18' y2='18' />
-						</svg>
-					</button>
 				</div>
 
 				{loadingDetails && (

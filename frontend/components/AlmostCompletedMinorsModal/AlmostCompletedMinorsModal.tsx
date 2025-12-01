@@ -72,7 +72,7 @@ export function useAlmostCompletedMinorsModal() {
 		void fetchPrograms();
 	}, [isOpen]);
 
-	// Reset state when modal closes
+	// Reset state when modal closes and handle escape key
 	useEffect(() => {
 		if (!isOpen) {
 			setSelectedProgram(null);
@@ -80,7 +80,20 @@ export function useAlmostCompletedMinorsModal() {
 			setQuery('');
 			setOpenSnackbar(false);
 			setErrorMessage(null);
+			return;
 		}
+
+		// Press escape key to close modal
+		const handleEscape = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				setIsOpen(false);
+			}
+		};
+
+		document.addEventListener('keydown', handleEscape);
+		return () => {
+			document.removeEventListener('keydown', handleEscape);
+		};
 	}, [isOpen]);
 
 	// Handle adding/removing a minor
@@ -180,7 +193,26 @@ export function useAlmostCompletedMinorsModal() {
 	}
 
 	const almostCompletedModal = (
-		<Modal className='w-11/12 max-w-6xl p-6' onClose={() => setIsOpen(false)}>
+		<Modal className='relative w-11/12 max-w-6xl p-6' onClose={() => setIsOpen(false)}>
+			{/* Close button at top right corner */}
+			<button
+				className='absolute right-4 top-4 z-10 rounded-full p-1 hover:bg-gray-100'
+				onClick={() => setIsOpen(false)}
+				aria-label='Close modal'
+			>
+				<svg
+					xmlns='http://www.w3.org/2000/svg'
+					width='24'
+					height='24'
+					viewBox='0 0 24 24'
+					fill='none'
+					stroke='currentColor'
+					strokeWidth='2'
+				>
+					<line x1='18' y1='6' x2='6' y2='18' />
+					<line x1='6' y1='6' x2='18' y2='18' />
+				</svg>
+			</button>
 			<div className='flex flex-row gap-6' style={{ height: '640px' }}>
 				{/* Left column: list of suggested minors/certificates */}
 				<MinorsList
