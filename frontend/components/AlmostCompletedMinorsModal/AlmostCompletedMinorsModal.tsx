@@ -224,6 +224,7 @@ export function useAlmostCompletedMinorsModal() {
 					onToggleMinor={handleToggleMinor}
 					onShowProgramDetails={handleShowProgramDetails}
 					errorMessage={errorMessage}
+					selectedProgram={selectedProgram}
 				/>
 
 				{/* Right column: illustration + info OR program details */}
