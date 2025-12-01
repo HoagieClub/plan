@@ -181,6 +181,7 @@ export function useAlmostCompletedMinorsModal() {
 					isMinorAdded={isMinorAdded}
 					onToggleMinor={handleToggleMinor}
 					onShowProgramDetails={handleShowProgramDetails}
+					selectedProgram={selectedProgram}
 				/>
 
 				{/* Right column: illustration + info OR program details */}

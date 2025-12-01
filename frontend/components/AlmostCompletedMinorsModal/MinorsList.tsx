@@ -8,6 +8,7 @@ interface MinorsListProps {
 	isMinorAdded: (code: string) => boolean;
 	onToggleMinor: (minorCode: string, minorName: string) => void;
 	onShowProgramDetails: (program: Program) => void;
+	selectedProgram: Program | null;
 }
 
 export function MinorsList({
@@ -18,6 +19,7 @@ export function MinorsList({
 	isMinorAdded,
 	onToggleMinor,
 	onShowProgramDetails,
+	selectedProgram,
 }: MinorsListProps) {
 	return (
 		<div className='flex w-1/2 flex-col pr-4'>
@@ -71,7 +73,15 @@ export function MinorsList({
 					</div>
 				) : (
 					filteredMinors.map((m) => (
-						<div key={m.code} className='rounded-md border bg-white p-4 shadow-sm'>
+						<div
+							key={m.code}
+							className={`cursor-pointer rounded-md border-2 bg-white p-4 shadow-sm transition-all hover:bg-gray-50 ${
+								selectedProgram?.code === m.code
+									? 'border-blue-500'
+									: 'border-transparent hover:border-gray-200'
+							}`}
+							onClick={() => onShowProgramDetails(m)}
+						>
 							<div className='flex items-center justify-between'>
 								<div>
 									<div className='text-lg font-semibold'>{m.code}</div>
@@ -79,8 +89,11 @@ export function MinorsList({
 								</div>
 								<div className='flex items-center gap-2'>
 									<button
-										className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'
-										onClick={() => onShowProgramDetails(m)}
+										className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-gray-200'
+										onClick={(e) => {
+											e.stopPropagation();
+											onShowProgramDetails(m);
+										}}
 										title='Show program details'
 									>
 										<svg
@@ -101,15 +114,21 @@ export function MinorsList({
 									</button>
 									{isMinorAdded(m.code) ? (
 										<button
-											className='cursor-pointer rounded bg-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-400'
-											onClick={() => onToggleMinor(m.code, m.name)}
+											className='cursor-pointer rounded bg-gray-300 px-3 py-1 text-sm text-gray-700 transition-all hover:bg-gray-400'
+											onClick={(e) => {
+												e.stopPropagation();
+												onToggleMinor(m.code, m.name);
+											}}
 										>
 											Added
 										</button>
 									) : (
 										<button
-											className='rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600'
-											onClick={() => onToggleMinor(m.code, m.name)}
+											className='rounded bg-blue-500 px-3 py-1 text-sm text-white transition-all hover:bg-blue-600'
+											onClick={(e) => {
+												e.stopPropagation();
+												onToggleMinor(m.code, m.name);
+											}}
 										>
 											Add
 										</button>
