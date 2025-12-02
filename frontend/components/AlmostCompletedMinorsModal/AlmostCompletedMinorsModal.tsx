@@ -8,6 +8,7 @@ import { getProgramDetails, type ProgramDetails } from '@/services/programDetail
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
+import { CERTIFICATE_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
 
 import { MinorDetailsPanel } from './MinorDetailsPanel';
 import { MinorsList } from './MinorsList';
@@ -46,6 +47,16 @@ export function useAlmostCompletedMinorsModal() {
 	// Check if a minor is already in the user's profile
 	const isMinorAdded = (code: string) => {
 		return profile.minors?.some((minor) => minor.code === code) ?? false;
+	};
+
+	// Check if a cert is already in the user's profile
+	const isCertAdded = (code: string) => {
+		return profile.certificates?.some((cert) => cert.code === code) ?? false;
+	};
+
+	// Check if a program (minor or cert) is already added
+	const isProgramAdded = (code: string) => {
+		return isMinorAdded(code) || isCertAdded(code);
 	};
 
 	useEffect(() => {
@@ -96,28 +107,42 @@ export function useAlmostCompletedMinorsModal() {
 		};
 	}, [isOpen]);
 
-	// Handle adding/removing a minor
-	const handleToggleMinor = async (minorCode: string, minorName: string) => {
-		const currentMinors = profile.minors || [];
-		const isAdded = isMinorAdded(minorCode);
+	// Handle adding/removing a minor/cert
+	const handleToggleMinor = async (programCode: string, programName: string) => {
+		// Determine program type
+		const isMinor = MINOR_OPTIONS.some((minor) => minor.code === programCode);
+		const isCert = CERTIFICATE_OPTIONS.some((cert) => cert.code === programCode);
 
-		let newMinors: MajorMinorType[];
+		// If the program is neither a minor nor a cert, return
+		if (!isMinor && !isCert) {
+			return;
+		}
+
+		// Determine which profile field to update
+		const fieldName = isMinor ? 'minors' : 'certificates';
+		const currentItems = (profile[fieldName] || []) as MajorMinorType[];
+		const isAdded = currentItems.some((item) => item.code === programCode);
+
+		// Calculate new items array
+		let newItems: MajorMinorType[];
 		if (isAdded) {
-			newMinors = currentMinors.filter((m) => m.code !== minorCode);
+			newItems = currentItems.filter((item) => item.code !== programCode);
 		} else {
-			if (currentMinors.length >= 3) {
+			if (currentItems.length >= 3) {
 				setOpenSnackbar(true);
 				return;
 			}
-			newMinors = [...currentMinors, { code: minorCode, name: minorName }];
+			newItems = [...currentItems, { code: programCode, name: programName }];
 		}
 
-		try {
-			const updatedProfile = {
-				...profile,
-				minors: newMinors,
-			};
+		// Prepare profile updates
+		const updatedProfile = {
+			...profile,
+			[fieldName]: newItems,
+		};
+		const newProfile = { [fieldName]: newItems };
 
+		try {
 			const response = await fetch(`/api/hoagie/profile/update`, {
 				method: 'POST',
 				headers: {
@@ -129,8 +154,7 @@ export function useAlmostCompletedMinorsModal() {
 			if (!response.ok) {
 				throw new Error('Failed to update profile');
 			}
-
-			updateProfile({ minors: newMinors });
+			updateProfile(newProfile);
 			await updateRequirements();
 		} catch (error) {
 			console.error('Error updating minors:', error);
@@ -220,7 +244,7 @@ export function useAlmostCompletedMinorsModal() {
 					onQueryChange={setQuery}
 					filteredMinors={filteredMinors}
 					loadingPrograms={loadingPrograms}
-					isMinorAdded={isMinorAdded}
+					isMinorAdded={isProgramAdded}
 					onToggleMinor={handleToggleMinor}
 					onShowProgramDetails={handleShowProgramDetails}
 					errorMessage={errorMessage}
