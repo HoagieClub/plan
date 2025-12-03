@@ -92,6 +92,7 @@ def get_course_info(crosslistings):
     instructor_names = [
         section.instructor.full_name
         for section in sections
+        if section.instructor is not None
         ]
     # Check for duplicates of instructors and remove when necessary
     hasSeen = set()
