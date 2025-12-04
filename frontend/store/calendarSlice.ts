@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { addCourseToCalendar } from '@/services/calendarService';
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
@@ -94,6 +95,16 @@ const useCalendarStore = create<CalendarStore>()(
 				try {
 					const term = course.guid.substring(0, 4);
 					const course_id = course.guid.substring(4);
+
+					const addCourseResponse = await addCourseToCalendar(
+						'My Calendar',
+						Number(term),
+						course.guid
+					);
+					if (!addCourseResponse) {
+						throw new Error('Failed to add course to calendar');
+					}
+
 					// console.log(`Fetching course details from backend for ${term}-${course_id}`);
 					const response = await fetch(`/api/hoagie/fetch_calendar_classes/${term}/${course_id}`);
 					if (!response.ok) {
