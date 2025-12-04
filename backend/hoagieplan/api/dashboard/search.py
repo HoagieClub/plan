@@ -1,4 +1,5 @@
 from re import IGNORECASE, compile, split, sub
+from datetime import time as dtime
 
 from django.db.models import Q
 from django.http import JsonResponse
@@ -6,7 +7,7 @@ from rest_framework.decorators import api_view
 
 from hoagieplan.logger import logger
 from hoagieplan.models import (
-    Course,
+    Course, Section, ClassMeeting
 )
 from hoagieplan.serializers import (
     CourseSerializer,
@@ -36,6 +37,70 @@ def make_sort_key(dept):
     return sort_key
 
 
+def course_fits_time_constraint(course, start_time, end_time):
+    """ Checks if a course fits within a time constraint
+    The course fits iff for every every class_type section it has,
+    there is at least one section where all of the class meetings fall
+    within the time range"""
+
+    logger.info(
+        f"Checking course: {course.title}, start_time: {start_time}, end_time: {end_time}")
+
+    sections = course.section_set.all()
+
+    if not sections:
+        return True
+
+    sections_by_type = {}
+
+    for section in sections:
+        class_type = section.class_type or "Unknown"
+
+        if class_type not in sections_by_type:
+            sections_by_type[class_type] = []
+        sections_by_type[class_type].append(section)
+
+    for class_type, type_sections in sections_by_type.items():
+        can_fulfill_type = False
+
+        for section in type_sections:
+
+            class_meetings = section.classmeeting_set.all()
+
+            logger.info(
+                f"  Section {section.id}, type: {class_type}, meetings: {len(class_meetings)}")
+
+            if not class_meetings:
+                can_fulfill_type = True
+                break
+
+            section_is_valid = True
+            for meeting in class_meetings:
+
+                logger.info(
+                    f"    Meeting: {meeting.start_time} - {meeting.end_time}")
+                logger.info(f"    Constraint: {start_time} - {end_time}")
+                logger.info(
+                    f"    Fits? start check: {meeting.start_time >= start_time}, end check: {meeting.end_time <= end_time}")
+                if not meeting.start_time or not meeting.end_time:
+                    logger.info(f"    Meeting does NOT fit")
+                    continue
+                if meeting.start_time < start_time or meeting.end_time > end_time:
+                    section_is_valid = False
+                    break
+
+            if section_is_valid:
+                can_fulfill_type = True
+                break
+
+        if not can_fulfill_type:
+            logger.info(
+                f"  Type {class_type} cannot be fulfilled, course rejected")
+
+            return False
+    return True
+
+
 @api_view(["GET"])
 def search_courses(request):
     """Handle search queries for courses."""
@@ -47,13 +112,30 @@ def search_courses(request):
     distribution = request.GET.get("distribution", None)
     levels = request.GET.get("level")
     grading_options = request.GET.get("grading")
+    start_time_str = request.GET.get("start", None)
+    end_time_str = request.GET.get("end", None)
 
     if not query:
         return JsonResponse({"courses": []})
 
-    return search_courses_helper(query, term, distribution, levels, grading_options)
+    return search_courses_helper(query, term, distribution, levels, grading_options, start_time_str, end_time_str)
 
-def search_courses_helper(query, term=None, distribution=None, levels=None, grading_options=None):
+
+def search_courses_helper(query, term=None, distribution=None, levels=None, grading_options=None, start_time_str=None, end_time_str=None):
+
+    logger.info(
+                f"  start: {start_time_str} end:{end_time_str} ")
+    # Parse start_time and end_time
+    try:
+        start_time = dtime.fromisoformat(start_time_str)
+    except Exception:
+        start_time = dtime(8, 30)
+
+    try:
+        end_time = dtime.fromisoformat(end_time_str)
+    except Exception:
+        end_time = dtime(23, 0)
+
     trimmed_query = sub(r"\s", "", query)
     if DEPT_NUM_SUFFIX_REGEX.match(trimmed_query):
         result = split(r"(\d+[a-zA-Z])", string=trimmed_query, maxsplit=1)
@@ -85,7 +167,8 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         distributions = distribution.split(",")
         distribution_query = Q()
         for distribution in distributions:
-            distribution_query |= Q(distribution_area_short__icontains=distribution)
+            distribution_query |= Q(
+                distribution_area_short__icontains=distribution)
         query_conditions &= distribution_query
 
     if levels:
@@ -104,7 +187,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         for grading in grading_filters:
             grading_query |= Q(grading_basis__iexact=grading)
         query_conditions &= grading_query
-    
+
     try:
         filtered_query = query_conditions
         filtered_query &= Q(department__code__iexact=dept)
@@ -113,6 +196,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses with ratings (most recent offering with non-null rating)
         exact_match_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related('section_set__classmeeting_set')
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -120,11 +204,13 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         )
 
         # Get course_ids that have ratings
-        course_ids_with_ratings = set(exact_match_with_rating.values_list("course_id", flat=True))
+        course_ids_with_ratings = set(
+            exact_match_with_rating.values_list("course_id", flat=True))
 
         # Get courses without any rated offerings (most recent offering regardless of rating)
         exact_match_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related('section_set__classmeeting_set')
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -132,7 +218,12 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         )
 
         # Combine both querysets
-        exact_match_course = list(exact_match_with_rating) + list(exact_match_without_rating)
+        exact_match_course = list(
+            exact_match_with_rating) + list(exact_match_without_rating)
+
+        if start_time_str or end_time_str:
+            exact_match_course = [course for course in exact_match_course if course_fits_time_constraint(
+                course, start_time, end_time)]
 
         if exact_match_course:
             # If an exact match is found, return only that course
@@ -141,13 +232,15 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 
         filtered_query = query_conditions
         if len(search_key) > 3:
-            filtered_query &= Q(crosslistings__icontains=search_key) | Q(title__icontains=query)
+            filtered_query &= Q(crosslistings__icontains=search_key) | Q(
+                title__icontains=query)
         else:
             filtered_query &= Q(crosslistings__icontains=search_key)
 
         # Get courses with ratings (most recent offering with non-null rating)
         courses_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related('section_set__classmeeting_set')
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -155,11 +248,13 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         )
 
         # Get course_ids that have ratings
-        course_ids_with_ratings = set(courses_with_rating.values_list("course_id", flat=True))
+        course_ids_with_ratings = set(
+            courses_with_rating.values_list("course_id", flat=True))
 
         # Get courses without any rated offerings (most recent offering regardless of rating)
         courses_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related('section_set__classmeeting_set')
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -169,9 +264,17 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Combine both querysets
         courses = list(courses_with_rating) + list(courses_without_rating)
 
+        # Apply time filtering
+        if start_time_str or end_time_str:
+            courses = [
+                course for course in courses
+                if course_fits_time_constraint(course, start_time, end_time)
+            ]
+
         if courses:
             serialized_courses = CourseSerializer(courses, many=True)
-            sorted_data = sorted(serialized_courses.data, key=make_sort_key(dept))
+            sorted_data = sorted(serialized_courses.data,
+                                 key=make_sort_key(dept))
             return JsonResponse({"courses": sorted_data})
         return JsonResponse({"courses": []})
     except Exception as e:
