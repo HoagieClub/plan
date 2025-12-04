@@ -37,19 +37,24 @@ def make_sort_key(dept):
     return sort_key
 
 
-def course_fits_time_constraint(course, start_time, end_time):
+def course_fits_time_constraint(course, start_time, end_time, term):
     """ Checks if a course fits within a time constraint
     The course fits iff for every every class_type section it has,
     there is at least one section where all of the class meetings fall
     within the time range"""
 
+    if term:
+        sections = Section.objects.filter(course=course,
+                                          term__term_code=term).prefetch_related('classmeeting_set')
+    else:
+        sections = course.section_set.all()
+
     logger.info(
         f"Checking course: {course.title}, start_time: {start_time}, end_time: {end_time}")
-
-    sections = course.section_set.all()
+    logger.info(f"  Found {len(sections)} sections for this term")
 
     if not sections:
-        return True
+        return False
 
     sections_by_type = {}
 
@@ -60,6 +65,8 @@ def course_fits_time_constraint(course, start_time, end_time):
             sections_by_type[class_type] = []
         sections_by_type[class_type].append(section)
 
+    logger.info(f"  Section types: {list(sections_by_type.keys())}")
+
     for class_type, type_sections in sections_by_type.items():
         can_fulfill_type = False
 
@@ -68,28 +75,28 @@ def course_fits_time_constraint(course, start_time, end_time):
             class_meetings = section.classmeeting_set.all()
 
             logger.info(
-                f"  Section {section.id}, type: {class_type}, meetings: {len(class_meetings)}")
+                f"  Section {section.class_section}, type: {class_type}, meetings: {len(class_meetings)}")
 
             if not class_meetings:
-                can_fulfill_type = True
-                break
+                logger.info(f"    No meetings, skipping section")
+                continue
 
             section_is_valid = True
             for meeting in class_meetings:
 
-                logger.info(
-                    f"    Meeting: {meeting.start_time} - {meeting.end_time}")
-                logger.info(f"    Constraint: {start_time} - {end_time}")
-                logger.info(
-                    f"    Fits? start check: {meeting.start_time >= start_time}, end check: {meeting.end_time <= end_time}")
                 if not meeting.start_time or not meeting.end_time:
-                    logger.info(f"    Meeting does NOT fit")
+                    logger.info(f"    Meeting missing time data")
                     continue
                 if meeting.start_time < start_time or meeting.end_time > end_time:
+                    logger.info(
+                        f"    Meeting outside range [{start_time} - {end_time}")
                     section_is_valid = False
                     break
+                logger.info(
+                    f"    Meeting okay! [{meeting.start_time} - {meeting.end_time}")
 
             if section_is_valid:
+                logger.info(f"    Section {section.class_section} is VALID!")
                 can_fulfill_type = True
                 break
 
@@ -98,6 +105,7 @@ def course_fits_time_constraint(course, start_time, end_time):
                 f"  Type {class_type} cannot be fulfilled, course rejected")
 
             return False
+        logger.info(f"  All class types can be fulfilled, course ACCEPTED")
     return True
 
 
@@ -124,7 +132,7 @@ def search_courses(request):
 def search_courses_helper(query, term=None, distribution=None, levels=None, grading_options=None, start_time_str=None, end_time_str=None):
 
     logger.info(
-                f"  start: {start_time_str} end:{end_time_str} ")
+        f"  start: {start_time_str} end:{end_time_str} ")
     # Parse start_time and end_time
     try:
         start_time = dtime.fromisoformat(start_time_str)
@@ -223,7 +231,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 
         if start_time_str or end_time_str:
             exact_match_course = [course for course in exact_match_course if course_fits_time_constraint(
-                course, start_time, end_time)]
+                course, start_time, end_time, term)]
 
         if exact_match_course:
             # If an exact match is found, return only that course
@@ -268,7 +276,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         if start_time_str or end_time_str:
             courses = [
                 course for course in courses
-                if course_fits_time_constraint(course, start_time, end_time)
+                if course_fits_time_constraint(course, start_time, end_time, term)
             ]
 
         if courses:
