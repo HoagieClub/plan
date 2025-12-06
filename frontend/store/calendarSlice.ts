@@ -31,6 +31,8 @@ interface CalendarStore {
 	getSelectedCourses: (semester: string) => CalendarEvent[];
 }
 
+const DEFAULT_CALENDAR_NAME = 'New Calendar';
+
 const startHour = 8;
 const dayToStartColumnIndex: Record<string, number> = {
 	M: 1, // Monday
@@ -97,7 +99,7 @@ const useCalendarStore = create<CalendarStore>()(
 					const course_id = course.guid.substring(4);
 
 					const addCourseResponse = await addCourseToCalendar(
-						'My Calendar',
+						DEFAULT_CALENDAR_NAME,
 						Number(term),
 						course.guid
 					);
