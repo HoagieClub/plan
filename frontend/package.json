@@ -66,7 +66,7 @@
 		"evergreen-ui": "^7.1.9",
 		"globals": "^15.13.0",
 		"lucide-react": "^0.464.0",
-		"next": "^15.2.0",
+		"next": "^15.5.7",
 		"postcss": "^8.4.49",
 		"postcss-flexbugs-fixes": "^5.0.2",
 		"postcss-preset-env": "^10.1.1",
