@@ -1,8 +1,8 @@
 // TODO: Check all of these with Cmd + Shift + F and delete any unused ones
 import type { CSSProperties, ReactNode } from 'react';
 
-import 'evergreen-ui';
 import { type User } from '@auth0/nextjs-auth0/types';
+import 'evergreen-ui';
 
 declare module 'evergreen-ui' {
 	interface DefaultTheme {
@@ -64,6 +64,8 @@ export type ProfileProps = {
 
 export type ModalProps = {
 	children?: ReactNode;
+	className?: string;
+	onClose?: () => void;
 	setShowPopup?: (show: boolean) => void; // TODO: Should this be optional or required?
 	setTermFilter?: (term: string) => void;
 	setDistributionFilters?: (distribution: string[]) => void;
@@ -197,7 +199,7 @@ export type Course = {
 	department_code: string;
 	sections: Section[];
 	crosslistings: string;
-	rating?: number; // Add course review rating (optional)
+	quality_of_course?: number; // Add course review rating (optional)
 };
 
 export type Section = {

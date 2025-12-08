@@ -24,12 +24,13 @@ limitations under the License.
 from django.contrib import admin
 from django.urls import path
 
-from hoagieplan import ical_generator
 from hoagieplan.api.auth import csrf
-from hoagieplan.api.calendar import configuration
+from hoagieplan.api.calendar import configuration, ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
 from hoagieplan.api.dashboard import details, requirements, search, upload
+from hoagieplan.api.dashboard import almost_completed_api
+from hoagieplan.api.dashboard import program_details_api
 from hoagieplan.api.profile import info, tutorial
 
 urlpatterns = [
@@ -57,6 +58,8 @@ urlpatterns = [
     path("course/details/", details.course_details, name="course_details"),
     path("course/comments/", details.course_comments_view, name="course_comments"),
     path("upload/", upload.upload_file, name="upload_file"),
+    path("almost_completed/", almost_completed_api.almost_completed, name="almost_completed"),
+    path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
     # Calendar
     path(
         "fetch_calendar_classes/<str:term>/<str:course_id>/",
@@ -64,9 +67,9 @@ urlpatterns = [
         name="fetch_calendar_classes",
     ),
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
-    path("calendars/<str:net_id>/<int:term>", CalendarConfigurationView.as_view(), name="calendars"),
+    path("calendars/<int:term>/", CalendarConfigurationView.as_view(), name="calendars"),
     path(
-        "calendar_events/<str:net_id>/<str:calendar_name>/<int:term>",
+        "calendar_events/<str:calendar_name>/<int:term>/",
         CalendarEventView.as_view(),
         name="calendar_events",
     ),

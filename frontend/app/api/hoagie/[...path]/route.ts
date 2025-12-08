@@ -84,4 +84,5 @@ async function proxyRequest(url: string, fetchReq: RequestInit) {
 // Delegate all http requests to the handler
 export const GET = handler;
 export const POST = handler;
+export const PUT = handler;
 export const DELETE = handler;

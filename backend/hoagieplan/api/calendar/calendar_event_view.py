@@ -14,9 +14,8 @@ from hoagieplan.api.model_getters import (
     get_course,
     get_section,
     get_term,
-    get_user,
 )
-from hoagieplan.models import CalendarEvent, ClassMeeting, Section
+from hoagieplan.models import CalendarEvent, ClassMeeting, CustomUser, Section
 from hoagieplan.serializers import CalendarEventSerializer
 from hoagieplan.utils import get_term_and_course_id
 
@@ -37,11 +36,11 @@ class CalendarEventPostAction(Enum):
 
 
 class CalendarEventView(APIView):
-    def get(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def get(self, request, calendar_name: str, term: int) -> Response:
         """Fetch all calendar events associated with a calendar."""
+        user_inst: CustomUser = request.user
         try:
             term_id = get_term(term).id
-            user_inst = get_user(net_id)
             calendar = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -51,23 +50,25 @@ class CalendarEventView(APIView):
         serializer = CalendarEventSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def post(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def post(self, request, calendar_name: str, term: int) -> Response:
         """Handle post operations for calendar events for the user."""
+        user_inst: CustomUser = request.user
         action: str = request.query_params.get("action")
         if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
-            return self._add_all_calendar_events_for_course(request, net_id, calendar_name, term)
+            return self._add_all_calendar_events_for_course(request, user_inst, calendar_name, term)
         elif action == CalendarEventPostAction.AddCalendarEvent.value:
-            return self._add_calendar_event(request, net_id, calendar_name, term)
+            return self._add_calendar_event(request, user_inst, calendar_name, term)
         else:
             return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def _add_all_calendar_events_for_course(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def _add_all_calendar_events_for_course(
+        self, request, user_inst: CustomUser, calendar_name: str, term: int
+    ) -> Response:
         """Add all calendar events for a course identified by guid."""
         guid: str = request.data.get("guid")
 
         try:
             term_id: int = get_term(term).id
-            user_inst = get_user(net_id)
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
             course = get_course(guid)
         except Exception as e:
@@ -133,7 +134,7 @@ class CalendarEventView(APIView):
         serializer = CalendarEventSerializer(calendar_events, many=True)
         return Response(serializer.data)
 
-    def _add_calendar_event(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def _add_calendar_event(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:
         """Add a single calendar event with specified details."""
         guid: str = request.data.get("guid")
         section_id: str = request.data.get("section_id")
@@ -146,7 +147,6 @@ class CalendarEventView(APIView):
 
         try:
             term_id: int = get_term(term).id
-            user_inst = get_user(net_id)
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
             course = get_course(guid)
         except Exception as e:
@@ -167,13 +167,13 @@ class CalendarEventView(APIView):
         serializer = CalendarEventSerializer([calendar_event], many=True)
         return Response(serializer.data)
 
-    def delete(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def delete(self, request, calendar_name: str, term: int) -> Response:
         """Delete all calendar events associated with a given guid."""
         guid: str = request.data.get("guid")
+        user_inst = request.user
 
         try:
             term_id = get_term(term).id
-            user_inst = get_user(net_id)
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
             course = get_course(guid)
         except Exception as e:
@@ -191,16 +191,16 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, net_id: str, calendar_name: str, term: int) -> Response:
+    def put(self, request, calendar_name: str, term: int) -> Response:
         """Inverts a calendar event (Activates an inactive event or deactivates an active event)."""
         guid: str = request.data.get("guid")
 
         # class_section are L01, C01, P01, etc.
         class_section: str = request.data.get("classSection")
+        user_inst = request.user
 
         try:
             term_id = get_term(term).id
-            user_inst = get_user(net_id)
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
             course = get_course(guid)
             clicked_sections = get_section(course, class_section)

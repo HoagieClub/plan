@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from hoagieplan.models import (
     Course,
     CourseComments,
-    CourseEvaluations,
     Department,
     Section,
 )
@@ -59,7 +58,12 @@ def get_course_comments(dept, num):
     result = {"reviews": cleaned_comments}
 
     # Try to get course evaluation
-    evaluation = CourseEvaluations.objects.filter(course_guid__endswith=course_guid_suffix).first()
+    evaluation = (
+        Course.objects.filter(department=department, catalog_number=str(num))
+        .filter(quality_of_course__isnull=False)  # Extract only courses with non-null rating
+        .order_by("course_id", "-guid")
+        .first()
+    )
 
     if evaluation and evaluation.quality_of_course:
         result["rating"] = evaluation.quality_of_course
@@ -82,13 +86,10 @@ def get_course_info(crosslistings):
     title = getattr(course, "title", None)
     if title:
         course_dict["Title"] = title
-    
+
     # Add instructors with Section model
     sections = Section.objects.filter(course=course).select_related("instructor")
-    instructor_names = [
-        section.instructor.full_name
-        for section in sections
-        ]
+    instructor_names = [section.instructor.full_name for section in sections if section.instructor is not None]
     # Check for duplicates of instructors and remove when necessary
     hasSeen = set()
     instructor_hasSeen = []
@@ -108,14 +109,16 @@ def get_course_info(crosslistings):
     }
 
     # Add basic fields if they exist
-    for field, display_name in field_mapping.items():            
+    for field, display_name in field_mapping.items():
         if value := getattr(course, field):
             course_dict[display_name] = value
-    
-    # Add registrar link 
+
+    # Add registrar link
     course_id = course.guid[4:]
     term = course.guid[:4]
-    registrar_link = f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
+    registrar_link = (
+        f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
+    )
 
     course_dict["Registrar"] = registrar_link
 
@@ -128,7 +131,6 @@ def get_course_info(crosslistings):
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
-    
     return course_dict
 
 

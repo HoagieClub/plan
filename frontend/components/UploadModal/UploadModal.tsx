@@ -124,7 +124,7 @@ const Upload: React.FC<Upload> = ({ isOpen, onClose, onSuccess, onError }) => {
 	};
 
 	const modalContent = (
-		<TutorialModal>
+		<TutorialModal onClose={onClose}>
 			<div className={styles.modal}>
 				<div className={styles.header}>Upload Unofficial Transcript</div>
 

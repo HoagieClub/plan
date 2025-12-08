@@ -23,7 +23,19 @@ def combine_course_data(semester):
         consolidated_csv = consolidate_csvs(dept_files, f"{semester}/consolidated.csv")
         all_csvs.append(consolidated_csv)
     final_df = pd.concat(all_csvs, ignore_index=True)
-    final_df.to_csv(f"{semester}/{semester}.csv", index=False)
+
+    # Create unique output file
+    output_file = f"../{semester}.csv"
+    counter = 1
+    while os.path.exists(output_file):
+        output_file = f"../{semester}_{counter}.csv"
+        counter += 1
+
+    if counter > 1:
+        print(f"Save to {semester}_{counter-1}.csv")
+
+    final_df.to_csv(output_file, index=False)
+    print(f"Final consolidated CSV saved to {output_file}")
 
 
 def consolidate_csvs(file_list, output_file):
@@ -47,10 +59,6 @@ def consolidate_csvs(file_list, output_file):
     deduplicated_df = combined_df.drop_duplicates()
     print(f"Total rows after deduplication: {len(deduplicated_df)}")
     print(f"Duplicates removed: {len(combined_df) - len(deduplicated_df)}")
-
-    # Save to file
-    deduplicated_df.to_csv(output_file, index=False)
-    print(f"\nConsolidated data saved to: {output_file}")
 
     return deduplicated_df
 

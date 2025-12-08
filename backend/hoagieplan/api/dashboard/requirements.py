@@ -188,6 +188,7 @@ def serialize_req_inst(req_inst):
         "dept_list": getattr(req_inst, "dept_list", None),
         "dist_req": getattr(req_inst, "dist_req", None),
         "num_courses": getattr(req_inst, "num_courses", None),
+        "no_req": getattr(req_inst, "no_req", False),
         "table": req_inst._meta.db_table,
         "settled": [],
         "unsettled": [],
@@ -894,7 +895,7 @@ def update_courses(request):
                 user=user_inst, course=course_inst, defaults={"semester": semester}
             )
 
-        return JsonResponse({"status": "success", "message": message})
+        return JsonResponse({"status": "success"})
 
     except Exception as e:
         logger.error(f'An internal error occurred: {e}', exc_info=True)

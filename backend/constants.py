@@ -1,4 +1,6 @@
-DEPTS = {
+from typing import Dict
+
+DEPTS: Dict[str, str] = {
     "AAS": "African American Studies",
     "ASL": "American Sign Language",
     "AFS": "African Studies",
@@ -103,7 +105,7 @@ DEPTS = {
     "SWA": "Swahili",
     "THR": "Theater",
     "TPP": "Teacher Preparation",
-    "TRA": "Translation, Intercultural Com",
+    "TRA": "Translation and Intercultural Communication",
     "TUR": "Turkish",
     "TWI": "Twi",
     "UKR": "Ukrainian",
@@ -113,7 +115,7 @@ DEPTS = {
     "WRI": "Princeton Writing Program",
 }
 
-AB_MAJORS = {
+AB_MAJORS: Dict[str, str] = {
     "AAS": "African American Studies",
     "ANT": "Anthropology",
     "ARC": "Architecture",
@@ -142,15 +144,14 @@ AB_MAJORS = {
     "POL": "Politics",
     "POR": "Portuguese",
     "PSY": "Psychology",
-    "SPA": "Spanish",
     "REL": "Religion",
     "SLA": "Slavic Languages and Literatures",
     "SOC": "Sociology",
-    "SPO": "Spanish and Portuguese",
-    "SPI": "Public and International Affairs",
+    "SPA": "Spanish",
+    "SPI": "School of Public and International Affairs",
 }
 
-BSE_MAJORS = {
+BSE_MAJORS: Dict[str, str] = {
     "CBE": "Chemical and Biological Engineering",
     "CEE": "Civil and Environmental Engineering",
     "COS-BSE": "Computer Science (B.S.E.)",
@@ -159,7 +160,9 @@ BSE_MAJORS = {
     "ORF": "Operations Research and Financial Engineering",
 }
 
-LANG_DEPTS = {
+ALL_MAJORS: Dict[str, str] = dict(sorted({**AB_MAJORS, **BSE_MAJORS}.items(), key=lambda item: item[0].lower()))
+
+LANG_DEPTS: Dict[str, str] = {
     "ARA": "Arabic",
     "ASL": "American Sign Language",
     "SLA": "Slavic Languages and Lit",  # TODO: confirm
@@ -184,7 +187,7 @@ LANG_DEPTS = {
     "TUR": "Turkish",
     "TWI": "Twi",
     "URD": "Urdu",
-}  # unsure if some of these can count for AB foreign language requirement. --George
+}   # unsure if some of these can count for AB foreign language requirement. --George
 
 SEMESTER_TO_TERM_CODE = {
     "f2025": 1262,
@@ -199,4 +202,84 @@ SEMESTER_TO_TERM_CODE = {
     "s2023": 1234,
     "s2022": 1224,
     "s2021": 1214,
+}
+
+MINORS: Dict[str, str] = {
+    "AAS": "African American Studies",
+    "AFS": "African Studies",
+    "APC": "Applied and Computational Mathematics",
+    "ARA": "Arabic Language",
+    "ASA": "Asian American Studies",
+    "ART": "Archaeology",
+    "BNG": "Bioengineering",
+    "CGS": "Cognitive Science",
+    "CHI": "Chinese Language",
+    "CLA": "Classics",
+    "COS": "Computer Science",
+    "CLS": "Climate Science",
+    "CWR": "Creative Writing",
+    "DAN": "Dance",
+    "EAS": "East Asian Studies",
+    "ENE": "Sustainable Energy",
+    "ENG": "English",
+    "ENV": "Environmental Studies",
+    "EUS": "European Studies",
+    "FIN": "Finance",
+    "FRE": "French Language and Culture",
+    "GHP": "Global Health & Health Policy",
+    "GSS": "Gender and Sexuality Studies",
+    "HOA": "History of Art",
+    "HEB": "Hebrew Language and Culture",
+    "HIS": "History",
+    "HLS": "Hellenic Studies",
+    "HSTM": "History of Science, Technology, and Medicine",
+    "HUM": "Humanistic Studies",
+    "ITA": "Italian Language and Culture",
+    "JDS": "Judaic Studies",
+    "JPN": "Japanese Language",
+    "JRN": "Journalism",
+    "KOR": "Korean Language",
+    "LAO": "Latino Studies",
+    "LAS": "Latin American Studies",
+    "LIN": "Linguistics",
+    "MAT": "Mathematics",
+    "MED": "Medieval Studies",
+    "MPP": "Music Performance",
+    "MQE": "Quantitative Economics",
+    "MSE": "Materials Science and Engineering",
+    "MUS": "Music",
+    "NES": "Near Eastern Studies",
+    "NEU": "Neuroscience",
+    "PER": "Persian Language",
+    "PHI": "Philosophy",
+    "PHY": "Engineering Physics",
+    "POR": "Portuguese Language and Culture",
+    "REL": "Religion",
+    "RES": "Russian, East European and Eurasian Studies",
+    "ROB": "Robotics",
+    "SAS": "South Asian Studies",
+    "SLA": "Slavic Languages and Literatures",
+    "SML": "Statistics and Machine Learning",
+    "SPA": "Spanish Language and Culture",
+    "TMT": "Theater and Music Theater",
+    "TRA": "Translation, Intercultural Com",
+    "TUR": "Turkish Language",
+    "VIS": "Visual Arts",
+    "VPL": "Values and Public Life",
+}
+
+CERTIFICATES: Dict[str, str] = {
+    "ACE": "Architecture and Engineering - Open to all class years",
+    "AMS": "American Studies - Open to all class years",
+    "AST": "Planets and Life - Open to Class of 26, 27, 28 only",
+    "ENT": "Entrepreneurship - Open to all class years",
+    "GEO": "Geological Engineering - Open to all class years",
+    "GER": "German - Open to all class years",
+    "HPD": "History and the Practice of Diplomacy - Open to all class years",
+    "OQDS": "Optimization and Quantitative Decision Science - Open to all class years",
+    "QCB": "Quantitative and Computational Biology - Open to all class years",
+    "TAS-E": "Technology and Society - Energy Track - Open to all class years",
+    "TAS-IT": "Technology and Society - IT Track - Open to all class years",
+    "TPP": "Teacher Preparation - Open to all class years",
+    "URB": "Urban Studies - Open to all class years",
 }
