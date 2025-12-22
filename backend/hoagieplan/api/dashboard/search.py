@@ -38,10 +38,8 @@ def make_sort_key(dept):
 
 
 def course_fits_time_constraint(course, start_time, end_time, term):
-    """ Checks if a course fits within a time constraint
-    The course fits iff for every every class_type section it has,
-    there is at least one section where all of the class meetings fall
-    within the time range"""
+    """ Checks if a course fits within a time constraint:  Check if at least one primary section
+    (Lecture, Seminar, or Studio) fits within the time range."""
 
     if term:
         sections = Section.objects.filter(course=course,
@@ -49,64 +47,31 @@ def course_fits_time_constraint(course, start_time, end_time, term):
     else:
         sections = course.section_set.all()
 
-    logger.info(
-        f"Checking course: {course.title}, start_time: {start_time}, end_time: {end_time}")
-    logger.info(f"  Found {len(sections)} sections for this term")
-
     if not sections:
         return False
 
-    sections_by_type = {}
+    primary_types = ["Lecture", "Seminar", "Studio"]
+    primary_sections = [s for s in sections if s.class_type in primary_types]
 
-    for section in sections:
-        class_type = section.class_type or "Unknown"
+    for section in primary_sections:
+        class_meetings = section.classmeeting_set.all()
 
-        if class_type not in sections_by_type:
-            sections_by_type[class_type] = []
-        sections_by_type[class_type].append(section)
+        if not class_meetings:
+            continue
 
-    logger.info(f"  Section types: {list(sections_by_type.keys())}")
+        meeting = class_meetings[0]
 
-    for class_type, type_sections in sections_by_type.items():
-        can_fulfill_type = False
+        if not meeting.start_time or not meeting.end_time:
+            continue
 
-        for section in type_sections:
-
-            class_meetings = section.classmeeting_set.all()
-
+        if meeting.start_time >= start_time and meeting.end_time <= end_time:
             logger.info(
-                f"  Section {section.class_section}, type: {class_type}, meetings: {len(class_meetings)}")
+                f"Course {course.title}: Section {section.class_section} fits!")
+            return True
 
-            if not class_meetings:
-                logger.info(f"    No meetings, skipping section")
-                continue
-
-            section_is_valid = True
-            for meeting in class_meetings:
-
-                if not meeting.start_time or not meeting.end_time:
-                    logger.info(f"    Meeting missing time data")
-                    continue
-                if meeting.start_time < start_time or meeting.end_time > end_time:
-                    logger.info(
-                        f"    Meeting outside range [{start_time} - {end_time}")
-                    section_is_valid = False
-                    break
-                logger.info(
-                    f"    Meeting okay! [{meeting.start_time} - {meeting.end_time}")
-
-            if section_is_valid:
-                logger.info(f"    Section {section.class_section} is VALID!")
-                can_fulfill_type = True
-                break
-
-        if not can_fulfill_type:
-            logger.info(
-                f"  Type {class_type} cannot be fulfilled, course rejected")
-
-            return False
-        logger.info(f"  All class types can be fulfilled, course ACCEPTED")
-    return True
+    # No sections fit
+    logger.info(f"Course {course.title}: No sections fit the time constraint")
+    return False
 
 
 @api_view(["GET"])
