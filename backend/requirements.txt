@@ -12,7 +12,7 @@ django-cors-headers==4.5.0
     # via hoagie-plan (pyproject.toml)
 django-heroku==0.3.1
     # via hoagie-plan (pyproject.toml)
-djangorestframework==3.15.2
+djangorestframework==3.16.1
     # via hoagie-plan (pyproject.toml)
 gunicorn==23.0.0
     # via hoagie-plan (pyproject.toml)
