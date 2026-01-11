@@ -8,11 +8,11 @@ urls:
   - https://complit.princeton.edu/undergraduate-program/current-majors/requirements
 contacts:
   - type: Chair
-    name: Thomas W. Hare
-    email: thare@princeton.edu
+    name: Wendy Belcher
+    email: wbelcher@princeton.edu
   - type: Director of Undergraduate Studies
-    name: Karen R. Emmerich
-    email: karene@princeton.edu
+    name: Lital Levy
+    email: lital@princeton.edu
 req_list:
   - name: Prerequisites
     max_counted: 1
@@ -127,13 +127,13 @@ req_list:
         double_counting_allowed: true
         completed_by_semester: 4
         req_list:
-          - name:
+          - name: COM 205-206
             max_counted: 1
             min_needed: 2
             course_list:
               - COM 205
               - COM 206
-          - name:
+          - name: HUM 216-219
             max_counted: 1
             min_needed: 4
             explanation:
@@ -142,7 +142,7 @@ req_list:
               - HUM 217
               - HUM 218
               - HUM 219
-          - name:
+          - name: TRA 200
             max_counted: 1
             min_needed: 1
             explanation:
@@ -215,7 +215,7 @@ req_list:
             explanation: |-
               <i>Editor's Note: Most of these courses fall under this requirement but hoagieplan does not verify this.</i><br><br>
 
-              Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed with comparative literature (one of which is COM 300); and two upper-level courses in literature in any other language (including English and courses on readings taught in translation).
+              Two 300-, 400-, or 500-level courses in any literature, including English.  These courses need not be taken in the same department; a pairing such as ENG 320 and SPA 354, for example, would fulfill the requirement.
             course_list:
               - LANG 3**
               - LANG 4**
@@ -226,7 +226,7 @@ req_list:
           - name: Another Textual Discipline
             max_counted: 1
             min_needed: 2
-            explanation: Comparative work in literature and a traditional textual discipline (that is, in the humanities [e.g., philosophy, art and archaeology, classics or religion] or social sciences [e.g., anthropology, history, psychology, sociology, politics, economics or public policy]). Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed in comparative literature (one of which is COM 300); and two upper-level courses in the relevant textual discipline.
+            explanation: Two 300-, 400-, or 500-level courses in philosophy, art and archeology, classics, religion, anthropology, history, psychology, sociology, politics, economics, or public policy.  In general, these courses represent a consistent intellectual approach and have the same prefix (REL, for example); students intending to pair courses with related content, but offered in different departments (HIS and POL, for example) should obtain written permission from COM’s Director of Undergraduate Studies.
             course_list:
               - ANT 3*
               - ANT 4*
@@ -267,7 +267,7 @@ req_list:
             explanation: |-
               <i>Editor's Note: Not all of these courses fall under this requirement and hoagieplan does not verify this.</i><br><br>
 
-              Comparative work in literature and another medium (that is, photography, film, art, art history, architecture or music). Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed in comparative literature (one of which is COM 300); and two upper-level courses in the relevant medium. Both courses must be in the same medium.
+              Two 300-, 400-, or 500-level courses in photography, film, art, art history, architecture or music.  In general, these courses involve the same medium (photography, for example); students intending to pair courses involving different media with related content (photography and painting, for example) should obtain written permission from COM’s Director of Undergraduate Studies.
             course_list:
               - ART 3*
               - ART 4*
@@ -284,7 +284,7 @@ req_list:
           - name: Regional or Ethnic Studies
             max_counted: 1
             min_needed: 2
-            explanation: Comparative work in literature and regional or ethnic studies (that is, African [AFS], African American [AAS], American [AMS], East Asian [EAS], European [ECS or EPS], Hellenic [HLS], Judaic [JDS], Latin American [LAS], Latino [LAO], Near Eastern [NES] or South Asian [SAS]). Students in this track choose four reading-based courses in non-English-language literature; three courses listed or cross-listed in comparative literature (one of which is COM 300); and two courses in the relevant region or ethnicity.
+            explanation: Two 300-, 400-, or 500-level courses in AFS, AAS, EAP, EAS, ECS, EPS, HLS, JDS, LAS, LAO, NES, or SAS. These two courses normally emerge from a single program, and have the same prefix (AFS, for instance).  Alternatively, students on this track might take two 300-, 400-, or 500-level courses in either ENV, GSS, or URB; as elsewhere, courses should emerge from a single program, and have the same prefix.  Those interested in these options should consult with COM’s Director of Undergraduate Studies to plan a course of study.
             course_list:
               - AFS 3*
               - AFS 4*
@@ -332,8 +332,7 @@ req_list:
             max_counted: 1
             min_needed: 2
             explanation:
-              Comparative work in literary study and the creative arts (that is, creative writing [poetry, the novel, short stories, drama, memoir], screenwriting, translation, dance, theatrical performance, visual arts, film or video). Students choose four reading-based courses in non-English-language literature; three courses listed or cross-listed with comparative literature (one of which is COM 300); and two courses in the relevant creative art. Both courses must be in the same area of study.<br>
-              Students entering the department select this program provisionally. Final admission depends upon the acceptance of the creative thesis proposal by the department and by an adviser from the relevant creative arts program.
+              Two 300-, 400-, or 500-level courses in creative writing, screenwriting, translation, dance, theatrical or musical performance, visual arts, film, or video.  These two courses normally emerge from a single program, and have the same prefix (DAN, for instance).  Students entering COM must select the creative option provisionally, as final admission depends upon the formal acceptance of the creative thesis proposal by the Creative Writing program. Applications for the creative thesis are due in the spring of the junior year; interested students should look over additional information on writing the creative senior thesis.  
             course_list:
               - CWR 3*
               - CWR 4*

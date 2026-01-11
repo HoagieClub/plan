@@ -1,10 +1,8 @@
-import pdfplumber
-from django.http import HttpRequest
-from django.test.client import RequestFactory
 import json
 
-from hoagieplan.tests import search_courses_test
-from hoagieplan.tests.search_courses_test import search_courses
+import pdfplumber
+
+from hoagieplan.api.dashboard.search import search_courses_helper
 
 TERMS = {
 	"Spring 2027": "1284",
@@ -82,9 +80,7 @@ def get_current_term(year_and_semester_string: str) -> str:
 # Queries the DB for course_id given course
 # Ex: get_course_id("COS 126") --> 002051
 def get_course_id(course):
-    factory = RequestFactory()
-    request = factory.get("/search_courses", {"course": course})
-    response = search_courses(request)
+    response = search_courses_helper(course, None, None, None, None)
     string_data = response.content.decode("utf-8")
 
     # Parse JSON string to dictionary

@@ -1,7 +1,4 @@
-from data.req_lib import ReqLib
-from hoagieplan.api.dashboard.search import search_courses
-from django.http import HttpRequest
-from django.test.client import RequestFactory
+from hoagieplan.api.dashboard.search import search_courses_helper
 import json
 
 TERMS = {
@@ -23,9 +20,7 @@ TERMS = {
 # Queries the DB for course_id given course
 # Ex: get_course_id("COS 126") --> 002051
 def get_course_id(course):
-    factory = RequestFactory()
-    request = factory.get("/search_courses", {"course": course})
-    response = search_courses(request)
+    response = search_courses_helper(course)
     string_data = response.content.decode("utf-8")
 
     # Parse JSON string to dictionary

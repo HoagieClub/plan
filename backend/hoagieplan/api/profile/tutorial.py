@@ -1,15 +1,14 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET, require_POST
+from rest_framework.decorators import api_view
 from hoagieplan.models import CustomUser
 
 
+@api_view(["GET"])
 def get_status(request):
-    net_id = request.headers.get("X-NetId")
-    print(f"NETID: {net_id}")
+    net_id = request.user.net_id
 
     try:
         user_inst = CustomUser.objects.get(net_id=net_id)
-        print(user_inst.seen_tutorial)
         return JsonResponse({"hasSeenTutorial": user_inst.seen_tutorial})
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -18,8 +17,9 @@ def get_status(request):
         return JsonResponse({"error": "An internal error occurred"}, status=500)
 
 
+@api_view(["POST"])
 def set_status(request):
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     if not net_id:
         return JsonResponse({})
 

@@ -1,7 +1,8 @@
 import logging
 import os
-import sys
 import re
+import sys
+import time
 from datetime import date
 from pathlib import Path
 
@@ -31,13 +32,14 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
     "description",
     "urls",
+    "contacts",
     "apply_by_semester",
     "active_until",
 ]
@@ -56,6 +58,32 @@ REQUIREMENT_FIELDS = [
     "num_courses",
 ]
 UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
+
+# Global caches to avoid repeated database queries
+DEPT_CACHE = {}
+MAJOR_CACHE = {}
+MINOR_CACHE = {}
+DEGREE_CACHE = {}
+
+
+def initialize_caches():
+    """Load all reference data into memory to avoid repeated DB queries."""
+    global DEPT_CACHE, MAJOR_CACHE, MINOR_CACHE, DEGREE_CACHE
+
+    logging.info("Initializing caches...")
+    DEPT_CACHE = {dept.code: dept for dept in Department.objects.all()}
+    logging.info(f"Cached {len(DEPT_CACHE)} departments")
+
+    DEGREE_CACHE = {degree.code: degree for degree in Degree.objects.all()}
+    logging.info(f"Cached {len(DEGREE_CACHE)} degrees")
+
+    MAJOR_CACHE = {major.code: major for major in Major.objects.all()}
+    logging.info(f"Cached {len(MAJOR_CACHE)} majors")
+
+    MINOR_CACHE = {minor.code: minor for minor in Minor.objects.all()}
+    logging.info(f"Cached {len(MINOR_CACHE)} minors")
+
+    logging.info("Caches initialized!")
 
 
 def load_data(yaml_file):
@@ -77,59 +105,56 @@ def load_course_list(course_list):
 
         if dept_code == "LANG":
             for lang_dept in constants.LANG_DEPTS:
-                try:
-                    dept_id = Department.objects.get(code=lang_dept).id
-                except Department.DoesNotExist:
+                dept = DEPT_CACHE.get(lang_dept)
+                if not dept:
                     logging.info(f"Dept with code {lang_dept} not found")
-                    dept_id = None
-
-                if not dept_id:
                     continue
+
+                dept_id = dept.id
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif re.match(r'^\d\d\*$', course_num):
+                elif re.match(r"^\d\d\*$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[:2]
                     )
-                elif re.match(r'^\d\*{1,2}$', course_num):
+                elif re.match(r"^\d\*{1,2}$", course_num):
                     course_inst_list += Course.objects.filter(
                         department_id=dept_id, catalog_number__startswith=course_num[0]
-                        )
-                else:
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number=course_num
                     )
+                else:
+                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
         else:
-            try:
-                dept_id = Department.objects.get(code=dept_code).id
-            except Department.DoesNotExist:
+            dept = DEPT_CACHE.get(dept_code)
+            if not dept:
                 logging.info(f"Dept with code {dept_code} not found")
-                dept_id = None
-
-            if not dept_id:
                 continue
 
+            dept_id = dept.id
+
             if course_num in ["*", "***"]:
-                    dept_list.append(dept_code)
-            elif re.match(r'^\d\d\*$', course_num):
+                dept_list.append(dept_code)
+            elif re.match(r"^\d\d\*$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[:2]
                 )
-            elif re.match(r'^\d\*{1,2}$', course_num):
+            elif re.match(r"^\d\*{1,2}$", course_num):
                 course_inst_list += Course.objects.filter(
                     department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
-            else:
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number=course_num
                 )
+            else:
+                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
     return course_inst_list, dept_list
 
 
 def push_requirement(req):
     logging.info(f"{req['name']}")
     req_fields = {}
+
+    # If this is a no_req requirement, set min_needed to 0
+    if "no_req" in req:
+        req["min_needed"] = 0
+
     for field in REQUIREMENT_FIELDS:
         if field in req:
             if field == "min_needed":
@@ -168,15 +193,15 @@ def push_requirement(req):
 
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
-        for course_inst in course_inst_list:
-            req_inst.course_list.add(course_inst)
+        if course_inst_list:
+            req_inst.course_list.set(course_inst_list)
         if len(dept_list) != 0:
             req_inst.dept_list = oj.dumps(dept_list).decode("utf-8")
             req_inst.save()
         if ("excluded_course_list" in req) and (len(req["excluded_course_list"]) != 0):
-            course_inst_list, _ = load_course_list(req["excluded_course_list"])
-            for course_inst in course_inst_list:
-                req_inst.excluded_course_list.add(course_inst)
+            excluded_course_list, _ = load_course_list(req["excluded_course_list"])
+            if excluded_course_list:
+                req_inst.excluded_course_list.set(excluded_course_list)
 
     elif (
         (("dist_req" not in req) or (req["dist_req"] is None))
@@ -237,7 +262,7 @@ def push_major(yaml_file):
 
     for field in MAJOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 major_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 major_fields[field] = data[field]
@@ -248,10 +273,10 @@ def push_major(yaml_file):
     )
 
     degree_code = "BSE" if major_inst.code in constants.BSE_MAJORS else "AB"
-    try:
-        degree_inst = Degree.objects.get(code=degree_code)
+    degree_inst = DEGREE_CACHE.get(degree_code)
+    if degree_inst:
         major_inst.degree.add(degree_inst)
-    except Degree.DoesNotExist:
+    else:
         logging.info(f"Degree with code {degree_code} not found")
 
     for req in data["req_list"]:
@@ -272,7 +297,7 @@ def push_minor(yaml_file):
 
     for field in MINOR_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 minor_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 minor_fields[field] = data[field]
@@ -283,20 +308,26 @@ def push_minor(yaml_file):
     )
 
     if "excluded_majors" in data:
+        excluded_majors = []
         for major_code in data["excluded_majors"]:
-            try:
-                major_inst = Major.objects.get(code=major_code)
-                minor_inst.excluded_majors.add(major_inst)
-            except Major.DoesNotExist:
+            major_inst = MAJOR_CACHE.get(major_code)
+            if major_inst:
+                excluded_majors.append(major_inst)
+            else:
                 logging.info(f"Major with code {major_code} not found")
+        if excluded_majors:
+            minor_inst.excluded_majors.set(excluded_majors)
 
     if "excluded_minors" in data:
+        excluded_minors = []
         for minor_code in data["excluded_minors"]:
-            try:
-                other_minor_inst = Minor.objects.get(code=minor_code)
-                minor_inst.excluded_minors.add(other_minor_inst)
-            except Minor.DoesNotExist:
+            other_minor_inst = MINOR_CACHE.get(minor_code)
+            if other_minor_inst:
+                excluded_minors.append(other_minor_inst)
+            else:
                 logging.info(f"Minor with code {minor_code} not found")
+        if excluded_minors:
+            minor_inst.excluded_minors.set(excluded_minors)
 
     for req in data["req_list"]:
         req_inst = push_requirement(req)
@@ -316,7 +347,7 @@ def push_certificate(yaml_file):
 
     for field in CERTIFICATE_FIELDS:
         if field in data:
-            if field == "urls":
+            if field in ["urls", "contacts"]:
                 certificate_fields[field] = oj.dumps(data[field]).decode("utf-8")
             else:
                 certificate_fields[field] = data[field]
@@ -328,12 +359,15 @@ def push_certificate(yaml_file):
     )
 
     if "excluded_majors" in data:
+        excluded_majors = []
         for major_code in data["excluded_majors"]:
-            try:
-                major_inst = Major.objects.get(code=major_code)
-                certificate_inst.excluded_majors.add(major_inst)
-            except Major.DoesNotExist:
+            major_inst = MAJOR_CACHE.get(major_code)
+            if major_inst:
+                excluded_majors.append(major_inst)
+            else:
                 logging.info(f"Major with code {major_code} not found")
+        if excluded_majors:
+            certificate_inst.excluded_majors.set(excluded_majors)
 
     for req in data["req_list"]:
         req_inst = push_requirement(req)
@@ -378,8 +412,7 @@ def push_certificates(certificates_path):
 def clear_user_requirements():
     logging.info("Clearing CustomUser_requirements table...")
     with transaction.atomic():
-        for user_inst in CustomUser.objects.all():
-            user_inst.requirements.clear()
+        CustomUser.requirements.through.objects.all().delete()
     logging.info("CustomUser_requirements table cleared!")
 
 
@@ -391,9 +424,8 @@ def clear_user_req_dict():
 
 def clear_requirement_ids():
     logging.info("Clearing requirement_id column in UserCourses...")
-    for user_course in UserCourses.objects.all():
-        user_course.requirements.clear()
-    logging.info("requirement_id column cleared!")
+    UserCourses.requirements.through.objects.all().delete()
+    logging.info("UserCourses_requirements table cleared!")
 
 
 def clear_requirements():
@@ -404,12 +436,22 @@ def clear_requirements():
 
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == "__main__":
+    start_time = time.time()
     with transaction.atomic():
         clear_user_requirements()
         clear_user_req_dict()
         clear_requirement_ids()
         clear_requirements()
+
+        initialize_caches()
+
         push_degrees(Path("../degrees").resolve())
+        DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
+
         push_majors(Path("../majors").resolve())
+        MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
+
         push_certificates(Path("../certificates").resolve())
         push_minors(Path("../minors").resolve())
+    end_time = time.time()
+    print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")

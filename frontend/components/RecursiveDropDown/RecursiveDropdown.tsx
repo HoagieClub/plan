@@ -1,5 +1,4 @@
-import { type FC } from 'react';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState, type FC } from 'react';
 
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -19,17 +18,16 @@ import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/utils';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
-import type { Profile } from '@/types';
 
 interface Dictionary {
 	// TODO: Address this typing eventually.
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[key: string]: any;
 }
 
 interface DropdownProps {
 	academicPlan: Dictionary;
-	profile: Profile;
 	csrfToken: string;
 }
 
@@ -112,7 +110,7 @@ const SatisfactionStatus: FC<SatisfactionStatusProps> = ({
 };
 
 // Dropdown component with refined styling
-const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
+const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 	// Subscribe to user slice to access the same updateRequirements hook everywhere
 	// This allows us to re-render TabbedMenu without reloading the entire page
 	const { updateRequirements } = useUserSlice((state) => ({
@@ -147,17 +145,8 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 
 	const handleExplanationClick = (event, reqId) => {
 		setIsLoading(true);
-		const url = new URL(`${process.env.BACKEND}/requirement_info/`);
-		url.searchParams.append('reqId', reqId);
-
-		fetch(url.toString(), {
-			method: 'GET',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-NetId': profile.netId,
-			},
-		})
+		const params = new URLSearchParams({ reqId });
+		fetch(`/api/hoagie/requirement_info/?${params}`)
 			.then((response) => response.json())
 			.then((academicPlan) => {
 				setExplanation(academicPlan);
@@ -207,12 +196,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 		if (explanation === null) {
 			return;
 		}
-		fetch(`${process.env.BACKEND}/mark_satisfied/`, {
+		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
-				'X-NetId': profile.netId,
 				'X-CSRFToken': csrfToken,
 			},
 			body: JSON.stringify({
@@ -234,12 +220,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 		if (explanation === null) {
 			return;
 		}
-		fetch(`${process.env.BACKEND}/mark_satisfied/`, {
+		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
-				'X-NetId': profile.netId,
 				'X-CSRFToken': csrfToken,
 			},
 			body: JSON.stringify({
@@ -249,7 +232,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 		})
 			.then((response) => response.json())
 			.then(() => {
-				setMarkedSatisfied(true);
+				setMarkedSatisfied(false);
 				void updateRequirements();
 			})
 			.catch((error) => {
@@ -403,12 +386,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 	) : null;
 
 	const handleClick = (crosslistings, reqId) => {
-		fetch(`${process.env.BACKEND}/manually_settle/`, {
+		fetch(`/api/hoagie/manually_settle`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
-				'X-NetId': profile.netId,
 				'X-CSRFToken': csrfToken,
 			},
 			body: JSON.stringify({ crosslistings: crosslistings, reqId: reqId }),
@@ -574,14 +554,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, profile, csrfToken }) => {
 // Recursive dropdown component
 interface RecursiveDropdownProps {
 	academicPlan: Dictionary;
-	profile: Profile;
 	csrfToken: string;
 }
 
-export const RecursiveDropdown: FC<RecursiveDropdownProps> = ({
-	academicPlan,
-	profile,
-	csrfToken,
-}) => {
-	return <Dropdown academicPlan={academicPlan} profile={profile} csrfToken={csrfToken} />;
+export const RecursiveDropdown: FC<RecursiveDropdownProps> = ({ academicPlan, csrfToken }) => {
+	return <Dropdown academicPlan={academicPlan} csrfToken={csrfToken} />;
 };
