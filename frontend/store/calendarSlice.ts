@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import  {deleteCourseFromCalendar} from '@/services/calendarService';
+
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
@@ -29,6 +31,8 @@ interface CalendarStore {
 	// getSelectedCourses: () => CalendarEvent[];
 	getSelectedCourses: (semester: string) => CalendarEvent[];
 }
+
+const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
 const dayToStartColumnIndex: Record<string, number> = {
@@ -238,32 +242,53 @@ const useCalendarStore = create<CalendarStore>()(
 				});
 			},
 
-			removeCourse: (sectionKey) => {
-				set((state) => {
-					const term = Object.keys(state.selectedCourses).find((semester) =>
-						state.selectedCourses[semester].some((course) => course.key === sectionKey)
-					);
+			removeCourse: async (sectionKey) => {
+	const state = get();
+	const term = Object.keys(state.selectedCourses).find((semester) =>
+		state.selectedCourses[semester].some((course) => course.key === sectionKey)
+	);
 
-					if (!term) {
-						return { selectedCourses: state.selectedCourses };
-					}
+	if (!term) {
+		return;
+	}
 
-					const selectedCourses = state.selectedCourses[term];
-					const courseToRemove = selectedCourses.find((course) => course.key === sectionKey).course
-						.guid;
+	const selectedCourses = state.selectedCourses[term];
+	const courseToRemove = selectedCourses.find((course) => course.key === sectionKey)?.course.guid;
 
-					const updatedCourses = selectedCourses.filter(
-						(course) => course.course.guid !== courseToRemove
-					);
+	if (!courseToRemove) {
+		return;
+	}
 
-					return {
-						selectedCourses: {
-							...state.selectedCourses,
-							[term]: updatedCourses,
-						},
-					};
-				});
-			},
+	try {
+		const deleteResponse = await deleteCourseFromCalendar(
+			DEFAULT_CALENDAR_NAME,
+			Number(term),
+			courseToRemove
+		);
+		
+		if (!deleteResponse) {
+			throw new Error('Failed to delete course from calendar');
+		}
+
+		set((state) => {
+			const selectedCourses = state.selectedCourses[term];
+			const updatedCourses = selectedCourses.filter(
+				(course) => course.course.guid !== courseToRemove
+			);
+
+			return {
+				selectedCourses: {
+					...state.selectedCourses,
+					[term]: updatedCourses,
+				},
+			};
+		});
+	} catch (error) {
+		set({
+			error: 'Failed to remove course. Please try again.',
+		});
+	}
+},
 
 			// Getters
 			getSelectedCourses: (semester) => get().selectedCourses[semester] || [],
