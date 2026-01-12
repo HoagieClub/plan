@@ -9,7 +9,8 @@ import { Calendar } from '@/app/calendar/Calendar';
 import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
 import { SkeletonApp } from '@/components/SkeletonApp';
-import { CalendarService } from '@/services/calendarService';
+import { createCalendar, hasCalendarForTermInDB } from '@/services/calendarService';
+import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import { terms } from '@/utils/terms';
@@ -24,7 +25,7 @@ const CalendarUI: FC = () => {
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
-	const calendarService = useMemo(() => new CalendarService(userProfile), [userProfile]);
+	// const calendarService = useMemo(() => new CalendarService(userProfile), [userProfile]);
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
 		setTermFilter(currentSemester);
@@ -39,28 +40,29 @@ const CalendarUI: FC = () => {
 			}
 		}
 	};
+	const createUserCalendarData = (sem: number) => {
+		// check if user has calendar for term
+		const calendarEvents = hasCalendarForTermInDB(sem);
+		// const getSelectedCourses = useCalendarStore((state) => state.getSelectedCourses);
+		// const calendarEvents = getSelectedCourses(sem.toString());
+		try {
+			if (calendarEvents) {
+				return;
+			}
+
+			// create a new calendar
+			const newCalendar = createCalendar('New Calendar', sem);
+			return newCalendar;
+		} catch (error) {
+			console.error('Error creating calendar:', error);
+		}
+	};
 
 	useEffect(() => {
-		const createUserCalendarData = async (sem: number) => {
-			try {
-				// check if calendars user has calendars already
-				const existingCalendars = await calendarService.getCalendars(sem);
-				const existingDBCalendars = await calendarService.hasCalendarForTermInDB(sem);
-				if (existingCalendars || existingDBCalendars) {
-					return;
-				}
-
-				// create a new calendar
-				const newCalendar = await calendarService.createCalendar('New Calendar', sem);
-				return newCalendar;
-			} catch (error) {
-				console.error('Error creating calendar:', error);
-			}
-		};
 		for (const sem of semesterList) {
 			void createUserCalendarData(parseInt(semesterList[sem]));
 		}
-	}, [calendarService, semesterList]);
+	}, [semesterList]);
 
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;
