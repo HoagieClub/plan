@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
@@ -25,6 +25,7 @@ const CalendarUI: FC = () => {
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
+	const getSelectedCourses = useCalendarStore((state) => state.getSelectedCourses);
 	// const calendarService = useMemo(() => new CalendarService(userProfile), [userProfile]);
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
@@ -40,11 +41,8 @@ const CalendarUI: FC = () => {
 			}
 		}
 	};
-	const createUserCalendarData = (sem: number) => {
-		// check if user has calendar for term
-		const calendarEvents = hasCalendarForTermInDB(sem);
-		// const getSelectedCourses = useCalendarStore((state) => state.getSelectedCourses);
-		// const calendarEvents = getSelectedCourses(sem.toString());
+	const createUserCalendarData = useCallback((sem: number) => {
+		const calendarEvents = getSelectedCourses(sem.toString());
 		try {
 			if (calendarEvents) {
 				return;
@@ -56,13 +54,13 @@ const CalendarUI: FC = () => {
 		} catch (error) {
 			console.error('Error creating calendar:', error);
 		}
-	};
+	}, [getSelectedCourses]);
 
 	useEffect(() => {
 		for (const sem of semesterList) {
-			void createUserCalendarData(parseInt(semesterList[sem]));
+			void createUserCalendarData(parseInt(sem));
 		}
-	}, [semesterList]);
+	}, [createUserCalendarData, semesterList]);
 
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;
