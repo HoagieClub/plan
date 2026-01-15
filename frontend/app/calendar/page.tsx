@@ -9,7 +9,7 @@ import { Calendar } from '@/app/calendar/Calendar';
 import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
 import { SkeletonApp } from '@/components/SkeletonApp';
-import { createCalendar, hasCalendarForTermInDB } from '@/services/calendarService';
+import { createCalendar } from '@/services/calendarService';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
@@ -41,23 +41,27 @@ const CalendarUI: FC = () => {
 			}
 		}
 	};
-	const createUserCalendarData = useCallback((sem: number) => {
-		const calendarEvents = getSelectedCourses(sem.toString());
-		try {
-			if (calendarEvents) {
-				return;
-			}
+	const createUserCalendarData = useCallback(
+		(sem: number) => {
+			const calendarEvents = getSelectedCourses(sem.toString());
+			try {
+				if (calendarEvents) {
+					return;
+				}
 
-			// create a new calendar
-			const newCalendar = createCalendar('New Calendar', sem);
-			return newCalendar;
-		} catch (error) {
-			console.error('Error creating calendar:', error);
-		}
-	}, [getSelectedCourses]);
+				// create a new calendar
+				const newCalendar = createCalendar('New Calendar', sem);
+				return newCalendar;
+			} catch (error) {
+				console.error('Error creating calendar:', error);
+			}
+		},
+		[getSelectedCourses]
+	);
 
 	useEffect(() => {
-		for (const sem of semesterList) {
+		const termIDs = Object.values(terms);
+		for (const sem of termIDs) {
 			void createUserCalendarData(parseInt(sem));
 		}
 	}, [createUserCalendarData, semesterList]);
