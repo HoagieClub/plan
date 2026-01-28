@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { addCourseToCalendar } from '@/services/calendarService';
+import { addCourseToCalendar, deleteCourseFromCalendar } from '@/services/calendarService';
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
@@ -244,20 +244,33 @@ const useCalendarStore = create<CalendarStore>()(
 				});
 			},
 
-			removeCourse: (sectionKey) => {
+			removeCourse: async (sectionKey) => {
+				const state = get();
+				const term = Object.keys(state.selectedCourses).find((semester) =>
+					state.selectedCourses[semester].some((course) => course.key === sectionKey)
+				);
+
+				if (!term) {
+					return;
+				}
+
+				const selectedCourses = state.selectedCourses[term];
+				const courseToRemove = selectedCourses.find((course) => course.key === sectionKey)?.course
+					.guid;
+
+				if (!courseToRemove) {
+					return;
+				}
+
+				await deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove);
+
+				// TODO: Need to handle failed deletion
+				// if (!deleteResponse) {
+				// 	throw new Error('Failed to delete course from calendar');
+				// }
+
 				set((state) => {
-					const term = Object.keys(state.selectedCourses).find((semester) =>
-						state.selectedCourses[semester].some((course) => course.key === sectionKey)
-					);
-
-					if (!term) {
-						return { selectedCourses: state.selectedCourses };
-					}
-
 					const selectedCourses = state.selectedCourses[term];
-					const courseToRemove = selectedCourses.find((course) => course.key === sectionKey).course
-						.guid;
-
 					const updatedCourses = selectedCourses.filter(
 						(course) => course.course.guid !== courseToRemove
 					);
