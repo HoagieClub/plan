@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { invertSectionInCalendar } from '@/services/calendarService';
+import {
+	addCourseToCalendar,
+	deleteCourseFromCalendar,
+	invertSectionInCalendar,
+} from '@/services/calendarService';
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
@@ -30,6 +34,8 @@ interface CalendarStore {
 	// getSelectedCourses: () => CalendarEvent[];
 	getSelectedCourses: (semester: string) => CalendarEvent[];
 }
+
+const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
 const dayToStartColumnIndex: Record<string, number> = {
@@ -95,6 +101,16 @@ const useCalendarStore = create<CalendarStore>()(
 				try {
 					const term = course.guid.substring(0, 4);
 					const course_id = course.guid.substring(4);
+
+					const addCourseResponse = await addCourseToCalendar(
+						DEFAULT_CALENDAR_NAME,
+						Number(term),
+						course.guid
+					);
+					if (!addCourseResponse) {
+						throw new Error('Failed to add course to calendar');
+					}
+
 					// console.log(`Fetching course details from backend for ${term}-${course_id}`);
 					const response = await fetch(`/api/hoagie/fetch_calendar_classes/${term}/${course_id}`);
 					if (!response.ok) {
@@ -246,20 +262,33 @@ const useCalendarStore = create<CalendarStore>()(
 				}
 			},
 
-			removeCourse: (sectionKey) => {
+			removeCourse: async (sectionKey) => {
+				const state = get();
+				const term = Object.keys(state.selectedCourses).find((semester) =>
+					state.selectedCourses[semester].some((course) => course.key === sectionKey)
+				);
+
+				if (!term) {
+					return;
+				}
+
+				const selectedCourses = state.selectedCourses[term];
+				const courseToRemove = selectedCourses.find((course) => course.key === sectionKey)?.course
+					.guid;
+
+				if (!courseToRemove) {
+					return;
+				}
+
+				await deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove);
+
+				// TODO: Need to handle failed deletion
+				// if (!deleteResponse) {
+				// 	throw new Error('Failed to delete course from calendar');
+				// }
+
 				set((state) => {
-					const term = Object.keys(state.selectedCourses).find((semester) =>
-						state.selectedCourses[semester].some((course) => course.key === sectionKey)
-					);
-
-					if (!term) {
-						return { selectedCourses: state.selectedCourses };
-					}
-
 					const selectedCourses = state.selectedCourses[term];
-					const courseToRemove = selectedCourses.find((course) => course.key === sectionKey).course
-						.guid;
-
 					const updatedCourses = selectedCourses.filter(
 						(course) => course.course.guid !== courseToRemove
 					);
