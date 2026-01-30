@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 import { invertSectionInCalendar } from '@/services/calendarService';
+import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
 	calendarSearchResults: Course[];
@@ -180,7 +180,7 @@ const useCalendarStore = create<CalendarStore>()(
 			activateSection: async (clickedSection) => {
 				const term = clickedSection.course.guid.substring(0, 4);
 				const selectedCourses = get().selectedCourses[term] || [];
-			  
+
 				// get id of clicked section for course
 				const sectionsPerGroupping = selectedCourses.filter(
 					(section) =>
@@ -225,27 +225,27 @@ const useCalendarStore = create<CalendarStore>()(
 							: section;
 					}
 				});
-			  
-				// update zustand state immediately 
+
+				// update zustand state immediately
 				set((state) => ({
-				  selectedCourses: {
-					...state.selectedCourses,
-					[term]: updatedSections,
-				  },
+					selectedCourses: {
+						...state.selectedCourses,
+						[term]: updatedSections,
+					},
 				}));
-			  
+
 				// persist to DB
-				const calendarName = "New Calendar"; 
+				const calendarName = 'New Calendar';
 				const guid = clickedSection.course.guid;
 				const classSection = clickedSection.section.class_section;
-			  
+
 				const ok = await invertSectionInCalendar(calendarName, Number(term), guid, classSection);
-			  
+
 				if (ok == null) {
-				  set({ error: "Failed to save calendar change to DB" })
+					set({ error: 'Failed to save calendar change to DB' });
 				}
-			  },
-			  
+			},
+
 			removeCourse: (sectionKey) => {
 				set((state) => {
 					const term = Object.keys(state.selectedCourses).find((semester) =>
