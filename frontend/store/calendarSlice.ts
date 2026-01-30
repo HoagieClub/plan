@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
-import { activateSectionInCalendar } from '@/services/calendarService';
+import { invertSectionInCalendar } from '@/services/calendarService';
 
 interface CalendarStore {
 	calendarSearchResults: Course[];
@@ -239,9 +239,9 @@ const useCalendarStore = create<CalendarStore>()(
 				const guid = clickedSection.course.guid;
 				const classSection = clickedSection.section.class_section;
 			  
-				const ok = await activateSectionInCalendar(calendarName, Number(term), guid, classSection);
+				const ok = await invertSectionInCalendar(calendarName, Number(term), guid, classSection);
 			  
-				if (!ok) {
+				if (ok == null) {
 				  set({ error: "Failed to save calendar change to DB" })
 				}
 			  },

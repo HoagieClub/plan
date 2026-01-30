@@ -76,24 +76,6 @@ export async function getCalendars(term: number): Promise<CalendarConfiguration[
 	}
 }
 
-export async function activateSectionInCalendar(
-	calendarName: string,
-	term: number,
-	guid: string,
-	classSection: string
-  ): Promise<boolean> {
-	try {
-	  const url = buildCalendarEventsUrl(calendarName, term);
-	  const response = await fetch(
-		url,
-		buildRequest(HttpRequestType.PUT, null, { guid, classSection })
-	  );
-	  return response.ok;
-	} catch {
-	  return false;
-	}
-  }
-  
 
 // Returns true if user has at least one calendar in the DB for term
 export async function hasCalendarForTermInDB(term: number): Promise<boolean> {
