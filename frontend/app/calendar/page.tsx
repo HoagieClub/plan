@@ -9,7 +9,11 @@ import { Calendar } from '@/app/calendar/Calendar';
 import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
 import { SkeletonApp } from '@/components/SkeletonApp';
-import { createCalendar, getCalendars } from '@/services/calendarService';
+import {
+	addCalendarEventObjectToCalendar,
+	createCalendar,
+	getCalendars,
+} from '@/services/calendarService';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
@@ -44,15 +48,20 @@ const CalendarUI: FC = () => {
 
 	const createUserCalendarData = useCallback(
 		async (sem: number) => {
-			const calendarEvents = getSelectedCourses(sem.toString());
-			const calendarsInDB = getCalendars(sem);
+			const calendarsInDB = getCalendars(sem); // Check if calendar already exists
 			try {
-				if ((calendarEvents && calendarEvents.length > 0) || calendarsInDB) {
+				if (calendarsInDB) {
+					// console.log('No events to add or calendar already exists');
 					return null;
 				}
+				// retrieve events from local storage
+				const calendarEvents = getSelectedCourses(sem.toString()); // check if user has classs in local storage
 
 				// create a new calendar and return it
 				const newCalendar = await createCalendar('New Calendar', sem);
+				for (const event of calendarEvents) {
+					await addCalendarEventObjectToCalendar(newCalendar.name, sem, event);
+				}
 				return newCalendar;
 			} catch (error) {
 				console.error('Error creating calendar:', error);
