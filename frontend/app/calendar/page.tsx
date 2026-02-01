@@ -18,7 +18,6 @@ import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import { terms } from '@/utils/terms';
-import { createCalendar } from '@/services/calendarService';
 import '@/app/calendar/Calendar.css';
 
 const CalendarUI: FC = () => {
@@ -59,9 +58,14 @@ const CalendarUI: FC = () => {
 
 				// create a new calendar and return it
 				const newCalendar = await createCalendar('New Calendar', sem);
-				for (const event of calendarEvents) {
-					await addCalendarEventObjectToCalendar(newCalendar.name, sem, event);
-				}
+				// for (const event of calendarEvents) {
+				// 	await addCalendarEventObjectToCalendar(newCalendar.name, sem, event);
+				// }
+				await Promise.all(
+					calendarEvents.map((event) =>
+						addCalendarEventObjectToCalendar(newCalendar.name, sem, event)
+					)
+				);
 				return newCalendar;
 			} catch (error) {
 				console.error('Error creating calendar:', error);

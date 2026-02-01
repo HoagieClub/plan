@@ -76,7 +76,6 @@ export async function getCalendars(term: number): Promise<CalendarConfiguration[
 	}
 }
 
-
 // Returns true if user has at least one calendar in the DB for term
 export async function hasCalendarForTermInDB(term: number): Promise<boolean> {
 	const calendars = await getCalendars(term);
