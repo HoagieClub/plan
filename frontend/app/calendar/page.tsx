@@ -18,7 +18,7 @@ import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import { terms } from '@/utils/terms';
-
+import { createCalendar } from '@/services/calendarService';
 import '@/app/calendar/Calendar.css';
 
 const CalendarUI: FC = () => {

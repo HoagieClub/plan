@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import {
+	addCourseToCalendar,
+	deleteCourseFromCalendar,
+	invertSectionInCalendar,
+} from '@/services/calendarService';
 import type { CalendarEvent, ClassMeeting, Course, Section } from '@/types';
 
 interface CalendarStore {
@@ -29,6 +34,8 @@ interface CalendarStore {
 	// getSelectedCourses: () => CalendarEvent[];
 	getSelectedCourses: (semester: string) => CalendarEvent[];
 }
+
+const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
 const dayToStartColumnIndex: Record<string, number> = {
@@ -94,6 +101,16 @@ const useCalendarStore = create<CalendarStore>()(
 				try {
 					const term = course.guid.substring(0, 4);
 					const course_id = course.guid.substring(4);
+
+					const addCourseResponse = await addCourseToCalendar(
+						DEFAULT_CALENDAR_NAME,
+						Number(term),
+						course.guid
+					);
+					if (!addCourseResponse) {
+						throw new Error('Failed to add course to calendar');
+					}
+
 					// console.log(`Fetching course details from backend for ${term}-${course_id}`);
 					const response = await fetch(`/api/hoagie/fetch_calendar_classes/${term}/${course_id}`);
 					if (!response.ok) {
@@ -175,76 +192,103 @@ const useCalendarStore = create<CalendarStore>()(
 					});
 				}
 			},
-			activateSection: (clickedSection) => {
-				set((state) => {
-					const term = clickedSection.course.guid.substring(0, 4);
-					const selectedCourses = state.selectedCourses[term] || [];
 
-					const sectionsPerGroupping = selectedCourses.filter(
+			activateSection: async (clickedSection) => {
+				const term = clickedSection.course.guid.substring(0, 4);
+				const selectedCourses = get().selectedCourses[term] || [];
+
+				// get id of clicked section for course
+				const sectionsPerGroupping = selectedCourses.filter(
+					(section) =>
+						section.course.guid === clickedSection.course.guid &&
+						section.section.id === clickedSection.section.id
+				).length;
+
+				// check if there is only one active section for the class type
+				const isActiveSingle =
+					selectedCourses.filter(
 						(section) =>
 							section.course.guid === clickedSection.course.guid &&
-							section.section.id === clickedSection.section.id
-					).length;
+							section.isActive &&
+							section.section.class_type === clickedSection.section.class_type
+					).length <= sectionsPerGroupping;
 
-					const isActiveSingle =
-						selectedCourses.filter(
-							(section) =>
-								section.course.guid === clickedSection.course.guid &&
-								section.isActive &&
-								section.section.class_type === clickedSection.section.class_type
-						).length <= sectionsPerGroupping;
-
-					const updatedSections = selectedCourses.map((section) => {
-						if (
-							section.section.id === clickedSection.section.id &&
-							section.course.guid === clickedSection.course.guid
-						) {
-							return {
-								...section,
-								isChosen: !section.isChosen,
-							};
-						} else if (section.course.guid !== clickedSection.course.guid) {
-							return { ...section };
-						}
-
-						if (isActiveSingle && clickedSection.isActive) {
-							return section.section.class_type === clickedSection.section.class_type
-								? { ...section, isActive: true, isChosen: false }
-								: section;
-						} else {
-							return section.section.class_type === clickedSection.section.class_type
-								? {
-										...section,
-										isActive: section.key === clickedSection.key,
-										isChosen: section.key === clickedSection.key,
-									}
-								: section;
-						}
-					});
-
-					return {
-						selectedCourses: {
-							...state.selectedCourses,
-							[term]: updatedSections,
-						},
-					};
+				// update the selected courses to reflect the new section selection with proper indexing
+				const updatedSections = selectedCourses.map((section, idx) => {
+					if (
+						section.section.id === clickedSection.section.id &&
+						section.course.guid === clickedSection.course.guid
+					) {
+						return {
+							...section,
+							isChosen: !section.isChosen,
+						};
+					}
+					if (section.course.guid !== clickedSection.course.guid) {
+						return { ...section };
+					}
+					if (isActiveSingle && clickedSection.isActive) {
+						return section.section.class_type === clickedSection.section.class_type
+							? { ...section, isActive: true, isChosen: false }
+							: section;
+					} else {
+						return section.section.class_type === clickedSection.section.class_type
+							? {
+									...section,
+									isActive: section.key === clickedSection.key,
+									isChosen: section.key === clickedSection.key,
+								}
+							: section;
+					}
 				});
+
+				// update zustand state immediately
+				set((state) => ({
+					selectedCourses: {
+						...state.selectedCourses,
+						[term]: updatedSections,
+					},
+				}));
+
+				// persist to DB
+				const calendarName = 'New Calendar';
+				const guid = clickedSection.course.guid;
+				const classSection = clickedSection.section.class_section;
+
+				const ok = await invertSectionInCalendar(calendarName, Number(term), guid, classSection);
+
+				if (ok == null) {
+					set({ error: 'Failed to save calendar change to DB' });
+				}
 			},
 
-			removeCourse: (sectionKey) => {
+			removeCourse: async (sectionKey) => {
+				const state = get();
+				const term = Object.keys(state.selectedCourses).find((semester) =>
+					state.selectedCourses[semester].some((course) => course.key === sectionKey)
+				);
+
+				if (!term) {
+					return;
+				}
+
+				const selectedCourses = state.selectedCourses[term];
+				const courseToRemove = selectedCourses.find((course) => course.key === sectionKey)?.course
+					.guid;
+
+				if (!courseToRemove) {
+					return;
+				}
+
+				await deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove);
+
+				// TODO: Need to handle failed deletion
+				// if (!deleteResponse) {
+				// 	throw new Error('Failed to delete course from calendar');
+				// }
+
 				set((state) => {
-					const term = Object.keys(state.selectedCourses).find((semester) =>
-						state.selectedCourses[semester].some((course) => course.key === sectionKey)
-					);
-
-					if (!term) {
-						return { selectedCourses: state.selectedCourses };
-					}
-
 					const selectedCourses = state.selectedCourses[term];
-					const courseToRemove = selectedCourses.find((course) => course.key === sectionKey).course
-						.guid;
-
 					const updatedCourses = selectedCourses.filter(
 						(course) => course.course.guid !== courseToRemove
 					);
