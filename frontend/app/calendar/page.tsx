@@ -77,11 +77,9 @@ const CalendarUI: FC = () => {
 
 	useEffect(() => {
 		const termIDs = Object.values(terms);
-
+		// iterate over the semesters and create a new calendar for each
 		(async () => {
-			for (const sem of termIDs) {
-				await createUserCalendarData(parseInt(sem));
-			}
+			await Promise.all(termIDs.map((sem) => createUserCalendarData(parseInt(sem))));
 		})().catch((err) => {
 			console.error('Error creating user calendars:', err);
 		});
