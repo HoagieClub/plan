@@ -108,6 +108,20 @@ class CalendarEventView(APIView):
             if match:
                 unique_lecture_numbers.add(match.group(1))
 
+        # Identifying seminars
+        seminar_sections = [
+            section
+            for section in selected_sections_data
+            if section.class_type == "Seminar" and re.match(r"^S0\d+", section.class_section)
+        ]
+
+        # Computing the number of unique seminars
+        unique_seminar_numbers = set()
+        for section in seminar_sections:
+            match = re.match(r"^S0(\d+)", section.class_section)
+            if match:
+                unique_seminar_numbers.add(match.group(1))
+
         # Creating the CalendarEvent objects
         calendar_events: List[CalendarEvent] = []
         for section in selected_sections_data:
@@ -125,6 +139,7 @@ class CalendarEventView(APIView):
                         needs_choice=(
                             (section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
                             or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
+                            or (len(unique_seminar_numbers) > 1 and section.class_type == "Seminar")
                         ),
                         is_chosen=False,
                     )
@@ -218,13 +233,6 @@ class CalendarEventView(APIView):
         if not clicked_events:
             return Response({"detail": "No CalendarEvents found for the section"}, status=status.HTTP_404_NOT_FOUND)
         clicked_event = clicked_events[0]
-
-        # If the clicked section is an exception, do nothing and return
-        is_exception = (
-            clicked_event.section.class_type == "Seminar" and "Independent Work" not in clicked_event.course.title
-        )
-        if is_exception:
-            return Response({"detail": "No updates"}, status=status.HTTP_200_OK)
 
         # Change status of is_chosen and is_active
         events_for_course = get_calendar_events(calendar_configuration, course)
