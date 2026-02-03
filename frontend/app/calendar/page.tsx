@@ -14,7 +14,7 @@ import {
 	createCalendar,
 	getCalendars,
 } from '@/services/calendarService';
-import useCalendarStore from '@/store/calendarSlice';
+import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import { terms } from '@/utils/terms';
@@ -47,17 +47,23 @@ const CalendarUI: FC = () => {
 
 	const createUserCalendarData = useCallback(
 		async (sem: number) => {
-			const calendarsInDB = getCalendars(sem); // Check if calendar already exists
+			// Check if calendar already exists
+			const calendarsInDB = await getCalendars(sem);
 			try {
-				if (calendarsInDB) {
-					// console.log('No events to add or calendar already exists');
+				if (calendarsInDB && calendarsInDB.length > 0) {
+					console.log('Calendar already exists');
 					return null;
 				}
-				// retrieve events from local storage
-				const calendarEvents = getSelectedCourses(sem.toString()); // check if user has classs in local storage
+
+				// Check if user has events in local storage
+				const calendarEvents = getSelectedCourses(sem.toString());
+				if (calendarEvents.length === 0) {
+					console.log('No events to add');
+					return null;
+				}
 
 				// create a new calendar and return it
-				const newCalendar = await createCalendar('New Calendar', sem);
+				const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
 				// for (const event of calendarEvents) {
 				// 	await addCalendarEventObjectToCalendar(newCalendar.name, sem, event);
 				// }

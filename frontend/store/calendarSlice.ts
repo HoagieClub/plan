@@ -35,7 +35,7 @@ interface CalendarStore {
 	getSelectedCourses: (semester: string) => CalendarEvent[];
 }
 
-const DEFAULT_CALENDAR_NAME = 'New Calendar';
+export const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
 const dayToStartColumnIndex: Record<string, number> = {
@@ -251,11 +251,10 @@ const useCalendarStore = create<CalendarStore>()(
 				}));
 
 				// persist to DB
-				const calendarName = 'New Calendar';
 				const guid = clickedSection.course.guid;
 				const classSection = clickedSection.section.class_section;
 
-				const ok = await invertSectionInCalendar(calendarName, Number(term), guid, classSection);
+				const ok = await invertSectionInCalendar(DEFAULT_CALENDAR_NAME, Number(term), guid, classSection);
 
 				if (ok == null) {
 					set({ error: 'Failed to save calendar change to DB' });
