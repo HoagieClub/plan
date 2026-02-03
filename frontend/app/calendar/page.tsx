@@ -29,7 +29,6 @@ const CalendarUI: FC = () => {
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
 	const getSelectedCourses = useCalendarStore((state) => state.getSelectedCourses);
-	// const calendarService = useMemo(() => new CalendarService(userProfile), [userProfile]);
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
 		setTermFilter(currentSemester);
@@ -64,9 +63,6 @@ const CalendarUI: FC = () => {
 
 				// create a new calendar and return it
 				const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
-				// for (const event of calendarEvents) {
-				// 	await addCalendarEventObjectToCalendar(newCalendar.name, sem, event);
-				// }
 				await Promise.all(
 					calendarEvents.map((event) =>
 						addCalendarEventObjectToCalendar(newCalendar.name, sem, event)

@@ -254,7 +254,12 @@ const useCalendarStore = create<CalendarStore>()(
 				const guid = clickedSection.course.guid;
 				const classSection = clickedSection.section.class_section;
 
-				const ok = await invertSectionInCalendar(DEFAULT_CALENDAR_NAME, Number(term), guid, classSection);
+				const ok = await invertSectionInCalendar(
+					DEFAULT_CALENDAR_NAME,
+					Number(term),
+					guid,
+					classSection
+				);
 
 				if (ok == null) {
 					set({ error: 'Failed to save calendar change to DB' });
