@@ -3,16 +3,14 @@ import { type FC, useState, useEffect } from 'react';
 import { LoadingComponent } from '@/components/LoadingComponent';
 import { RecursiveDropdown } from '@/components/RecursiveDropDown';
 import useUserSlice from '@/store/userSlice';
-import type { Profile } from '@/types';
 
 import styles from './TabbedMenu.module.css';
 
 interface TabbedMenuProps {
-	profile: Profile;
 	csrfToken: string;
 }
 
-export const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
+export const TabbedMenu: FC<TabbedMenuProps> = ({ csrfToken }) => {
 	const { academicPlan } = useUserSlice((state) => ({ academicPlan: state.academicPlan }));
 	const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -64,12 +62,7 @@ export const TabbedMenu: FC<TabbedMenuProps> = ({ profile, csrfToken }) => {
 				) : (
 					// Render RecursiveDropdown only if we have valid currentData
 					currentData && (
-						<RecursiveDropdown
-							key={activeTab}
-							academicPlan={currentData}
-							profile={profile}
-							csrfToken={csrfToken}
-						/>
+						<RecursiveDropdown key={activeTab} academicPlan={currentData} csrfToken={csrfToken} />
 					)
 				)}
 			</div>

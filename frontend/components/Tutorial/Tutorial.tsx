@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
@@ -49,13 +49,7 @@ export function useTutorialModal() {
 
 		async function fetchTutorialStatus() {
 			try {
-				const response = await fetch(`${process.env.BACKEND}/tutorial/get-status/`, {
-					method: 'GET',
-					credentials: 'include',
-					headers: {
-						'X-NetId': profile.netId,
-					},
-				});
+				const response = await fetch(`/api/hoagie/tutorial/get-status`);
 				const data = await response.json();
 				if (data.hasSeenTutorial === false) {
 					setIsModalOpen(true);
@@ -79,12 +73,9 @@ export function useTutorialModal() {
 
 	const finishTutorial = async () => {
 		try {
-			await fetch(`${process.env.BACKEND}/tutorial/set-status/`, {
+			await fetch(`/api/hoagie/tutorial/set-status`, {
 				method: 'POST',
-				credentials: 'include',
 				headers: {
-					'Content-Type': 'application/json',
-					'X-NetId': profile.netId,
 					'X-CSRFToken': csrfToken,
 				},
 			});

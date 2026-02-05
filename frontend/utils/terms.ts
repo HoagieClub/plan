@@ -1,7 +1,7 @@
 export const terms: { [key: string]: string } = {
 	// 'Spring 2027': '1274',
 	// 'Fall 2026': '1272',
-	// 'Spring 2026': '1264',
+	'Spring 2026': '1264',
 	'Fall 2025': '1262',
 	'Spring 2025': '1254',
 	'Fall 2024': '1252',
@@ -18,7 +18,7 @@ export const terms: { [key: string]: string } = {
 export const termsInverse: { [key: string]: string } = {
 	// '1274': 'Spring 2027',
 	// '1272': 'Fall 2026',
-	// '1264': 'Spring 2026',
+	'1264': 'Spring 2026',
 	'1262': 'Fall 2025',
 	'1254': 'Spring 2025',
 	'1252': 'Fall 2024',

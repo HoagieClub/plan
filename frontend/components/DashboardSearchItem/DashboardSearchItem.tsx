@@ -27,12 +27,12 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 			<div className={styles.content}>
 				<div className={styles.titleRow}>
 					<div className={styles.title}>{course.title}</div>
-					{course.rating && (
+					{course.quality_of_course && (
 						<div
 							className={styles.rating}
-							style={{ background: getRatingBackground(course.rating) }}
+							style={{ background: getRatingBackground(course.quality_of_course) }}
 						>
-							{course.rating.toFixed(2)}
+							{course.quality_of_course.toFixed(2)}
 						</div>
 					)}
 				</div>

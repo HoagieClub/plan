@@ -1,15 +1,9 @@
-import json
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.test import RequestFactory
+from rest_framework.decorators import api_view
 from data.transcript_to_json import transcript_to_json, convert_to_guids
-from hoagieplan.models import Course, UserCourses
-from hoagieplan.api.dashboard.requirements import update_transcript_courses
-from django.test import RequestFactory
+from hoagieplan.api.dashboard.requirements import update_transcript_courses_helper
 
-@csrf_exempt
-@require_POST
+@api_view(["POST"])
 def upload_file(request):
     if "file" not in request.FILES:
         return JsonResponse({"error": "No file uploaded"}, status=400)
@@ -45,23 +39,11 @@ def upload_file(request):
     except Exception as e:
         print(f"Error processing transcript: {e}")
         return JsonResponse({"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500)
-    
-    # Ensure we extract NetID correctly
-    net_id = request.headers.get("X-NetId")
-    if not net_id:
-        return JsonResponse({"error": "Missing NetID in request headers"}, status=400)
 
     # Simulate an HTTP request with correct JSON structure
     try:
-        factory = RequestFactory()
-        fake_request = factory.post(
-            "/update_courses/",
-            data=json.dumps(transcript_output),
-            content_type="application/json",
-            HTTP_X_NetId=net_id
-        )
+        response = update_transcript_courses_helper(request.user, transcript_output)
 
-        response = update_transcript_courses(fake_request)
         print("✅ Transcript processed successfully")
         return response
 

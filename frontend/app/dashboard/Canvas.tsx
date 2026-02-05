@@ -1,30 +1,30 @@
 import type { CSSProperties } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
 	closestCenter,
-	pointerWithin,
-	rectIntersection,
+	defaultDropAnimationSideEffects,
 	DndContext,
 	DragOverlay,
 	getFirstCollision,
 	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensors,
-	useSensor,
 	MeasuringStrategy,
-	defaultDropAnimationSideEffects,
+	MouseSensor,
+	pointerWithin,
+	rectIntersection,
+	TouchSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, useSortable, defaultAnimateLayoutChanges } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { CloudArrowUpIcon } from '@heroicons/react/20/solid';
+import { SortableContext } from '@dnd-kit/sortable';
+import { AcademicCapIcon, CloudArrowUpIcon } from '@heroicons/react/20/solid';
 import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
+import { List, useDynamicRowHeight } from 'react-window';
 
-import { Container, type ContainerProps } from '@/components/Container';
+import useAlmostCompletedMinorsModal from '@/components/AlmostCompletedMinorsModal/AlmostCompletedMinorsModal';
 import containerStyles from '@/components/Container/Container.module.css';
-import { DashboardSearchItem } from '@/components/DashboardSearchItem';
+import { DroppableContainer } from '@/components/DashboardDroppableContainer';
 import { Item } from '@/components/Item';
 import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
@@ -34,18 +34,21 @@ import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
-import { getDepartmentGradient } from '@/utils/departmentColors';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
+import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
+import { SortableItem } from './SortableItem';
+import { VirtualRow } from './VirtualRow';
 
+import type { CustomRowProps } from './VirtualRow';
 import type {
 	CollisionDetection,
 	DropAnimation,
+	KeyboardCoordinateGetter,
 	Modifiers,
 	UniqueIdentifier,
-	KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import type { AnimateLayoutChanges } from '@dnd-kit/sortable';
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
@@ -81,52 +84,6 @@ if (typeof window === 'undefined') {
 	})();
 }
 
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-	defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-function DroppableContainer({
-	children,
-	columns = 1,
-	disabled,
-	id,
-	items,
-	style,
-	...props
-}: ContainerProps & {
-	disabled?: boolean;
-	id: UniqueIdentifier;
-	items: UniqueIdentifier[];
-	style?: CSSProperties;
-}) {
-	const { active, over, setNodeRef, transition, transform } = useSortable({
-		id,
-		data: {
-			type: 'container',
-			children: items,
-		},
-		animateLayoutChanges,
-	});
-	const isOverContainer = over
-		? (id === over.id && active.data.current.type !== 'container') || items.includes(over.id)
-		: false;
-
-	return (
-		<Container
-			ref={disabled ? undefined : setNodeRef}
-			style={{
-				...style,
-				transition,
-				transform: CSS.Translate.toString(transform),
-			}}
-			hover={isOverContainer}
-			columns={columns}
-			{...props}
-		>
-			{children}
-		</Container>
-	);
-}
-
 const dropAnimation: DropAnimation = {
 	duration: 200,
 	sideEffects: defaultDropAnimationSideEffects({
@@ -151,16 +108,6 @@ type Props = {
 
 	coordinateGetter?: KeyboardCoordinateGetter;
 
-	getItemStyles?(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay: boolean;
-	}): CSSProperties;
-
 	itemCount?: number;
 	items?: Items;
 	handle?: boolean;
@@ -173,7 +120,6 @@ type Props = {
 };
 
 export const PLACEHOLDER_ID = 'placeholder';
-export const SEARCH_RESULTS_ID = 'Search Results';
 const defaultClassYear = new Date().getFullYear() + 1;
 
 export function Canvas({
@@ -183,7 +129,6 @@ export function Canvas({
 	handle = true,
 	containerStyle,
 	coordinateGetter = multipleContainersCoordinateGetter,
-	getItemStyles = () => ({}),
 	minimal = false,
 	scrollable,
 }: Props) {
@@ -210,17 +155,24 @@ export function Canvas({
 	};
 
 	const { openUploadModal, uploadModal, notification } = useUploadModal(profile, refreshData);
+	const { openAlmostCompletedMinorsModal, almostCompletedModal } = useAlmostCompletedMinorsModal();
 
 	// This limits the width of the course cards
-	const wrapperStyle = () => ({
-		width: courseWidth,
-	});
-	const searchWrapperStyle = () => ({
-		width: '100%',
-		overflow: 'hidden', // Ensure overflow is hidden
-		whiteSpace: 'nowrap', // Keep the text on a single line
-		textOverflow: 'ellipsis', // Add ellipsis to text overflow
-	});
+	const wrapperStyle = useCallback(
+		() => ({
+			width: courseWidth,
+		}),
+		[]
+	);
+	const searchWrapperStyle = useCallback(
+		() => ({
+			width: '100%',
+			overflow: 'hidden', // Ensure overflow is hidden
+			whiteSpace: 'nowrap', // Keep the text on a single line
+			textOverflow: 'ellipsis', // Add ellipsis to text overflow
+		}),
+		[]
+	);
 
 	// The width of the semester bins
 	const semesterStyle = {
@@ -276,6 +228,7 @@ export function Canvas({
 	}));
 
 	type Dictionary = {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any; // TODO: Aim to replace 'any' with more specific types.
 	};
 
@@ -316,19 +269,13 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`${process.env.BACKEND}/fetch_courses/`, {
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'X-NetId': profile.netId,
-				},
-			});
+			const response = await fetch(`/api/hoagie/fetch_courses/`);
 			const data = await response.json();
 			return data;
 		} catch {
 			return null; // TODO: Handle error appropriately
 		}
-	}, [profile.netId]);
+	}, []);
 
 	// Fetch user courses and check requirements on initial render
 	useEffect(() => {
@@ -355,6 +302,34 @@ export function Canvas({
 	useEffect(() => {
 		setSearchResults(staticSearchResults);
 	}, [staticSearchResults]);
+
+	// Memoize the enabled course IDs set for fast lookup
+	const enabledCourseIds = useMemo(() => {
+		return new Set(items[SEARCH_RESULTS_ID]);
+	}, [items]);
+
+	const dynamicRowHeight = useDynamicRowHeight({
+		defaultRowHeight: 120,
+	});
+
+	const rowRendererProps: CustomRowProps = useMemo(
+		() => ({
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		}),
+		[
+			staticSearchResults,
+			enabledCourseIds,
+			handle,
+			wrapperStyle,
+			searchWrapperStyle,
+			dynamicRowHeight,
+		]
+	);
 
 	useEffect(() => {
 		setItems((prevItems) => {
@@ -459,18 +434,6 @@ export function Canvas({
 		return Object.keys(items).find((key) => items[key].includes(id));
 	};
 
-	const getIndex = (id: UniqueIdentifier) => {
-		const container = findContainer(id);
-
-		if (!container) {
-			return -1;
-		}
-
-		const index = items[container].indexOf(id);
-
-		return index;
-	};
-
 	const onDragCancel = () => {
 		if (clonedItems) {
 			// Reset items to their original state in case items have been
@@ -556,12 +519,9 @@ export function Canvas({
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
 							csrfToken = await fetchCsrfToken();
-							void fetch(`${process.env.BACKEND}/update_courses/`, {
+							void fetch(`/api/hoagie/update_courses`, {
 								method: 'POST',
-								credentials: 'include',
 								headers: {
-									'Content-Type': 'application/json',
-									'X-NetId': profile.netId,
 									'X-CSRFToken': csrfToken,
 								},
 								body: JSON.stringify({
@@ -616,6 +576,14 @@ export function Canvas({
 									</Pane>
 									{uploadModal}
 									{notification}
+									{almostCompletedModal}
+									<div className='mt-2'>
+										<ButtonWidget
+											text='Almost Completed Minors'
+											icon={<AcademicCapIcon className='h-5 w-5' />}
+											onClick={() => openAlmostCompletedMinorsModal()}
+										/>
+									</div>
 								</div>
 								<DroppableContainer
 									key={SEARCH_RESULTS_ID}
@@ -631,24 +599,15 @@ export function Canvas({
 										items={items[SEARCH_RESULTS_ID]}
 										strategy={staticRectSortingStrategy}
 									>
-										{staticSearchResults.map((course, index) => {
-											const courseId = `${course.course_id}|${course.crosslistings}`;
-											const isIncluded = items[SEARCH_RESULTS_ID].includes(courseId);
-											return (
-												<SortableItem
-													disabled={!isIncluded}
-													key={isIncluded ? courseId : index}
-													id={isIncluded ? courseId : courseId + '|disabled'}
-													index={index}
-													containerId={SEARCH_RESULTS_ID}
-													handle={handle}
-													style={getItemStyles}
-													onRemove={isIncluded ? () => {} : undefined}
-													getIndex={getIndex}
-													wrapperStyle={isIncluded ? wrapperStyle : searchWrapperStyle}
-												/>
-											);
-										})}
+										<List<CustomRowProps>
+											/* match the searchGridHeight since it is expressed with vh units */
+											defaultHeight={parseInt(searchGridHeight) * (window.innerHeight / 100)}
+											rowCount={staticSearchResults.length}
+											rowHeight={dynamicRowHeight}
+											overscanCount={5}
+											rowComponent={VirtualRow}
+											rowProps={rowRendererProps}
+										/>
 									</SortableContext>
 								</DroppableContainer>
 							</div>
@@ -690,11 +649,9 @@ export function Canvas({
 															id={course}
 															index={index}
 															handle={handle}
-															style={getItemStyles}
 															wrapperStyle={wrapperStyle}
 															onRemove={() => handleRemove(course, containerId)}
 															containerId={containerId}
-															getIndex={getIndex}
 														/>
 													))}
 											</SortableContext>
@@ -712,7 +669,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu profile={profile} csrfToken={csrfToken} />
+							<TabbedMenu csrfToken={csrfToken} />
 						</div>
 					</div>
 				</SortableContext>
@@ -750,15 +707,6 @@ export function Canvas({
 			<Item
 				value={id}
 				handle={handle}
-				style={getItemStyles({
-					containerId: findContainer(id) as UniqueIdentifier,
-					overIndex: -1,
-					index: getIndex(id),
-					value: id,
-					isSorting: true,
-					isDragging: true,
-					isDragOverlay: true,
-				})}
 				color_primary={getPrimaryColor(id)}
 				color_secondary={getSecondaryColor(id)}
 				wrapperStyle={dynamicWrapperStyle}
@@ -792,13 +740,10 @@ export function Canvas({
 			return updatedCourses;
 		});
 
-		void fetch(`${process.env.BACKEND}/update_courses/`, {
+		void fetch(`/api/hoagie/update_courses`, {
 			method: 'POST',
-			credentials: 'include',
 			headers: {
-				'Content-Type': 'application/json',
 				'X-CSRFToken': csrfToken,
-				'X-NetId': profile.netId,
 			},
 			body: JSON.stringify({
 				crosslistings: value.toString().split('|')[1],
@@ -809,158 +754,4 @@ export function Canvas({
 			void updateRequirements();
 		});
 	}
-}
-
-function getPrimaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the first color
-	const colors = gradient.split(',');
-	const firstColor = colors[1]?.trim();
-
-	return firstColor;
-}
-
-function getSecondaryColor(id: UniqueIdentifier) {
-	const dept = String(id).split('|')[1].slice(0, 3).toUpperCase();
-	const gradient = getDepartmentGradient(dept, 90);
-
-	// Extract the second color
-	const colors = gradient.split(',');
-	const secondColor = colors[2]?.trim().split(')')[0];
-
-	return secondColor;
-}
-
-type SortableItemProps = {
-	containerId: UniqueIdentifier;
-	id: UniqueIdentifier;
-	index: number;
-	handle: boolean;
-	disabled?: boolean;
-
-	style(args: {
-		value: UniqueIdentifier;
-		index: number;
-		overIndex: number;
-		isDragging: boolean;
-		containerId: UniqueIdentifier;
-		isSorting: boolean;
-		isDragOverlay?: boolean;
-	}): CSSProperties;
-
-	getIndex(id: UniqueIdentifier): number;
-
-	onRemove?(): void;
-
-	wrapperStyle({ index }: { index: number }): CSSProperties;
-};
-
-function SortableItem({
-	disabled,
-	id,
-	index,
-	handle,
-	onRemove,
-	style,
-	containerId,
-	getIndex,
-	wrapperStyle,
-}: SortableItemProps) {
-	const staticSearchResults = useSearchStore((state) => state.searchResults);
-	const {
-		setNodeRef,
-		setActivatorNodeRef,
-		listeners,
-		isDragging,
-		isSorting,
-		over,
-		overIndex,
-		transform,
-		transition,
-	} = useSortable({
-		id,
-	});
-	const mounted = useMountStatus();
-	const mountedWhileDragging = isDragging && !mounted;
-
-	// For search results, render DashboardSearchItem with Item as child
-	if (containerId === SEARCH_RESULTS_ID) {
-		const cleanId = id.toString().replace('|disabled', '');
-		const course = staticSearchResults.find((c) => `${c.course_id}|${c.crosslistings}` === cleanId);
-		if (course) {
-			return (
-				<DashboardSearchItem course={course}>
-					<Item
-						disabled={disabled}
-						ref={disabled ? undefined : setNodeRef}
-						value={cleanId}
-						dragging={isDragging}
-						sorting={isSorting}
-						handle={handle && !disabled}
-						handleProps={disabled ? undefined : setActivatorNodeRef}
-						index={index}
-						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
-						style={style({
-							index,
-							value: cleanId,
-							isDragging,
-							isSorting,
-							overIndex: over ? getIndex(over.id) : overIndex,
-							containerId,
-						})}
-						color_primary={getPrimaryColor(cleanId)}
-						color_secondary={getSecondaryColor(cleanId)}
-						transition={transition}
-						transform={transform}
-						fadeIn={mountedWhileDragging}
-						listeners={disabled ? undefined : listeners}
-						onRemove={() => {}}
-					/>
-				</DashboardSearchItem>
-			);
-		}
-	}
-
-	return (
-		<Item
-			disabled={disabled}
-			ref={disabled ? undefined : setNodeRef}
-			value={id}
-			dragging={isDragging}
-			sorting={isSorting}
-			handle={handle}
-			handleProps={handle ? setActivatorNodeRef : undefined}
-			index={index}
-			wrapperStyle={wrapperStyle({ index })}
-			style={style({
-				index,
-				value: id,
-				isDragging,
-				isSorting,
-				overIndex: over ? getIndex(over.id) : overIndex,
-				containerId,
-			})}
-			color_primary={getPrimaryColor(id)}
-			color_secondary={getSecondaryColor(id)}
-			transition={transition}
-			transform={transform}
-			fadeIn={mountedWhileDragging}
-			listeners={listeners}
-			onRemove={onRemove}
-		/>
-	);
-}
-
-function useMountStatus() {
-	const [isMounted, setIsMounted] = useState<boolean>(false);
-
-	useEffect(() => {
-		const timeout = setTimeout(() => setIsMounted(true), 500);
-
-		return () => clearTimeout(timeout);
-	}, []);
-
-	return isMounted;
 }

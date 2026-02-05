@@ -1,0 +1,112 @@
+import type { CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useSortable } from '@dnd-kit/sortable';
+
+import { DashboardSearchItem } from '@/components/DashboardSearchItem';
+import { Item } from '@/components/Item';
+import type { Course } from '@/types';
+import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
+
+import { SEARCH_RESULTS_ID } from './constants';
+
+import type { UniqueIdentifier } from '@dnd-kit/core';
+
+export type SortableItemProps = {
+	containerId: UniqueIdentifier;
+	id: UniqueIdentifier;
+	index: number;
+	handle: boolean;
+	disabled?: boolean;
+
+	onRemove?(): void;
+
+	wrapperStyle({ index }: { index: number }): CSSProperties;
+
+	course?: Course;
+};
+
+export function SortableItem({
+	disabled,
+	id,
+	index,
+	handle,
+	onRemove,
+	containerId,
+	wrapperStyle,
+	course,
+}: SortableItemProps) {
+	const {
+		setNodeRef,
+		setActivatorNodeRef,
+		listeners,
+		isDragging,
+		isSorting,
+		transform,
+		transition,
+	} = useSortable({
+		id,
+	});
+	const mounted = useMountStatus();
+	const mountedWhileDragging = isDragging && !mounted;
+
+	// For search results, render DashboardSearchItem with Item as child
+	if (containerId === SEARCH_RESULTS_ID) {
+		const cleanId = id.toString().replace('|disabled', '');
+		return (
+			<DashboardSearchItem course={course}>
+				<Item
+					disabled={disabled}
+					ref={disabled ? undefined : setNodeRef}
+					value={cleanId}
+					dragging={isDragging}
+					sorting={isSorting}
+					handle={handle && !disabled}
+					handleProps={disabled ? undefined : setActivatorNodeRef}
+					index={index}
+					wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+					color_primary={getPrimaryColor(cleanId)}
+					color_secondary={getSecondaryColor(cleanId)}
+					transition={transition}
+					transform={transform}
+					fadeIn={mountedWhileDragging}
+					listeners={disabled ? undefined : listeners}
+					onRemove={() => {}}
+				/>
+			</DashboardSearchItem>
+		);
+	}
+
+	return (
+		<Item
+			disabled={disabled}
+			ref={disabled ? undefined : setNodeRef}
+			value={id}
+			dragging={isDragging}
+			sorting={isSorting}
+			handle={handle}
+			handleProps={handle ? setActivatorNodeRef : undefined}
+			index={index}
+			wrapperStyle={wrapperStyle({ index })}
+			color_primary={getPrimaryColor(id)}
+			color_secondary={getSecondaryColor(id)}
+			transition={transition}
+			transform={transform}
+			fadeIn={mountedWhileDragging}
+			listeners={listeners}
+			onRemove={onRemove}
+		/>
+	);
+}
+
+function useMountStatus() {
+	const [isMounted, setIsMounted] = useState<boolean>(false);
+
+	useEffect(() => {
+		const timeout = setTimeout(() => setIsMounted(true), 500);
+
+		return () => clearTimeout(timeout);
+	}, []);
+
+	return isMounted;
+}

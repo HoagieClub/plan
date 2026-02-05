@@ -1,14 +1,14 @@
 import type { ChangeEvent, FC } from 'react';
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
+	Autocomplete,
+	AutocompleteOption,
 	Button,
 	Checkbox,
-	Autocomplete,
 	FormLabel,
-	AutocompleteOption,
 	ListItemContent,
 	Snackbar,
 } from '@mui/joy';
@@ -115,7 +115,7 @@ export const CalendarSearch: FC = () => {
 			setLoading(true);
 			try {
 				const queryString = buildQuery(searchQuery, filter);
-				const response = await fetch(`${process.env.BACKEND}/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search/?${queryString}`);
 
 				if (!response.ok) {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
@@ -186,13 +186,11 @@ export const CalendarSearch: FC = () => {
 
 			const csrfToken = await fetchCsrfToken();
 
-			const response = await fetch(`${process.env.BACKEND}/export-calendar/`, {
+			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
 					'X-CSRFToken': csrfToken,
 				},
-				credentials: 'include',
 				body: JSON.stringify(calendarData),
 			});
 
@@ -245,9 +243,18 @@ export const CalendarSearch: FC = () => {
 			(course) => course.isChosen || !course.needsChoice
 		);
 
+		const seenSectionIds = new Set<number>();
+		const uniqueCourseSections = class_sections.filter((section) => {
+			if (seenSectionIds.has(section.section.id)) {
+				return false;
+			}
+			seenSectionIds.add(section.section.id);
+			return true;
+		});
+
 		return {
 			term: termFilter,
-			class_sections,
+			class_sections: uniqueCourseSections,
 		};
 	};
 
@@ -464,7 +471,7 @@ export const CalendarSearch: FC = () => {
 					<div className='recent-searches'>
 						<div className='recent-searches-label'>Recent searches:</div>
 						<div className='recent-searches-list'>
-							{recentSearches.map((search, index) => (
+							{recentSearches.slice(-5).map((search, index) => (
 								<button
 									key={index}
 									className='recent-search-item'

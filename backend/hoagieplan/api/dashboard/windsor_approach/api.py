@@ -15,7 +15,7 @@ from django.http import JsonResponse
 
 
 def update_requirements(request):
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user = CustomUser.objects.get(net_id=net_id)
     user_info = fetch_user_info(net_id)
     requirements = get_flattened_requirements(user_info)
@@ -38,7 +38,7 @@ def manually_settle(request):
     payload = oj.loads(request.body)
     crosslistings = payload.get("crosslistings")
     req_id = int(payload.get("reqId"))
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user = CustomUser.objects.get(net_id=net_id)
     course_instance = (
         Course.objects.select_related("department")
@@ -61,7 +61,7 @@ def mark_satisfied(request):
     payload = oj.loads(request.body)
     req_id = int(payload.get("reqId"))
     mark_flag = payload.get("markedSatisfied")
-    net_id = request.headers.get("X-NetId")
+    net_id = request.user.net_id
     user = CustomUser.objects.get(net_id=net_id)
     requirement_obj = Requirement.objects.get(id=req_id)
     if mark_flag == "true":
@@ -83,7 +83,7 @@ def update_courses(request):
         payload = oj.loads(request.body)
         crosslistings = payload.get("crosslistings")
         semester_identifier = payload.get("semesterId")
-        net_id = request.headers.get("X-NetId")
+        net_id = request.user.net_id
         user = CustomUser.objects.get(net_id=net_id)
         class_year = user.class_year
 

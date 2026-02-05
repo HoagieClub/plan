@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, CourseEvaluations, Section
+from .models import CalendarConfiguration, CalendarEvent, ClassMeeting, Course, Section
 
 
 class ClassMeetingSerializer(serializers.ModelSerializer):
@@ -41,7 +41,6 @@ class CourseSerializer(serializers.ModelSerializer):
     # Nested SectionSerializer to include section details in the course data
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -64,26 +63,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "department_code",
             "sections",
             "crosslistings",
-            "rating",
+            "quality_of_course",
         )
-
-    def get_rating(self, obj):
-        """Get the most recent quality_of_course rating for this course."""
-        # Get the course_id part from guid (last 6 characters)
-        if not obj.course_id:
-            return None
-
-        # Find the most recent evaluation for this course_id across all terms
-        # The course_guid in CourseEvaluations is in format: {term}{course_id}
-        # We want to find all evaluations for this course_id and get the most recent one
-        evaluations = CourseEvaluations.objects.filter(
-            course_guid__endswith=obj.course_id, quality_of_course__isnull=False
-        ).order_by("-course_guid")  # Order by course_guid descending to get most recent term
-
-        evaluation = evaluations.first()
-        if evaluation and evaluation.quality_of_course:
-            return round(evaluation.quality_of_course, 2)
-        return None
 
 
 # Calendar (temporary serializer)
@@ -120,42 +101,30 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
 
 
 class CalendarEventSerializer(serializers.ModelSerializer):
-    section_details = serializers.SerializerMethodField()
-
-    def get_section_details(self, obj):
-        return {
-            "id": obj.section.id,
-            "course": {
-                "guid": obj.section.course.guid,
-                "title": obj.section.course.title,
-                "catalog_number": obj.section.course.catalog_number,
-                "distribution_area_long": obj.section.course.distribution_area_long,
-                "distribution_area_short": obj.section.course.distribution_area_short,
-                "grading_basis": obj.section.course.grading_basis,
-            },
-            "class_number": obj.section.class_number,
-            "class_meetings": [
-                {
-                    "id": meeting.id,
-                    "days": meeting.days,
-                    "start_time": meeting.start_time,
-                    "end_time": meeting.end_time,
-                    # "start_date": meeting.start_date,
-                    # "end_date": meeting.end_date,
-                }
-                for meeting in obj.section.classmeeting_set.all()
-            ],
-        }
+    calendar = serializers.IntegerField(source="calendar_configuration.id", read_only=True)
+    course = serializers.IntegerField(source="course.id", read_only=True)
+    section = serializers.IntegerField(source="section.id", read_only=True)
 
     class Meta:
         model = CalendarEvent
-        fields = ["id", "section_details", "is_active"]
+        fields = [
+            "id",
+            "calendar",
+            "course",
+            "section",
+            "start_time",
+            "end_time",
+            "start_column_index",
+            "is_active",
+            "needs_choice",
+            "is_chosen",
+        ]
 
 
 class CalendarConfigurationSerializer(serializers.ModelSerializer):
-    user_calendar_section = CalendarEventSerializer(many=True, read_only=True)
+    calendar_events = CalendarEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = CalendarConfiguration
-        fields = ["id", "user", "name", "term", "user_calendar_section"]
+        fields = ["id", "user", "name", "term", "calendar_events"]
         read_only_fields = ["id", "user"]

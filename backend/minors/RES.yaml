@@ -106,10 +106,6 @@ req_list:
       politics.
     max_common_with_major: 2
     course_list:
-    - BSC 101
-    - BSC 102
-    - BSC 105
-    - BSC 107
     - CZE 101
     - CZE 102
     - CZE 105

@@ -41,7 +41,7 @@ const foundingTeam: HoagieChef[] = [
 	},
 ];
 
-const teamLeads: HoagieChef[] = [
+const prevteamLeads: HoagieChef[] = [
 	{
 		name: 'Issac Li',
 		graduationYear: '2026',
@@ -54,6 +54,19 @@ const teamLeads: HoagieChef[] = [
 	},
 ];
 
+const teamLeads: HoagieChef[] = [
+	{
+		name: 'Hannah Choi',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/hannah-e-choi/',
+	},
+	{
+		name: 'Emily You',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+	},
+];
+
 const contributors: HoagieChef[] = [
 	{
 		name: 'Lucy Chen',
@@ -61,24 +74,54 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/lucy-c1/',
 	},
 	{
-		name: 'Hannah Choi',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/hannah-e-choi/',
+		name: 'Grace Ding',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/gracetding/',
 	},
 	{
-		name: 'Tate Hutchins',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/tate-hutchins/',
+		name: 'Phu Duong',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/phu-duong/',
 	},
 	{
-		name: 'Minjae Kwon',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/minjae-kwon',
+		name: 'Patrick Fu',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/patrickfu25/',
 	},
 	{
-		name: 'Henry Li',
+		name: 'Ella Kim',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/kim-ella/',
+	},
+	{
+		name: 'Niyathi Kukkapalli',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/niyathi-kukkapalli',
+	},
+	{
+		name: 'David Lee',
 		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/henryli0508/',
+		link: 'https://www.linkedin.com/in/davidlee08/',
+	},
+	{
+		name: 'Shawn Li',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/shawnli14',
+	},
+	{
+		name: 'Vikram Meyyappan',
+		graduationYear: '2026',
+		link: 'https://www.linkedin.com/in/vikram-meyyappan',
+	},
+	{
+		name: 'Rishabh Mohapatra',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/rmohapatra06',
+	},
+	{
+		name: 'Albert Rho',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/albert-rho-956b012b3',
 	},
 	{
 		name: 'Luke Sanborn',
@@ -86,9 +129,9 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/luke-sanborn/',
 	},
 	{
-		name: 'Jennifer Sanmartin',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/jennifer-sanmartin-115094279/',
+		name: 'Luke Schreiber',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/lukekschreiber',
 	},
 	{
 		name: 'Grace Tan',
@@ -96,34 +139,24 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/grace-tan-00449132a/',
 	},
 	{
+		name: 'Emily Tran',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/emily-tran-9571b1279/',
+	},
+	{
 		name: 'Lucy Wang',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-wang-50895126a/',
 	},
 	{
-		name: 'Aaron Yang',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/yang-aaron/',
-	},
-	{
-		name: 'Daniel Yeo',
-		graduationYear: '2026',
-		link: 'https://www.linkedin.com/in/daniel-yeo-320635248/',
-	},
-	{
-		name: 'Emily You',
+		name: 'Gary Yang',
 		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
 	},
 	{
 		name: 'Linsey Zhong',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
-	},
-	{
-		name: 'Grace Ding',
-		graduationYear: '2029',
-		link: 'https://www.linkedin.com/in/gracetding/',
 	},
 ];
 
@@ -148,10 +181,14 @@ const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
 	</svg>
 );
 
-const TeamMemberCard = ({ member, index }: { member: HoagieChef; index: number }) => (
+const getImagePath = (name: string) => {
+	return `/team/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+};
+
+const TeamMemberCard = ({ member }: { member: HoagieChef }) => (
 	<div className='rounded-lg bg-white p-6 shadow-sm'>
 		<div className='h-[180px] w-[180px] overflow-hidden rounded-lg'>
-			<Image src={`/member${index + 1}.jpg`} alt={member.name} width={180} height={180} />
+			<Image src={getImagePath(member.name)} alt={member.name} width={180} height={180} />
 		</div>
 		<h3 className='mt-6 text-xl font-semibold'>{member.name}</h3>
 		<div className='flow-root'>
@@ -189,22 +226,28 @@ const About = () => {
 								</p>
 							</div>
 							<div className='mt-16'>
-								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Founding Team</h2>
-								<div className='flex justify-center gap-4 overflow-auto'>
-									{foundingTeam.map((member, index) => (
-										<TeamMemberCard key={member.name} member={member} index={index} />
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Team Leads</h2>
+								<div className='flex flex-wrap justify-center gap-6'>
+									{teamLeads.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
 									))}
 								</div>
 							</div>
 							<div className='mt-16'>
-								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Team Leads</h2>
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>Founding Team</h2>
+								<div className='flex justify-center gap-4 overflow-auto'>
+									{foundingTeam.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
+									))}
+								</div>
+							</div>
+							<div className='mt-16'>
+								<h2 className='mb-4 text-center text-3xl font-bold text-black'>
+									Previous Team Leads
+								</h2>
 								<div className='flex flex-wrap justify-center gap-6'>
-									{teamLeads.map((member, index) => (
-										<TeamMemberCard
-											key={member.name}
-											member={member}
-											index={foundingTeam.length + index}
-										/>
+									{prevteamLeads.map((member) => (
+										<TeamMemberCard key={member.name} member={member} />
 									))}
 								</div>
 							</div>
