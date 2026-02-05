@@ -19,8 +19,9 @@ req_list:
     max_counted: 1
     min_needed: 1
     explanation: The requirement for admission to the German department is
-      a satisfactory working knowledge of German demonstrated by the completion of 107, an SAT II Subject Test score of 740, 
-      or a 5 on the Advanced Placement Test. Students considering majoring in German are
+      a satisfactory working knowledge of German demonstrated by the 
+      completion of 107, an SAT II Subject Test score of 740, or a 5 on the 
+      Advanced Placement Test. Students considering majoring in German are
       encouraged to contact the director of undergraduate studies at any
       point to discuss a plan of study.
     course_list:
@@ -28,8 +29,8 @@ req_list:
   - name: Tracks
     max_counted: 1
     min_needed: 1
-    explanation: The department offers six areas of concentration, each requiring a total of eight departmental
-      courses plus the Junior Seminar
+    explanation: The department offers six areas of concentration, each 
+      requiring a total of eight departmental courses plus the Junior Seminar
     req_list:
       - name: German Literature
         max_counted: 1
@@ -158,9 +159,9 @@ req_list:
         max_counted: 1
         min_needed: ALL
         explanation: This program concentrates on the history and structure of the
-          German language. Majors who select this track are required to take the following courses:
+          German language. Majors who select this track are required to take the following courses;
           LIN 201 Introduction to Language and Linguistics, LIN 210 Intro to Historical and
-          Comparative Linguistics, GER 316 Second Language Acquisition: Theory and Practice, GER
+          Comparative Linguistics, GER 316 Second Language Acquisition; Theory and Practice, GER
           508 Middle High German Literature. In addition, students in this concentration will take at
           least two courses in German Literature & Culture plus two cognate courses pertaining to
           linguistics.
@@ -168,9 +169,9 @@ req_list:
           - name: Linguistics
             max_counted: 1
             min_needed: 2
-            explanation: Majors who select this track are required to take the following courses:
+            explanation: Majors who select this track are required to take the following courses;
               LIN 201 Introduction to Language and Linguistics, LIN 210 Intro to Historical and
-              Comparative Linguistics, GER 316 Second Language Acquisition: Theory and Practice, GER
+              Comparative Linguistics, GER 316 Second Language Acquisition; Theory and Practice, GER
               508 Middle High German Literature.
             req_list:
               - name: Linguistics & Language History
@@ -311,17 +312,21 @@ req_list:
   - name: Independent Work
     max_counted: 1
     min_needed: 1
-    explanation: Independent reading, the Junior Seminar, the Junior Paper, and the Senior Thesis
-      constitute the student’s total independent work, which is spread out over the four upperclass terms. These elements can be profitably linked with departmental courses. Students
-      will consult with the Director of Undergraduate Studies, under whose guidance they will
-      develop their own program. During the first term of the junior year, students are required
-      to take the Junior Seminar GER300 which serves as an intensive workshop of research and
-      writing skills, an introduction to a wide range of approaches and methods, and an
-      incubator for the Junior Independent Work, an essay of approximately 8,000 words on a
-      subject in German philosophy, art, media, linguistics, literature or politics. This essay, as
-      well as the senior thesis, may be written in German or English. In early May of the junior
-      year, students should discuss plans for their senior thesis with the Director of
-      Undergraduate Studies.
+    explanation: Independent reading, the Junior Seminar, the Junior Paper, 
+      and the Senior Thesis constitute the student's total independent work, 
+      which is spread out over the four upperclass terms. These elements can
+      be profitably linked with departmental courses. Students will consult 
+      with the Director of Undergraduate Studies, under whose guidance they 
+      will develop their own program. During the first term of the junior 
+      year, students are required to take the Junior Seminar GER300 which 
+      serves as an intensive workshop of research and writing skills, an 
+      introduction to a wide range of approaches and methods, and an 
+      incubator for the Junior Independent Work, an essay of approximately
+      8,000 words on a subject in German philosophy, art, media, 
+      linguistics, literature or politics. This essay, as well as the 
+      senior thesis, may be written in German or English. In early May 
+      of the junior year, students should discuss plans for their senior
+      thesis with the Director of Undergraduate Studies.
     course_list:
       - GER 300
   - name: Senior Thesis
