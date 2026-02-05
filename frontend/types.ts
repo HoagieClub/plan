@@ -154,7 +154,6 @@ export type CalendarEvent = {
 	key: string;
 	course: Course;
 	section: Section;
-	meeting: ClassMeeting;
 	startTime: string;
 	endTime: string;
 	startColumnIndex: number;

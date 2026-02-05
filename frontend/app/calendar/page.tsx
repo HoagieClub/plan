@@ -17,18 +17,22 @@ import {
 import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
+import type { CalendarEvent } from '@/types';
 import { terms } from '@/utils/terms';
 import '@/app/calendar/Calendar.css';
+
+const MIGRATION_COMPLETE_KEY = 'calendar-migration-complete';
 
 const CalendarUI: FC = () => {
 	// Initialize tab 3 to be highlighted on page load
 	const [currentPage, setCurrentPage] = useState(3);
+	const [migrationComplete, setMigrationComplete] = useState(false);
 	const userProfile = UserState((state) => state.profile);
 	const { termFilter, setTermFilter } = useFilterStore((state) => state);
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
-	const getSelectedCourses = useCalendarStore((state) => state.getSelectedCourses);
+	const loadCourses = useCalendarStore((state) => state.loadCourses);
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
 		setTermFilter(currentSemester);
@@ -44,48 +48,80 @@ const CalendarUI: FC = () => {
 		}
 	};
 
-	const createUserCalendarData = useCallback(
-		async (sem: number) => {
-			// Check if calendar already exists
+	const createUserCalendarData = useCallback(async (sem: number) => {
+		try {
+			// Check if calendar already exists in DB
 			const calendarsInDB = await getCalendars(sem);
-			try {
-				if (calendarsInDB && calendarsInDB.length > 0) {
-					console.log('Calendar already exists');
-					return null;
-				}
-
-				// Check if user has events in local storage
-				const calendarEvents = getSelectedCourses(sem.toString());
-				if (calendarEvents.length === 0) {
-					console.log('No events to add');
-					return null;
-				}
-
-				// create a new calendar and return it
-				const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
-				await Promise.all(
-					calendarEvents.map((event) =>
-						addCalendarEventObjectToCalendar(newCalendar.name, sem, event)
-					)
-				);
-				return newCalendar;
-			} catch (error) {
-				console.error('Error creating calendar:', error);
-				return null;
+			if (calendarsInDB && calendarsInDB.length > 0) {
+				return { migrated: false, term: sem };
 			}
-		},
-		[getSelectedCourses]
-	);
 
+			// Read directly from localStorage for migration
+			const raw = localStorage.getItem('calendar-store');
+			if (!raw) {
+				return { migrated: false, term: sem };
+			}
+
+			const parsed = JSON.parse(raw);
+			const calendarEvents = parsed?.state?.selectedCourses?.[sem.toString()] || [];
+			if (calendarEvents.length === 0) {
+				return { migrated: false, term: sem };
+			}
+
+			// Create a new calendar and migrate events
+			const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
+			if (!newCalendar) {
+				console.error('Failed to create calendar for term', sem);
+				return { migrated: false, term: sem, error: true };
+			}
+
+			await Promise.all(
+				calendarEvents.map((event: CalendarEvent) =>
+					addCalendarEventObjectToCalendar(newCalendar.name, sem, event)
+				)
+			);
+
+			return { migrated: true, term: sem };
+		} catch (error) {
+			console.error('Error creating calendar:', error);
+			return { migrated: false, term: sem, error: true };
+		}
+	}, []);
+
+	// Migration: Run once on mount to migrate localStorage data to DB
 	useEffect(() => {
+		// Skip migration if already completed previously
+		if (localStorage.getItem(MIGRATION_COMPLETE_KEY) === 'true') {
+			setMigrationComplete(true);
+			return;
+		}
+
 		const termIDs = Object.values(terms);
-		// iterate over the semesters and create a new calendar for each
 		(async () => {
-			await Promise.all(termIDs.map((sem) => createUserCalendarData(parseInt(sem))));
+			const results = await Promise.all(
+				termIDs.map((sem) => createUserCalendarData(parseInt(sem)))
+			);
+
+			// Check if any migrations occurred without errors
+			const hasErrors = results.some((r) => r?.error);
+			if (!hasErrors) {
+				// Mark migration as complete to avoid re-running
+				localStorage.setItem(MIGRATION_COMPLETE_KEY, 'true');
+			}
+
+			setMigrationComplete(true);
 		})().catch((err) => {
 			console.error('Error creating user calendars:', err);
+			setMigrationComplete(true); // Allow app to proceed even on error
 		});
 	}, [createUserCalendarData]);
+
+	// Load from DB when term changes (only after migration is complete)
+	useEffect(() => {
+		if (termFilter && migrationComplete) {
+			void loadCourses(termFilter);
+		}
+	}, [termFilter, loadCourses, migrationComplete]);
 
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;

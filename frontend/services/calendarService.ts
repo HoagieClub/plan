@@ -10,8 +10,8 @@ const CALENDAR_EVENTS_URL = `/api/hoagie/calendar_events/`;
 const CalendarEventSchema = z.object({
 	id: z.number(),
 	calendar: z.number(), // Calendar id
-	course: z.number(), // Course id
-	section: z.number(), // Section id
+	course: z.any(), // Course object
+	section: z.any(), // Section object
 	start_time: z.string(),
 	end_time: z.string(),
 	start_column_index: z.number(),
@@ -29,7 +29,7 @@ const CalendarConfigurationSchema = z.object({
 });
 
 type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
-type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
 const CalendarEventArraySchema = z.array(CalendarEventSchema);
 const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
@@ -201,6 +201,21 @@ export async function addCourseToCalendar(
 	);
 }
 
+// Converts 12-hour time "H:MM AM/PM" to 24-hour time "HH:MM:SS" for backend
+const convertTo24HourFormat = (time12: string): string => {
+	const [time, period] = time12.split(' ');
+	const [hourStr, minuteStr] = time.split(':');
+	let hour = parseInt(hourStr, 10);
+
+	if (period === 'PM' && hour !== 12) {
+		hour += 12;
+	} else if (period === 'AM' && hour === 12) {
+		hour = 0;
+	}
+
+	return `${hour.toString().padStart(2, '0')}:${minuteStr}:00`;
+};
+
 // Adds calendarEvent to calendar with calendarName in term
 export async function addCalendarEventObjectToCalendar(
 	calendarName: string,
@@ -214,8 +229,8 @@ export async function addCalendarEventObjectToCalendar(
 		{
 			guid: calendarEvent.course.guid,
 			section_id: calendarEvent.section.id,
-			start_time: calendarEvent.startTime,
-			end_time: calendarEvent.endTime,
+			start_time: convertTo24HourFormat(calendarEvent.startTime),
+			end_time: convertTo24HourFormat(calendarEvent.endTime),
 			start_column_index: calendarEvent.startColumnIndex,
 			is_active: calendarEvent.isActive,
 			needs_choice: calendarEvent.needsChoice,
