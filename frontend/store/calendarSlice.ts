@@ -119,12 +119,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set({ loading: true, error: null });
 		const events = await getCalendarEvents(DEFAULT_CALENDAR_NAME, Number(semester));
 
-		if (!events) {
-			set({ loading: false, error: 'Failed to load calendar events' });
-			return;
-		}
-
-		const transformedEvents = events.map(transformToOldCalendarEvent);
+		const transformedEvents = events ? events.map(transformToOldCalendarEvent) : [];
 		set((state) => ({
 			selectedCourses: {
 				...state.selectedCourses,

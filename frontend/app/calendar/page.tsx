@@ -117,9 +117,18 @@ const CalendarUI: FC = () => {
 	}, [createUserCalendarData]);
 
 	// Load from DB when term changes (only after migration is complete)
+	// Create calendar if it doesn't exist for the term
 	useEffect(() => {
 		if (termFilter && migrationComplete) {
-			void loadCourses(termFilter);
+			(async () => {
+				const calendars = await getCalendars(parseInt(termFilter));
+				if (!calendars || calendars.length === 0) {
+					await createCalendar(DEFAULT_CALENDAR_NAME, parseInt(termFilter));
+				}
+				void loadCourses(termFilter);
+			})().catch((err) => {
+				console.error('Error loading calendar:', err);
+			});
 		}
 	}, [termFilter, loadCourses, migrationComplete]);
 
