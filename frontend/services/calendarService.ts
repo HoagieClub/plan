@@ -269,18 +269,11 @@ export async function deleteCourseFromCalendar(
 	term: number,
 	guid: string
 ): Promise<void> {
-	try {
-		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(url, buildRequest(HttpRequestType.DELETE, null, { guid: guid }));
+	const url = buildCalendarEventsUrl(calendarName, term);
+	const response = await fetch(url, buildRequest(HttpRequestType.DELETE, null, { guid: guid }));
 
-		if (!response.ok) {
-			return null;
-		}
-
-		return null;
-	} catch {
-		// TODO: Handle error
-		return null;
+	if (!response.ok) {
+		throw new Error('Failed to delete course');
 	}
 }
 
@@ -291,21 +284,14 @@ export async function invertSectionInCalendar(
 	guid: string,
 	classSection: string
 ): Promise<void> {
-	try {
-		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(
-			url,
-			buildRequest(HttpRequestType.PUT, null, { guid: guid, classSection: classSection })
-		);
+	const url = buildCalendarEventsUrl(calendarName, term);
+	const response = await fetch(
+		url,
+		buildRequest(HttpRequestType.PUT, null, { guid: guid, classSection: classSection })
+	);
 
-		if (!response.ok) {
-			return null;
-		}
-
-		return null;
-	} catch {
-		// TODO: Handle error
-		return null;
+	if (!response.ok) {
+		throw new Error('Failed to update section');
 	}
 }
 
