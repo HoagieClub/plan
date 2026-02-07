@@ -242,24 +242,12 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		}
 	},
 
-	activateSection: async (clickedSection) => {
+	activateSection: (clickedSection) => {
 		const term = clickedSection.course.guid.substring(0, 4);
 		const selectedCourses = get().selectedCourses[term] || [];
 
-		// persist to DB
-		const guid = clickedSection.course.guid;
-		const classSection = clickedSection.section.class_section;
-
-		const ok = await invertSectionInCalendar(
-			DEFAULT_CALENDAR_NAME,
-			Number(term),
-			guid,
-			classSection
-		);
-
-		if (ok == null) {
-			set({ error: 'Failed to save calendar change to DB' });
-		}
+		// Save previous state for potential rollback
+		const previousCourses = [...selectedCourses];
 
 		// get id of clicked section for course
 		const sectionsPerGroupping = selectedCourses.filter(
@@ -306,51 +294,72 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 			}
 		});
 
-		// update zustand state immediately
+		// Update UI immediately
 		set((state) => ({
 			selectedCourses: {
 				...state.selectedCourses,
 				[term]: updatedSections,
 			},
 		}));
+
+		// Persist to DB in background
+		const guid = clickedSection.course.guid;
+		const classSection = clickedSection.section.class_section;
+
+		invertSectionInCalendar(DEFAULT_CALENDAR_NAME, Number(term), guid, classSection).catch(() => {
+			// Rollback on failure
+			set((state) => ({
+				selectedCourses: {
+					...state.selectedCourses,
+					[term]: previousCourses,
+				},
+				error: 'Failed to save section change',
+			}));
+		});
 	},
 
-	removeCourse: async (sectionKey) => {
-		const state = get();
-		const term = Object.keys(state.selectedCourses).find((semester) =>
-			state.selectedCourses[semester].some((course) => course.key === sectionKey)
+	removeCourse: (sectionKey) => {
+		const currentState = get();
+		const term = Object.keys(currentState.selectedCourses).find((semester) =>
+			currentState.selectedCourses[semester].some((course) => course.key === sectionKey)
 		);
 
 		if (!term) {
 			return;
 		}
 
-		const selectedCourses = state.selectedCourses[term];
+		const selectedCourses = currentState.selectedCourses[term];
 		const courseToRemove = selectedCourses.find((course) => course.key === sectionKey)?.course.guid;
 
 		if (!courseToRemove) {
 			return;
 		}
 
-		await deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove);
+		// Save previous state for potential rollback
+		const previousCourses = [...selectedCourses];
 
-		// TODO: Need to handle failed deletion
-		// if (!deleteResponse) {
-		// 	throw new Error('Failed to delete course from calendar');
-		// }
+		// Update UI immediately
+		const updatedCourses = selectedCourses.filter(
+			(course) => course.course.guid !== courseToRemove
+		);
 
-		set((state) => {
-			const selectedCourses = state.selectedCourses[term];
-			const updatedCourses = selectedCourses.filter(
-				(course) => course.course.guid !== courseToRemove
-			);
+		set((state) => ({
+			selectedCourses: {
+				...state.selectedCourses,
+				[term]: updatedCourses,
+			},
+		}));
 
-			return {
+		// Persist to DB in background
+		deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove).catch(() => {
+			// Rollback on failure
+			set((state) => ({
 				selectedCourses: {
 					...state.selectedCourses,
-					[term]: updatedCourses,
+					[term]: previousCourses,
 				},
-			};
+				error: 'Failed to remove course',
+			}));
 		});
 	},
 
