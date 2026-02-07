@@ -57,7 +57,7 @@ def program_details(request, code):
             "name": program.name,
             "type": program_type,
             "description": program.description or "",
-            "urls": json.loads(program.urls),
+            "urls": json.loads(program.urls) if program.urls else [],
             "contacts": json.loads(program.contacts) if program.contacts else [],
             "requirements": serialized_requirements,
         }
