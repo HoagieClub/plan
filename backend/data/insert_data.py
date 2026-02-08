@@ -1,11 +1,12 @@
 import argparse
-import sys
 import csv
 import os
 import re
-from hoagieplan.logger import logger
+import sys
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 from tqdm import tqdm
 
@@ -311,6 +312,45 @@ def insert_instructors(rows):
         f"Created {len(new_instructors)} new instructors, updated {len(updated_instructors)} existing instructors."
     )
     logger.info("Instructor processing completed!")
+
+
+# -------------------------------------------------------------------------------------#
+
+
+def insert_course_instructors(rows):
+    logger.info("Starting Course-Instructor M2M insertions...")
+
+    # Cache course and instructor objects
+    course_cache = {course.guid: course for course in Course.objects.all()}
+    instructor_cache = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
+
+    # Create set of (course_guid, instructor_emplid) pairs
+    course_instructor_pairs: Dict[str, set[str]] = defaultdict(set)
+    for row in rows:
+        course_guid = row.get("Course GUID", "")
+        instructor_emplid = row.get("Instructor EmplID", "")
+        if course_guid and instructor_emplid:
+            course_instructor_pairs[course_guid].add(instructor_emplid)
+
+    updated_count = 0
+    try:
+        with transaction.atomic():
+            for course_guid, emp_ids in tqdm(
+                course_instructor_pairs.items(), desc="Linking Instructors to Courses..."
+            ):
+                course = course_cache.get(course_guid)
+                if not course:
+                    logger.warning(f"Course not found for GUID {course_guid}, skipping instructor linking")
+                    continue
+                instructors = [instructor_cache[emp_id] for emp_id in emp_ids if emp_id in instructor_cache]
+                if instructors:
+                    course.instructors.set(instructors)
+                    updated_count += 1
+    except Exception as e:
+        logger.error(f"Error in linking instructors to courses: {e}")
+
+    logger.info(f"Linked instructors to {updated_count} courses.")
+    logger.info("Course-Instructor M2M insertions completed!")
 
 
 # -------------------------------------------------------------------------------------#
@@ -637,6 +677,9 @@ def insert_course_data(csv_path):
                 insert_instructors(formatted_rows)
 
             with transaction.atomic():
+                insert_course_instructors(formatted_rows)
+
+            with transaction.atomic():
                 insert_sections(formatted_rows)
 
             with transaction.atomic():
@@ -650,6 +693,7 @@ def insert_course_data(csv_path):
 
 
 # -------------------------------------------------------------------------------------#
+
 
 # Usage: python insert_data.py ../s2026.csv
 def main():
