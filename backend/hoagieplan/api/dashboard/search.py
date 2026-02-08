@@ -45,12 +45,12 @@ def course_fits_time_constraint(course, start_time, end_time, term):
         sections = Section.objects.filter(course=course,
                                           term__term_code=term).prefetch_related('classmeeting_set')
     else:
-        sections = course.section_set.all()
+        sections = course.section_set.prefetch_related('classmeeting_set').all()
 
     if not sections:
         return False
 
-    primary_types = ["Lecture", "Seminar", "Studio"]
+    primary_types = ["Lecture", "Seminar", "Studio", "Class"]
     primary_sections = [s for s in sections if s.class_type in primary_types]
 
     for section in primary_sections:
@@ -101,12 +101,12 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
     # Parse start_time and end_time
     try:
         start_time = dtime.fromisoformat(start_time_str)
-    except Exception:
+    except ValueError:
         start_time = dtime(8, 30)
 
     try:
         end_time = dtime.fromisoformat(end_time_str)
-    except Exception:
+    except ValueError:
         end_time = dtime(23, 0)
 
     trimmed_query = sub(r"\s", "", query)

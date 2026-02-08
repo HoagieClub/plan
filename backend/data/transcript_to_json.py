@@ -80,7 +80,7 @@ def get_current_term(year_and_semester_string: str) -> str:
 # Queries the DB for course_id given course
 # Ex: get_course_id("COS 126") --> 002051
 def get_course_id(course):
-    response = search_courses_helper(course, None, None, None, None)
+    response = search_courses_helper(course, None, None, None, None,None,None)
     string_data = response.content.decode("utf-8")
 
     # Parse JSON string to dictionary
