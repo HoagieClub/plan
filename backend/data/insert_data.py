@@ -63,7 +63,7 @@ def _format_duration(start_time, end_time):
 
 def _parse_time(time_str):
     try:
-        return datetime.strptime(time_str, "%I:%M %p").strftime("%H:%M")
+        return datetime.strptime(time_str, "%I:%M %p").time()
     except ValueError:
         return None
 
@@ -269,7 +269,8 @@ def insert_instructors(rows):
     for row in tqdm(rows, desc="Processing Instructors..."):
         instructor_emplid = row.get("Instructor EmplID", "").strip()
         if not instructor_emplid:
-            logger.warning("Skipping row with missing Instructor EmplID")
+            course_guid = row.get("Course GUID", "unknown")
+            logger.warning(f"Skipping row with missing Instructor EmplID (Course GUID: {course_guid})")
             continue
 
         first_name = row.get("Instructor First Name", "").strip()
@@ -593,8 +594,8 @@ def insert_class_year_enrollments(rows):
                 existing_enrollment = existing_enrollments.get(enrollment_key)
 
                 if existing_enrollment:
-                    if existing_enrollment.enrl_seats != enrl_seats:
-                        updated_enrollment_data.append((existing_enrollment.id, enrl_seats))
+                    if existing_enrollment.enrl_seats != int(enrl_seats):
+                        updated_enrollment_data.append((existing_enrollment.id, int(enrl_seats)))
                 else:
                     new_enrollment = ClassYearEnrollment(
                         section_id=section_id,
