@@ -50,9 +50,10 @@ function buildQuery(searchQuery: string, filter: Filter): string {
 		queryString += `&grading=${filter.gradingFilter.map(encodeURIComponent).join(',')}`;
 	}
 
-	//test
+	/* test for time filtering
 	queryString += '&start=13:00:00';
 	queryString += '&end=16:00:00';
+	*/
 
 	return queryString;
 }
