@@ -145,6 +145,7 @@ class Course(models.Model):
     reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
     grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
     reading_list = models.TextField(blank=True, db_index=True, null=True)
+    instructors = models.ManyToManyField(Instructor, related_name="courses", blank=True)
 
     # Course evaluation fields
     quality_of_course = models.FloatField(null=True)
