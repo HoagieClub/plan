@@ -58,13 +58,18 @@ def course_fits_time_constraint(course, start_time, end_time, term):
 
         if not class_meetings:
             continue
+        
+        section_fits = True
+        for meeting in class_meetings:
 
-        meeting = class_meetings[0]
+            if not meeting.start_time or not meeting.end_time:
+                continue
 
-        if not meeting.start_time or not meeting.end_time:
-            continue
+            if meeting.start_time < start_time or meeting.end_time > end_time:
+                section_fits = False
+                break
 
-        if meeting.start_time >= start_time and meeting.end_time <= end_time:
+        if section_fits:
             logger.info(
                 f"Course {course.title}: Section {section.class_section} fits!")
             return True
