@@ -2,6 +2,7 @@ import re
 from enum import Enum
 from typing import Dict, List, Set
 
+from django.db import transaction
 from django.db.models.query import Prefetch
 from rest_framework import status
 from rest_framework.response import Response
@@ -254,26 +255,27 @@ class CalendarEventView(APIView):
         ]
         is_active_single = len(active_sections) <= sections_per_grouping
 
-        for section in events_for_course:
-            # Section that was clicked
-            if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
-                section.is_chosen = not section.is_chosen
-                section.save()
-
-            # Completely different course, do nothing
-            elif section.course.guid != clicked_event.course.guid:
-                continue
-
-            # Only has one section that is visible, which is the one that is clicked
-            elif is_active_single and clicked_event.is_active:
-                if section.section.class_type == clicked_event.section.class_type:
-                    section.is_active = True
-                    section.is_chosen = False
+        with transaction.atomic():
+            for section in events_for_course:
+                # Section that was clicked
+                if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
+                    section.is_chosen = not section.is_chosen
                     section.save()
-            elif section.section.class_type == clicked_event.section.class_type:
-                section.is_active = section.get_key() == clicked_event.get_key()
-                section.is_chosen = section.get_key() == clicked_event.get_key()
-                section.save()
+
+                # Completely different course, do nothing
+                elif section.course.guid != clicked_event.course.guid:
+                    continue
+
+                # Only has one section that is visible, which is the one that is clicked
+                elif is_active_single and clicked_event.is_active:
+                    if section.section.class_type == clicked_event.section.class_type:
+                        section.is_active = True
+                        section.is_chosen = False
+                        section.save()
+                elif section.section.class_type == clicked_event.section.class_type:
+                    section.is_active = section.get_key() == clicked_event.get_key()
+                    section.is_chosen = section.get_key() == clicked_event.get_key()
+                    section.save()
 
         return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
 
