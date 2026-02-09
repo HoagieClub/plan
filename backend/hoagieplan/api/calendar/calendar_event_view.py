@@ -269,12 +269,13 @@ class CalendarEventView(APIView):
         ]
         is_active_single = len(active_sections) <= sections_per_grouping
 
+        events_to_update: List[CalendarEvent] = []
         with transaction.atomic():
             for section in events_for_course:
                 # Section that was clicked
                 if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
                     section.is_chosen = not section.is_chosen
-                    section.save()
+                    events_to_update.append(section)
 
                 # Completely different course, do nothing
                 elif section.course.guid != clicked_event.course.guid:
@@ -285,11 +286,14 @@ class CalendarEventView(APIView):
                     if section.section.class_type == clicked_event.section.class_type:
                         section.is_active = True
                         section.is_chosen = False
-                        section.save()
+                        events_to_update.append(section)
                 elif section.section.class_type == clicked_event.section.class_type:
                     section.is_active = section.get_key() == clicked_event.get_key()
                     section.is_chosen = section.get_key() == clicked_event.get_key()
-                    section.save()
+                    events_to_update.append(section)
+
+            if events_to_update:
+                CalendarEvent.objects.bulk_update(events_to_update, ["is_active", "is_chosen"])
 
         return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
 
