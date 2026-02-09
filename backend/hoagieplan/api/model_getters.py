@@ -62,13 +62,15 @@ def get_calendar_event(
 
 
 def get_calendar_events(calendar_configuration: CalendarConfiguration, course: Course):
-    events = CalendarEvent.objects.filter(
-        calendar_configuration=calendar_configuration,
-        course=course,
-    ).select_related(
-        "course",
-        "section",
+    events = list(
+        CalendarEvent.objects.filter(
+            calendar_configuration=calendar_configuration,
+            course=course,
+        ).select_related(
+            "course",
+            "section",
+        )
     )
-    if not events.exists():
+    if not events:
         raise Exception("CalendarEvent not found")
     return events

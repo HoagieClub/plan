@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 
 from hoagieplan.api.model_getters import (
     get_calendar,
-    get_calendar_event,
     get_calendar_events,
     get_course,
     get_section,
@@ -237,20 +236,17 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieve the event that was clicked
-        clicked_events: List[CalendarEvent] = []
-        for section in clicked_sections:
-            try:
-                clicked_event = get_calendar_event(calendar_configuration, course, section)
-                clicked_events.append(clicked_event)
-            except Exception:
-                continue
-        if not clicked_events:
+        # Find the clicked event from the already-fetched events
+        events_for_course = get_calendar_events(calendar_configuration, course)
+        clicked_section_ids = {section.id for section in clicked_sections}
+        clicked_event = next(
+            (section for section in events_for_course if section.section_id in clicked_section_ids),
+            None,
+        )
+        if not clicked_event:
             return Response({"detail": "No CalendarEvents found for the section"}, status=status.HTTP_404_NOT_FOUND)
-        clicked_event = clicked_events[0]
 
         # Change status of is_chosen and is_active
-        events_for_course = get_calendar_events(calendar_configuration, course)
         matched_sections = [
             section
             for section in events_for_course
