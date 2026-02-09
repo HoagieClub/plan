@@ -46,7 +46,19 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        queryset = CalendarEvent.objects.filter(calendar_configuration=calendar)
+        queryset = (
+            CalendarEvent.objects.filter(calendar_configuration=calendar)
+            .select_related(
+                "calendar_configuration",
+                "course__department",
+                "section__instructor",
+            )
+            .prefetch_related(
+                "course__section_set__classmeeting_set",
+                "course__section_set__instructor",
+                "section__classmeeting_set",
+            )
+        )
 
         serializer = CalendarEventSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -124,30 +136,32 @@ class CalendarEventView(APIView):
                 unique_seminar_numbers.add(match.group(1))
 
         # Creating the CalendarEvent objects
-        calendar_events: List[CalendarEvent] = []
+        calendar_events_to_create: List[CalendarEvent] = []
         for section in selected_sections_data:
-            for class_meeting in section.classmeeting_set.all():
+            for class_meeting in section.unique_class_meetings:
                 start_column_indices = self._get_start_column_index_for_days(class_meeting.days)
                 for start_column_index in start_column_indices:
-                    calendar_event = CalendarEvent.objects.create(
-                        calendar_configuration=calendar_configuration,
-                        course=course,
-                        section_id=section.id,
-                        start_time=class_meeting.start_time,
-                        end_time=class_meeting.end_time,
-                        start_column_index=start_column_index,
-                        is_active=True,
-                        needs_choice=(
-                            (section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
-                            or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
-                            or (len(unique_seminar_numbers) > 1 and section.class_type == "Seminar")
-                        ),
-                        is_chosen=False,
+                    calendar_events_to_create.append(
+                        CalendarEvent(
+                            calendar_configuration=calendar_configuration,
+                            course=course,
+                            section=section,
+                            start_time=class_meeting.start_time,
+                            end_time=class_meeting.end_time,
+                            start_column_index=start_column_index,
+                            is_active=True,
+                            needs_choice=(
+                                (section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
+                                or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
+                                or (len(unique_seminar_numbers) > 1 and section.class_type == "Seminar")
+                            ),
+                            is_chosen=False,
+                        )
                     )
 
-                    calendar_events.append(calendar_event)
+        CalendarEvent.objects.bulk_create(calendar_events_to_create)
 
-        serializer = CalendarEventSerializer(calendar_events, many=True)
+        serializer = CalendarEventSerializer(calendar_events_to_create, many=True)
         return Response(serializer.data)
 
     def _add_calendar_event(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:

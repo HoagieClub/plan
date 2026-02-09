@@ -14,7 +14,7 @@ def get_user(net_id: str) -> CustomUser:
 def get_course(guid: str) -> Course:
     """Retrieve Course."""
     try:
-        return Course.objects.get(guid=guid)
+        return Course.objects.select_related("department").get(guid=guid)
     except Course.DoesNotExist as error:
         raise Exception("Course not found") from error
 
@@ -47,9 +47,14 @@ def get_calendar_event(
     calendar_configuration: CalendarConfiguration, course: Course, section: Section
 ) -> CalendarEvent:
     """Retrieve CalendarEvent."""
-    event = CalendarEvent.objects.filter(
-        calendar_configuration=calendar_configuration, course=course, section=section
-    ).first()
+    event = (
+        CalendarEvent.objects.filter(calendar_configuration=calendar_configuration, course=course, section=section)
+        .select_related(
+            "course",
+            "section",
+        )
+        .first()
+    )
     if event is None:
         raise Exception("CalendarEvent not found")
 
@@ -60,6 +65,9 @@ def get_calendar_events(calendar_configuration: CalendarConfiguration, course: C
     events = CalendarEvent.objects.filter(
         calendar_configuration=calendar_configuration,
         course=course,
+    ).select_related(
+        "course",
+        "section",
     )
     if not events.exists():
         raise Exception("CalendarEvent not found")
