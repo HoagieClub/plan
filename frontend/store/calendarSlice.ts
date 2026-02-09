@@ -7,7 +7,10 @@ import {
 	invertSectionInCalendar,
 } from '@/services/calendarService';
 import type { CalendarEvent } from '@/services/calendarService';
-import type { CalendarEvent as OldCalendarEvent, ClassMeeting, Course, Section } from '@/types';
+import type {
+	CalendarEvent as OldCalendarEvent,
+	/* ClassMeeting, */ Course /* Section */,
+} from '@/types';
 
 interface CalendarStore {
 	calendarSearchResults: Course[];
@@ -41,13 +44,13 @@ interface CalendarStore {
 export const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
-const dayToStartColumnIndex: Record<string, number> = {
-	M: 1, // Monday
-	T: 2, // Tuesday
-	W: 3, // Wednesday
-	Th: 4, // Thursday
-	F: 5, // Friday
-};
+// const dayToStartColumnIndex: Record<string, number> = {
+// 	M: 1, // Monday
+// 	T: 2, // Tuesday
+// 	W: 3, // Wednesday
+// 	Th: 4, // Thursday
+// 	F: 5, // Friday
+// };
 
 // Converts 24-hour time "HH:MM:SS" to 12-hour time "H:MM AM/PM"
 const convertTo12HourFormat = (time24: string): string => {
@@ -83,10 +86,10 @@ const calculateGridRow = (timeString: string) => {
 	return (adjustedHour - startHour) * rowsPerHour + minuteOffset + headerRows;
 };
 
-const getStartColumnIndexForDays = (daysString: string): number[] => {
-	const daysArray = daysString.split(',');
-	return daysArray.map((day) => dayToStartColumnIndex[day.trim()] || 0);
-};
+// const getStartColumnIndexForDays = (daysString: string): number[] => {
+// 	const daysArray = daysString.split(',');
+// 	return daysArray.map((day) => dayToStartColumnIndex[day.trim()] || 0);
+// };
 
 function transformToOldCalendarEvent(event: CalendarEvent): OldCalendarEvent {
 	const startTime12h = convertTo12HourFormat(event.start_time);
@@ -135,7 +138,6 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	setLoading: (loading) => set({ loading }),
 
 	addCourse: async (course: Course) => {
-		// const selectedCourses = get().getSelectedCourses();
 		const term = course.guid.substring(0, 4);
 		const selectedCourses = get().getSelectedCourses(term);
 
@@ -148,9 +150,6 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set({ loading: true, error: null });
 
 		try {
-			const term = course.guid.substring(0, 4);
-			const course_id = course.guid.substring(4);
-
 			const addCourseResponse = await addCourseToCalendar(
 				DEFAULT_CALENDAR_NAME,
 				Number(term),
@@ -160,64 +159,8 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 				throw new Error('Failed to add course to calendar');
 			}
 
-			// console.log(`Fetching course details from backend for ${term}-${course_id}`);
-			const response = await fetch(`/api/hoagie/fetch_calendar_classes/${term}/${course_id}`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch course details');
-			}
+			const calendarEvents = addCourseResponse.map(transformToOldCalendarEvent);
 
-			const sections = await response.json();
-			// console.log('Fetched sections:', sections.length);
-
-			const uniqueSections = new Set(sections.map((section) => section.class_section));
-
-			const uniqueCount = uniqueSections.size;
-
-			const exceptions = ['Seminar', 'Lecture'];
-
-			const lectureSections = sections.filter(
-				(section) => section.class_type === 'Lecture' && /^L0\d+/.test(section.class_section)
-			);
-
-			const uniqueLectureNumbers = new Set(
-				lectureSections.map((section) => section.class_section.match(/^L0(\d+)/)?.[1])
-			);
-
-			const seminarSections = sections.filter(
-				(section) => section.class_type === 'Seminar' && /^S0\d+/.test(section.class_section)
-			);
-
-			const uniqueSeminarNumbers = new Set(
-				seminarSections.map((section) => section.class_section.match(/^S0(\d+)/)?.[1])
-			);
-
-			const calendarEvents: OldCalendarEvent[] = sections.flatMap((section: Section) =>
-				section.class_meetings.flatMap((classMeeting: ClassMeeting) => {
-					const startColumnIndices = getStartColumnIndexForDays(classMeeting.days);
-					return startColumnIndices.map((startColumnIndex) => ({
-						key: `guid: ${course.guid}, section id: ${section.id}, class meeting id: ${classMeeting.id}, column: ${startColumnIndex}`,
-						course: course,
-						section: section,
-						startTime: classMeeting.start_time,
-						endTime: classMeeting.end_time,
-						startColumnIndex,
-						startRowIndex: calculateGridRow(classMeeting.start_time),
-						endRowIndex: calculateGridRow(classMeeting.end_time),
-						isActive: true,
-						needsChoice:
-							(!exceptions.includes(section.class_type) && uniqueCount > 1) ||
-							(uniqueLectureNumbers.size > 1 && section.class_type === 'Lecture') ||
-							(uniqueSeminarNumbers.size > 1 && section.class_type === 'Seminar'),
-						isChosen: false,
-					}));
-				})
-			);
-
-			// console.log('Prepared calendar events to add:', calendarEvents);
-			// set((state) => ({
-			//   selectedCourses: [...state.selectedCourses, ...calendarEvents],
-			//   loading: false,
-			// }));
 			set((state) => ({
 				selectedCourses: {
 					...state.selectedCourses,
@@ -225,15 +168,6 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 				},
 				loading: false,
 			}));
-			// console.log('Course added successfully:', course.guid);
-			// console.log(
-			//   "Initial sections' active states:",
-			//   calendarEvents.map((s) => s.isActive)
-			// );
-			// console.log(
-			//   'Initial sections needing choice:',
-			//   calendarEvents.map((s) => s.needsChoice)
-			// );
 		} catch {
 			set({
 				error: 'Failed to add course. Please try again.',
