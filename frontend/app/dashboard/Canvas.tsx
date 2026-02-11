@@ -226,6 +226,7 @@ export function Canvas({
 		[SEARCH_RESULTS_ID]: [], // Initialize search container with no courses
 		...semesters,
 	}));
+	const semesterElementRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
 	type Dictionary = {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -363,6 +364,17 @@ export function Canvas({
 	// isSortingContainer is legacy code, since we are not using sortable containers
 	const isSortingContainer = false;
 	const [overContainerId, setOverContainerId] = useState<UniqueIdentifier | null>(null);
+
+	// Scroll to the current semester when the 2x4 grid is first rendered
+	useEffect(() => {
+		const currentYear: number = new Date().getFullYear();
+		const currentMonth: number = new Date().getMonth();
+		const currentSemester = `${currentMonth <= 5 ? 'Spring' : 'Fall'} ${currentYear}`;
+		if (containers.includes(currentSemester)) {
+			const target = semesterElementRefs.current[currentSemester];
+			target?.scrollIntoView();
+		}
+	}, []);
 
 	/**
 	 * Custom collision detection strategy optimized for multiple containers
@@ -620,6 +632,9 @@ export function Canvas({
 								.map((containerId) => (
 									<div
 										key={containerId}
+										ref={(node) => {
+											semesterElementRefs.current[containerId] = node;
+										}}
 										style={{
 											display: 'flex',
 											flexDirection: 'column',
