@@ -27,10 +27,10 @@ def get_section(course: Course, class_section: str) -> List[Section]:
         raise Exception("Course not found") from error
 
 
-def get_term(term_code: str) -> AcademicTerm:
-    """Retrieve CustomUser."""
+def get_term(term_code: str | int) -> AcademicTerm:
+    """Retrieve AcademicTerm by term code."""
     try:
-        return AcademicTerm.objects.get(term_code=term_code)
+        return AcademicTerm.objects.get(term_code=str(term_code))
     except AcademicTerm.DoesNotExist as error:
         raise Exception("AcademicTerm not found") from error
 

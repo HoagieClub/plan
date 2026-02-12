@@ -22,7 +22,7 @@ class CalendarConfigurationView(APIView):
 
         if term:
             try:
-                term_id = AcademicTerm.objects.get(term_code=term).id
+                term_id = AcademicTerm.objects.get(term_code=str(term)).id
                 queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
             except AcademicTerm.DoesNotExist:
                 return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -34,7 +34,10 @@ class CalendarConfigurationView(APIView):
 
     def put(self, request, term: int) -> Response:
         """Create a new calendar configuration for the user."""
-        term_id = AcademicTerm.objects.get(term_code=term).id
+        try:
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
 
         calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
@@ -96,7 +99,10 @@ class CalendarConfigurationView(APIView):
 
     def delete(self, request, term: int) -> Response:
         """Delete an existing calendar configuration."""
-        term_id = AcademicTerm.objects.get(term_code=term).id
+        try:
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
 
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
