@@ -1,11 +1,13 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from datetime import datetime
 
 from hoagieplan.models import (
     Course,
     CourseComment,
     Department,
     Section,
+    ClassMeeting,
 )
 
 
@@ -84,9 +86,11 @@ def get_course_info(crosslistings):
     if title:
         course_dict["Title"] = title
 
+    # Get all sections for this course
+    all_sections = Section.objects.filter(course=course).select_related("instructor", "term")
+    
     # Add instructors with Section model
-    sections = Section.objects.filter(course=course).select_related("instructor")
-    instructor_names = [section.instructor.full_name for section in sections if section.instructor is not None]
+    instructor_names = [section.instructor.full_name for section in all_sections if section.instructor is not None]
     # Check for duplicates of instructors and remove when necessary
     hasSeen = set()
     instructor_hasSeen = []
@@ -127,6 +131,54 @@ def get_course_info(crosslistings):
     # Add reading/writing assignments if they exist
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
+
+    # === NEW: Add Course Setup ===
+    # Get the most recent term's sections
+    latest_term_section = all_sections.order_by('-term__term_code').first()
+    
+    if latest_term_section:
+        latest_term_sections = all_sections.filter(term=latest_term_section.term)
+        
+        # Calculate course setup based on meeting times
+        course_setup_dict = {}
+        
+        for section in latest_term_sections:
+            class_type = section.class_type
+            
+            # Get all meetings for this section
+            meetings = ClassMeeting.objects.filter(section=section)
+            
+            # Calculate total weekly duration for this section
+            total_duration = 0
+            meeting_count = 0
+            for meeting in meetings:
+                if meeting.start_time and meeting.end_time:
+                    start = datetime.combine(datetime.today(), meeting.start_time)
+                    end = datetime.combine(datetime.today(), meeting.end_time)
+                    duration = int((end - start).total_seconds() / 60)
+                    total_duration += duration
+                    meeting_count += 1
+            
+            # If we haven't seen this class type yet, or if this is the first section
+            # we're examining, store its total duration
+            if class_type not in course_setup_dict and total_duration > 0:
+                course_setup_dict[class_type] = {
+                    'count': meeting_count,  # Number of meetings per week
+                    'duration': total_duration
+                }
+        
+        # Build course setup array
+        course_setup = [
+            {
+                'class_type': class_type,
+                'count': info['count'],
+                'duration': info['duration']
+            }
+            for class_type, info in course_setup_dict.items()
+        ]
+        
+        if course_setup:
+            course_dict["course_setup"] = course_setup
 
     return course_dict
 

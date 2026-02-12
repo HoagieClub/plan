@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 
+import { People, CalendarToday, Menu } from '@mui/icons-material';
 import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { createPortal } from 'react-dom';
 
@@ -13,6 +14,7 @@ import { departmentColors } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
+import { getSectionColor } from '@/utils/sectionColors';
 
 import styles from './InfoComponent.module.css';
 
@@ -46,13 +48,28 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
+	// Use course_setup from API response
+	const courseSetup = courseDetails?.course_setup || [];
+
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
+			console.log('Fetching course details for:', value);
 			void fetch(`/api/hoagie/course/details/?${params}`)
-				.then((response) => response.json())
+				.then((response) => {
+					console.log('Response status:', response.status);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					return response.json();
+				})
 				.then((data) => {
+					console.log('Course details received:', data);
 					setCourseDetails(data);
+				})
+				.catch((error) => {
+					console.error('Error fetching course details:', error);
+					setCourseDetails({ error: 'Failed to load course details' });
 				});
 		}
 	}, [showPopup, value]);
@@ -85,12 +102,12 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	};
 
 	const modalTitleStyle = {
-		color: '#333',
+		color: 'gray',
 		display: 'block',
-		fontWeight: 600,
-		fontSize: '0.95rem',
-		marginTop: '10px',
-		marginBottom: '6px',
+		fontWeight: 500,
+		fontSize: '0.9rem',
+		marginTop: '8px',
+		marginBottom: '3px',
 	};
 
 	const modalContent = showPopup ? (
@@ -107,8 +124,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				}}
 				ref={modalRef}
 			>
-				{' '}
-				{/* Ensure full width */}
 				{courseDetails ? (
 					<div
 						style={{
@@ -119,8 +134,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							overflowY: 'auto',
 						}}
 					>
-						{' '}
-						{/* Full width and row direction */}
 						{/* Details section with explicit width */}
 						<div
 							style={{
@@ -147,7 +160,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										backgroundColor: courseColor,
 										color: 'white',
 										padding: '8px 14px',
-										borderRadius: '4px',
+										borderRadius: '10px',
 										fontWeight: 'bold',
 										fontSize: '1.1rem',
 										width: 'fit-content',
@@ -157,7 +170,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								</div>
 
 								{/* Buttons for Registrar & Princeton Courses */}
-								<div style={{ display: 'flex', gap: '8px' }}>
+								<div style={{ display: 'flex', gap: '6px' }}>
 									{courseDetails?.Registrar && (
 										<JoyButton
 											variant='soft'
@@ -173,27 +186,46 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
 										</JoyButton>
 									)}
-									<JoyButton
-										variant='soft'
-										color='neutral'
-										component='a'
-										href={`https://www.princetoncourses.com/course/${
-											new URL(courseDetails.Registrar).searchParams.get('term') +
-											new URL(courseDetails.Registrar).searchParams.get('courseid')
-										}`}
-										target='_blank'
-										rel='noopener noreferrer'
-										sx={{ ml: 2 }}
-										size='md'
-									>
-										Princeton Courses
-										<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
-									</JoyButton>
+									{courseDetails?.Registrar &&
+										(() => {
+											try {
+												const registrarUrl = new URL(courseDetails.Registrar);
+												const term = registrarUrl.searchParams.get('term');
+												const courseid = registrarUrl.searchParams.get('courseid');
+												if (term && courseid) {
+													return (
+														<JoyButton
+															variant='soft'
+															color='neutral'
+															component='a'
+															href={`https://www.princetoncourses.com/course/${term}${courseid}`}
+															target='_blank'
+															rel='noopener noreferrer'
+															sx={{ ml: 2 }}
+															size='md'
+														>
+															Princeton Courses
+															<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
+														</JoyButton>
+													);
+												}
+											} catch (e) {
+												console.error('Failed to construct Princeton Courses URL:', e);
+											}
+											return null;
+										})()}
 								</div>
 							</div>
 
+							{/* Course Title */}
+							{courseDetails['Title'] && (
+								<h2 style={{ fontSize: '1.15rem', fontWeight: 550, margin: '6px 8px 8px 0px' }}>
+									{courseDetails['Title']}
+								</h2>
+							)}
+
 							{/* Tags Row */}
-							<div style={{ display: 'flex', gap: '8px' }}>
+							<div style={{ display: 'flex', gap: '10px' }}>
 								{/* Distribution Area Code */}
 								{distShort && (
 									<Tooltip title={distTitle} variant='soft'>
@@ -201,8 +233,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: distColor,
 												color: 'white',
-												padding: '6px 12px',
-												borderRadius: '6px',
+												padding: '6px 4px 4px 6px',
+												borderRadius: '10px',
 												fontWeight: 'bold',
 												width: 'fit-content',
 											}}
@@ -219,8 +251,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: pdfColor,
 												color: 'white',
-												padding: '6px 12px',
-												borderRadius: '6px',
+												padding: '6px 4px 6px 4px',
+												borderRadius: '10px',
 												fontWeight: 'bold',
 												width: 'fit-content',
 											}}
@@ -237,8 +269,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: auditColor,
 												color: 'white',
-												padding: '6px 12px',
-												borderRadius: '6px',
+												padding: '6px 4px 4px 6px',
+												borderRadius: '10px',
 												fontWeight: 'bold',
 												width: 'fit-content',
 											}}
@@ -248,48 +280,139 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									</Tooltip>
 								)}
 							</div>
-							{/* Course Title */}
-							{courseDetails['Title'] && (
-								<h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: '10px 10px 10px 0px' }}>
-									{courseDetails['Title']}
-								</h2>
-							)}
 
-							{/* Instructor Names */}
-							<strong style={modalTitleStyle}>Instructors</strong>
-
-							{/* Instructors Box */}
 							<div
 								style={{
-									backgroundColor: '#f5f5f5',
-									padding: '6px 16px',
-									borderRadius: '6px',
-									fontSize: '0.85rem',
-									display: 'flex',
-									width: '40%',
-									flexDirection: 'column',
+									display: 'grid',
+									gridTemplateColumns: '1fr 1fr',
+									gap: '16px',
+									marginTop: '16px',
 								}}
 							>
-								{typeof courseDetails?.Instructors === 'string' ? (
-									courseDetails.Instructors.split(',').map((name, index, arr) => (
-										<div
-											key={index}
-											style={{
-												padding: '6px 0px',
-												borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-											}}
-										>
-											{name.trim()}
-										</div>
-									))
-								) : (
-									<div>No instructor listed</div>
-								)}
+								{/* Instructors Section */}
+								<div>
+									<strong style={modalTitleStyle}>
+										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+											<People fontSize='small' />
+											Instructors
+										</span>
+									</strong>
+									<div
+										style={{
+											backgroundColor: '#f5f5f5',
+											padding: '6px 16px',
+											borderRadius: '6px',
+											fontSize: '0.85rem',
+											fontWeight: 500,
+											display: 'flex',
+											flexDirection: 'column',
+										}}
+									>
+										{typeof courseDetails?.Instructors === 'string' && courseDetails.Instructors ? (
+											courseDetails.Instructors.split(',').map((name, index, arr) => (
+												<div
+													key={index}
+													style={{
+														padding: '6px 0px',
+														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+													}}
+												>
+													{name.trim()}
+												</div>
+											))
+										) : (
+											<div style={{ color: '#999', fontStyle: 'italic' }}>No instructor listed</div>
+										)}
+									</div>
+								</div>
+
+								{/* Course Setup Section */}
+								<div>
+									<strong style={modalTitleStyle}>
+										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+											<CalendarToday fontSize='small' />
+											Course Setup
+										</span>
+									</strong>
+									<div
+										style={{
+											backgroundColor: '#f5f5f5',
+											padding: '6px 16px',
+											borderRadius: '6px',
+											fontSize: '0.85rem',
+										}}
+									>
+										{courseSetup.length > 0 ? (
+											<>
+												<div style={{ marginBottom: '12px', fontWeight: 600, color: '#333' }}>
+													{courseSetup.map((item, idx) => (
+														<span key={item.class_type}>
+															{item.count} {item.class_type}
+															{item.count > 1 ? 's' : ''}
+															{idx < courseSetup.length - 1 ? ', ' : ''}
+														</span>
+													))}
+												</div>
+												<div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+													{courseSetup.map((item) => {
+														const config =
+															getSectionColor[item.class_type] || getSectionColor['Unknown'];
+														return (
+															<div
+																key={item.class_type}
+																style={{
+																	backgroundColor: config.color,
+																	color: 'white',
+																	padding: '6px 0px',
+																	borderRadius: '6px',
+																	textAlign: 'center',
+																	flex: '1',
+																	minWidth: '65px',
+																	fontWeight: 500,
+																}}
+															>
+																<div
+																	style={{
+																		fontSize: '1rem',
+																		marginBottom: '1.5px',
+																		fontWeight: 'bold',
+																	}}
+																>
+																	{config.abbr}
+																</div>
+																{item.duration && (
+																	<div
+																		style={{
+																			fontSize: '0.9rem',
+																			marginBottom: '2px',
+																			opacity: 0.95,
+																		}}
+																	>
+																		{item.duration} m.
+																	</div>
+																)}
+																<div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
+																	{item.class_type}
+																</div>
+															</div>
+														);
+													})}
+												</div>
+											</>
+										) : (
+											<div style={{ color: '#999', fontStyle: 'italic', padding: '8px 0' }}>
+												No section information available
+											</div>
+										)}
+									</div>
+								</div>
 							</div>
+
 							{/* Description Box */}
-
-							<strong style={modalTitleStyle}>Description</strong>
-
+							<strong style={modalTitleStyle}>
+								<Menu fontSize='small' />
+								Description
+							</strong>
 							<div
 								style={{
 									backgroundColor: '#f5f5f5',
@@ -304,6 +427,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								{courseDetails['Description']}
 							</div>
 						</div>
+
 						{/* ReviewMenu with explicit width */}
 						<div
 							style={{
@@ -313,8 +437,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								height: 'auto',
 							}}
 						>
-							{' '}
-							{/* Half width */}
 							<ReviewMenu dept={dept} coursenum={coursenum} />
 						</div>
 					</div>
@@ -358,12 +480,12 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				onClick={handleClick}
 				style={{
 					position: 'relative',
-					display: 'block', // changed from inline-block to block
+					display: 'block',
 					cursor: 'pointer',
-					maxWidth: '100%', // ensure it respects the container's max width
-					overflow: 'hidden', // ensure overflow is hidden
-					whiteSpace: 'nowrap', // no wrap
-					textOverflow: 'ellipsis', // apply ellipsis
+					maxWidth: '100%',
+					overflow: 'hidden',
+					whiteSpace: 'nowrap',
+					textOverflow: 'ellipsis',
 				}}
 				className={cn(styles.Action)}
 			>
