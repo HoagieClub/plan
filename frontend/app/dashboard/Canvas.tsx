@@ -18,13 +18,12 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
-import { List, useDynamicRowHeight } from 'react-window';
 
 import useAlmostCompletedMinorsModal from '@/components/AlmostCompletedMinorsModal/AlmostCompletedMinorsModal';
 import containerStyles from '@/components/Container/Container.module.css';
 import { DroppableContainer } from '@/components/DashboardDroppableContainer';
-import { Item } from '@/components/Item';
 import { DashboardSearchResults } from '@/components/DashboardSearchResults';
+import { Item } from '@/components/Item';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
 import { useUploadModal } from '@/components/UploadModal/Upload';
 import useSearchStore from '@/store/searchSlice';
@@ -37,7 +36,6 @@ import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 import { SortableItem } from './SortableItem';
 
-import type { CustomRowProps } from './VirtualRow';
 import type {
 	CollisionDetection,
 	DropAnimation,
@@ -48,7 +46,6 @@ import type {
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
-const searchGridHeight = '85vh';
 
 // Widths are relative to viewport width.
 // Search container width is 24vw, inherited from Container.module.css
@@ -303,29 +300,6 @@ export function Canvas({
 	const enabledCourseIds = useMemo(() => {
 		return new Set(items[SEARCH_RESULTS_ID]);
 	}, [items]);
-
-	const dynamicRowHeight = useDynamicRowHeight({
-		defaultRowHeight: 120,
-	});
-
-	const rowRendererProps: CustomRowProps = useMemo(
-		() => ({
-			staticSearchResults,
-			enabledCourseIds,
-			handle,
-			wrapperStyle,
-			searchWrapperStyle,
-			dynamicRowHeight,
-		}),
-		[
-			staticSearchResults,
-			enabledCourseIds,
-			handle,
-			wrapperStyle,
-			searchWrapperStyle,
-			dynamicRowHeight,
-		]
-	);
 
 	useEffect(() => {
 		setItems((prevItems) => {
