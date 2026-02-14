@@ -25,10 +25,10 @@ def combine_course_data(semester):
     final_df = pd.concat(all_csvs, ignore_index=True)
 
     # Create unique output file
-    output_file = f"../{semester}.csv"
+    output_file = f"{semester}.csv"
     counter = 1
     while os.path.exists(output_file):
-        output_file = f"../{semester}_{counter}.csv"
+        output_file = f"{semester}_{counter}.csv"
         counter += 1
 
     if counter > 1:

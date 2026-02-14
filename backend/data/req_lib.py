@@ -17,7 +17,7 @@ class ReqLib:
         url = f"{base_url}{endpoint}"
         headers = {
             "Authorization": f"Bearer {self.configs.ACCESS_TOKEN}",
-            "Accept": "application/json",
+            # "Accept": "application/json",
         }
         attempts = 0
         max_attempts = 5
