@@ -31,7 +31,7 @@
 		"@mui/icons-material": "^6.1.10",
 		"@mui/joy": "^5.0.0-beta.51",
 		"@mui/material": "^6.4.4",
-		"@mui/system": "^6.1.9",
+		"@mui/system": "^7.3.8",
 		"@next/bundle-analyzer": "^15.0.3",
 		"@next/eslint-plugin-next": "^15.2.0",
 		"@radix-ui/react-navigation-menu": "^1.2.5",
