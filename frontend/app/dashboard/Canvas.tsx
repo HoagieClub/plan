@@ -17,19 +17,15 @@ import {
 	useSensors,
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
-import { AcademicCapIcon, CloudArrowUpIcon } from '@heroicons/react/20/solid';
-import { Pane } from 'evergreen-ui';
 import { createPortal } from 'react-dom';
-import { List, useDynamicRowHeight } from 'react-window';
 
 import useAlmostCompletedMinorsModal from '@/components/AlmostCompletedMinorsModal/AlmostCompletedMinorsModal';
 import containerStyles from '@/components/Container/Container.module.css';
 import { DroppableContainer } from '@/components/DashboardDroppableContainer';
+import { DashboardSearchResults } from '@/components/DashboardSearchResults';
 import { Item } from '@/components/Item';
-import { Search } from '@/components/Search';
 import { TabbedMenu } from '@/components/TabbedMenu/TabbedMenu';
 import { useUploadModal } from '@/components/UploadModal/Upload';
-import { ButtonWidget } from '@/components/Widgets/Widget';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
@@ -39,9 +35,7 @@ import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 import { SEARCH_RESULTS_ID } from './constants';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
 import { SortableItem } from './SortableItem';
-import { VirtualRow } from './VirtualRow';
 
-import type { CustomRowProps } from './VirtualRow';
 import type {
 	CollisionDetection,
 	DropAnimation,
@@ -52,7 +46,6 @@ import type {
 
 // Heights are relative to viewport height
 const containerGridHeight = '87vh';
-const searchGridHeight = '85vh';
 
 // Widths are relative to viewport width.
 // Search container width is 24vw, inherited from Container.module.css
@@ -308,29 +301,6 @@ export function Canvas({
 		return new Set(items[SEARCH_RESULTS_ID]);
 	}, [items]);
 
-	const dynamicRowHeight = useDynamicRowHeight({
-		defaultRowHeight: 120,
-	});
-
-	const rowRendererProps: CustomRowProps = useMemo(
-		() => ({
-			staticSearchResults,
-			enabledCourseIds,
-			handle,
-			wrapperStyle,
-			searchWrapperStyle,
-			dynamicRowHeight,
-		}),
-		[
-			staticSearchResults,
-			enabledCourseIds,
-			handle,
-			wrapperStyle,
-			searchWrapperStyle,
-			dynamicRowHeight,
-		]
-	);
-
 	useEffect(() => {
 		setItems((prevItems) => {
 			const userCurrentCourses: Set<string> = new Set<string>();
@@ -551,66 +521,22 @@ export function Canvas({
 					>
 						{/* Left Section for Search Results */}
 						{containers.includes(SEARCH_RESULTS_ID) && (
-							<div
-								style={{
-									display: 'flex',
-									flexDirection: 'column',
-									height: containerGridHeight,
-								}}
-							>
-								{/* issue here with resizing + with requirements dropdowns*/}
-								{/* Try to get this to fixed height*/}
-								<div className='mt-2.1 mx-[0.5vw] my-[1vh] -mb-0.5'>
-									<Pane
-										display='flex'
-										alignItems='center'
-										justifyContent='center'
-										cursor='pointer'
-										onClick={openUploadModal}
-									>
-										<ButtonWidget
-											text='Import Courses From Transcript'
-											icon={<CloudArrowUpIcon className='h-5 w-5' />}
-											onClick={() => openUploadModal()}
-										/>
-									</Pane>
-									{uploadModal}
-									{notification}
-									{almostCompletedModal}
-									<div className='mt-2'>
-										<ButtonWidget
-											text='Almost Completed Minors'
-											icon={<AcademicCapIcon className='h-5 w-5' />}
-											onClick={() => openAlmostCompletedMinorsModal()}
-										/>
-									</div>
-								</div>
-								<DroppableContainer
-									key={SEARCH_RESULTS_ID}
-									id={SEARCH_RESULTS_ID}
-									label={<Search />}
-									columns={1}
-									items={items[SEARCH_RESULTS_ID]}
-									scrollable={scrollable}
-									style={containerStyle}
-									height={searchGridHeight}
-								>
-									<SortableContext
-										items={items[SEARCH_RESULTS_ID]}
-										strategy={staticRectSortingStrategy}
-									>
-										<List<CustomRowProps>
-											/* match the searchGridHeight since it is expressed with vh units */
-											defaultHeight={parseInt(searchGridHeight) * (window.innerHeight / 100)}
-											rowCount={staticSearchResults.length}
-											rowHeight={dynamicRowHeight}
-											overscanCount={5}
-											rowComponent={VirtualRow}
-											rowProps={rowRendererProps}
-										/>
-									</SortableContext>
-								</DroppableContainer>
-							</div>
+							<DashboardSearchResults
+								searchResultsId={SEARCH_RESULTS_ID}
+								items={items[SEARCH_RESULTS_ID]}
+								staticSearchResults={staticSearchResults}
+								enabledCourseIds={enabledCourseIds}
+								handle={handle}
+								wrapperStyle={wrapperStyle}
+								searchWrapperStyle={searchWrapperStyle}
+								containerStyle={containerStyle}
+								scrollable={scrollable}
+								openUploadModal={openUploadModal}
+								openAlmostCompletedMinorsModal={openAlmostCompletedMinorsModal}
+								uploadModal={uploadModal}
+								notification={notification}
+								almostCompletedModal={almostCompletedModal}
+							/>
 						)}
 
 						{/* Center Section for other containers in a 2x4 grid */}
