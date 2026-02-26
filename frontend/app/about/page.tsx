@@ -159,9 +159,9 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/linsey-zhong-686a72309/',
 	},
 	{
-		name: 'Stephy Zhang',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/stephy-zhang/',
+		name: 'Ruoming Shen',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/ruomingshen/',
 	},
 ];
 
