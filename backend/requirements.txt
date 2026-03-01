@@ -36,7 +36,7 @@ ruff==0.7.0
     # via hoagie-plan (pyproject.toml)
 selenium==4.31.0
     # via hoagie-plan (pyproject.toml)
-tqdm==4.67.1
+tqdm==4.67.3
     # via hoagie-plan (pyproject.toml)
 webdriver-manager==4.0.2
     # via hoagie-plan (pyproject.toml)
