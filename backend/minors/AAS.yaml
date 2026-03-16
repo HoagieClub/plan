@@ -16,6 +16,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Professor Keeanga-Yamahtta Taylor
   email: aas21@princeton.edu
+iw_required: true
 req_list:
 - name: Core
   max_counted: 1
@@ -527,6 +528,18 @@ req_list:
     - AAS 233
     - VIS 234
     - AAS 234
+- name: Essay
+  min_needed: 1
+  max_counted: 1
+  explanation: |-
+    Students who have completed the program of study by graduation will compose a 
+    700-word essay describing how the AAS minor has informed their independent 
+    work in the major. The reflection may touch on the Junior Paper, the Senior Thesis, 
+    or both. The reflection essay will be due during reading period of the graduating
+    semester. The AAS Curriculum Committee, which is chaired by the Director of 
+    Undergraduate Studies, will review and assess the essays, thereby approving 
+    the completion of the program of study.
+  no_req:
 - name: Restrictions
   max_counted: 1
   min_needed: 1
@@ -541,11 +554,3 @@ req_list:
     the course is taken. Only one PDF course may count toward the minor. 
     Students must receive passing grades in all five courses in order 
     to complete the program of study for the minor.
-
-    Students who have completed the program of study by graduation will compose a 
-    700-word essay describing how the AAS minor has informed their independent 
-    work in the major. The reflection may touch on the Junior Paper, the Senior Thesis, 
-    or both. The reflection essay will be due during reading period of the graduating
-    semester. The AAS Curriculum Committee, which is chaired by the Director of 
-    Undergraduate Studies, will review and assess the essays, thereby approving 
-    the completion of the program of study.

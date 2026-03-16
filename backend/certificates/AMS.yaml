@@ -1,3 +1,4 @@
+# This certificate is no longer offered
 ---
 type: Certificate
 name: American Studies
@@ -15,6 +16,7 @@ contacts:
 - type: Director
   name: Aisha Beliso-De Jesús
   email: beliso.dejesus@princeton.edu
+iw_required: false
 req_list:
 - name: Core
   max_counted: 1

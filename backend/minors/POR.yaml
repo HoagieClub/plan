@@ -1,3 +1,4 @@
+# This minor is no longer offered
 ---
 type: Minor
 name: Portuguese
@@ -33,6 +34,7 @@ contacts:
 - type: Acting Director, Portuguese Language Program
   name: Luis Gonçalves
   email: lgoncalv@princeton.edu
+iw_required: true
 req_list:
 - name: Portuguese Courses
   max_counted: 1
