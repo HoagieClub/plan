@@ -18,16 +18,9 @@ const END_HOUR: number = 23;
 export const Calendar: FC = () => {
 	const calendarElementRef = useRef<HTMLDivElement>(null);
 	const { termFilter } = useFilterStore((state) => state);
-	const loadCourses = useCalendarStore((state) => state.loadCourses);
 	const { selectedCourses } = useCalendarStore((state) => ({
 		selectedCourses: state.getSelectedCourses(termFilter).filter((course) => course.isActive),
 	}));
-
-	// Load courses from DB when component mounts or term changes
-	useEffect(() => {
-		console.log(termFilter);
-		void loadCourses(termFilter);
-	}, [termFilter, loadCourses]);
 
 	const defaultColor: string = '#657786';
 
