@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 
 from hoagieplan.models import (
     Course,
-    CourseComments,
+    CourseComment,
     Department,
     Section,
 )
@@ -42,7 +42,7 @@ def get_course_comments(dept, num):
     course_guid_suffix = course.guid[4:]
 
     # Get comments
-    comments = CourseComments.objects.filter(course_guid__endswith=course_guid_suffix)
+    comments = CourseComment.objects.filter(course__guid__endswith=course_guid_suffix)
 
     # Process comments
     cleaned_comments = []
