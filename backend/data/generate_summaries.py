@@ -30,7 +30,8 @@ SYSTEM_PROMPT = (
 )
 
 MAX_COMMENTS = 50
-WORKERS = 10
+MAX_RETRIES = 3
+WORKERS = 20
 
 
 def get_client():
@@ -41,26 +42,31 @@ def generate_summary(client, comments: list[str], description: str = "") -> str:
     """Generate a summary of course comments using the OpenAI-compatible API."""
     joined = "\n".join(f"- {c}" for c in comments[:MAX_COMMENTS])
     context = description if description else ""
-    response = client.chat.completions.create(
-        model=MODEL,
-        max_tokens=8000,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": (
-                    "Summarize these student course reviews in 4-5 sentences. "
-                    "Focus on the key themes (teaching quality, workload, content value)."
-                    "Feel free to use the course description for context.\n\n"
-                    "Course Description:"
-                    f"{context}"
-                    "Student Course Reviews"
-                    f"{joined}"
-                ),
-            },
-        ],
-    )
-    return response.choices[0].message.content
+    for attempt in range(MAX_RETRIES):
+        response = client.chat.completions.create(
+            model=MODEL,
+            max_tokens=8000,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": (
+                        "Summarize these student course reviews in 4-5 sentences. "
+                        "Focus on the key themes (teaching quality, workload, content value)."
+                        "Feel free to use the course description for context.\n\n"
+                        "Course Description:"
+                        f"{context}"
+                        "Student Course Reviews"
+                        f"{joined}"
+                    ),
+                },
+            ],
+        )
+        content = response.choices[0].message.content
+        if content:
+            return content
+        print(f"  Empty response, retrying ({attempt + 1}/{MAX_RETRIES})...")
+    return None
 
 
 def get_comments_by_course():
