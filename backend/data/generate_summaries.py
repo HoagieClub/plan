@@ -1,4 +1,5 @@
 import argparse
+import csv
 import os
 import sys
 from collections import defaultdict
@@ -82,7 +83,54 @@ def get_comments_by_course():
     return dict(course_comments_dict)
 
 
-def generate_all_summaries(force=False):
+def export_summaries(filepath):
+    """Export all summaries from DB to a CSV file keyed by course guid."""
+    summaries = CourseEvalSummary.objects.select_related("course").all()
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["course_guid", "summary"])
+        for s in summaries:
+            writer.writerow([s.course.guid, s.summary])
+    print(f"Exported {summaries.count()} summaries to {filepath}")
+
+
+def import_summaries(filepath, force=False):
+    """Import summaries from a CSV file into the DB."""
+    if force:
+        CourseEvalSummary.objects.all().delete()
+        print("Force mode: cleared all existing summaries")
+
+    # Build guid -> course id map
+    guid_to_id = dict(Course.objects.values_list("guid", "id"))
+
+    existing = set(CourseEvalSummary.objects.values_list("course_id", flat=True))
+
+    to_create = []
+    skipped = 0
+    missing = 0
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            course_id = guid_to_id.get(row["course_guid"])
+            if not course_id:
+                missing += 1
+                continue
+            if course_id in existing:
+                skipped += 1
+                continue
+            to_create.append(CourseEvalSummary(course_id=course_id, summary=row["summary"]))
+
+    if to_create:
+        CourseEvalSummary.objects.bulk_create(to_create)
+
+    print(f"Imported {len(to_create)} summaries from {filepath}")
+    if skipped:
+        print(f"Skipped {skipped} existing summaries")
+    if missing:
+        print(f"Warning: {missing} course GUIDs not found in DB")
+
+
+def generate_all_summaries(force=False, export_path=None):
     courses = get_comments_by_course()
     print(f"Found {len(courses)} courses with comments")
 
@@ -94,22 +142,36 @@ def generate_all_summaries(force=False):
         courses = {cid: comments for cid, comments in courses.items() if cid not in existing}
         print(f"Skipping {len(existing)} courses with existing summaries")
 
+    # TODO: Remove this limit after testing
+    courses = dict(list(courses.items())[:20])
+
     print(f"Generating summaries for {len(courses)} courses ({WORKERS} workers)")
 
     if not courses:
         print("Nothing to do.")
+        if export_path:
+            export_summaries(export_path)
         return
 
-    # Fetch course descriptions
-    course_descriptions = dict(Course.objects.filter(id__in=courses.keys()).values_list("id", "description"))
+    # Fetch course descriptions and guid map for CSV export
+    course_info = dict(Course.objects.filter(id__in=courses.keys()).values_list("id", "description"))
+    id_to_guid = dict(Course.objects.filter(id__in=courses.keys()).values_list("id", "guid"))
 
     client = get_client()
     summaries = {}
     errors = []
 
+    # Open CSV writer if exporting
+    csv_file = None
+    csv_writer = None
+    if export_path:
+        csv_file = open(export_path, "w", newline="", encoding="utf-8")
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(["course_guid", "summary"])
+
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = {
-            pool.submit(generate_summary, client, comments, course_descriptions.get(course_id, "")): course_id
+            pool.submit(generate_summary, client, comments, course_info.get(course_id, "")): course_id
             for course_id, comments in courses.items()
         }
         for future in tqdm(as_completed(futures), total=len(futures), desc="Generating summaries", unit="course"):
@@ -118,12 +180,19 @@ def generate_all_summaries(force=False):
                 summary = future.result()
                 if summary:
                     summaries[course_id] = summary
+                    if csv_writer:
+                        csv_writer.writerow([id_to_guid.get(course_id, ""), summary])
+                        csv_file.flush()
                 else:
                     errors.append((course_id, "Empty response"))
             except Exception as e:
                 errors.append((course_id, str(e)))
 
-    # Bulk create summaries
+    if csv_file:
+        csv_file.close()
+        print(f"Exported {len(summaries)} summaries to {export_path}")
+
+    # Bulk create summaries in DB
     CourseEvalSummary.objects.bulk_create(
         [CourseEvalSummary(course_id=course_id, summary=summary_text) for course_id, summary_text in summaries.items()]
     )
@@ -137,11 +206,25 @@ def generate_all_summaries(force=False):
             print(f"  ... and {len(errors) - 10} more")
 
 
-# Usage: python generate_summaries.py
-# Usage: python generate_summaries.py --force
+# Usage:
+#   1. Toggle to test env
+#   2. python generate_summaries.py --export summaries.csv   (save to test DB + export as csv)
+#   1. Toggle to prod env
+#   4. python generate_summaries.py --import summaries.csv   (save to prod DB using csv)
+
+# Other usage:
+#   python generate_summaries.py                              (generate for new courses only)
+#   python generate_summaries.py --force                      (regenerate all summaries)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate AI summaries for course evaluation comments")
-    parser.add_argument("--force", action="store_true", help="Regenerate all summaries, clearing existing ones")
+    parser.add_argument("--force", action="store_true", help="Clear existing summaries before generating/importing")
+    parser.add_argument("--export", metavar="FILE", help="Export all summaries to a CSV file after generating")
+    parser.add_argument(
+        "--import", dest="import_file", metavar="FILE", help="Import summaries from a CSV file (no API calls)"
+    )
     args = parser.parse_args()
 
-    generate_all_summaries(force=args.force)
+    if args.import_file:
+        import_summaries(args.import_file, force=args.force)
+    else:
+        generate_all_summaries(force=args.force, export_path=args.export)
