@@ -1,3 +1,4 @@
+# This certificate is no longer offered
 ---
 type: Certificate
 name: Geological Engineering
@@ -17,6 +18,7 @@ contacts:
 - type: Director
   name: Catherine A. Peters
   email: cap@princeton.edu
+iw_required: true
 req_list:
 - name: BSE Requirements
   max_counted: 1

@@ -20,6 +20,7 @@ contacts:
 - type: Director
   name: Lorgia García Peña
   email: garciapena@princeton.edu
+iw_required: false
 req_list:
 - name: Required Course
   max_counted: 1
