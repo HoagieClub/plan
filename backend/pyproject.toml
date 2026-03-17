@@ -40,6 +40,7 @@ dependencies = [
     "selenium>=4.31.0",
     "webdriver-manager>=4.0.2",
     "pyjwt[crypto]>=2.10.1",
+    "pandas>=3.0.1",
 ]
 
 # ===============================
