@@ -38,11 +38,8 @@ def get_course_comments(dept, num):
     if not course:
         return None
 
-    # Extract course GUID suffix
-    course_guid_suffix = course.guid[4:]
-
     # Get comments
-    comments = CourseComment.objects.filter(course__guid__endswith=course_guid_suffix)
+    comments = CourseComment.objects.filter(course=course)
 
     # Process comments
     cleaned_comments = []
