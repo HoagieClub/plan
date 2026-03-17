@@ -142,9 +142,6 @@ def generate_all_summaries(force=False, export_path=None):
         courses = {cid: comments for cid, comments in courses.items() if cid not in existing}
         print(f"Skipping {len(existing)} courses with existing summaries")
 
-    # TODO: Remove this limit after testing
-    courses = dict(list(courses.items())[:20])
-
     print(f"Generating summaries for {len(courses)} courses ({WORKERS} workers)")
 
     if not courses:
