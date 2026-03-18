@@ -53,19 +53,19 @@ const CalendarUI: FC = () => {
 			// Check if calendar already exists in DB
 			const calendarsInDB = await getCalendars(sem);
 			if (calendarsInDB && calendarsInDB.length > 0) {
-				return { migrated: false, term: sem };
+				return { migrated: false, term: sem, error: false };
 			}
 
 			// Read directly from localStorage for migration
 			const raw = localStorage.getItem('calendar-store');
 			if (!raw) {
-				return { migrated: false, term: sem };
+				return { migrated: false, term: sem, error: false };
 			}
 
 			const parsed = JSON.parse(raw);
 			const calendarEvents = parsed?.state?.selectedCourses?.[sem.toString()] || [];
 			if (calendarEvents.length === 0) {
-				return { migrated: false, term: sem };
+				return { migrated: false, term: sem, error: false };
 			}
 
 			// Create a new calendar and migrate events
@@ -81,7 +81,7 @@ const CalendarUI: FC = () => {
 				)
 			);
 
-			return { migrated: true, term: sem };
+			return { migrated: true, term: sem, error: false };
 		} catch (error) {
 			console.error('Error creating calendar:', error);
 			return { migrated: false, term: sem, error: true };
@@ -96,21 +96,23 @@ const CalendarUI: FC = () => {
 			return;
 		}
 
-		const termIDs = Object.values(terms);
-		(async () => {
+		async function migrateCalendars() {
+			const termIDs = Object.values(terms);
 			const results = await Promise.all(
 				termIDs.map((sem) => createUserCalendarData(parseInt(sem)))
 			);
 
 			// Check if any migrations occurred without errors
-			const hasErrors = results.some((r) => r?.error);
+			const hasErrors = results.some((r) => r.error);
 			if (!hasErrors) {
 				// Mark migration as complete to avoid re-running
 				localStorage.setItem(MIGRATION_COMPLETE_KEY, 'true');
 			}
 
 			setMigrationComplete(true);
-		})().catch((err) => {
+		}
+
+		migrateCalendars().catch((err) => {
 			console.error('Error creating user calendars:', err);
 			setMigrationComplete(true); // Allow app to proceed even on error
 		});
@@ -119,17 +121,21 @@ const CalendarUI: FC = () => {
 	// Load from DB when term changes (only after migration is complete)
 	// Create calendar if it doesn't exist for the term
 	useEffect(() => {
-		if (termFilter && migrationComplete) {
-			(async () => {
-				const calendars = await getCalendars(parseInt(termFilter));
-				if (!calendars || calendars.length === 0) {
-					await createCalendar(DEFAULT_CALENDAR_NAME, parseInt(termFilter));
-				}
-				void loadCourses(termFilter);
-			})().catch((err) => {
-				console.error('Error loading calendar:', err);
-			});
+		if (!termFilter || !migrationComplete) {
+			return;
 		}
+
+		async function initCalendar() {
+			const calendars = await getCalendars(parseInt(termFilter));
+			if (!calendars || calendars.length === 0) {
+				await createCalendar(DEFAULT_CALENDAR_NAME, parseInt(termFilter));
+			}
+			void loadCourses(termFilter);
+		}
+
+		initCalendar().catch((err) => {
+			console.error('Error loading calendar:', err);
+		});
 	}, [termFilter, loadCourses, migrationComplete]);
 
 	const startIndex = (currentPage - 1) * semestersPerPage;
@@ -183,7 +189,6 @@ const CalendarUI: FC = () => {
 					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
 				</div>
 			</main>
-			{/* <button onClick={handleCreate}>Create Calendar</button> */}
 		</>
 	);
 };
