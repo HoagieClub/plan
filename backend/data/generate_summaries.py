@@ -32,7 +32,7 @@ SYSTEM_PROMPT = (
 
 MAX_COMMENTS = 50
 MAX_RETRIES = 3
-WORKERS = 20
+WORKERS = 1000
 
 
 def get_client():
@@ -182,8 +182,10 @@ def generate_all_summaries(force=False, export_path=None):
                         csv_file.flush()
                 else:
                     errors.append((course_id, "Empty response"))
+                    print(f"  [ERROR] Course {course_id}: Empty response after {MAX_RETRIES} retries")
             except Exception as e:
                 errors.append((course_id, str(e)))
+                print(f"  [ERROR] Course {course_id}: {e}")
 
     if csv_file:
         csv_file.close()
