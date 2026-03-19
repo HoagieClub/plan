@@ -32,8 +32,8 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts","iw_required"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester","iw_required"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
@@ -42,6 +42,7 @@ CERTIFICATE_FIELDS = [
     "contacts",
     "apply_by_semester",
     "active_until",
+    "iw_required",
 ]
 REQUIREMENT_FIELDS = [
     "name",
