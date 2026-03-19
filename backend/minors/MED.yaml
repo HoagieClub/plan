@@ -19,6 +19,7 @@ contacts:
 - type: Director
   name: William C. Jordan
   email: wchester@princeton.edu
+iw_required: true
 req_list:
 - name: Introductory Course
   max_counted: 1

@@ -17,6 +17,7 @@ contacts:
 - type: Departmental Representative
   name: James C. Sturm
   email: sturm@princeton.edu
+iw_required: true
 req_list:
 - name: Foundation
   max_counted: 1

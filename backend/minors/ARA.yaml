@@ -16,6 +16,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Michael A. Reynolds
   email: mar123@princeton.edu
+iw_required: true
 req_list:
 - name: Language Courses
   max_counted: 1

@@ -16,6 +16,7 @@ contacts:
   - type: Program Director
     name: Susan S. Marshall
     email: sm9@princeton.edu
+iw_required: false
 req_list:
   - name: Prerequisites
     max_counted: 1

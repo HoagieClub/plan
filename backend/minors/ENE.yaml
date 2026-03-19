@@ -18,6 +18,7 @@ contacts:
 - type: Program Manager
   name: Moira Selinka
   email: mselinka@princeton.edu
+iw_required: true
 req_list:
 - name: Core Courses
   min_needed: 1
