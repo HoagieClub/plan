@@ -21,6 +21,7 @@ contacts:
 - type: Director
   name: Alejandro W. Rodriguez
   email: arod@princeton.edu
+iw_required: true
 req_list:
 - name: General Physics
   max_counted: 1

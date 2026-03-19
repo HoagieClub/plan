@@ -1,3 +1,4 @@
+# This certificate is no longer offered
 ---
 type: Certificate
 name: German Language and Culture
@@ -14,6 +15,7 @@ contacts:
 - type: Chair
   name: Devin A. Fore
   email: dfore@princeton.edu
+iw_required: true
 req_list:
 - name: Courses
   max_counted: 1

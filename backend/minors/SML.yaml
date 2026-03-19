@@ -15,6 +15,7 @@ contacts:
 - type: Executive Committee Statistics & Machine Learning
   name: Daisy Yan Huang
   email: daisyhuang@princeton.edu
+iw_required: true
 req_list:
 - name: Statistics
   max_counted: 1

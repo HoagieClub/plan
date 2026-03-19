@@ -508,7 +508,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan, csrfToken }) => {
 						boxShadow: 'none',
 						borderTop: '1px solid #e0e0e0',
 					}}
-					expanded={!expanded.has(key)}
+					expanded={expanded.has(key)}
 					onChange={(event) => handleChange(event, key)} // TODO: disable propagation in modals
 				>
 					<AccordionSummary

@@ -28,6 +28,7 @@ contacts:
 - type: Program Director
   name: Samuel Holzman
   email: sholzman@princeton.edu
+iw_required: true
 req_list:
 - name: Five Courses
   max_counted: 1

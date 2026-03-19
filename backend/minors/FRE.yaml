@@ -15,6 +15,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Flora Champy
   email: fchampy@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisites
   max_counted: 1
