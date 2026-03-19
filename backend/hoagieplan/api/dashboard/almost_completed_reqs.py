@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Dict, Optional
 
 from constants import CERTIFICATES, MINORS
@@ -7,6 +8,11 @@ from hoagieplan.api.profile.info import fetch_user_info
 from hoagieplan.models import Certificate, Minor
 
 TOP_ALMOST_COMPLETED = 100
+
+
+class ProgramTable(Enum):
+    MINOR = "Minor"
+    CERTIFICATE = "Certificate"
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
@@ -41,16 +47,16 @@ def _check_prereq_satisfied(requirement: Requirement) -> Optional[bool]:
     return None
 
 
-def _check_independent_work_required(code: str, table: str) -> bool:
+def _check_independent_work_required(code: str, table: ProgramTable) -> bool:
     """Check if a program requires independent work by using the iw_required field
 
     Returns:
         - True if independent work requirement exists
         - False if no independent work requirement exists
     """
-    if table == "Minor":
+    if table == ProgramTable.MINOR:
         return Minor.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
-    if table == "Certificate":
+    if table == ProgramTable.CERTIFICATE:
         return Certificate.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
 
     return False
@@ -258,7 +264,7 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[minor_code] = outstanding
         prereq_status_dict[minor_code] = _check_prereq_satisfied(req)
-        iw_status_dict[minor_code] = _check_independent_work_required(minor_code,"Minor")
+        iw_status_dict[minor_code] = _check_independent_work_required(minor_code, ProgramTable.MINOR)
         incomplete_subreqs_dict[minor_code] = _get_incomplete_subrequirements(
             req)
 
@@ -267,7 +273,7 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[cert_code] = outstanding
         prereq_status_dict[cert_code] = _check_prereq_satisfied(req)
-        iw_status_dict[cert_code] = _check_independent_work_required(cert_code,"Certificate")
+        iw_status_dict[cert_code] = _check_independent_work_required(cert_code, ProgramTable.CERTIFICATE)
         incomplete_subreqs_dict[cert_code] = _get_incomplete_subrequirements(
             req)
 
