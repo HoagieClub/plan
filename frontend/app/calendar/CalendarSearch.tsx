@@ -83,10 +83,12 @@ export const CalendarSearch: FC = () => {
 		recentSearches,
 		setError,
 		setLoading,
+		clearRecentSearches,
 	} = useCalendarStore((state) => ({
 		setCalendarSearchResults: state.setCalendarSearchResults,
 		calendarSearchResults: state.calendarSearchResults,
 		addRecentSearch: state.addRecentSearch,
+		clearRecentSearches: state.clearRecentSearches,
 		recentSearches: state.recentSearches,
 		setError: state.setError,
 		setLoading: state.setLoading,
@@ -468,8 +470,19 @@ export const CalendarSearch: FC = () => {
 							/>
 						</button>
 					</div>
+
 					<div className='recent-searches'>
-						<div className='recent-searches-label'>Recent searches:</div>
+						<div className='mb-2 flex items-center justify-between'>
+							<div className='text-sm text-gray-500'>Recent searches:</div>
+							<div className='flex items-center space-x-2'>
+								<button
+									className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
+									onClick={() => clearRecentSearches()}
+								>
+									Clear
+								</button>
+							</div>
+						</div>
 						<div className='recent-searches-list'>
 							{recentSearches.slice(-5).map((search, index) => (
 								<button

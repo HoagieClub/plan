@@ -14,8 +14,8 @@ interface CalendarStore {
 	loading: boolean;
 
 	setCalendarSearchResults: (results: Course[]) => void; // Sets search results
-
 	addRecentSearch: (search: string) => void; // Caches search to recent searches
+	clearRecentSearches: () => void; // Clears recent searches
 
 	addCourse: (course: Course) => Promise<void>; // Fetches course details and adds all candidate sections to selectedCourses
 	removeCourse: (sectionKey: string) => void; // Removes all instances of a course from selectedCourses and selectedSections
@@ -73,6 +73,7 @@ const useCalendarStore = create<CalendarStore>()(
 			loading: false,
 
 			setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
+			clearRecentSearches: () => set({ recentSearches: [] }),
 			addRecentSearch: (search) =>
 				set((state) => ({ recentSearches: [...state.recentSearches, search] })),
 			setError: (error) => set({ error }),
