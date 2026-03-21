@@ -22,6 +22,7 @@ contacts:
 - type: Chair
   name: Benjamin C. Morison
   email: bmorison@princeton.edu
+iw_required: false
 req_list:
 - name: Prerequisites
   max_counted: 1

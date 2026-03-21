@@ -18,6 +18,7 @@ contacts:
   email: smyneni@princeton.edu
 excluded_majors:
 - GEO
+iw_required: false
 req_list:
 - name: Core
   max_counted: 1

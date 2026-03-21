@@ -19,6 +19,7 @@ contacts:
 - type: Program Manager
   name: Jessica Varela
   email: jvarela@princeton.edu
+iw_required: true
 req_list: 
 - name: Molecular Biology
   max_counted: 1

@@ -21,6 +21,7 @@ contacts:
 - type: Undergraduate Administrator
   name: Anna Lovett
   email: easugadmin@princeton.edu
+iw_required: true
 req_list:
 - name: Language Courses
   max_counted: 1

@@ -15,6 +15,7 @@ contacts:
 - type: Department Chair
   name: Barbara Graziosi
   email: barbara.graziosi@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisites
   max_counted: 1
@@ -160,7 +161,6 @@ req_list:
       - REL *
       - PHI *
       - CDH *
-      - PAW *
   - name: Ancient History and Material Culture
     max_counted: 1
     min_needed: 3
@@ -227,7 +227,6 @@ req_list:
       - REL *
       - PHI *
       - CDH *
-      - PAW *
 - name: Reflection Paper
   max_counted: 1
   min_needed: 1

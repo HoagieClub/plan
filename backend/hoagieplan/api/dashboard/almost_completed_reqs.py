@@ -179,6 +179,44 @@ def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) 
     )
 
 
+def count_courses_for_minors(requirement: Requirement) -> int:
+    """Return the minimum number of classes needed to complete the minor, ignoring user progress."""
+    return _count_courses_for_minor_helper(requirement)
+
+
+def _count_courses_for_minor_helper(requirement: Requirement) -> int:
+    # Base case
+    if requirement.is_leaf:
+        return max(0, requirement.min_needed)
+
+    # Top level node
+    if requirement.code is not None:
+        return sum(
+            _count_courses_for_minor_helper(subrequirement)
+            for subrequirement in requirement.subrequirements.values()
+        )
+
+    # Parent of leaf
+    if _is_parent_of_leaf(requirement):
+        return max(
+            requirement.min_needed,
+            min(
+                _count_courses_for_minor_helper(subrequirement)
+                for subrequirement in requirement.subrequirements.values()
+            ),
+        )
+
+    # Internal node
+    child_counts = sorted(
+        _count_courses_for_minor_helper(subrequirement)
+        for subrequirement in requirement.subrequirements.values()
+    )
+    return max(
+        requirement.min_needed,
+        sum(child_counts[: requirement.min_needed]),
+    )
+
+
 def _is_parent_of_leaf(requirement: Requirement) -> bool:
     if requirement is None or requirement.subrequirements is None:
         return False

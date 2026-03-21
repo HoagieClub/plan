@@ -15,6 +15,7 @@ contacts:
   email: susanmarquis@princeton.edu
 description: |-
   The Princeton School of Public and International Affairs offers a multidisciplinary liberal arts major for students who are interested in public service and becoming leaders in the world of public and international affairs. Students will acquire the tools, understanding and habits of mind necessary to pursue policy problems of their choosing. The major is largely self-designed, but provides the structure and guidance needed for an education that is both broad and deep.
+iw_required: true
 req_list:
 - name: Prerequisites
   min_needed: ALL

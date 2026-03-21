@@ -32,6 +32,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: János Kollár
   email: kollar@math.princeton.edu
+iw_required: false
 req_list:
 - name: Prerequisites
   max_counted: 1

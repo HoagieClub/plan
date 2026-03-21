@@ -17,6 +17,7 @@ contacts:
     email: lharb@princeton.edu
 description: |-
   The Department of Near Eastern Studies offers a wide variety of undergraduate classes focused on the languages, histories and cultures of the Near East. It provides opportunities for those who plan to major in other disciplines to simultaneously obtain proficiency in Persian and to deepen their knowledge of the history, politics, literature, religion and culture of the premodern and modern Near East.
+iw_required: true
 req_list:
   - name: Persian Language Courses
     max_counted: 1

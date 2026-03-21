@@ -13,6 +13,7 @@ contacts:
 - type: Undergraduate Coordinator
   name: Jessica Heslin
   email: heslin@princeton.edu
+iw_required: false
 req_list:
 - name: First Requirement
   max_counted: 1

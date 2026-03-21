@@ -24,6 +24,7 @@ contacts:
 - type: Chair
   name: Daniel L. Trueman
   email: dtrueman@princeton.edu
+iw_required: false
 req_list:
 - name: Core Course
   max_counted: 1

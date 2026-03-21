@@ -420,15 +420,22 @@ class CalendarEvent(models.Model):
         return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
 
 
-class CourseComments(models.Model):
-    course_guid = models.CharField(max_length=15, db_index=True, null=True)
-    comment = models.TextField(null=True)
+class CourseComment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="comments")
+    comment = models.TextField()
 
     class Meta:
-        db_table = "CourseComments"
+        db_table = "CourseComment"
 
-    def __str__(self):
-        return f"{self.comment}"
+
+class CourseEvalSummary(models.Model):
+    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="eval_summary")
+    summary = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "CourseEvalSummary"
 
 
 # ----------------------------------------------------------------------#

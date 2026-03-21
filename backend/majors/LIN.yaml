@@ -28,6 +28,7 @@ contacts:
 - type: Director
   name: Adam N. Elga
   email: adame@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisite
   max_counted: 1
