@@ -233,7 +233,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: distColor,
 												color: 'white',
-												padding: '6px 4px 4px 6px',
+												padding: '4px 8px 4px 8px',
 												borderRadius: '10px',
 												fontWeight: 'bold',
 												width: 'fit-content',
@@ -251,8 +251,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: pdfColor,
 												color: 'white',
-												padding: '6px 4px 6px 4px',
-												borderRadius: '10px',
+												padding: '4px 8px 4px 8px',
+												borderRadius: '7px',
 												fontWeight: 'bold',
 												width: 'fit-content',
 											}}
@@ -269,8 +269,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											style={{
 												backgroundColor: auditColor,
 												color: 'white',
-												padding: '6px 4px 4px 6px',
-												borderRadius: '10px',
+												padding: '4px 8px 4px 8px',
+												borderRadius: '7px',
 												fontWeight: 'bold',
 												width: 'fit-content',
 											}}
@@ -344,7 +344,16 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									>
 										{courseSetup.length > 0 ? (
 											<>
-												<div style={{ marginBottom: '12px', fontWeight: 600, color: '#333' }}>
+												<div
+													style={{
+														marginBottom: '8px',
+														fontWeight: 600,
+														color: '#333',
+														fontSize: '0.85rem',
+														paddingBottom: '8px',
+														borderBottom: '1px solid #e0e0e0',
+													}}
+												>
 													{courseSetup.map((item, idx) => (
 														<span key={item.class_type}>
 															{item.count} {item.class_type}
@@ -361,38 +370,33 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 															<div
 																key={item.class_type}
 																style={{
-																	backgroundColor: config.color,
-																	color: 'white',
-																	padding: '6px 0px',
 																	borderRadius: '6px',
 																	textAlign: 'center',
+																	fontWeight: 600,
 																	flex: '1',
-																	minWidth: '65px',
-																	fontWeight: 500,
+																	overflow: 'hidden',
 																}}
 															>
 																<div
 																	style={{
-																		fontSize: '1rem',
-																		marginBottom: '1.5px',
+																		backgroundColor: config.color,
+																		color: 'white',
+																		fontSize: '0.9rem',
 																		fontWeight: 'bold',
+																		padding: '4px 0',
 																	}}
 																>
 																	{config.abbr}
 																</div>
-																{item.duration && (
-																	<div
-																		style={{
-																			fontSize: '0.9rem',
-																			marginBottom: '2px',
-																			opacity: 0.95,
-																		}}
-																	>
-																		{item.duration} m.
-																	</div>
-																)}
-																<div style={{ fontSize: '0.65rem', opacity: 0.9 }}>
-																	{item.class_type}
+																<div
+																	style={{
+																		backgroundColor: config.lightColor ?? config.color + '99',
+																		color: 'white',
+																		fontSize: '0.75rem',
+																		padding: '3px 0',
+																	}}
+																>
+																	{item.duration} m.
 																</div>
 															</div>
 														);
