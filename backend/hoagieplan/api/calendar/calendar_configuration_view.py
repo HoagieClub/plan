@@ -1,3 +1,5 @@
+from enum import Enum
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,11 +9,16 @@ from hoagieplan.models import (
     AcademicTerm,
     CalendarConfiguration,
     CustomUser,
+    CalendarEvent
 )
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
 )
+from django.db import transaction
 
+class CalendarConfigurationPostAction(Enum):
+    UpdateCalendar = "UPDATE_CALENDAR"
+    DuplicateCalendar = "DUPLICATE_CALENDAR"
 
 class CalendarConfigurationView(APIView):
     DEFAULT_CALENDAR_NAME = "My Calendar"
@@ -23,7 +30,8 @@ class CalendarConfigurationView(APIView):
         if term:
             try:
                 term_id = AcademicTerm.objects.get(term_code=term).id
-                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
+                queryset = CalendarConfiguration.objects.filter(
+                    user=user_inst, term_id=term_id)
             except AcademicTerm.DoesNotExist:
                 return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -36,7 +44,8 @@ class CalendarConfigurationView(APIView):
         """Create a new calendar configuration for the user."""
         term_id = AcademicTerm.objects.get(term_code=term).id
 
-        calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
+        calendar_name = request.data.get(
+            "calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -57,8 +66,17 @@ class CalendarConfigurationView(APIView):
 
         except Exception:
             return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
     def post(self, request, term: int) -> Response:
+        """Handle post operations for calendar configurations for the user.
+        The default is to update the calendar"""
+        action: str = request.query_params.get("action")
+        if action == CalendarConfigurationPostAction.DuplicateCalendar.value:
+            return self._duplicate_calendar(request)
+        else:
+            return self._update_calendar(request, term)
+        
+    def _update_calendar(self, request, term: int) -> Response:
         """Update an existing calendar configuration."""
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
@@ -75,7 +93,8 @@ class CalendarConfigurationView(APIView):
         try:
             # Check if there exists another calendar with the new calendar name
             existing = (
-                CalendarConfiguration.objects.filter(user=user_inst, name=new_calendar_name)
+                CalendarConfiguration.objects.filter(
+                    user=user_inst, name=new_calendar_name)
                 .exclude(name=calendar_name)
                 .exists()
             )
@@ -116,3 +135,52 @@ class CalendarConfigurationView(APIView):
 
         except Exception:
             return Response({"detail": "Failed to delete calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _duplicate_calendar(self, request) -> Response:
+        calendar_id = request.data.get("calendar_id")
+        if not calendar_id:
+            return Response({"detail": "Calendar id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        user_inst: CustomUser = request.user
+        try:
+            calendar = CalendarConfiguration.objects.get(
+                user=user_inst, id=calendar_id)
+        except CalendarConfiguration.DoesNotExist:
+            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        new_calendar_name = request.data.get(
+            "new_calendar_name", f"{calendar.name} (Copy)"
+        )
+
+        queryset = CalendarEvent.objects.filter(
+            calendar_configuration=calendar)
+
+        try:
+            with transaction.atomic():
+                calendar_config, created = CalendarConfiguration.objects.get_or_create(
+                    user=user_inst, name=new_calendar_name, term_id=calendar.term_id
+                )
+
+                if not created:
+                    return Response(
+                        {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                for event in queryset:
+                    CalendarEvent.objects.create(
+                        calendar_configuration=calendar_config,
+                        course=event.course,
+                        section=event.section,
+                        start_time=event.start_time,
+                        end_time=event.end_time,
+                        start_column_index=event.start_column_index,
+                        is_active=event.is_active,
+                        needs_choice=event.needs_choice,
+                        is_chosen=event.is_chosen,
+
+                    )
+
+                serializer = CalendarConfigurationSerializer(calendar_config)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Exception:
+            return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
