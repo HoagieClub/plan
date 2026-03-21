@@ -20,6 +20,7 @@ contacts:
 - type: Department Chair
   name: Simon E. Gikandi
   email: sgikandi@princeton.edu
+iw_required: true
 req_list:
 - name: Coursework
   max_counted: 1

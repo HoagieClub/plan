@@ -4,7 +4,7 @@ updates:
   # TypeScript dependencies managed by npm
   - package-ecosystem: "npm"
     directory: "frontend/"
-    target-branch: "dev"
+    target-branch: "preview"
     schedule:
       interval: "monthly"
       day: "tuesday"
@@ -14,15 +14,15 @@ updates:
       - "dependencies"
     reviewers:
       - "issacli-0821"
-      - "G-Marin"
-      - "windsornguyen"
-      - "ggchiriac"
-    open-pull-requests-limit: 5
+      - "Spencer04Hire"
+      - "hannahchoi05"
+      - "emiilyyou"
+    open-pull-requests-limit: 0
 
   # Python dependencies managed by pip
   - package-ecosystem: "pip"
     directory: "backend/"
-    target-branch: "dev"
+    target-branch: "preview"
     schedule:
       interval: "monthly"
       day: "thursday"
@@ -32,7 +32,7 @@ updates:
       - "dependencies"
     reviewers:
       - "issacli-0821"
-      - "G-Marin"
-      - "windsornguyen"
-      - "ggchiriac"
-    open-pull-requests-limit: 5
+      - "Spencer04Hire"
+      - "hannahchoi05"
+      - "emiilyyou"
+    open-pull-requests-limit: 0

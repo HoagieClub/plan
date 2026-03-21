@@ -190,7 +190,6 @@ export function useAlmostCompletedMinorsModal() {
 		);
 	}, [query, minors]);
 
-	/*
 	const getPrereqClass = (prereq: boolean | null) => {
 		if (prereq === true) {
 			return 'inline-block rounded-full px-3 py-1 text-xs text-white';
@@ -210,7 +209,6 @@ export function useAlmostCompletedMinorsModal() {
 		}
 		return 'No Prerequisites';
 	};
-	*/
 
 	if (!isOpen) {
 		return { openAlmostCompletedMinorsModal, almostCompletedModal: null };
@@ -249,6 +247,8 @@ export function useAlmostCompletedMinorsModal() {
 					onShowProgramDetails={handleShowProgramDetails}
 					errorMessage={errorMessage}
 					selectedProgram={selectedProgram}
+					getPrereqClass={getPrereqClass}
+					getPrereqText={getPrereqText}
 				/>
 
 				{/* Right column: illustration + info OR program details */}

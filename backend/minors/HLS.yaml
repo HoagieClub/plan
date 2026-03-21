@@ -17,6 +17,7 @@ contacts:
 - type: Director
   name: Jack B. Tannous
   email: jtannous@princeton.edu
+iw_required: false
 req_list:
   - name: Gateway Seminar
     min_needed: 1

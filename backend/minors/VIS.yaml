@@ -11,6 +11,7 @@ contacts:
 - type: Program Director
   name: Jeffrey Whetstone
   email: whetstone@princeton.edu
+iw_required: true
 req_list:
 - name: Core Coursework
   max_counted: 1

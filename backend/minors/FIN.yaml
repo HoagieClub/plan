@@ -17,6 +17,7 @@ contacts:
   email: yacine@princeton.edu
 - type: Director
   name: Markus K. Brunnermeier
+iw_required: false
 req_list:
 - name: Prerequisites
   max_counted: 1

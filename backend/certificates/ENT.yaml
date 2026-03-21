@@ -1,3 +1,5 @@
+# This certificate is no longer offered
+---
 type: Certificate
 name: Entrepreneurship
 code: ENT
@@ -22,6 +24,7 @@ description: |-
   academic community of undergraduate students, faculty members and others who
   share an interest in and commitment to learning from and contributing to these
   areas.
+iw_required: true
 req_list:
   - name: Introductory Courses
     min_needed: 2
