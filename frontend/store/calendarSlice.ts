@@ -14,7 +14,6 @@ import type {
 
 interface CalendarStore {
 	calendarSearchResults: Course[];
-	// selectedCourses: CalendarEvent[];
 	selectedCourses: Record<string, OldCalendarEvent[]>;
 
 	recentSearches: string[];
@@ -37,20 +36,12 @@ interface CalendarStore {
 	setLoading: (loading: boolean) => void;
 
 	// Getters
-	// getSelectedCourses: () => CalendarEvent[];
 	getSelectedCourses: (semester: string) => OldCalendarEvent[];
 }
 
 export const DEFAULT_CALENDAR_NAME = 'New Calendar';
 
 const startHour = 8;
-// const dayToStartColumnIndex: Record<string, number> = {
-// 	M: 1, // Monday
-// 	T: 2, // Tuesday
-// 	W: 3, // Wednesday
-// 	Th: 4, // Thursday
-// 	F: 5, // Friday
-// };
 
 // Converts 24-hour time "HH:MM:SS" to 12-hour time "H:MM AM/PM"
 const convertTo12HourFormat = (time24: string): string => {
@@ -86,11 +77,6 @@ const calculateGridRow = (timeString: string) => {
 	return (adjustedHour - startHour) * rowsPerHour + minuteOffset + headerRows;
 };
 
-// const getStartColumnIndexForDays = (daysString: string): number[] => {
-// 	const daysArray = daysString.split(',');
-// 	return daysArray.map((day) => dayToStartColumnIndex[day.trim()] || 0);
-// };
-
 function transformToOldCalendarEvent(event: CalendarEvent): OldCalendarEvent {
 	const startTime12h = convertTo12HourFormat(event.start_time);
 	const endTime12h = convertTo12HourFormat(event.end_time);
@@ -112,7 +98,6 @@ function transformToOldCalendarEvent(event: CalendarEvent): OldCalendarEvent {
 
 const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	calendarSearchResults: [],
-	// selectedCourses: [],
 	selectedCourses: {},
 	recentSearches: [],
 	error: null,
@@ -141,9 +126,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		const term = course.guid.substring(0, 4);
 		const selectedCourses = get().getSelectedCourses(term);
 
-		// console.log('Attempting to add course:', course);
 		if (selectedCourses.some((event) => event.course.guid === course.guid)) {
-			// console.log('Course already added:', course);
 			// TODO: Return a snackbar/toast or something nice if the course is already added
 			return;
 		}
