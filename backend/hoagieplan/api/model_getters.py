@@ -3,14 +3,6 @@ from typing import List
 from hoagieplan.models import AcademicTerm, CalendarConfiguration, CalendarEvent, Course, CustomUser, Section
 
 
-def get_user(net_id: str) -> CustomUser:
-    """Retrieve CustomUser."""
-    try:
-        return CustomUser.objects.get(net_id=net_id)
-    except CustomUser.DoesNotExist as error:
-        raise Exception("User not found") from error
-
-
 def get_course(guid: str) -> Course:
     """Retrieve Course."""
     try:
