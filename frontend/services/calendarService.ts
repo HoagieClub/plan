@@ -298,7 +298,7 @@ export async function invertSectionInCalendar(
 function buildCalendarsUrl(term: number): string {
 	const encodedTerm = encodeURIComponent(term.toString());
 
-	return `${CALENDARS_URL}${encodedTerm}/`;
+	return `${CALENDARS_URL}${encodedTerm}`;
 }
 
 function buildCalendarEventsUrl(
@@ -309,7 +309,7 @@ function buildCalendarEventsUrl(
 	const encodedCalendarName = encodeURIComponent(calendarName.toString());
 	const encodedTerm = encodeURIComponent(term.toString());
 
-	const baseUrl = `${CALENDAR_EVENTS_URL}${encodedCalendarName}/${encodedTerm}/`;
+	const baseUrl = `${CALENDAR_EVENTS_URL}${encodedCalendarName}/${encodedTerm}`;
 
 	if (queryParams && Object.keys(queryParams).length > 0) {
 		const searchParams = new URLSearchParams();
