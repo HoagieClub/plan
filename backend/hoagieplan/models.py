@@ -314,7 +314,7 @@ class CustomUser(AbstractUser):
     net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     # TODO: Refactor backend code to use username instead of net_id
 
-    email = models.EmailField(max_length=100, null=True, blank=True)
+    email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     class_year = models.IntegerField(null=True, blank=True)
