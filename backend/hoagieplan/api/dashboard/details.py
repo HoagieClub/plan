@@ -8,6 +8,7 @@ from hoagieplan.models import (
     Department,
     Section,
     ClassMeeting,
+    CourseEvalSummary,
 )
 
 
@@ -66,6 +67,10 @@ def get_course_comments(dept, num):
 
     if evaluation and evaluation.quality_of_course:
         result["rating"] = evaluation.quality_of_course
+    
+    summary = CourseEvalSummary.objects.filter(course=course).first()
+    if summary:
+        result["summary"] = summary.summary
 
     return result
 

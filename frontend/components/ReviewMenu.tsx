@@ -12,6 +12,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 	const [reviews, setReviews] = useState<string[]>([]);
 	const [rating, setRating] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(true);
+	const [summary, setSummary] = useState<string>('');
 
 	useEffect(() => {
 		if (dept && coursenum) {
@@ -23,11 +24,14 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					const response = await fetch(`/api/hoagie/course/comments/?${params}`);
 
 					const data = await response.json();
-					if (data && data.reviews) {
+					if (data?.reviews) {
 						setReviews(data.reviews);
 					}
-					if (data && data.rating) {
+					if (data?.rating) {
 						setRating(data.rating);
+					}
+					if (data?.summary) {
+						setSummary(data.summary);
 					}
 				} catch (err) {
 					console.error('Error fetching course reviews:', err);
@@ -86,7 +90,36 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					</tr>
 				</tbody>
 			</table>
-
+			{summary && (
+				<>
+					<div
+						style={{
+							display: 'inline-flex',
+							alignItems: 'center',
+							gap: '4px',
+							margin: '8px 0 4px',
+						}}
+					>
+						<span style={{ color: '#663399', fontSize: '0.9rem' }}>✦</span>
+						<strong style={{ color: '#663399', fontSize: '0.85rem' }}>AI Summary</strong>
+					</div>
+					<div
+						style={{
+							border: '2px solid #663399',
+							borderRadius: '6px',
+							padding: '10px 12px',
+							fontSize: '0.85rem',
+							fontStyle: 'italic',
+							color: '#663399',
+							marginBottom: '10px',
+							overflowY: 'auto',
+							maxHeight: '150px',
+						}}
+					>
+						{summary}
+					</div>
+				</>
+			)}
 			<div
 				style={{
 					height: '400px',
