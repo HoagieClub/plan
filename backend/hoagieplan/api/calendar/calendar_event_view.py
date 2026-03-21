@@ -10,9 +10,7 @@ from rest_framework.views import APIView
 
 from hoagieplan.api.model_getters import (
     get_calendar,
-    get_calendar_events,
     get_course,
-    get_section,
     get_term,
 )
 from hoagieplan.models import CalendarEvent, ClassMeeting, CustomUser, Section
@@ -231,16 +229,21 @@ class CalendarEventView(APIView):
         try:
             term_id = get_term(term).id
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-            course = get_course(guid)
-            clicked_sections = get_section(course, class_section)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        # Find the clicked event from the already-fetched events
-        events_for_course = get_calendar_events(calendar_configuration, course)
-        clicked_section_ids = {section.id for section in clicked_sections}
+        # Fetch all events for this course in one query, avoiding separate Course and Section lookups
+        events_for_course = list(
+            CalendarEvent.objects.filter(
+                calendar_configuration=calendar_configuration,
+                course__guid=guid,
+            ).select_related("course", "section")
+        )
+        if not events_for_course:
+            return Response({"detail": "CalendarEvent not found"}, status=status.HTTP_404_NOT_FOUND)
+
         clicked_event = next(
-            (section for section in events_for_course if section.section_id in clicked_section_ids),
+            (event for event in events_for_course if event.section.class_section == class_section),
             None,
         )
         if not clicked_event:
