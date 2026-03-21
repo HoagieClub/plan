@@ -23,7 +23,6 @@ dependencies = [
     "ruff>=0.7.0",
     "django>=5.1",
     "dj_database_url>=2.3.0",
-    "django_heroku>=0.3.1",
     "python-dotenv>=1.0.1",
     "djangorestframework>=3.15.2",
     "django-cors-headers>=4.5.0",
