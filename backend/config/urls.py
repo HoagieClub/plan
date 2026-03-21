@@ -37,7 +37,6 @@ urlpatterns = [
     # CSRF Token for approving POST requests
     path("csrf/", csrf.csrf_token_view, name="csrf"),
     # Profile
-    path("profile/", info.profile, name="profile"),
     path("profile/get_user/", info.get_user, name="get_user"),
     path("profile/update/", info.update_profile, name="update_profile"),
     path("profile/class-year/", info.update_class_year, name="update_class_year"),
