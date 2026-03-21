@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 
+import ChatIcon from '@mui/icons-material/Chat';
 import { CircularProgress, Rating } from '@mui/material';
 
 interface ReviewMenuProps {
@@ -53,24 +54,34 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 	return (
 		<div
 			style={{
-				width: '450px',
+				width: '475px',
 				margin: '0 auto',
-				border: '1px solid rgba(205,215,225,255)',
-				padding: '20px',
-				borderRadius: '5px',
 			}}
 		>
-			<table>
+			<table style={{ width: '100%' }}>
 				<tbody>
 					<tr>
-						<td>
-							<strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
+						<td style={{ whiteSpace: 'nowrap' }}>
+							<strong
+								style={{
+									color: 'gray',
+									display: 'inline-flex',
+									alignItems: 'center',
+									fontWeight: 500,
+									fontSize: '0.9rem',
+									marginTop: '8px',
+									marginBottom: '3px',
+								}}
+							>
+								<ChatIcon fontSize='small' />
+								Student Feedback
+							</strong>
 						</td>
-						<td width='120px' />
-						<td>{rating.toFixed(2)}</td>
-						<td>
-							{' '}
-							<Rating name='course rating' value={rating} precision={0.1} readOnly />{' '}
+						<td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+							<div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+								{rating.toFixed(2)}
+								<Rating name='course rating' value={rating} precision={0.1} readOnly />
+							</div>
 						</td>
 					</tr>
 				</tbody>
@@ -84,15 +95,16 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					padding: '10px',
 					marginTop: '10px',
 					borderRadius: '5px',
+					backgroundColor: '#f5f5f5',
 				}}
 			>
 				{reviews.map((review, index) => (
 					<div
 						key={index}
 						style={{
-							marginBottom: '10px',
 							borderBottom: '1px solid rgba(0, 0, 0, 1)',
-							paddingBottom: '10px',
+							paddingBottom: '5px',
+							paddingTop: '5px',
 						}}
 					>
 						<div style={{ color: 'black' }}>{review}</div>
