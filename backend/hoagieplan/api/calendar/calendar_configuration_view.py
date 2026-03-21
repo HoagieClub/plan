@@ -2,10 +2,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.db.models import Prefetch
 from hoagieplan.api.model_getters import get_calendar, get_term
 from hoagieplan.models import (
     AcademicTerm,
     CalendarConfiguration,
+    CalendarEvent,
     CustomUser,
 )
 from hoagieplan.serializers import (
@@ -20,14 +22,29 @@ class CalendarConfigurationView(APIView):
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
         user_inst: CustomUser = request.user
 
+        prefetched_events = Prefetch(
+            "calendar_events",
+            queryset=CalendarEvent.objects.select_related(
+                "course__department",
+                "section__instructor",
+            ).prefetch_related(
+                "course__section_set__classmeeting_set",
+                "course__section_set__instructor",
+            ),
+        )
+
         if term:
             try:
                 term_id = AcademicTerm.objects.get(term_code=str(term)).id
-                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
+                queryset = CalendarConfiguration.objects.filter(
+                    user=user_inst, term_id=term_id
+                ).prefetch_related(prefetched_events)
             except AcademicTerm.DoesNotExist:
                 return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
-            queryset = CalendarConfiguration.objects.filter(user=user_inst)
+            queryset = CalendarConfiguration.objects.filter(
+                user=user_inst
+            ).prefetch_related(prefetched_events)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
