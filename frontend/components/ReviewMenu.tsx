@@ -75,6 +75,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 									fontSize: '0.9rem',
 									marginTop: '8px',
 									marginBottom: '3px',
+									gap: '6px',
 								}}
 							>
 								<ChatIcon fontSize='small' />
@@ -140,7 +141,14 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 							paddingTop: '5px',
 						}}
 					>
-						<div style={{ color: 'black' }}>{review}</div>
+						<div
+							style={{
+								color: 'black',
+								fontSize: '0.85rem',
+							}}
+						>
+							{review}
+						</div>
 					</div>
 				))}
 			</div>

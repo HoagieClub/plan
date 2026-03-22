@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, type FC } from 'react';
 
 import { People, CalendarToday, Menu } from '@mui/icons-material';
 import { Button as JoyButton, Tooltip } from '@mui/joy';
+import { CircularProgress } from '@mui/material';
 import { createPortal } from 'react-dom';
 
-import { LoadingComponent } from '@/components/LoadingComponent';
 import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
@@ -115,8 +115,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 			<div
 				className={styles.modal}
 				style={{
-					width: '85%',
-					height: '75%',
+					width: '75%',
+					height: 'auto',
 					gap: '10px',
 					padding: '25px',
 					display: 'flex',
@@ -162,8 +162,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										padding: '8px 14px',
 										borderRadius: '10px',
 										fontWeight: 'bold',
-										fontSize: '1.1rem',
+										fontSize: '1.2vw',
 										width: 'fit-content',
+										height: 'auto',
 									}}
 								>
 									{value}
@@ -432,48 +433,60 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							</div>
 						</div>
 
-						{/* ReviewMenu with explicit width */}
+						{/* Right half */}
 						<div
 							style={{
 								display: 'flex',
+								flexDirection: 'column',
+								width: '45%',
 								justifyContent: 'flex-end',
-								padding: '0px 8px 8px 10px',
+								paddingLeft: '30px',
 								height: 'auto',
 							}}
 						>
-							<ReviewMenu dept={dept} coursenum={coursenum} />
+							{/* Reviews Section */}
+							<div
+								style={{
+									display: 'inline-flex',
+									alignItems: 'center',
+								}}
+							>
+								<ReviewMenu dept={dept} coursenum={coursenum} />
+							</div>
+
+							{/* Close Button */}
+							<footer className='mt-auto text-right'>
+								<div
+									style={{
+										display: 'flex',
+										justifyContent: 'flex-end',
+										paddingTop: '10px',
+									}}
+								>
+									<JoyButton
+										variant='soft'
+										color='neutral'
+										onClick={handleCancel}
+										sx={{ ml: 2 }}
+										size='md'
+									>
+										Close
+									</JoyButton>
+								</div>
+							</footer>
 						</div>
 					</div>
 				) : (
 					<div
 						style={{
 							display: 'flex',
-							justifyContent: 'flex-end',
+							justifyContent: 'center',
 							width: '90%',
 						}}
 					>
-						<LoadingComponent />
+						<CircularProgress size={35} />
 					</div>
 				)}
-				<div
-					style={{
-						display: 'flex',
-						flexDirection: 'column',
-						marginBottom: '15px',
-					}}
-				>
-					<footer className='mt-auto text-right'>
-						<JoyButton
-							variant='soft'
-							color='neutral'
-							onClick={handleCancel}
-							sx={{ ml: 2 }}
-							size='md'
-						>
-							Close
-						</JoyButton>
-					</footer>
-				</div>
 			</div>
 		</Modal>
 	) : null;
