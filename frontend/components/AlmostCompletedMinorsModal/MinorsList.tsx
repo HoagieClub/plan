@@ -10,6 +10,8 @@ interface MinorsListProps {
 	onShowProgramDetails: (program: Program) => void;
 	errorMessage?: string | null;
 	selectedProgram: Program | null;
+	getPrereqClass: (prereq: boolean | null) => string;
+	getPrereqText: (prereq: boolean | null) => string;
 }
 
 export function MinorsList({
@@ -22,6 +24,8 @@ export function MinorsList({
 	onShowProgramDetails,
 	errorMessage,
 	selectedProgram,
+	getPrereqClass,
+	getPrereqText,
 }: MinorsListProps) {
 	return (
 		<div className='flex w-1/2 flex-col pr-4'>
@@ -207,7 +211,6 @@ export function MinorsList({
 									</div>
 								)}
 							</div>
-							{/*
 							<div className='mt-3 flex flex-wrap gap-2'>
 								<div
 									className={getPrereqClass(m.prereqFulfilled)}
@@ -215,7 +218,7 @@ export function MinorsList({
 								>
 									{getPrereqText(m.prereqFulfilled)}
 								</div>
-								<div
+								{/* <div
 									className={
 										m.independentWorkRequired
 											? 'inline-block rounded-full bg-gray-700 px-3 py-1 text-xs text-white'
@@ -225,9 +228,8 @@ export function MinorsList({
 									{m.independentWorkRequired
 										? 'Independent Work Required'
 										: 'Independent Work Not Required'}
-								</div>
+								</div> */}
 							</div>
-							*/}
 						</div>
 					))}
 			</div>

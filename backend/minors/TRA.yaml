@@ -13,6 +13,7 @@ contacts:
 - type: Program Administrator
   name: Yolanda Sullivan
   email: ysullivan@princeton.edu
+iw_required: true
 req_list:
 - name: Core Coursework
   max_counted: 1

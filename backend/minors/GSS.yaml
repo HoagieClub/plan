@@ -16,6 +16,7 @@ contacts:
 - type: Director
   name: Wallace D. Best
   email: wbest@princeton.edu
+iw_required: true
 req_list:
 - name: Introductory Course
   max_counted: 1

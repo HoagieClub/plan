@@ -17,6 +17,7 @@ contacts:
 - type: Department Chair
   name: M. Sükrü Hanioglu
   email: hanioglu@princeton.edu
+iw_required: true
 req_list:
 - name: Hebrew Courses
   max_counted: 1

@@ -15,6 +15,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Flora Champy
   email: fchampy@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisites
   max_counted: 1
@@ -53,16 +54,16 @@ req_list:
     excluded_course_list: 
     - FRE 207
     - FRE 208
-  - name: Exit Interview
-    max_counted: 1
-    min_needed: 1
-    explanation: |-
-      <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so 
-      hoagieplan does not check it.</i><br><br>
-
-      At the end of their senior year, students must successfully pass a 10-minute exit interview with 
-      a panel of three faculty members. The interview will consist in a conversation reassessing the 
-      student's experience within the department, with the purpose of assessing their proficiency in 
-      French.
-    no_req:
+- name: Exit Interview
+  max_counted: 1
+  min_needed: 1
+  explanation: |-
+    <i>Editor's Note: Students do not enroll in any numbered course for this requirement, so 
+    hoagieplan does not check it.</i><br><br>
+    
+    At the end of their senior year, students must successfully pass a 10-minute exit interview with 
+    a panel of three faculty members. The interview will consist in a conversation reassessing the 
+    student's experience within the department, with the purpose of assessing their proficiency in 
+    French.
+  no_req:
     

@@ -20,6 +20,7 @@ contacts:
 - type: Co-Director
   name: C. Jessica E. Metcalf
   email: cmetcalf@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisites
   max_counted: 1

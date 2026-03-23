@@ -16,6 +16,7 @@ contacts:
 - type: Department Chair
   name: Anna M. Shields
   email: ashields@princeton.edu
+iw_required: true
 req_list:
 - name: Language
   max_counted: 1

@@ -19,6 +19,7 @@ contacts:
 - type: Program Director
   name: Thomas D. Conlan
   email: tconlan@princeton.edu
+iw_required: true
 req_list:
 - name: Language
   max_counted: 1
