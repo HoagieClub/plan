@@ -69,6 +69,11 @@ const teamLeads: HoagieChef[] = [
 
 const contributors: HoagieChef[] = [
 	{
+		name: 'Eric Chen',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/eric--c/',
+	},
+	{
 		name: 'Lucy Chen',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-c1/',
@@ -134,6 +139,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/lukekschreiber',
 	},
 	{
+		name: 'Ruoming Shen',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/ruomingshen/',
+	},
+	{
 		name: 'Grace Tan',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/grace-tan-00449132a/',
@@ -152,6 +162,11 @@ const contributors: HoagieChef[] = [
 		name: 'Gary Yang',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
+		name: 'Stephy Zhang',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/stephy-zhang/',
 	},
 	{
 		name: 'Linsey Zhong',

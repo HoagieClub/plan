@@ -12,6 +12,7 @@ contacts:
 - type: Program Director
   name: Jane F. Cox
   email: janecox@princeton.edu
+iw_required: true
 req_list:
 - name: Introduction
   max_counted: 1

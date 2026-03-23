@@ -20,6 +20,7 @@ contacts:
 - type: Director
   name: Esther Schor
   email: eschor@princeton.edu
+iw_required: true
 req_list:
 - name: Humanities Sequence
   max_counted: 1

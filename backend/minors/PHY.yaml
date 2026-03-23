@@ -35,6 +35,7 @@ contacts:
 - type: Director
   name: Waseem S. Bakr
   email: wbakr@princeton.edu
+iw_required: true
 req_list:
 - name: Math Course
   max_counted: 1

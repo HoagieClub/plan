@@ -19,6 +19,7 @@ contacts:
 - type: Director
   name: Leora F. Batnitzky
   email: batnitzk@princeton.edu
+iw_required: true
 req_list:
 - name: Required Course
   max_counted: 1

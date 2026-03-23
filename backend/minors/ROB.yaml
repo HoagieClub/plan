@@ -18,6 +18,7 @@ contacts:
 - type: Program Administrator
   name: Mitra Kelly
   email: mkelly@princeton.edu
+iw_required: true
 req_list:
   - name: Prerequisites
     min_needed: ALL

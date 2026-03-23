@@ -14,6 +14,7 @@ contacts:
   - type: Director
     name: Joe Stephens
     email: js5@princeton.edu
+iw_required: true
 req_list:
 - name: Gateway Course
   max_counted: 1
