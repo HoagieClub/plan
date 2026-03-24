@@ -36,7 +36,6 @@ const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 
 enum CalendarEventPostAction {
 	AddAllCalendarEventsForCourse = 'ADD_ALL_CALENDAR_EVENTS_FOR_COURSE',
-	AddCalendarEvent = 'ADD_CALENDAR_EVENT',
 	BulkAddCalendarEvents = 'BULK_ADD_CALENDAR_EVENTS',
 }
 
@@ -59,10 +58,7 @@ interface BulkAddCalendarEventsPayload {
 	events: AddCalendarEventPayload[];
 }
 
-type CalendarEventPostPayload =
-	| AddCoursePayload
-	| AddCalendarEventPayload
-	| BulkAddCalendarEventsPayload;
+type CalendarEventPostPayload = AddCoursePayload | BulkAddCalendarEventsPayload;
 
 // Returns the list of all calendars for the user in term
 export async function getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
