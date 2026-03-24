@@ -171,7 +171,7 @@ class CalendarEventView(APIView):
             term_id: int = get_term(term).id
             calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Failed to get calendar configuration"}, status=status.HTTP_404_NOT_FOUND)
 
         unique_guids = set(item["guid"] for item in events_data)
         courses_by_guid = {
@@ -195,9 +195,9 @@ class CalendarEventView(APIView):
                     start_time=item["start_time"],
                     end_time=item["end_time"],
                     start_column_index=item["start_column_index"],
-                    is_active=item.get("is_active", True),
-                    needs_choice=item.get("needs_choice", False),
-                    is_chosen=item.get("is_chosen", False),
+                    is_active=item["is_active"],
+                    needs_choice=item["needs_choice"],
+                    is_chosen=item["is_chosen"],
                 )
             )
 

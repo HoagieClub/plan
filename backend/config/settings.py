@@ -78,6 +78,8 @@ CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOM
 
 CSRF_TRUSTED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
+LOGS = os.getenv("LOGS", "False").lower() == "true"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -100,7 +102,7 @@ LOGGING = {
     "loggers": {
         # Your application
         "hoagieplan": {
-            "level": "DEBUG" if DEBUG else "INFO",
+            "level": "DEBUG" if LOGS else "INFO",
             "handlers": ["console"],
             "propagate": False,
         },
@@ -112,7 +114,7 @@ LOGGING = {
         },
         # SQL queries
         "django.db.backends": {
-            "level": "DEBUG" if DEBUG else "WARNING",
+            "level": "DEBUG" if LOGS else "WARNING",
             "handlers": ["console"],
             "propagate": False,
         },
