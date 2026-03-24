@@ -18,7 +18,7 @@ class ClassMeetingSerializer(serializers.ModelSerializer):
 
 class SectionSerializer(serializers.ModelSerializer):
     # Nested ClassMeetingSerializer to include meeting details in the section data
-    class_meetings = ClassMeetingSerializer(many=True, read_only=True)
+    class_meetings = ClassMeetingSerializer(source="classmeeting_set", many=True, read_only=True)
     instructor_name = serializers.CharField(source="instructor.name", read_only=True)
 
     class Meta:
