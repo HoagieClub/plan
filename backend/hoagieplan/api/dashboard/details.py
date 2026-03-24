@@ -5,7 +5,6 @@ from hoagieplan.models import (
     Course,
     CourseComment,
     Department,
-    Section,
 )
 
 
@@ -84,19 +83,11 @@ def get_course_info(crosslistings):
     if title:
         course_dict["Title"] = title
 
-    # Add instructors with Section model
-    sections = Section.objects.filter(course=course).select_related("instructor")
-    instructor_names = [section.instructor.full_name for section in sections if section.instructor is not None]
-    # Check for duplicates of instructors and remove when necessary
-    hasSeen = set()
-    instructor_hasSeen = []
-    for name in instructor_names:
-        if name not in hasSeen:
-            hasSeen.add(name)
-            instructor_hasSeen.append(name)
-
-    if instructor_hasSeen:
-        course_dict["Instructors"] = ", ".join(instructor_hasSeen)
+    # Add instructors from Course M2M
+    instructors = course.instructors.all()
+    instructor_names = [i.full_name for i in instructors if i.full_name]
+    if instructor_names:
+        course_dict["Instructors"] = ", ".join(instructor_names)
 
     # Map fields to their display names
     field_mapping = {
