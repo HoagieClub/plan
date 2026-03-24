@@ -31,6 +31,7 @@ EXCEPTIONS_FOR_NEEDS_CHOICE = ["Seminar", "Lecture"]
 class CalendarEventPostAction(Enum):
     AddAllCalendarEventsForCourse = "ADD_ALL_CALENDAR_EVENTS_FOR_COURSE"
     AddCalendarEvent = "ADD_CALENDAR_EVENT"
+    BulkAddCalendarEvents = "BULK_ADD_CALENDAR_EVENTS"
 
 
 class CalendarEventView(APIView):
@@ -68,6 +69,8 @@ class CalendarEventView(APIView):
             return self._add_all_calendar_events_for_course(request, user_inst, calendar_name, term)
         elif action == CalendarEventPostAction.AddCalendarEvent.value:
             return self._add_calendar_event(request, user_inst, calendar_name, term)
+        elif action == CalendarEventPostAction.BulkAddCalendarEvents.value:
+            return self._bulk_add_calendar_events(request, user_inst, calendar_name, term)
         else:
             return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -192,6 +195,44 @@ class CalendarEventView(APIView):
         )
 
         serializer = CalendarEventSerializer([calendar_event], many=True)
+        return Response(serializer.data)
+
+    def _bulk_add_calendar_events(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:
+        """Add multiple calendar events at once."""
+        events_data: list = request.data.get("events", [])
+        if not events_data:
+            return Response({"error": "No events provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            term_id: int = get_term(term).id
+            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        calendar_events_to_create: List[CalendarEvent] = []
+        for item in events_data:
+            try:
+                course = get_course(item["guid"])
+            except Exception as e:
+                return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+            calendar_events_to_create.append(
+                CalendarEvent(
+                    calendar_configuration=calendar_configuration,
+                    course=course,
+                    section_id=item["section_id"],
+                    start_time=item["start_time"],
+                    end_time=item["end_time"],
+                    start_column_index=item["start_column_index"],
+                    is_active=item.get("is_active", True),
+                    needs_choice=item.get("needs_choice", False),
+                    is_chosen=item.get("is_chosen", False),
+                )
+            )
+
+        CalendarEvent.objects.bulk_create(calendar_events_to_create)
+
+        serializer = CalendarEventSerializer(calendar_events_to_create, many=True)
         return Response(serializer.data)
 
     def delete(self, request, calendar_name: str, term: int) -> Response:

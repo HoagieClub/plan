@@ -37,6 +37,7 @@ const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 enum CalendarEventPostAction {
 	AddAllCalendarEventsForCourse = 'ADD_ALL_CALENDAR_EVENTS_FOR_COURSE',
 	AddCalendarEvent = 'ADD_CALENDAR_EVENT',
+	BulkAddCalendarEvents = 'BULK_ADD_CALENDAR_EVENTS',
 }
 
 interface AddCoursePayload {
@@ -54,7 +55,14 @@ interface AddCalendarEventPayload {
 	is_chosen: boolean;
 }
 
-type CalendarEventPostPayload = AddCoursePayload | AddCalendarEventPayload;
+interface BulkAddCalendarEventsPayload {
+	events: AddCalendarEventPayload[];
+}
+
+type CalendarEventPostPayload =
+	| AddCoursePayload
+	| AddCalendarEventPayload
+	| BulkAddCalendarEventsPayload;
 
 // Returns the list of all calendars for the user in term
 export async function getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
@@ -216,26 +224,28 @@ const convertTo24HourFormat = (time12: string): string => {
 	return `${hour.toString().padStart(2, '0')}:${minuteStr}:00`;
 };
 
-// Adds calendarEvent to calendar with calendarName in term
-export async function addCalendarEventObjectToCalendar(
+// Adds multiple calendarEvents to calendar with calendarName in term (single request)
+export async function bulkAddCalendarEventsToCalendar(
 	calendarName: string,
 	term: number,
-	calendarEvent: OldCalendarEvent
+	calendarEvents: OldCalendarEvent[]
 ): Promise<CalendarEvent[] | null> {
+	const events = calendarEvents.map((event) => ({
+		guid: event.course.guid,
+		section_id: event.section.id,
+		start_time: convertTo24HourFormat(event.startTime),
+		end_time: convertTo24HourFormat(event.endTime),
+		start_column_index: event.startColumnIndex,
+		is_active: event.isActive,
+		needs_choice: event.needsChoice,
+		is_chosen: event.isChosen,
+	}));
+
 	return performPostCalendarOperation(
 		calendarName,
 		term,
-		CalendarEventPostAction.AddCalendarEvent,
-		{
-			guid: calendarEvent.course.guid,
-			section_id: calendarEvent.section.id,
-			start_time: convertTo24HourFormat(calendarEvent.startTime),
-			end_time: convertTo24HourFormat(calendarEvent.endTime),
-			start_column_index: calendarEvent.startColumnIndex,
-			is_active: calendarEvent.isActive,
-			needs_choice: calendarEvent.needsChoice,
-			is_chosen: calendarEvent.isChosen,
-		}
+		CalendarEventPostAction.BulkAddCalendarEvents,
+		{ events }
 	);
 }
 

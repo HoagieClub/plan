@@ -10,14 +10,13 @@ import { CalendarSearch } from '@/app/calendar/CalendarSearch';
 import { SelectedCourses } from '@/app/calendar/SelectedCourses';
 import { SkeletonApp } from '@/components/SkeletonApp';
 import {
-	addCalendarEventObjectToCalendar,
+	bulkAddCalendarEventsToCalendar,
 	createCalendar,
 	getCalendars,
 } from '@/services/calendarService';
 import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
-import type { CalendarEvent } from '@/types';
 import { terms } from '@/utils/terms';
 import '@/app/calendar/Calendar.css';
 
@@ -75,11 +74,7 @@ const CalendarUI: FC = () => {
 				return { migrated: false, term: sem, error: true };
 			}
 
-			await Promise.all(
-				calendarEvents.map((event: CalendarEvent) =>
-					addCalendarEventObjectToCalendar(newCalendar.name, sem, event)
-				)
-			);
+			await bulkAddCalendarEventsToCalendar(newCalendar.name, sem, calendarEvents);
 
 			return { migrated: true, term: sem, error: false };
 		} catch (error) {
