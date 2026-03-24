@@ -42,6 +42,7 @@ class CourseSerializer(serializers.ModelSerializer):
     # Nested SectionSerializer to include section details in the course data
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
+    instructors = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -65,6 +66,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "sections",
             "crosslistings",
             "quality_of_course",
+            "instructors",
         )
 
 
