@@ -17,6 +17,7 @@ import {
 import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
+import type { CalendarEvent } from '@/types';
 import { terms } from '@/utils/terms';
 import '@/app/calendar/Calendar.css';
 
@@ -47,41 +48,32 @@ const CalendarUI: FC = () => {
 		}
 	};
 
-	const createUserCalendarData = useCallback(async (sem: number) => {
-		try {
-			// Check if calendar already exists in DB
-			const calendarsInDB = await getCalendars(sem);
-			if (calendarsInDB && calendarsInDB.length > 0) {
-				return { migrated: false, term: sem, error: false };
-			}
+	const createUserCalendarData = useCallback(
+		async (sem: number, calendarEvents: CalendarEvent[]) => {
+			try {
+				// Check if calendar already exists in DB
+				const calendarsInDB = await getCalendars(sem);
+				if (calendarsInDB && calendarsInDB.length > 0) {
+					return { migrated: false, term: sem, error: false };
+				}
 
-			// Read directly from localStorage for migration
-			const raw = localStorage.getItem('calendar-store');
-			if (!raw) {
-				return { migrated: false, term: sem, error: false };
-			}
+				// Create a new calendar and migrate events
+				const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
+				if (!newCalendar) {
+					console.error('Failed to create calendar for term', sem);
+					return { migrated: false, term: sem, error: true };
+				}
 
-			const parsed = JSON.parse(raw);
-			const calendarEvents = parsed?.state?.selectedCourses?.[sem.toString()] || [];
-			if (calendarEvents.length === 0) {
-				return { migrated: false, term: sem, error: false };
-			}
+				await bulkAddCalendarEventsToCalendar(newCalendar.name, sem, calendarEvents);
 
-			// Create a new calendar and migrate events
-			const newCalendar = await createCalendar(DEFAULT_CALENDAR_NAME, sem);
-			if (!newCalendar) {
-				console.error('Failed to create calendar for term', sem);
+				return { migrated: true, term: sem, error: false };
+			} catch (error) {
+				console.error('Error creating calendar:', error);
 				return { migrated: false, term: sem, error: true };
 			}
-
-			await bulkAddCalendarEventsToCalendar(newCalendar.name, sem, calendarEvents);
-
-			return { migrated: true, term: sem, error: false };
-		} catch (error) {
-			console.error('Error creating calendar:', error);
-			return { migrated: false, term: sem, error: true };
-		}
-	}, []);
+		},
+		[]
+	);
 
 	// Migration: Run once on mount to migrate localStorage data to DB
 	useEffect(() => {
@@ -92,9 +84,34 @@ const CalendarUI: FC = () => {
 		}
 
 		async function migrateCalendars() {
+			// Parse localStorage once upfront
+			const raw = localStorage.getItem('calendar-store');
+			if (!raw) {
+				localStorage.setItem(MIGRATION_COMPLETE_KEY, 'true');
+				setMigrationComplete(true);
+				return;
+			}
+
+			const parsed = JSON.parse(raw);
+			const selectedCourses = parsed?.state?.selectedCourses || {};
+
+			// Filter to only terms that have data, skipping unnecessary DB calls
 			const termIDs = Object.values(terms);
+			const termsWithData = termIDs
+				.map((sem) => ({
+					sem: parseInt(sem),
+					events: selectedCourses[sem] || [],
+				}))
+				.filter(({ events }) => events.length > 0);
+
+			if (termsWithData.length === 0) {
+				localStorage.setItem(MIGRATION_COMPLETE_KEY, 'true');
+				setMigrationComplete(true);
+				return;
+			}
+
 			const results = await Promise.all(
-				termIDs.map((sem) => createUserCalendarData(parseInt(sem)))
+				termsWithData.map(({ sem, events }) => createUserCalendarData(sem, events))
 			);
 
 			// Check if any migrations occurred without errors
