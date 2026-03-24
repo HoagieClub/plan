@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ALMOST_COMPLETED_URL = '/api/hoagie/almost_completed/';
+const ALMOST_COMPLETED_URL = '/api/hoagie/almost_completed';
 
 const ProgramSchema = z.object({
 	code: z.string(),

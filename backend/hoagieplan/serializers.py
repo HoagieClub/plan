@@ -24,6 +24,7 @@ class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
         fields = (
+            "id",
             "class_number",
             "class_type",
             "class_section",
@@ -102,8 +103,8 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
 
 class CalendarEventSerializer(serializers.ModelSerializer):
     calendar = serializers.IntegerField(source="calendar_configuration.id", read_only=True)
-    course = serializers.IntegerField(source="course.id", read_only=True)
-    section = serializers.IntegerField(source="section.id", read_only=True)
+    course = CourseSerializer(read_only=True)
+    section = SectionSerializer(read_only=True)
 
     class Meta:
         model = CalendarEvent

@@ -49,7 +49,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
-			void fetch(`/api/hoagie/course/details/?${params}`)
+			void fetch(`/api/hoagie/course/details?${params}`)
 				.then((response) => response.json())
 				.then((data) => {
 					setCourseDetails(data);
