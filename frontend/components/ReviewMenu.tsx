@@ -19,7 +19,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					setLoading(true);
 
 					const params = new URLSearchParams({ dept, coursenum });
-					const response = await fetch(`/api/hoagie/course/comments/?${params}`);
+					const response = await fetch(`/api/hoagie/course/comments?${params}`);
 
 					const data = await response.json();
 					if (data && data.reviews) {
