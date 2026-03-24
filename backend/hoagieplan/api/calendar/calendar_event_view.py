@@ -13,7 +13,7 @@ from hoagieplan.api.model_getters import (
     get_course,
     get_term,
 )
-from hoagieplan.models import CalendarEvent, ClassMeeting, CustomUser, Section
+from hoagieplan.models import CalendarEvent, ClassMeeting, Course, CustomUser, Section
 from hoagieplan.serializers import CalendarEventSerializer
 from hoagieplan.utils import get_term_and_course_id
 
@@ -173,17 +173,24 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
+        unique_guids = set(item["guid"] for item in events_data)
+        courses_by_guid = {
+            c.guid: c
+            for c in Course.objects.select_related("department").filter(guid__in=unique_guids)
+        }
+        missing_guids = unique_guids - courses_by_guid.keys()
+        if missing_guids:
+            return Response(
+                {"detail": f"Courses not found: {', '.join(missing_guids)}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         calendar_events_to_create: List[CalendarEvent] = []
         for item in events_data:
-            try:
-                course = get_course(item["guid"])
-            except Exception as e:
-                return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
-
             calendar_events_to_create.append(
                 CalendarEvent(
                     calendar_configuration=calendar_configuration,
-                    course=course,
+                    course=courses_by_guid[item["guid"]],
                     section_id=item["section_id"],
                     start_time=item["start_time"],
                     end_time=item["end_time"],
@@ -196,7 +203,22 @@ class CalendarEventView(APIView):
 
         CalendarEvent.objects.bulk_create(calendar_events_to_create)
 
-        serializer = CalendarEventSerializer(calendar_events_to_create, many=True)
+        created_ids = [e.id for e in calendar_events_to_create]
+        created_events = (
+            CalendarEvent.objects.filter(id__in=created_ids)
+            .select_related(
+                "calendar_configuration",
+                "course__department",
+                "section__instructor",
+            )
+            .prefetch_related(
+                "course__section_set__classmeeting_set",
+                "course__section_set__instructor",
+                "section__classmeeting_set",
+            )
+        )
+
+        serializer = CalendarEventSerializer(created_events, many=True)
         return Response(serializer.data)
 
     def delete(self, request, calendar_name: str, term: int) -> Response:
