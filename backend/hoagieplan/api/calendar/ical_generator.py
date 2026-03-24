@@ -79,10 +79,10 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
 
     start_time_str = calendar_event.get("startTime") or section.get("class_meetings", [{}])[0].get("start_time")
     end_time_str = calendar_event.get("endTime") or section.get("class_meetings", [{}])[0].get("end_time")
-    start_time = datetime.strptime(start_time_str, "%H:%M").time()
-    end_time = datetime.strptime(end_time_str, "%H:%M").time()
+    start_time = datetime.strptime(start_time_str, "%I:%M %p").time()
+    end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
 
-    instructor = section.get("instructor").get("name")
+    instructor = ", ".join(course.get("instructors", [])) or ""
 
     # Extract start and end dates from constants
     days_of_week = section.get("class_meetings")[0].get("days")
