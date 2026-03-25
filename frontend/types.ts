@@ -209,7 +209,6 @@ export type Section = {
 	class_section: string;
 	track: string;
 	seat_reservations: string;
-	instructor_name: string;
 	capacity: number;
 	status: string;
 	enrollment: number;
