@@ -29,7 +29,7 @@ load_dotenv()
 
 EVALS_CSV = "./evals.csv"
 EVALS_URL = "https://registrarapps.princeton.edu/course-evaluation"
-NUM_WORKERS = 16
+NUM_WORKERS = 4
 MAX_RETRIES = 3
 
 csv_lock = threading.Lock()
@@ -104,7 +104,7 @@ def scrape_comments(soup: BeautifulSoup) -> list[str]:
 
 
 def save(data: str, term: str, course_id: str) -> None:
-    """Append data to evals.csv file or create it if it doesn't exist.
+    """Append a row to evals.csv.
 
     :param data: HTML content as a string.
     :param term: Term identifier.
@@ -120,11 +120,8 @@ def save(data: str, term: str, course_id: str) -> None:
     comments = oj.dumps(_comments).decode("utf-8").replace("\\/", "/")[1:-1]
 
     with csv_lock:
-        file_exists = os.path.isfile(EVALS_CSV)
         with open(EVALS_CSV, "a", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames)
-            if not file_exists:
-                writer.writeheader()
             writer.writerow(
                 {
                     "course_id": course_id,
@@ -201,6 +198,11 @@ def worker(worker_id: int, driver: webdriver.Chrome, course_chunk: list[tuple[st
 # Usage: python fetch_evals.py
 # Note: Need to do Duo push authentication when the script is ran.
 def main() -> None:
+
+    # Create evals.csv
+    with open(EVALS_CSV, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, ["course_id", "term", "scores", "comments"])
+        writer.writeheader()
 
     start_time: float = time.time()
     auth_driver = create_driver()
