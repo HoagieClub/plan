@@ -30,6 +30,7 @@ load_dotenv()
 EVALS_CSV = "./evals.csv"
 EVALS_URL = "https://registrarapps.princeton.edu/course-evaluation"
 NUM_WORKERS = 16
+MAX_RETRIES = 3
 
 csv_lock = threading.Lock()
 
@@ -110,10 +111,6 @@ def save(data: str, term: str, course_id: str) -> None:
     :param course_id: Course identifier.
     """
     webpage = BeautifulSoup(data, "html.parser")
-    if webpage.title and webpage.title.string != "Course Evaluation Results":
-        print(f"Invalid session cookie or page structure changed for course ID {course_id} in term {term}")
-        return
-
     _scores = scrape_scores(webpage)
     _comments = scrape_comments(webpage)
     fieldnames = ["course_id", "term", "scores", "comments"]
@@ -144,9 +141,17 @@ def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
     :param term: Term identifier.
     :param course_id: Course identifier.
     """
-    scraper.get(f"{EVALS_URL}?courseinfo={course_id}&terminfo={term}")
-    content: str = scraper.page_source
-    save(content, term, course_id)
+    for attempt in range(MAX_RETRIES):
+        scraper.get(f"{EVALS_URL}?courseinfo={course_id}&terminfo={term}")
+        content: str = scraper.page_source
+        webpage = BeautifulSoup(content, "html.parser")
+        if webpage.title and webpage.title.string == "Course Evaluation Results":
+            save(content, term, course_id)
+            return
+        if attempt < MAX_RETRIES - 1:
+            print(f"Attempt {attempt + 1} failed for {course_id} in term {term}. Retrying...")
+            time.sleep(2 ** attempt)
+    print(f"Failed to scrape {course_id} for term {term} after {MAX_RETRIES} attempts")
 
 
 _driver_path: str | None = None
