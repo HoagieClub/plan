@@ -196,13 +196,10 @@ def worker(worker_id: int, driver: webdriver.Chrome, course_chunk: list[tuple[st
 # Usage: python fetch_evals.py
 # Note: Need to do Duo push authentication when the script is ran.
 def main() -> None:
-    auth_driver = create_driver()
-    authenticate(auth_driver)
 
     start_time: float = time.time()
-
-    courses: list[tuple[str, str]] = fetch_courses()
-    total_courses: int = len(courses)
+    auth_driver = create_driver()
+    authenticate(auth_driver)
 
     # Extract cookies to share with worker browsers
     cookies = auth_driver.get_cookies()
@@ -216,6 +213,9 @@ def main() -> None:
     auth_driver.quit()
 
     # Split courses into chunks for each worker
+    courses: list[tuple[str, str]] = fetch_courses()
+    total_courses: int = len(courses)
+
     chunk_size = (total_courses + NUM_WORKERS - 1) // NUM_WORKERS
     chunks = [courses[i:i + chunk_size] for i in range(0, total_courses, chunk_size)]
 
