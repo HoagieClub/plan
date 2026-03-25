@@ -10,6 +10,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from tqdm import tqdm
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -45,7 +47,9 @@ def authenticate(scraper: webdriver.Remote) -> None:
     scraper.get(login_url)
     scraper.find_element(By.ID, "username").send_keys(os.getenv("CAS_USERNAME"))
     scraper.find_element(By.ID, "password").send_keys(os.getenv("CAS_PASSWORD"))
-    login_button = scraper.find_element(By.CSS_SELECTOR, "button.mdc-button.mdc-button--raised.btn.btn-primary")
+    login_button = WebDriverWait(scraper, 10).until(
+        EC.element_to_be_clickable((By.ID, "submitBtn"))
+    )
     login_button.click()
 
     # Wait for login to complete. Need to do Duo push authentication.
