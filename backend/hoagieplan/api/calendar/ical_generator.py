@@ -182,6 +182,7 @@ def main():
                 "catalog_number": "418",
                 "course_id": "013749",
                 "crosslistings": "COS 418",
+                "instructors": ["Michael J. Freedman"],
                 "department_code": "COS",
                 "description": """This course covers the design and implementation of
                 distributed systems. Students will gain an understanding of the principles and
@@ -229,7 +230,6 @@ def main():
                 "course": {"course_id": "013749", "title": "Distributed Systems"},
                 "enrollment": 81,
                 "id": 87114,
-                "instructor": {"name": "Michael J. Freedman"},
                 "startColumnIndex": 1,
                 "startRowIndex": 14,
                 "startTime": "10:00",
@@ -241,6 +241,7 @@ def main():
                 "catalog_number": "307",
                 "course_id": "007998",
                 "crosslistings": "ORF 307 / EGR 307",
+                "instructors": ["Bartolomeo Stellato"],
                 "department_code": "ORF",
                 "description": """This course focuses on analytical and computational tools for
                 optimization. We will introduce least-squares optimization with multiple objectives
@@ -285,7 +286,6 @@ def main():
                 "course": {"course_id": "007998", "title": "Optimization"},
                 "enrollment": 109,
                 "id": 85784,
-                "instructor": {"name": "Bartolomeo Stellato"},
                 "startColumnIndex": 2,
                 "startRowIndex": 20,
                 "startTime": "11:00",
