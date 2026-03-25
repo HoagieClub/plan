@@ -1,17 +1,18 @@
 import csv
-import orjson as oj
 import os
 import sys
-import time
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
+import orjson as oj
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from pathlib import Path
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from tqdm import tqdm
@@ -34,13 +35,41 @@ MAX_RETRIES = 3
 
 csv_lock = threading.Lock()
 
+EVALUATION_FIELDS = [
+    "quality_of_course",
+    "quality_of_lectures",
+    "quality_of_readings",
+    "quality_of_written_assignments",
+    "recommend_to_other_students",
+    "quality_of_language",
+    "quality_of_the_classes",
+    "quality_of_seminar",
+    "quality_of_precepts",
+    "quality_of_laboratories",
+    "quality_of_classes",
+    "quality_of_studios",
+    "quality_of_ear_training",
+    "overall_course_quality_rating",
+    "interest_in_subject_matter",
+    "overall_quality_of_the_course",
+    "overall_quality_of_the_lecture",
+    "papers_and_problem_sets",
+    "readings",
+    "oral_presentation_skills",
+    "workshop_structure",
+    "written_work",
+]
+
 
 def fetch_courses() -> list[tuple[str, str]]:
-    """Fetch unique course IDs and academic terms from the Course model.
+    """Fetch courses that have not yet been scraped for evaluations.
+
+    A course is considered unscraped if all evaluation fields are null.
 
     :return: A list of tuples containing course_id and term.
     """
-    courses: list[str] = Course.objects.all().values_list("guid", flat=True)
+    filter_kwargs = {f"{field}__isnull": True for field in EVALUATION_FIELDS}
+    courses: list[str] = Course.objects.filter(**filter_kwargs).values_list("guid", flat=True)
     course_data: list[tuple[str, str]] = [(course[:4], course[4:]) for course in courses]
     return list(set(course_data))
 
@@ -53,9 +82,7 @@ def authenticate(scraper: webdriver.Remote) -> None:
     scraper.get(EVALS_URL)
     scraper.find_element(By.ID, "username").send_keys(os.getenv("CAS_USERNAME"))
     scraper.find_element(By.ID, "password").send_keys(os.getenv("CAS_PASSWORD"))
-    login_button = WebDriverWait(scraper, 10).until(
-        EC.element_to_be_clickable((By.ID, "submitBtn"))
-    )
+    login_button = WebDriverWait(scraper, 10).until(EC.element_to_be_clickable((By.ID, "submitBtn")))
     login_button.click()
 
     # Wait for login to complete. Need to do Duo push authentication.
@@ -147,7 +174,7 @@ def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
             return
         if attempt < MAX_RETRIES - 1:
             print(f"Attempt {attempt + 1} failed for {course_id} in term {term}. Retrying...")
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
     print(f"Failed to scrape {course_id} for term {term} after {MAX_RETRIES} attempts")
 
 
@@ -184,7 +211,7 @@ def worker(worker_id: int, driver: webdriver.Chrome, course_chunk: list[tuple[st
     """Worker function that scrapes evals for course_chunk with driver."""
     print(f"Worker {worker_id} starting with {len(course_chunk)} courses", flush=True)
     try:
-        for i, (term, course_id) in enumerate(course_chunk):
+        for term, course_id in course_chunk:
             try:
                 scrape(driver, term, course_id)
             except Exception as e:
@@ -198,7 +225,6 @@ def worker(worker_id: int, driver: webdriver.Chrome, course_chunk: list[tuple[st
 # Usage: python fetch_evals.py
 # Note: Need to do Duo push authentication when the script is ran.
 def main() -> None:
-
     # Create evals.csv
     with open(EVALS_CSV, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, ["course_id", "term", "scores", "comments"])
@@ -224,7 +250,7 @@ def main() -> None:
     total_courses: int = len(courses)
 
     chunk_size = (total_courses + NUM_WORKERS - 1) // NUM_WORKERS
-    chunks = [courses[i:i + chunk_size] for i in range(0, total_courses, chunk_size)]
+    chunks = [courses[i : i + chunk_size] for i in range(0, total_courses, chunk_size)]
 
     print(f"Scraping with {len(chunks)} workers.")
     with tqdm(total=total_courses, desc="Scraping Course Evaluations...", ncols=100) as pbar:
