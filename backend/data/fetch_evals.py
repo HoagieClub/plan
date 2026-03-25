@@ -3,6 +3,8 @@ import orjson as oj
 import os
 import sys
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from pathlib import Path
@@ -26,6 +28,10 @@ from hoagieplan.models import Course
 load_dotenv()
 
 EVALS_CSV = "./evals.csv"
+EVALS_URL = "https://registrarapps.princeton.edu/course-evaluation"
+NUM_WORKERS = 16
+
+csv_lock = threading.Lock()
 
 
 def fetch_courses() -> list[tuple[str, str]]:
@@ -43,8 +49,7 @@ def authenticate(scraper: webdriver.Remote) -> None:
 
     :param scraper: Selenium WebDriver instance.
     """
-    login_url: str = "https://registrarapps.princeton.edu/course-evaluation"
-    scraper.get(login_url)
+    scraper.get(EVALS_URL)
     scraper.find_element(By.ID, "username").send_keys(os.getenv("CAS_USERNAME"))
     scraper.find_element(By.ID, "password").send_keys(os.getenv("CAS_PASSWORD"))
     login_button = WebDriverWait(scraper, 10).until(
@@ -113,26 +118,24 @@ def save(data: str, term: str, course_id: str) -> None:
     _comments = scrape_comments(webpage)
     fieldnames = ["course_id", "term", "scores", "comments"]
 
-    # Use a consistent file name; check if it needs a header row.
-    evals_csv = "./evals.csv"
-    file_exists = os.path.isfile(evals_csv)  # Check if file already exists
+    # Ensure scores and comments are properly formatted as JSON strings
+    scores = oj.dumps(_scores).decode("utf-8").replace("\\/", "/")[1:-1]
+    comments = oj.dumps(_comments).decode("utf-8").replace("\\/", "/")[1:-1]
 
-    with open(evals_csv, "a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames)
-        if not file_exists:  # Write header only if the file does not exist
-            writer.writeheader()
-
-        # Ensure scores and comments are properly formatted as JSON strings
-        scores = oj.dumps(_scores).decode("utf-8").replace("\\/", "/")[1:-1]
-        comments = oj.dumps(_comments).decode("utf-8").replace("\\/", "/")[1:-1]
-        writer.writerow(
-            {
-                "course_id": course_id,
-                "term": term,
-                "scores": scores,
-                "comments": comments,
-            }
-        )
+    with csv_lock:
+        file_exists = os.path.isfile(EVALS_CSV)
+        with open(EVALS_CSV, "a", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(
+                {
+                    "course_id": course_id,
+                    "term": term,
+                    "scores": scores,
+                    "comments": comments,
+                }
+            )
 
 
 def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
@@ -141,39 +144,91 @@ def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
     :param term: Term identifier.
     :param course_id: Course identifier.
     """
-    scraper.get(f"https://registrarapps.princeton.edu/course-evaluation?courseinfo={course_id}&terminfo={term}")
+    scraper.get(f"{EVALS_URL}?courseinfo={course_id}&terminfo={term}")
     content: str = scraper.page_source
     save(content, term, course_id)
 
 
-# Usage: python fetch_evals.py
-# Need to go Duo push authentication when the script is ran.
-def main() -> None:
-    # Can multithread or parallelize this in the future to make it faster
+_driver_path: str | None = None
+
+
+def create_driver() -> webdriver.Chrome:
+    """Create a headless Chrome WebDriver instance."""
+    global _driver_path
+    if _driver_path is None:
+        _driver_path = ChromeDriverManager().install()
     options: Options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    service: Service = Service(ChromeDriverManager().install())
-    service.start()
-    scraper: webdriver.Remote = webdriver.Chrome(service = service, options=options)
-    authenticate(scraper)
+    service: Service = Service(_driver_path)
+    return webdriver.Chrome(service=service, options=options)
+
+
+def create_worker_driver(cookies: list[dict]) -> webdriver.Chrome:
+    """Create a new browser and inject session cookies from the authenticated browser."""
+    driver = create_driver()
+    driver.get(EVALS_URL)
+    for cookie in cookies:
+        try:
+            driver.add_cookie(cookie)
+        except Exception:
+            pass
+    return driver
+
+
+def worker(worker_id: int, driver: webdriver.Chrome, course_chunk: list[tuple[str, str]], pbar: tqdm) -> None:
+    """Worker function that scrapes evals for course_chunk with driver."""
+    print(f"Worker {worker_id} starting with {len(course_chunk)} courses", flush=True)
+    try:
+        for i, (term, course_id) in enumerate(course_chunk):
+            try:
+                scrape(driver, term, course_id)
+            except Exception as e:
+                print(f"Error scraping {course_id} for term {term}: {e}")
+            pbar.update(1)
+    finally:
+        print(f"Worker {worker_id} finished, quitting driver", flush=True)
+        driver.quit()
+
+
+# Usage: python fetch_evals.py
+# Note: Need to do Duo push authentication when the script is ran.
+def main() -> None:
+    auth_driver = create_driver()
+    authenticate(auth_driver)
 
     start_time: float = time.time()
 
     courses: list[tuple[str, str]] = fetch_courses()
     total_courses: int = len(courses)
 
-    with tqdm(total=total_courses, desc="Scraping Course Evaluations...", ncols=100) as pbar:
-        for term, course_id in courses:
-            try:
-                scrape(scraper, term, course_id)
-            except Exception as e:
-                print(f"Error scraping {course_id} for term {term}: {e}")
-            pbar.update(1)
+    # Extract cookies to share with worker browsers
+    cookies = auth_driver.get_cookies()
 
-    scraper.quit()
+    # Create worker browsers with shared cookies
+    print(f"Creating {NUM_WORKERS} workers in parallel...", flush=True)
+    t = time.time()
+    with ThreadPoolExecutor(max_workers=NUM_WORKERS) as pool:
+        workers = list(pool.map(lambda _: create_worker_driver(cookies), range(NUM_WORKERS)))
+    print(f"All {NUM_WORKERS} workers created in {time.time() - t:.1f}s", flush=True)
+    auth_driver.quit()
+
+    # Split courses into chunks for each worker
+    chunk_size = (total_courses + NUM_WORKERS - 1) // NUM_WORKERS
+    chunks = [courses[i:i + chunk_size] for i in range(0, total_courses, chunk_size)]
+
+    print(f"Scraping with {len(chunks)} workers.")
+    with tqdm(total=total_courses, desc="Scraping Course Evaluations...", ncols=100) as pbar:
+        with ThreadPoolExecutor(max_workers=len(chunks)) as executor:
+            futures = []
+            for i in range(len(chunks)):
+                f = executor.submit(worker, i + 1, workers[i], chunks[i], pbar)
+                futures.append(f)
+            for future in as_completed(futures):
+                future.result()
+
     end_time: float = time.time()
     elapsed_time: float = end_time - start_time
     print(f"Completed in {elapsed_time:.2f} seconds")
