@@ -71,7 +71,10 @@ def get_course_info(crosslistings):
     """Retrieve detailed course information."""
     try:
         course = (
-            Course.objects.select_related("department").filter(crosslistings__icontains=crosslistings).latest("guid")
+            Course.objects.select_related("department")
+            .prefetch_related("instructors")
+            .filter(crosslistings__icontains=crosslistings)
+            .latest("guid")
         )
     except Course.DoesNotExist:
         return None
