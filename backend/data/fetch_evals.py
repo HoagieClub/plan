@@ -1,4 +1,5 @@
 import csv
+import random
 import os
 import sys
 import threading
@@ -11,12 +12,10 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from tqdm import tqdm
-from webdriver_manager.chrome import ChromeDriverManager
 
 sys.path.append(str(Path("../").resolve()))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -31,7 +30,7 @@ load_dotenv()
 EVALS_CSV = "./evals.csv"
 EVALS_URL = "https://registrarapps.princeton.edu/course-evaluation"
 NUM_WORKERS = 4
-MAX_RETRIES = 3
+MAX_RETRIES = 5
 
 csv_lock = threading.Lock()
 
@@ -172,27 +171,24 @@ def scrape(scraper: webdriver.Remote, term: str, course_id: str) -> None:
         if webpage.title and webpage.title.string == "Course Evaluation Results":
             save(content, term, course_id)
             return
+
+        title = webpage.title.string if webpage.title else "No title"
+
         if attempt < MAX_RETRIES - 1:
-            print(f"Attempt {attempt + 1} failed for {course_id} in term {term}. Retrying...")
-            time.sleep(2**attempt)
-    print(f"Failed to scrape {course_id} for term {term} after {MAX_RETRIES} attempts")
+            print(f"Attempt {attempt + 1} failed for {course_id} in term {term} (got: '{title}'). Retrying...", flush=True)
+            time.sleep(2 ** attempt + random.uniform(0, 2 ** attempt))
 
-
-_driver_path: str | None = None
+    print(f"Failed to scrape {course_id} for term {term} after {MAX_RETRIES} attempts", flush=True)
 
 
 def create_driver() -> webdriver.Chrome:
     """Create a headless Chrome WebDriver instance."""
-    global _driver_path
-    if _driver_path is None:
-        _driver_path = ChromeDriverManager().install()
     options: Options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    service: Service = Service(_driver_path)
-    return webdriver.Chrome(service=service, options=options)
+    return webdriver.Chrome(options=options)
 
 
 def create_worker_driver(cookies: list[dict]) -> webdriver.Chrome:
