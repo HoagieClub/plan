@@ -4,8 +4,8 @@ from typing import Dict, List
 
 import pytz
 from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import api_view
 from icalendar import Calendar, Event
+from rest_framework.decorators import api_view
 
 # Maps from day abbreviations to days used in ical rrule
 DAY_DICT = {"M": "MO", "T": "TU", "W": "WE", "Th": "TH", "F": "FR"}
@@ -19,6 +19,8 @@ DAYS_OFFSET = {
     "F": timedelta(days=4),
 }
 
+# Look at https://registrar.princeton.edu/academic-calendar-and-deadlines
+# Look for "Spring Term Classes Begin at 8:30 am" or something similar
 # Start date for each semester
 START_DATE = {
     "1242": date(2023, 9, 5),
@@ -27,8 +29,10 @@ START_DATE = {
     "1254": date(2025, 1, 27),
     "1262": date(2025, 9, 2),
     "1264": date(2026, 1, 26),
+    "1272": date(2026, 9, 2),
 }
 
+# Look for "Last Day of Scheduled Classes" or something similar
 # End date for each semester
 END_DATE = {
     "1242": date(2023, 12, 7),
@@ -37,6 +41,7 @@ END_DATE = {
     "1254": date(2025, 4, 26),
     "1262": date(2025, 12, 4),
     "1264": date(2026, 4, 24),
+    "1272": date(2026, 12, 7),
 }
 
 
