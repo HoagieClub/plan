@@ -54,7 +54,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 		const observer = new ResizeObserver(() => {
 			const scroll = feedbackScrollRef.current;
 			if (!scroll) return;
-			setShowFeedbackGradient(scroll.scrollHeight > scroll.clientHeight && scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
+			setShowFeedbackGradient(
+				scroll.scrollHeight > scroll.clientHeight &&
+					scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2
+			);
 		});
 		observer.observe(el);
 	};
@@ -79,8 +82,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
-			void fetch(`/api/hoagie/course/details?${params}`)
-				.then((response) => response.json())
+			void fetch(`/api/hoagie/course/details?${params}`).then((response) => response.json());
 			console.log('Fetching course details for:', value);
 			void fetch(`/api/hoagie/course/details/?${params}`)
 				.then((response) => {
@@ -258,120 +260,147 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										new URL(courseDetails.Registrar).searchParams.get('courseid')
 									}`}
 								>
-									Princeton<br />Courses
+									Princeton
+									<br />
+									Courses
 								</ExternalLink>
 								{courseDetails?.Registrar && (
 									<ExternalLink href={courseDetails.Registrar}>
-										Official<br />Registrar
+										Official
+										<br />
+										Registrar
 									</ExternalLink>
 								)}
-
 							</div>
 						</div>
 
 						{/* Two-column body */}
-						<div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, gap: '24px' }}>
-						{/* Details section with explicit width */}
 						<div
-							style={{
-								flex: 1,
-								minHeight: 0,
-								overflowWrap: 'break-word',
-								flexWrap: 'wrap',
-								overflowY: 'auto',
-								width: '55%',
-							}}
+							style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, gap: '24px' }}
 						>
-							<div style={{ display: 'flex', gap: '16px' }}>
-								<div style={{ flex: 1 }}>
-									<SectionTitle label='Instructors' iconSrc='/icons/instructors.svg' />
-									<CourseDetailSection>
-										<div style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', flexDirection: 'column' }}>
-											{typeof courseDetails?.Instructors === 'string' ? (
-												courseDetails.Instructors.split(',').map((name, index, arr) => (
-													<div
-														key={index}
-														style={{
-															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-														}}
-													>
-														{name.trim()}
-													</div>
-												))
-											) : (
-												<div>No instructor listed</div>
-											)}
-										</div>
-									</CourseDetailSection>
+							{/* Details section with explicit width */}
+							<div
+								style={{
+									flex: 1,
+									minHeight: 0,
+									overflowWrap: 'break-word',
+									flexWrap: 'wrap',
+									overflowY: 'auto',
+									width: '55%',
+								}}
+							>
+								<div style={{ display: 'flex', gap: '16px' }}>
+									<div style={{ flex: 1 }}>
+										<SectionTitle label='Instructors' iconSrc='/icons/instructors.svg' />
+										<CourseDetailSection>
+											<div
+												style={{
+													fontSize: '0.9rem',
+													fontWeight: 600,
+													display: 'flex',
+													flexDirection: 'column',
+												}}
+											>
+												{typeof courseDetails?.Instructors === 'string' ? (
+													courseDetails.Instructors.split(',').map((name, index, arr) => (
+														<div
+															key={index}
+															style={{
+																paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+																marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+																borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+															}}
+														>
+															{name.trim()}
+														</div>
+													))
+												) : (
+													<div>No instructor listed</div>
+												)}
+											</div>
+										</CourseDetailSection>
+									</div>
+									<div style={{ flex: 1 }}>
+										<SectionTitle label='Course Setup' iconSrc='/icons/course-setup.svg' />
+										<CourseDetailSection>
+											<CourseSetup courseSetup={courseSetup} />
+										</CourseDetailSection>
+									</div>
 								</div>
-								<div style={{ flex: 1 }}>
-									<SectionTitle label='Course Setup' iconSrc='/icons/course-setup.svg' />
-									<CourseDetailSection>
-										<CourseSetup courseSetup={courseSetup} />
-									</CourseDetailSection>
-								</div>
-							</div>
 
-						<SectionTitle label='Description' iconSrc='/icons/description.svg' />
-							<CourseDetailSection>
-								<div style={{ fontSize: '0.85rem' }}>
-									{courseDetails['Description']}
-								</div>
-							</CourseDetailSection>
-						</div>
-						<div
-							style={{
-								display: 'flex',
-								flexDirection: 'column',
-								padding: '0px 8px 8px 10px',
-								width: '45%',
-								minHeight: 0,
-							}}
-						>
-							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-								<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
-								{feedbackRating > 0 && (
-									<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-										<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
-											{feedbackRating.toFixed(1)}
-										</span>
-										<Rating value={feedbackRating} precision={0.1} readOnly size='small' />
-									</div>
-								)}
+								<SectionTitle label='Description' iconSrc='/icons/description.svg' />
+								<CourseDetailSection>
+									<div style={{ fontSize: '0.85rem' }}>{courseDetails['Description']}</div>
+								</CourseDetailSection>
 							</div>
-							<div style={{ position: 'relative', flex: 1, minHeight: 0, backgroundColor: '#F5F5F5', borderRadius: '6px' }}>
+							<div
+								style={{
+									display: 'flex',
+									flexDirection: 'column',
+									padding: '0px 8px 8px 10px',
+									width: '45%',
+									minHeight: 0,
+								}}
+							>
 								<div
-									ref={feedbackScrollRef}
-									style={{ height: '100%', overflowY: 'auto', minHeight: 0, padding: '12px' }}
-									onScroll={() => {
-										const el = feedbackScrollRef.current;
-										if (!el) return;
-										setShowFeedbackGradient(el.scrollHeight > el.clientHeight && el.scrollTop + el.clientHeight < el.scrollHeight - 2);
-									}}
+									style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
 								>
-									<div ref={feedbackInnerRef}>
-										<ReviewMenu dept={dept} coursenum={coursenum} onRatingLoaded={setFeedbackRating} />
-									</div>
+									<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
+									{feedbackRating > 0 && (
+										<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+											<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
+												{feedbackRating.toFixed(1)}
+											</span>
+											<Rating value={feedbackRating} precision={0.1} readOnly size='small' />
+										</div>
+									)}
 								</div>
 								<div
 									style={{
-										position: 'absolute',
-										bottom: 0,
-										left: 0,
-										right: 0,
-										height: '30px',
-										background: 'linear-gradient(to bottom, transparent, #BFBFBF)',
-										pointerEvents: 'none',
-										borderRadius: '0 0 6px 6px',
-										opacity: showFeedbackGradient ? 1 : 0,
-										transition: 'opacity 0.2s ease',
+										position: 'relative',
+										flex: 1,
+										minHeight: 0,
+										backgroundColor: '#F5F5F5',
+										borderRadius: '6px',
 									}}
-								/>
+								>
+									<div
+										ref={feedbackScrollRef}
+										style={{ height: '100%', overflowY: 'auto', minHeight: 0, padding: '12px' }}
+										onScroll={() => {
+											const el = feedbackScrollRef.current;
+											if (!el) return;
+											setShowFeedbackGradient(
+												el.scrollHeight > el.clientHeight &&
+													el.scrollTop + el.clientHeight < el.scrollHeight - 2
+											);
+										}}
+									>
+										<div ref={feedbackInnerRef}>
+											<ReviewMenu
+												dept={dept}
+												coursenum={coursenum}
+												onRatingLoaded={setFeedbackRating}
+											/>
+										</div>
+									</div>
+									<div
+										style={{
+											position: 'absolute',
+											bottom: 0,
+											left: 0,
+											right: 0,
+											height: '30px',
+											background: 'linear-gradient(to bottom, transparent, #BFBFBF)',
+											pointerEvents: 'none',
+											borderRadius: '0 0 6px 6px',
+											opacity: showFeedbackGradient ? 1 : 0,
+											transition: 'opacity 0.2s ease',
+										}}
+									/>
+								</div>
 							</div>
 						</div>
-					</div>
 					</div>
 				) : (
 					<div
@@ -387,13 +416,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 					</div>
 				)}
 				<footer className='mt-auto text-right'>
-					<JoyButton
-						variant='soft'
-						color='neutral'
-						onClick={handleCancel}
-						sx={{ ml: 2 }}
-						size='md'
-					>
+					<JoyButton variant='soft' color='neutral' onClick={handleCancel} sx={{ ml: 2 }} size='md'>
 						Close
 					</JoyButton>
 				</footer>

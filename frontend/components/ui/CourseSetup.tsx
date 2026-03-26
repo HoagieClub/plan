@@ -39,7 +39,9 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 							</span>
 						))}
 					</div>
-					<div style={{ borderBottom: '1px solid #e0e0e0', marginTop: '6px', marginBottom: '10px' }} />
+					<div
+						style={{ borderBottom: '1px solid #e0e0e0', marginTop: '6px', marginBottom: '10px' }}
+					/>
 					<div style={{ paddingBottom: '3px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
 						{courseSetup.map((item, idx) => {
 							const config = getSectionColor[item.class_type] || getSectionColor['Unknown'];

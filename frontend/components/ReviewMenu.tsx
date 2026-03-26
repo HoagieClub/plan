@@ -11,7 +11,12 @@ interface ReviewMenuProps {
 	onSummaryLoaded?: (summary: string) => void;
 }
 
-export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoaded, onSummaryLoaded }) => {
+export const ReviewMenu: FC<ReviewMenuProps> = ({
+	dept,
+	coursenum,
+	onRatingLoaded,
+	onSummaryLoaded,
+}) => {
 	const [reviews, setReviews] = useState<string[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [summary, setSummary] = useState<string>('');
@@ -50,7 +55,9 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoade
 
 	if (loading) {
 		return (
-			<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+			<div
+				style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}
+			>
 				<CircularProgress size={24} sx={{ color: '#9e9e9e' }} />
 			</div>
 		);

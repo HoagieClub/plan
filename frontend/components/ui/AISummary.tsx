@@ -41,13 +41,17 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 					marginBottom: '4px',
 				}}
 			>
-				<span style={{
-					color: '#663399',
-					fontSize: '0.85rem',
-					display: 'inline-block',
-					transform: hovered ? 'rotate(180deg)' : 'rotate(0deg)',
-					transition: 'transform 0.3s ease',
-				}}>✦</span>
+				<span
+					style={{
+						color: '#663399',
+						fontSize: '0.85rem',
+						display: 'inline-block',
+						transform: hovered ? 'rotate(180deg)' : 'rotate(0deg)',
+						transition: 'transform 0.3s ease',
+					}}
+				>
+					✦
+				</span>
 				<strong style={{ color: '#663399', fontSize: '0.85rem' }}>Summary</strong>
 				<span
 					style={{

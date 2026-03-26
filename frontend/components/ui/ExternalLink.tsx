@@ -10,7 +10,7 @@ export const ExternalLink: FC<ExternalLinkProps> = ({ href, children }) => (
 		href={href}
 		target='_blank'
 		rel='noopener noreferrer'
-		className='hover:brightness-90 active:scale-95 transition-all duration-150'
+		className='transition-all duration-150 hover:brightness-90 active:scale-95'
 		style={{
 			display: 'flex',
 			alignItems: 'center',
