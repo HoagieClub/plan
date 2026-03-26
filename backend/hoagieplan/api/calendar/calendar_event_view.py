@@ -186,13 +186,26 @@ class CalendarEventView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        # Build a lookup of sections by (course_id, class_section)
+        sections_by_key = {}
+        for course in courses_by_guid.values():
+            for section in Section.objects.filter(course=course, term_id=term_id):
+                sections_by_key[(course.guid, section.class_section)] = section
+
         calendar_events_to_create: List[CalendarEvent] = []
         for item in events_data:
+            section_key = (item["guid"], item["class_section"])
+            section = sections_by_key.get(section_key)
+            if not section:
+                return Response(
+                    {"detail": f"Section {item['class_section']} not found for course {item['guid']}"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             calendar_events_to_create.append(
                 CalendarEvent(
                     calendar_configuration=calendar_configuration,
                     course=courses_by_guid[item["guid"]],
-                    section_id=item["section_id"],
+                    section=section,
                     start_time=item["start_time"],
                     end_time=item["end_time"],
                     start_column_index=item["start_column_index"],

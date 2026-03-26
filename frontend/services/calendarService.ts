@@ -45,7 +45,7 @@ interface AddCoursePayload {
 
 interface AddCalendarEventPayload {
 	guid: string;
-	section_id: number;
+	class_section: string;
 	start_time: string;
 	end_time: string;
 	start_column_index: number;
@@ -228,7 +228,7 @@ export async function bulkAddCalendarEventsToCalendar(
 ): Promise<CalendarEvent[] | null> {
 	const events = calendarEvents.map((event) => ({
 		guid: event.course.guid,
-		section_id: event.section.id,
+		class_section: event.section.class_section,
 		start_time: convertTo24HourFormat(event.startTime),
 		end_time: convertTo24HourFormat(event.endTime),
 		start_column_index: event.startColumnIndex,
