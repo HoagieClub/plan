@@ -464,7 +464,7 @@ def generate_csv(semester, subject, req_lib):
 
 
 # Usage: python fetch_data.py -s s2026 -d COS MAT
-# Usage: python fetch_data.py -s s2026 -d
+# Usage: python fetch_data.py -s s2026
 # A list of departments can be specified. If none are given, all departments will be used.
 def main():
     req_lib = ReqLib()

@@ -195,6 +195,7 @@ export type Course = {
 	reading_writing_assignment: string;
 	grading_basis: string;
 	reading_list: string;
+	instructors: string[];
 	department_code: string;
 	sections: Section[];
 	crosslistings: string;
@@ -209,7 +210,6 @@ export type Section = {
 	class_section: string;
 	track: string;
 	seat_reservations: string;
-	instructor_name: string;
 	capacity: number;
 	status: string;
 	enrollment: number;

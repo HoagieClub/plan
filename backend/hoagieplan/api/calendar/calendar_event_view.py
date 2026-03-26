@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from typing import Dict, List, Set
+from typing import List, Set
 
 from django.db import transaction
 from django.db.models.query import Prefetch
@@ -48,11 +48,10 @@ class CalendarEventView(APIView):
             .select_related(
                 "calendar_configuration",
                 "course__department",
-                "section__instructor",
             )
             .prefetch_related(
+                "course__instructors",
                 "course__section_set__classmeeting_set",
-                "course__section_set__instructor",
                 "section__classmeeting_set",
             )
         )
@@ -89,25 +88,13 @@ class CalendarEventView(APIView):
         if not sections:
             return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Group sections by instructor
-        sections_by_instructor: Dict[str, List[Section]] = {}
-        for section in sections:
-            instructor_name = section.instructor.full_name
-            if instructor_name not in sections_by_instructor:
-                sections_by_instructor[instructor_name] = []
-            sections_by_instructor[instructor_name].append(section)
-
-        # Select the set corresponding to one of the instructors
-        selected_instructor = next(iter(sections_by_instructor.keys()))
-        selected_sections_data = sections_by_instructor[selected_instructor]
-
-        unique_sections: Set[Section] = set(section.class_section for section in selected_sections_data)
+        unique_sections: Set[Section] = set(section.class_section for section in sections)
         unique_count = len(unique_sections)
 
         # Identifying lectures
         lecture_sections = [
             section
-            for section in selected_sections_data
+            for section in sections
             if section.class_type == "Lecture" and re.match(r"^L0\d+", section.class_section)
         ]
 
@@ -121,7 +108,7 @@ class CalendarEventView(APIView):
         # Identifying seminars
         seminar_sections = [
             section
-            for section in selected_sections_data
+            for section in sections
             if section.class_type == "Seminar" and re.match(r"^S0\d+", section.class_section)
         ]
 
@@ -134,7 +121,7 @@ class CalendarEventView(APIView):
 
         # Creating the CalendarEvent objects
         calendar_events_to_create: List[CalendarEvent] = []
-        for section in selected_sections_data:
+        for section in sections:
             for class_meeting in section.unique_class_meetings:
                 start_column_indices = self._get_start_column_index_for_days(class_meeting.days)
                 for start_column_index in start_column_indices:
@@ -209,11 +196,10 @@ class CalendarEventView(APIView):
             .select_related(
                 "calendar_configuration",
                 "course__department",
-                "section__instructor",
             )
             .prefetch_related(
+                "course__instructors",
                 "course__section_set__classmeeting_set",
-                "course__section_set__instructor",
                 "section__classmeeting_set",
             )
         )
@@ -326,7 +312,7 @@ class CalendarEventView(APIView):
     def _get_unique_class_meetings(self, term: str, course_id: str) -> list[Section]:
         sections = Section.objects.filter(term__term_code=term, course__course_id=course_id)
 
-        unique_sections = sections.select_related("course", "instructor").prefetch_related(
+        unique_sections = sections.select_related("course").prefetch_related(
             Prefetch(
                 "classmeeting_set",
                 queryset=ClassMeeting.objects.order_by("id"),
