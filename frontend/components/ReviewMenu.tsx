@@ -1,16 +1,25 @@
 import { useEffect, useState, type FC } from 'react';
 
-import { CircularProgress, Rating } from '@mui/material';
+import { CircularProgress } from '@mui/material';
+
+import { AISummary } from '@/components/ui/AISummary';
 
 interface ReviewMenuProps {
 	dept: string;
 	coursenum: string;
+	onRatingLoaded?: (rating: number) => void;
+	onSummaryLoaded?: (summary: string) => void;
 }
 
-export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
+export const ReviewMenu: FC<ReviewMenuProps> = ({
+	dept,
+	coursenum,
+	onRatingLoaded,
+	onSummaryLoaded,
+}) => {
 	const [reviews, setReviews] = useState<string[]>([]);
-	const [rating, setRating] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(true);
+	const [summary, setSummary] = useState<string>('');
 
 	useEffect(() => {
 		if (dept && coursenum) {
@@ -22,17 +31,19 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 					const response = await fetch(`/api/hoagie/course/comments?${params}`);
 
 					const data = await response.json();
-					if (data && data.reviews) {
+					if (data?.reviews) {
 						setReviews(data.reviews);
 					}
-					if (data && data.rating) {
-						setRating(data.rating);
+					if (data?.rating) {
+						onRatingLoaded?.(data.rating);
+					}
+					if (data?.summary) {
+						setSummary(data.summary);
+						onSummaryLoaded?.(data.summary);
 					}
 				} catch (err) {
 					console.error('Error fetching course reviews:', err);
-					// TODO: What should we do if error?
 					setReviews([]);
-					setRating(0);
 				} finally {
 					setLoading(false);
 				}
@@ -44,61 +55,34 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum }) => {
 
 	if (loading) {
 		return (
-			<div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-				<CircularProgress size={35} />
+			<div
+				style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}
+			>
+				<CircularProgress size={24} sx={{ color: '#9e9e9e' }} />
 			</div>
 		);
 	}
 
-	return (
-		<div
-			style={{
-				width: '450px',
-				margin: '0 auto',
-				border: '1px solid rgba(205,215,225,255)',
-				padding: '20px',
-				borderRadius: '5px',
-			}}
-		>
-			<table>
-				<tbody>
-					<tr>
-						<td>
-							<strong style={{ color: '#333', display: 'block' }}>Course Reviews</strong>
-						</td>
-						<td width='120px' />
-						<td>{rating.toFixed(2)}</td>
-						<td>
-							{' '}
-							<Rating name='course rating' value={rating} precision={0.1} readOnly />{' '}
-						</td>
-					</tr>
-				</tbody>
-			</table>
+	if (reviews.length === 0) {
+		return <div style={{ fontSize: '0.85rem', color: '#999' }}>No reviews yet.</div>;
+	}
 
-			<div
-				style={{
-					height: '400px',
-					overflowY: 'auto',
-					border: '1px solid rgba(205,215,225,255)',
-					padding: '10px',
-					marginTop: '10px',
-					borderRadius: '5px',
-				}}
-			>
-				{reviews.map((review, index) => (
-					<div
-						key={index}
-						style={{
-							marginBottom: '10px',
-							borderBottom: '1px solid rgba(0, 0, 0, 1)',
-							paddingBottom: '10px',
-						}}
-					>
-						<div style={{ color: 'black' }}>{review}</div>
-					</div>
-				))}
-			</div>
+	return (
+		<div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '20px' }}>
+			<AISummary summary={summary} />
+			{reviews.map((review, index) => (
+				<div
+					key={index}
+					style={{
+						fontSize: '0.85rem',
+						paddingBottom: index !== reviews.length - 1 ? '12px' : '0px',
+						marginBottom: index !== reviews.length - 1 ? '12px' : '0px',
+						borderBottom: index !== reviews.length - 1 ? '1px solid #ccc' : 'none',
+					}}
+				>
+					{review}
+				</div>
+			))}
 		</div>
 	);
 };
