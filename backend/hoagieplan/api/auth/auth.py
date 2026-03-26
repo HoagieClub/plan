@@ -5,6 +5,7 @@ from rest_framework import authentication, exceptions
 from django.conf import settings
 import requests
 from jwt.algorithms import RSAAlgorithm
+from django.core.cache import cache
 
 class Auth0JWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
@@ -48,9 +49,10 @@ class Auth0JWTAuthentication(authentication.BaseAuthentication):
             else:
                 # Necessary for the CAS to Auth0 migration, changes net_id to alias
                 email_prefix = email.split("@")[0]
-                user_inst.net_id = email_prefix
-                user_inst.username = email_prefix
-                user_inst.save()
+                if user_inst.net_id != email_prefix or user_inst.username != email_prefix:
+                    user_inst.net_id = email_prefix
+                    user_inst.username = email_prefix
+                    user_inst.save(update_fields=["net_id", "username"])
 
             return (user_inst, payload)
 
@@ -62,9 +64,12 @@ class Auth0JWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed(f"Authentication failed: {str(e)}")
 
     def verify_token(self, token):
-        # Get Auth0 public keys
+        # Get Auth0 public keys (cached to avoid HTTP round-trip on every request)
         jwks_url = f"https://{settings.AUTH0_DOMAIN}/.well-known/jwks.json"
-        jwks = requests.get(jwks_url).json()
+        jwks = cache.get("auth0_jwks")
+        if jwks is None:
+            jwks = requests.get(jwks_url).json()
+            cache.set("auth0_jwks", jwks, timeout=3600)
 
         # Decode token header to get key id
         unverified_header = jwt.get_unverified_header(token)

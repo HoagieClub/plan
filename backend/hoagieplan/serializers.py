@@ -18,18 +18,17 @@ class ClassMeetingSerializer(serializers.ModelSerializer):
 
 class SectionSerializer(serializers.ModelSerializer):
     # Nested ClassMeetingSerializer to include meeting details in the section data
-    class_meetings = ClassMeetingSerializer(many=True, read_only=True)
-    instructor_name = serializers.CharField(source="instructor.name", read_only=True)
+    class_meetings = ClassMeetingSerializer(source="classmeeting_set", many=True, read_only=True)
 
     class Meta:
         model = Section
         fields = (
+            "id",
             "class_number",
             "class_type",
             "class_section",
             "track",
             "seat_reservations",
-            "instructor_name",
             "capacity",
             "status",
             "enrollment",
@@ -38,9 +37,11 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    # Nested SectionSerializer to include section details in the course data
+    # TODO: this SectionSerializer isn't linked up properly (it should have
+    # source="section_set") but we don't use the section data so I'm not fixing it yet
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
+    instructors = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -64,6 +65,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "sections",
             "crosslistings",
             "quality_of_course",
+            "instructors",
         )
 
 
@@ -95,15 +97,14 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
             "class_number",
             "class_section",
             "class_type",
-            "instructor",
             "class_meetings",
         )
 
 
 class CalendarEventSerializer(serializers.ModelSerializer):
     calendar = serializers.IntegerField(source="calendar_configuration.id", read_only=True)
-    course = serializers.IntegerField(source="course.id", read_only=True)
-    section = serializers.IntegerField(source="section.id", read_only=True)
+    course = CourseSerializer(read_only=True)
+    section = SectionSerializer(read_only=True)
 
     class Meta:
         model = CalendarEvent
