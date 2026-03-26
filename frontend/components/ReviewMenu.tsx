@@ -2,13 +2,16 @@ import { useEffect, useState, type FC } from 'react';
 
 import { CircularProgress } from '@mui/material';
 
+import { AISummary } from '@/components/ui/AISummary';
+
 interface ReviewMenuProps {
 	dept: string;
 	coursenum: string;
 	onRatingLoaded?: (rating: number) => void;
+	onSummaryLoaded?: (summary: string) => void;
 }
 
-export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoaded }) => {
+export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoaded, onSummaryLoaded }) => {
 	const [reviews, setReviews] = useState<string[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [summary, setSummary] = useState<string>('');
@@ -26,14 +29,12 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoade
 					if (data?.reviews) {
 						setReviews(data.reviews);
 					}
-					if (data && data.rating) {
+					if (data?.rating) {
 						onRatingLoaded?.(data.rating);
 					}
 					if (data?.summary) {
 						setSummary(data.summary);
-					}
-					if (data?.summary) {
-						setSummary(data.summary);
+						onSummaryLoaded?.(data.summary);
 					}
 				} catch (err) {
 					console.error('Error fetching course reviews:', err);
@@ -61,6 +62,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({ dept, coursenum, onRatingLoade
 
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '20px' }}>
+			<AISummary summary={summary} />
 			{reviews.map((review, index) => (
 				<div
 					key={index}

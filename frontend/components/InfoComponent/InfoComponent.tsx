@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
+import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { cn } from '@/lib/utils';
@@ -266,29 +267,39 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								width: '55%',
 							}}
 						>
-							<SectionTitle label='Instructors' iconSrc='/icons/instructors.svg' />
-							<CourseDetailSection>
-								<div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column' }}>
-									{typeof courseDetails?.Instructors === 'string' ? (
-										courseDetails.Instructors.split(',').map((name, index, arr) => (
-											<div
-												key={index}
-												style={{
-													paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-													marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-													borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-												}}
-											>
-												{name.trim()}
-											</div>
-										))
-									) : (
-										<div>No instructor listed</div>
-									)}
+							<div style={{ display: 'flex', gap: '16px' }}>
+								<div style={{ flex: 1 }}>
+									<SectionTitle label='Instructors' iconSrc='/icons/instructors.svg' />
+									<CourseDetailSection>
+										<div style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', flexDirection: 'column' }}>
+											{typeof courseDetails?.Instructors === 'string' ? (
+												courseDetails.Instructors.split(',').map((name, index, arr) => (
+													<div
+														key={index}
+														style={{
+															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+														}}
+													>
+														{name.trim()}
+													</div>
+												))
+											) : (
+												<div>No instructor listed</div>
+											)}
+										</div>
+									</CourseDetailSection>
 								</div>
-							</CourseDetailSection>
+								<div style={{ flex: 1 }}>
+									<SectionTitle label='Course Setup' iconSrc='/icons/course-setup.svg' />
+									<CourseDetailSection>
+										<CourseSetup courseSetup={courseSetup} />
+									</CourseDetailSection>
+								</div>
+							</div>
 
-							<SectionTitle label='Description' iconSrc='/icons/description.svg' />
+						<SectionTitle label='Description' iconSrc='/icons/description.svg' />
 							<CourseDetailSection>
 								<div style={{ fontSize: '0.85rem' }}>
 									{courseDetails['Description']}
