@@ -13,6 +13,8 @@ import {
 	Snackbar,
 } from '@mui/joy';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
@@ -32,6 +34,27 @@ import './CalendarSearch.css';
 
 interface TermMap {
 	[key: string]: string;
+}
+
+const EIGHT_AM = 8 * 60;
+const ELEVEN_PM = 23 * 60;
+const MIN_CLASS_TIME = 50; // NOTE (DELETE): to enforce a minimum distance between values. I believe no classes here are shorter than 50 minutes? 
+
+const tickLabels = [
+	{ value: EIGHT_AM, label: '8:00 AM' },
+	{ value: 11 * 60, label: '11:00 AM' },
+	{ value: 14 * 60, label: '2:00 PM' },
+	{ value: 17 * 60, label: '5:00 PM' },
+	{ value: 20 * 60, label: '8:00 PM' },
+	{ value: ELEVEN_PM, label: '11:00 PM' },
+];
+
+function minutesToString(minutes: number): string {
+	const hour = Math.floor(minutes / 60);
+	const minute = minutes % 60;
+	const isAM = hour < 12 ? 'AM' : 'PM';
+	const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+	return `${displayHour}:${minute.toString().padStart(2, '0')} ${isAM}`;
 }
 
 function buildQuery(searchQuery: string, filter: Filter): string {
@@ -62,6 +85,51 @@ function invert(obj: TermMap): TermMap {
 	return Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key]));
 }
 
+interface RangeSliderProps {
+	min: number;
+	max: number;
+	value: [number, number];
+	onChange: (val: [number, number]) => void;
+}
+
+const RangeSlider: FC<RangeSliderProps> = ({ min, max, value, onChange }) => {
+	const handleChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
+		if (!Array.isArray(newValue)) return;
+		if (newValue[1] - newValue[0] < MIN_CLASS_TIME) {
+			if (activeThumb === 0) {
+				const clamped = Math.min(newValue[0], max - MIN_CLASS_TIME);
+				onChange([clamped, clamped + MIN_CLASS_TIME]);
+			} else {
+				const clamped = Math.max(newValue[1], min + MIN_CLASS_TIME);
+				onChange([clamped - MIN_CLASS_TIME, clamped]);
+			}
+		} else {
+			onChange([newValue[0], newValue[1]]);
+		}
+	};
+
+	return (
+		<div>
+			<div>
+				<span>{minutesToString(value[0])}</span>
+				<span>:</span>
+				<span>{minutesToString(value[1])}</span>
+			</div>
+			<Box>
+				<Slider
+					value={value}
+					onChange={handleChange}
+					min={min}
+					max={max}
+					step={5}
+					disableSwap
+					marks={tickLabels}
+				/>
+			</Box>
+		</div>
+	);
+};
+
 export const CalendarSearch: FC = () => {
 	const [isClient, setIsClient] = useState<boolean>(false);
 
@@ -74,6 +142,7 @@ export const CalendarSearch: FC = () => {
 	const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
+	const [timeBlock, setTimeBlock] = useState<[number, number]>([EIGHT_AM, ELEVEN_PM]);
 	const [query, setQuery] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
@@ -341,6 +410,15 @@ export const CalendarSearch: FC = () => {
 				handleCancel={handleCancel}
 			>
 				<div className='grid grid-cols-1 gap-6'>
+					<div>
+						<FormLabel>Start Time/End</FormLabel>
+						<RangeSlider
+							min={EIGHT_AM}
+							max={ELEVEN_PM}
+							value={timeBlock}
+							onChange={setTimeBlock}
+						/>
+					</div>
 					<div>
 						<FormLabel>Distribution area</FormLabel>
 						<Autocomplete
