@@ -145,6 +145,7 @@ class Course(models.Model):
     reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
     grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
     reading_list = models.TextField(blank=True, db_index=True, null=True)
+    instructors = models.ManyToManyField(Instructor, related_name="courses", blank=True)
 
     # Course evaluation fields
     quality_of_course = models.FloatField(null=True)
@@ -197,7 +198,6 @@ class Section(models.Model):
     term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
     track = models.CharField(max_length=5, db_index=True, null=True)
     seat_reservations = models.CharField(max_length=1, db_index=True, null=True)
-    instructor = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True)
     capacity = models.IntegerField(db_index=True, null=True)
     status = models.CharField(max_length=10, db_index=True, null=True)
     enrollment = models.IntegerField(db_index=True, default=0)

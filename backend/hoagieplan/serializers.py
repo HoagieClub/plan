@@ -18,8 +18,7 @@ class ClassMeetingSerializer(serializers.ModelSerializer):
 
 class SectionSerializer(serializers.ModelSerializer):
     # Nested ClassMeetingSerializer to include meeting details in the section data
-    class_meetings = ClassMeetingSerializer(many=True, read_only=True)
-    instructor_name = serializers.CharField(source="instructor.name", read_only=True)
+    class_meetings = ClassMeetingSerializer(source="classmeeting_set", many=True, read_only=True)
 
     class Meta:
         model = Section
@@ -30,7 +29,6 @@ class SectionSerializer(serializers.ModelSerializer):
             "class_section",
             "track",
             "seat_reservations",
-            "instructor_name",
             "capacity",
             "status",
             "enrollment",
@@ -42,6 +40,7 @@ class CourseSerializer(serializers.ModelSerializer):
     # Nested SectionSerializer to include section details in the course data
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
+    instructors = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -65,6 +64,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "sections",
             "crosslistings",
             "quality_of_course",
+            "instructors",
         )
 
 
@@ -96,7 +96,6 @@ class CalendarSectionSerializer(serializers.ModelSerializer):
             "class_number",
             "class_section",
             "class_type",
-            "instructor",
             "class_meetings",
         )
 

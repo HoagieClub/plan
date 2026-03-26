@@ -26,10 +26,9 @@ class CalendarConfigurationView(APIView):
             "calendar_events",
             queryset=CalendarEvent.objects.select_related(
                 "course__department",
-                "section__instructor",
             ).prefetch_related(
+                "course__instructors",
                 "course__section_set__classmeeting_set",
-                "course__section_set__instructor",
             ),
         )
 
