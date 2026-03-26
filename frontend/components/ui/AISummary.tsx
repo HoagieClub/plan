@@ -4,12 +4,13 @@ interface AISummaryProps {
 	summary: string;
 }
 
-const COLLAPSED_HEIGHT = 'calc(4 * 1.5 * 0.85rem)';
+const COLLAPSED_HEIGHT = 'calc(3 * 1.5 * 0.85rem)';
 
 export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 	const [expanded, setExpanded] = useState(false);
 	const [overflows, setOverflows] = useState(false);
 	const [fullHeight, setFullHeight] = useState<string>('1000px');
+	const [hovered, setHovered] = useState(false);
 	const textRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -29,6 +30,8 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 				marginBottom: '12px',
 				borderBottom: '1px solid #ccc',
 			}}
+			onMouseEnter={() => setHovered(true)}
+			onMouseLeave={() => setHovered(false)}
 		>
 			<div
 				style={{
@@ -38,7 +41,13 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 					marginBottom: '4px',
 				}}
 			>
-				<span style={{ color: '#663399', fontSize: '0.85rem' }}>✦</span>
+				<span style={{
+					color: '#663399',
+					fontSize: '0.85rem',
+					display: 'inline-block',
+					transform: hovered ? 'rotate(180deg)' : 'rotate(0deg)',
+					transition: 'transform 0.3s ease',
+				}}>✦</span>
 				<strong style={{ color: '#663399', fontSize: '0.85rem' }}>Summary</strong>
 				<span
 					style={{
@@ -57,6 +66,7 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 			</div>
 			<div
 				ref={textRef}
+				onClick={() => (overflows || expanded) && setExpanded((e) => !e)}
 				style={{
 					fontSize: '0.85rem',
 					lineHeight: '1.5',
@@ -65,6 +75,7 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 					overflow: 'hidden',
 					maxHeight: expanded ? fullHeight : COLLAPSED_HEIGHT,
 					transition: 'max-height 0.3s ease',
+					cursor: 'default',
 				}}
 			>
 				{summary}

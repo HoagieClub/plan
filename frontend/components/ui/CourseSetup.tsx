@@ -26,12 +26,9 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 				<>
 					<div
 						style={{
-							marginBottom: '8px',
 							fontWeight: 600,
 							color: '#333',
 							fontSize: '0.85rem',
-							paddingBottom: '8px',
-							borderBottom: '1px solid #e0e0e0',
 						}}
 					>
 						{courseSetup.map((item, idx) => (
@@ -42,7 +39,8 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 							</span>
 						))}
 					</div>
-					<div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
+					<div style={{ borderBottom: '1px solid #e0e0e0', marginTop: '6px', marginBottom: '10px' }} />
+					<div style={{ paddingBottom: '3px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
 						{courseSetup.map((item, idx) => {
 							const config = getSectionColor[item.class_type] || getSectionColor['Unknown'];
 							const isFirst = idx === 0;

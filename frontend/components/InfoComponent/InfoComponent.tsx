@@ -21,6 +21,14 @@ import { getSectionColor } from '@/utils/sectionColors';
 
 import styles from './InfoComponent.module.css';
 
+const darken = (hex: string, amount: number) => {
+	const n = parseInt(hex.slice(1), 16);
+	const r = Math.max(0, (n >> 16) - Math.round(amount * 255));
+	const g = Math.max(0, ((n >> 8) & 0xff) - Math.round(amount * 255));
+	const b = Math.max(0, (n & 0xff) - Math.round(amount * 255));
+	return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
 interface InfoComponentProps {
 	value: string;
 }
@@ -159,7 +167,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							{/* Left: course code badge + tags, then title */}
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 								{/* Row: badge + tags */}
-								<div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+								<div style={{ display: 'flex', alignItems: 'stretch', gap: '12px' }}>
 									<div
 										style={{
 											backgroundColor: courseColor,
@@ -169,23 +177,26 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											fontWeight: 'bold',
 											fontSize: '1.4rem',
 											width: 'fit-content',
+											border: `3px solid ${darken(courseColor, 0.07)}`,
 										}}
 									>
 										{value}
 									</div>
 									{/* Tags Row */}
-									<div style={{ display: 'flex', gap: '8px' }}>
+									<div style={{ display: 'flex', alignItems: 'stretch', gap: '8px' }}>
 										{distShort && (
 											<Tooltip title={distTitle} variant='soft'>
 												<div
 													style={{
 														backgroundColor: distColor,
 														color: 'white',
-														padding: '3px 8px',
-														borderRadius: '6px',
+														padding: '0 14px',
+														borderRadius: '10px',
 														fontWeight: '600',
-														fontSize: '0.75rem',
+														fontSize: '1.2rem',
 														width: 'fit-content',
+														display: 'flex',
+														alignItems: 'center',
 													}}
 												>
 													{distShort}
@@ -198,11 +209,13 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													style={{
 														backgroundColor: pdfColor,
 														color: 'white',
-														padding: '3px 8px',
-														borderRadius: '6px',
+														padding: '0 14px',
+														borderRadius: '10px',
 														fontWeight: '600',
-														fontSize: '0.75rem',
+														fontSize: '1.2rem',
 														width: 'fit-content',
+														display: 'flex',
+														alignItems: 'center',
 													}}
 												>
 													{pdfTag}
@@ -215,11 +228,13 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													style={{
 														backgroundColor: auditColor,
 														color: 'white',
-														padding: '3px 8px',
-														borderRadius: '6px',
+														padding: '0 14px',
+														borderRadius: '10px',
 														fontWeight: '600',
-														fontSize: '0.75rem',
+														fontSize: '1.2rem',
 														width: 'fit-content',
+														display: 'flex',
+														alignItems: 'center',
 													}}
 												>
 													{auditTag}
@@ -236,7 +251,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							</div>
 
 							{/* Right: Registrar & Princeton Courses buttons */}
-							<div style={{ display: 'flex', gap: '8px' }}>
+							<div style={{ display: 'flex', alignItems: 'stretch', gap: '8px' }}>
 								<ExternalLink
 									href={`https://www.princetoncourses.com/course/${
 										new URL(courseDetails.Registrar).searchParams.get('term') +
