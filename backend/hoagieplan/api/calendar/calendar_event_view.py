@@ -143,9 +143,25 @@ class CalendarEventView(APIView):
                         )
                     )
 
-        CalendarEvent.objects.bulk_create(calendar_events_to_create)
+        CalendarEvent.objects.bulk_create(calendar_events_to_create, ignore_conflicts=True)
 
-        serializer = CalendarEventSerializer(calendar_events_to_create, many=True)
+        events_for_course = (
+            CalendarEvent.objects.filter(
+                calendar_configuration=calendar_configuration,
+                course=course,
+            )
+            .select_related(
+                "calendar_configuration",
+                "course__department",
+            )
+            .prefetch_related(
+                "course__instructors",
+                "course__section_set__classmeeting_set",
+                "section__classmeeting_set",
+            )
+        )
+
+        serializer = CalendarEventSerializer(events_for_course, many=True)
         return Response(serializer.data)
 
     def _bulk_add_calendar_events(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:
