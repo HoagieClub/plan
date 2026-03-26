@@ -15,7 +15,6 @@ from hoagieplan.api.model_getters import (
 )
 from hoagieplan.models import CalendarEvent, ClassMeeting, Course, CustomUser, Section
 from hoagieplan.serializers import CalendarEventSerializer
-from hoagieplan.utils import get_term_and_course_id
 
 DAYS_TO_START_COLUMN_INDEX = {
     "M": 1,  # Monday
@@ -48,10 +47,10 @@ class CalendarEventView(APIView):
             .select_related(
                 "calendar_configuration",
                 "course__department",
+                "section",
             )
             .prefetch_related(
                 "course__instructors",
-                "course__section_set__classmeeting_set",
                 "section__classmeeting_set",
             )
         )
@@ -83,8 +82,7 @@ class CalendarEventView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        course_term, course_id = get_term_and_course_id(guid)
-        sections = self._get_unique_class_meetings(course_term, course_id)
+        sections = self._get_unique_class_meetings(term_id, course.id)
         if not sections:
             return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -153,10 +151,10 @@ class CalendarEventView(APIView):
             .select_related(
                 "calendar_configuration",
                 "course__department",
+                "section",
             )
             .prefetch_related(
                 "course__instructors",
-                "course__section_set__classmeeting_set",
                 "section__classmeeting_set",
             )
         )
@@ -212,10 +210,10 @@ class CalendarEventView(APIView):
             .select_related(
                 "calendar_configuration",
                 "course__department",
+                "section",
             )
             .prefetch_related(
                 "course__instructors",
-                "course__section_set__classmeeting_set",
                 "section__classmeeting_set",
             )
         )
@@ -241,8 +239,6 @@ class CalendarEventView(APIView):
                 course=course,
             )
             deleted_count, _ = events_to_delete.delete()
-            if deleted_count == 0:
-                return Response({"detail": "No events to delete."}, status=status.HTTP_404_NOT_FOUND)
             return Response({"detail": f"Deleted {deleted_count} events."}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -325,10 +321,10 @@ class CalendarEventView(APIView):
 
         return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
 
-    def _get_unique_class_meetings(self, term: str, course_id: str) -> list[Section]:
-        sections = Section.objects.filter(term__term_code=term, course__course_id=course_id)
+    def _get_unique_class_meetings(self, term_id: int, course_id: int) -> list[Section]:
+        sections = Section.objects.filter(term_id=term_id, course_id=course_id)
 
-        unique_sections = sections.select_related("course").prefetch_related(
+        unique_sections = sections.prefetch_related(
             Prefetch(
                 "classmeeting_set",
                 queryset=ClassMeeting.objects.order_by("id"),
