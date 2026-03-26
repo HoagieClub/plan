@@ -37,7 +37,8 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    # Nested SectionSerializer to include section details in the course data
+    # TODO: this SectionSerializer isn't linked up properly (it should have
+    # source="section_set") but we don't use the section data so I'm not fixing it yet
     sections = SectionSerializer(many=True, read_only=True)
     department_code = serializers.CharField(source="department.code", read_only=True)
     instructors = serializers.StringRelatedField(many=True, read_only=True)
