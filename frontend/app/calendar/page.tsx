@@ -21,7 +21,7 @@ import type { CalendarEvent } from '@/types';
 import { terms } from '@/utils/terms';
 import '@/app/calendar/Calendar.css';
 
-const MIGRATION_COMPLETE_KEY = 'calendar-migration-complete';
+const MIGRATION_COMPLETE_KEY = 'calendar-migration-complete-v2';
 
 const CalendarUI: FC = () => {
 	// Initialize tab 3 to be highlighted on page load
