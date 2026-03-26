@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 
-import { People, CalendarToday, Menu } from '@mui/icons-material';
 import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { CircularProgress, Rating } from '@mui/material';
 import { createPortal } from 'react-dom';
@@ -17,7 +16,6 @@ import { departmentColors } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
-import { getSectionColor } from '@/utils/sectionColors';
 
 import styles from './InfoComponent.module.css';
 
@@ -50,10 +48,14 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const [showFeedbackGradient, setShowFeedbackGradient] = useState(false);
 
 	const feedbackInnerRef = (el: HTMLDivElement | null) => {
-		if (!el) return;
+		if (!el) {
+			return;
+		}
 		const observer = new ResizeObserver(() => {
 			const scroll = feedbackScrollRef.current;
-			if (!scroll) return;
+			if (!scroll) {
+				return;
+			}
 			setShowFeedbackGradient(
 				scroll.scrollHeight > scroll.clientHeight &&
 					scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2
@@ -369,7 +371,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										style={{ height: '100%', overflowY: 'auto', minHeight: 0, padding: '12px' }}
 										onScroll={() => {
 											const el = feedbackScrollRef.current;
-											if (!el) return;
+											if (!el) {
+												return;
+											}
 											setShowFeedbackGradient(
 												el.scrollHeight > el.clientHeight &&
 													el.scrollTop + el.clientHeight < el.scrollHeight - 2

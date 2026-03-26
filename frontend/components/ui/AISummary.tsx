@@ -21,7 +21,9 @@ export const AISummary: FC<AISummaryProps> = ({ summary }) => {
 		}
 	}, [summary]);
 
-	if (!summary) return null;
+	if (!summary) {
+		return null;
+	}
 
 	return (
 		<div
