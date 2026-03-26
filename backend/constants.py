@@ -190,6 +190,7 @@ LANG_DEPTS: Dict[str, str] = {
 }   # unsure if some of these can count for AB foreign language requirement. --George
 
 SEMESTER_TO_TERM_CODE = {
+    "f2026": 1272,
     "f2025": 1262,
     "f2024": 1252,
     "f2023": 1242,

@@ -115,7 +115,7 @@ export const CalendarSearch: FC = () => {
 			setLoading(true);
 			try {
 				const queryString = buildQuery(searchQuery, filter);
-				const response = await fetch(`/api/hoagie/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search?${queryString}`);
 
 				if (!response.ok) {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
