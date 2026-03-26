@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type FC } from 'react';
 
 import { People, CalendarToday, Menu } from '@mui/icons-material';
 import { Button as JoyButton, Tooltip } from '@mui/joy';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Rating } from '@mui/material';
 import { createPortal } from 'react-dom';
 
 import { Modal } from '@/components/Modal';
 import { ReviewMenu } from '@/components/ReviewMenu';
-import OpenInNewTabIcon from '@/components/ui/OpenInNewTabIcon';
+import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
+import { ExternalLink } from '@/components/ui/ExternalLink';
+import { SectionTitle } from '@/components/ui/SectionTitle';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
@@ -26,6 +28,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const dept = value.split(' ')[0];
 	const coursenum = value.split(' ')[1];
 	const [showPopup, setShowPopup] = useState<boolean>(false);
+	const [feedbackRating, setFeedbackRating] = useState<number>(0);
 	const [courseDetails, setCourseDetails] = useState<{
 		// TODO: Address this typing eventually.
 
@@ -34,6 +37,19 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	} | null>(null);
 
 	const modalRef = useRef(null);
+	const feedbackScrollRef = useRef<HTMLDivElement>(null);
+	const [showFeedbackGradient, setShowFeedbackGradient] = useState(false);
+
+	const feedbackInnerRef = (el: HTMLDivElement | null) => {
+		if (!el) return;
+		const observer = new ResizeObserver(() => {
+			const scroll = feedbackScrollRef.current;
+			if (!scroll) return;
+			setShowFeedbackGradient(scroll.scrollHeight > scroll.clientHeight && scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 2);
+		});
+		observer.observe(el);
+	};
+
 	const courseColor = departmentColors[dept];
 
 	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
@@ -103,26 +119,19 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 		document.removeEventListener('mousedown', handleOutsideClick);
 	};
 
-	const modalTitleStyle = {
-		color: 'gray',
-		display: 'block',
-		fontWeight: 500,
-		fontSize: '0.9rem',
-		marginTop: '8px',
-		marginBottom: '3px',
-	};
-
 	const modalContent = showPopup ? (
 		<Modal>
 			<div
 				className={styles.modal}
 				style={{
 					width: '75%',
-					height: 'auto',
+					height: courseDetails ? '82vh' : '160px',
 					gap: '10px',
 					padding: '25px',
 					display: 'flex',
-					justifyContent: 'flex-end',
+					flexDirection: 'column',
+					overflow: 'hidden',
+					transition: 'height 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
 				}}
 				ref={modalRef}
 			>
@@ -130,365 +139,238 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 					<div
 						style={{
 							display: 'flex',
-							flexDirection: 'row',
-							width: '100vw',
-							overflowX: 'auto',
+							flexDirection: 'column',
+							width: '100%',
+							flex: 1,
+							minHeight: 0,
+							overflowX: 'hidden',
 							overflowY: 'auto',
 						}}
 					>
+						{/* Full-width header row: course code + title on left, links on right */}
+						<div
+							style={{
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'flex-start',
+							}}
+						>
+							{/* Left: course code badge + tags, then title */}
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+								{/* Row: badge + tags */}
+								<div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+									<div
+										style={{
+											backgroundColor: courseColor,
+											color: 'white',
+											padding: '4px 14px',
+											borderRadius: '10px',
+											fontWeight: 'bold',
+											fontSize: '1.4rem',
+											width: 'fit-content',
+										}}
+									>
+										{value}
+									</div>
+									{/* Tags Row */}
+									<div style={{ display: 'flex', gap: '8px' }}>
+										{distShort && (
+											<Tooltip title={distTitle} variant='soft'>
+												<div
+													style={{
+														backgroundColor: distColor,
+														color: 'white',
+														padding: '3px 8px',
+														borderRadius: '6px',
+														fontWeight: '600',
+														fontSize: '0.75rem',
+														width: 'fit-content',
+													}}
+												>
+													{distShort}
+												</div>
+											</Tooltip>
+										)}
+										{pdfTag && (
+											<Tooltip title={pdfTitle} variant='soft'>
+												<div
+													style={{
+														backgroundColor: pdfColor,
+														color: 'white',
+														padding: '3px 8px',
+														borderRadius: '6px',
+														fontWeight: '600',
+														fontSize: '0.75rem',
+														width: 'fit-content',
+													}}
+												>
+													{pdfTag}
+												</div>
+											</Tooltip>
+										)}
+										{auditTag && (
+											<Tooltip title={auditTitle} variant='soft'>
+												<div
+													style={{
+														backgroundColor: auditColor,
+														color: 'white',
+														padding: '3px 8px',
+														borderRadius: '6px',
+														fontWeight: '600',
+														fontSize: '0.75rem',
+														width: 'fit-content',
+													}}
+												>
+													{auditTag}
+												</div>
+											</Tooltip>
+										)}
+									</div>
+								</div>
+								{courseDetails['Title'] && (
+									<h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: 0 }}>
+										{courseDetails['Title']}
+									</h2>
+								)}
+							</div>
+
+							{/* Right: Registrar & Princeton Courses buttons */}
+							<div style={{ display: 'flex', gap: '8px' }}>
+								<ExternalLink
+									href={`https://www.princetoncourses.com/course/${
+										new URL(courseDetails.Registrar).searchParams.get('term') +
+										new URL(courseDetails.Registrar).searchParams.get('courseid')
+									}`}
+								>
+									Princeton<br />Courses
+								</ExternalLink>
+								{courseDetails?.Registrar && (
+									<ExternalLink href={courseDetails.Registrar}>
+										Official<br />Registrar
+									</ExternalLink>
+								)}
+
+							</div>
+						</div>
+
+						{/* Two-column body */}
+						<div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, gap: '24px' }}>
 						{/* Details section with explicit width */}
 						<div
 							style={{
-								height: '100%',
+								flex: 1,
+								minHeight: 0,
 								overflowWrap: 'break-word',
 								flexWrap: 'wrap',
 								overflowY: 'auto',
 								width: '55%',
-								paddingLeft: '10px',
 							}}
 						>
-							<div
-								style={{
-									display: 'flex',
-									justifyContent: 'space-between',
-									alignItems: 'center',
-									gap: '16px',
-									marginBottom: '12px',
-								}}
-							>
-								{/* Course code box */}
-								<div
-									style={{
-										backgroundColor: courseColor,
-										color: 'white',
-										padding: '8px 14px',
-										borderRadius: '10px',
-										fontWeight: 'bold',
-										fontSize: '1.2vw',
-										width: 'fit-content',
-										height: 'auto',
-									}}
-								>
-									{value}
-								</div>
-
-								{/* Buttons for Registrar & Princeton Courses */}
-								<div style={{ display: 'flex', gap: '6px' }}>
-									{courseDetails?.Registrar && (
-										<JoyButton
-											variant='soft'
-											color='neutral'
-											component='a'
-											href={courseDetails.Registrar}
-											target='_blank'
-											rel='noopener noreferrer'
-											sx={{ ml: 2 }}
-											size='md'
-										>
-											Registrar
-											<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
-										</JoyButton>
-									)}
-									{courseDetails?.Registrar &&
-										(() => {
-											try {
-												const registrarUrl = new URL(courseDetails.Registrar);
-												const term = registrarUrl.searchParams.get('term');
-												const courseid = registrarUrl.searchParams.get('courseid');
-												if (term && courseid) {
-													return (
-														<JoyButton
-															variant='soft'
-															color='neutral'
-															component='a'
-															href={`https://www.princetoncourses.com/course/${term}${courseid}`}
-															target='_blank'
-															rel='noopener noreferrer'
-															sx={{ ml: 2 }}
-															size='md'
-														>
-															Princeton Courses
-															<OpenInNewTabIcon className='h-4 w-6' aria-hidden='true' />
-														</JoyButton>
-													);
-												}
-											} catch (e) {
-												console.error('Failed to construct Princeton Courses URL:', e);
-											}
-											return null;
-										})()}
-								</div>
-							</div>
-
-							{/* Course Title */}
-							{courseDetails['Title'] && (
-								<h2 style={{ fontSize: '1.15rem', fontWeight: 550, margin: '6px 8px 8px 0px' }}>
-									{courseDetails['Title']}
-								</h2>
-							)}
-
-							{/* Tags Row */}
-							<div style={{ display: 'flex', gap: '10px' }}>
-								{/* Distribution Area Code */}
-								{distShort && (
-									<Tooltip title={distTitle} variant='soft'>
-										<div
-											style={{
-												backgroundColor: distColor,
-												color: 'white',
-												padding: '4px 8px 4px 8px',
-												borderRadius: '10px',
-												fontWeight: 'bold',
-												width: 'fit-content',
-											}}
-										>
-											{distShort}
-										</div>
-									</Tooltip>
-								)}
-
-								{/* PDF Tag Code */}
-								{pdfTag && (
-									<Tooltip title={pdfTitle} variant='soft'>
-										<div
-											style={{
-												backgroundColor: pdfColor,
-												color: 'white',
-												padding: '4px 8px 4px 8px',
-												borderRadius: '7px',
-												fontWeight: 'bold',
-												width: 'fit-content',
-											}}
-										>
-											{pdfTag}
-										</div>
-									</Tooltip>
-								)}
-
-								{/* Audit Tag */}
-								{auditTag && (
-									<Tooltip title={auditTitle} variant='soft'>
-										<div
-											style={{
-												backgroundColor: auditColor,
-												color: 'white',
-												padding: '4px 8px 4px 8px',
-												borderRadius: '7px',
-												fontWeight: 'bold',
-												width: 'fit-content',
-											}}
-										>
-											{auditTag}
-										</div>
-									</Tooltip>
-								)}
-							</div>
-
-							<div
-								style={{
-									display: 'grid',
-									gridTemplateColumns: '1fr 1fr',
-									gap: '16px',
-									marginTop: '16px',
-								}}
-							>
-								{/* Instructors Section */}
-								<div>
-									<strong style={modalTitleStyle}>
-										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-											<People fontSize='small' />
-											Instructors
-										</span>
-									</strong>
-									<div
-										style={{
-											backgroundColor: '#f5f5f5',
-											padding: '6px 16px',
-											borderRadius: '6px',
-											fontSize: '0.85rem',
-											fontWeight: 500,
-											display: 'flex',
-											flexDirection: 'column',
-										}}
-									>
-										{typeof courseDetails?.Instructors === 'string' && courseDetails.Instructors ? (
-											courseDetails.Instructors.split(',').map((name, index, arr) => (
-												<div
-													key={index}
-													style={{
-														padding: '6px 0px',
-														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-													}}
-												>
-													{name.trim()}
-												</div>
-											))
-										) : (
-											<div style={{ color: '#999', fontStyle: 'italic' }}>No instructor listed</div>
-										)}
-									</div>
-								</div>
-
-								{/* Course Setup Section */}
-								<div>
-									<strong style={modalTitleStyle}>
-										<span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-											<CalendarToday fontSize='small' />
-											Course Setup
-										</span>
-									</strong>
-									<div
-										style={{
-											backgroundColor: '#f5f5f5',
-											padding: '6px 16px',
-											borderRadius: '6px',
-											fontSize: '0.85rem',
-										}}
-									>
-										{courseSetup.length > 0 ? (
-											<>
-												<div
-													style={{
-														marginBottom: '8px',
-														fontWeight: 600,
-														color: '#333',
-														fontSize: '0.85rem',
-														paddingBottom: '8px',
-														borderBottom: '1px solid #e0e0e0',
-													}}
-												>
-													{courseSetup.map((item, idx) => (
-														<span key={item.class_type}>
-															{item.count} {item.class_type}
-															{item.count > 1 ? 's' : ''}
-															{idx < courseSetup.length - 1 ? ', ' : ''}
-														</span>
-													))}
-												</div>
-												<div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-													{courseSetup.map((item) => {
-														const config =
-															getSectionColor[item.class_type] || getSectionColor['Unknown'];
-														return (
-															<div
-																key={item.class_type}
-																style={{
-																	borderRadius: '6px',
-																	textAlign: 'center',
-																	fontWeight: 600,
-																	flex: '1',
-																	overflow: 'hidden',
-																}}
-															>
-																<div
-																	style={{
-																		backgroundColor: config.color,
-																		color: 'white',
-																		fontSize: '0.9rem',
-																		fontWeight: 'bold',
-																		padding: '4px 0',
-																	}}
-																>
-																	{config.abbr}
-																</div>
-																<div
-																	style={{
-																		backgroundColor: config.lightColor ?? config.color + '99',
-																		color: 'white',
-																		fontSize: '0.75rem',
-																		padding: '3px 0',
-																	}}
-																>
-																	{item.duration} m.
-																</div>
-															</div>
-														);
-													})}
-												</div>
-											</>
-										) : (
-											<div style={{ color: '#999', fontStyle: 'italic', padding: '8px 0' }}>
-												No section information available
+							<SectionTitle label='Instructors' iconSrc='/icons/instructors.svg' />
+							<CourseDetailSection>
+								<div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column' }}>
+									{typeof courseDetails?.Instructors === 'string' ? (
+										courseDetails.Instructors.split(',').map((name, index, arr) => (
+											<div
+												key={index}
+												style={{
+													paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+													marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+													borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+												}}
+											>
+												{name.trim()}
 											</div>
-										)}
-									</div>
+										))
+									) : (
+										<div>No instructor listed</div>
+									)}
 								</div>
-							</div>
+							</CourseDetailSection>
 
-							{/* Description Box */}
-							<strong style={modalTitleStyle}>
-								<Menu fontSize='small' />
-								Description
-							</strong>
-							<div
-								style={{
-									backgroundColor: '#f5f5f5',
-									padding: '8px 10px',
-									borderRadius: '6px',
-									fontSize: '0.85rem',
-									display: 'flex',
-									height: 'fit-content',
-									flexDirection: 'column',
-								}}
-							>
-								{courseDetails['Description']}
-							</div>
+							<SectionTitle label='Description' iconSrc='/icons/description.svg' />
+							<CourseDetailSection>
+								<div style={{ fontSize: '0.85rem' }}>
+									{courseDetails['Description']}
+								</div>
+							</CourseDetailSection>
 						</div>
-
-						{/* Right half */}
 						<div
 							style={{
 								display: 'flex',
 								flexDirection: 'column',
+								padding: '0px 8px 8px 10px',
 								width: '45%',
-								justifyContent: 'flex-end',
-								paddingLeft: '30px',
-								height: 'auto',
+								minHeight: 0,
 							}}
 						>
-							{/* Reviews Section */}
-							<div
-								style={{
-									display: 'inline-flex',
-									alignItems: 'center',
-								}}
-							>
-								<ReviewMenu dept={dept} coursenum={coursenum} />
+							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+								<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
+								{feedbackRating > 0 && (
+									<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+										<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
+											{feedbackRating.toFixed(1)}
+										</span>
+										<Rating value={feedbackRating} precision={0.1} readOnly size='small' />
+									</div>
+								)}
 							</div>
-
-							{/* Close Button */}
-							<footer className='mt-auto text-right'>
+							<div style={{ position: 'relative', flex: 1, minHeight: 0, backgroundColor: '#F5F5F5', borderRadius: '6px' }}>
 								<div
-									style={{
-										display: 'flex',
-										justifyContent: 'flex-end',
-										paddingTop: '10px',
+									ref={feedbackScrollRef}
+									style={{ height: '100%', overflowY: 'auto', minHeight: 0, padding: '12px' }}
+									onScroll={() => {
+										const el = feedbackScrollRef.current;
+										if (!el) return;
+										setShowFeedbackGradient(el.scrollHeight > el.clientHeight && el.scrollTop + el.clientHeight < el.scrollHeight - 2);
 									}}
 								>
-									<JoyButton
-										variant='soft'
-										color='neutral'
-										onClick={handleCancel}
-										sx={{ ml: 2 }}
-										size='md'
-									>
-										Close
-									</JoyButton>
+									<div ref={feedbackInnerRef}>
+										<ReviewMenu dept={dept} coursenum={coursenum} onRatingLoaded={setFeedbackRating} />
+									</div>
 								</div>
-							</footer>
+								<div
+									style={{
+										position: 'absolute',
+										bottom: 0,
+										left: 0,
+										right: 0,
+										height: '30px',
+										background: 'linear-gradient(to bottom, transparent, #BFBFBF)',
+										pointerEvents: 'none',
+										borderRadius: '0 0 6px 6px',
+										opacity: showFeedbackGradient ? 1 : 0,
+										transition: 'opacity 0.2s ease',
+									}}
+								/>
+							</div>
 						</div>
+					</div>
 					</div>
 				) : (
 					<div
 						style={{
 							display: 'flex',
 							justifyContent: 'center',
-							width: '90%',
+							alignItems: 'center',
+							width: '100%',
+							flex: 1,
 						}}
 					>
-						<CircularProgress size={35} />
+						<CircularProgress size={35} sx={{ color: '#9e9e9e' }} />
 					</div>
 				)}
+				<footer className='mt-auto text-right'>
+					<JoyButton
+						variant='soft'
+						color='neutral'
+						onClick={handleCancel}
+						sx={{ ml: 2 }}
+						size='md'
+					>
+						Close
+					</JoyButton>
+				</footer>
 			</div>
 		</Modal>
 	) : null;
