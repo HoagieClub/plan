@@ -9,7 +9,7 @@
 	font-size: 1em;
 	width: 24vw;
 	min-width: 270px;
-	height: calc(100vh - 55vh - 36px);
+	height: calc(85vh - 55vh - 36px);
 }
 
 .header {
@@ -17,7 +17,7 @@
 	padding: 1rem;
 	align-items: center;
 	justify-content: space-between;
-	background-color: #f1f5f9;
+	background-color: #ffffff;
 	border-top-left-radius: 6px;
 	border-top-right-radius: 6px;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -32,18 +32,12 @@
 
 .content {
 	flex: 1;
+	background-color: #ffffff;
 }
 
 .item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 1rem;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-
-	&:last-child {
-		border-bottom: none;
-	}
+	display: block;
+	border-bottom: none;
 }
 
 .textContainer {

@@ -3,16 +3,15 @@ import { useMemo } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
-import { InfoComponentPopOver } from '@/components/InfoComponent';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 
 import styles from './SelectedCourses.module.css';
+import { SortableCalendarItem } from './SortableCalendarItem';
 
 export const SelectedCourses: FC = () => {
 	const { termFilter } = useFilterStore((state) => state);
 	const selectedCourses = useCalendarStore((state) => state.getSelectedCourses(termFilter));
-	const removeCourse = useCalendarStore((state) => state.removeCourse);
 
 	const uniqueCourses = useMemo(() => {
 		const seenGuids = new Set();
@@ -37,23 +36,9 @@ export const SelectedCourses: FC = () => {
 				<Virtuoso
 					data={uniqueCourses}
 					itemContent={(_, course) => (
-						<InfoComponentPopOver key={course.course.guid} value={course.course.crosslistings}>
-							<div className={styles.item}>
-								<div className={styles.textContainer}>
-									{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
-								</div>
-								<div className={styles.actions}>
-									<button
-										onClick={(e) => {
-											e.stopPropagation();
-											removeCourse(course.key);
-										}}
-									>
-										Remove
-									</button>
-								</div>
-							</div>
-						</InfoComponentPopOver>
+						<div className={styles.item} key={course.course.guid}>
+							<SortableCalendarItem course={course.course} />
+						</div>
 					)}
 				/>
 			</div>
