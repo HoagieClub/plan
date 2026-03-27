@@ -4,8 +4,9 @@ import { memo, forwardRef, useEffect } from 'react'; // todo: not needed in reac
 import { InfoComponentPopOver } from '@/components/InfoComponent';
 import { cn } from '@/lib/utils';
 
-import { Handle, Remove } from './components';
 import infoStyles from '../InfoComponent/InfoComponent.module.css';
+
+import { Handle, Remove } from './components';
 import styles from './Item.module.css';
 
 import type { DraggableSyntheticListeners } from '@dnd-kit/core';

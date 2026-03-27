@@ -1,4 +1,6 @@
 // CalendarSearchItem.jsx
+import React from 'react';
+
 import { InfoComponentPopOver } from '@/components/InfoComponent';
 import useCalendarStore from '@/store/calendarSlice';
 import { termsInverse } from '@/utils/terms';

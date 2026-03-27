@@ -1,5 +1,5 @@
 // SelectedCourseItem.tsx
-import type { FC, CSSProperties } from 'react';
+import type { FC, CSSProperties, MouseEvent } from 'react';
 
 import { InfoComponentPopOver } from '@/components/InfoComponent';
 import styles from '@/components/Item/Item.module.css';
@@ -18,7 +18,7 @@ const getGradientStyle = (dept: string) => {
 export const SelectedCourseItem: FC<SelectedCourseItemProps> = ({ event }) => {
 	const removeCourse = useCalendarStore((state) => state.removeCourse);
 
-	const handleRemove = (e: React.MouseEvent) => {
+	const handleRemove = (e: MouseEvent<HTMLButtonElement>) => {
 		e.stopPropagation();
 		removeCourse(event.course.guid);
 	};

@@ -43,7 +43,14 @@ export const SelectedCourses: FC = () => {
 									{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
 								</div>
 								<div className={styles.actions}>
-									<button onClick={(e) => { e.stopPropagation(); removeCourse(course.key); }}>Remove</button>
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											removeCourse(course.key);
+										}}
+									>
+										Remove
+									</button>
 								</div>
 							</div>
 						</InfoComponentPopOver>
