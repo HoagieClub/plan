@@ -1,4 +1,5 @@
 // CalendarSearchItem.jsx
+import { InfoComponentPopOver } from '@/components/InfoComponent';
 import useCalendarStore from '@/store/calendarSlice';
 import { termsInverse } from '@/utils/terms';
 
@@ -13,30 +14,34 @@ const CalendarSearchItem = ({ course }) => {
 		state.getSelectedCourses(termCode).some((event) => event.course.guid === course.guid)
 	);
 
-	const handleClick = () => {
+	const handleAdd = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		void addCourse(course);
 	};
 
 	return (
-		<div className={styles.card} onClick={handleClick}>
-			<div className={styles.content}>
-				<div className={styles.header}>
-					<div className={styles.crosslistings}>{course.crosslistings}</div>
+		<InfoComponentPopOver value={course.crosslistings}>
+			<div className={styles.card}>
+				<div className={styles.content}>
+					<div className={styles.header}>
+						<div className={styles.crosslistings}>{course.crosslistings}</div>
+					</div>
+					<div className={styles.title}>{course.title}</div>
 				</div>
-				<div className={styles.title}>{course.title}</div>
-			</div>
-			<div className={styles.meta}>
-				<div className={styles.semester}>{semester}</div>
-				<div className={styles.actions}>
-					<button
-						className={`${styles.button} ${isCourseInSchedule ? styles.disabled : ''}`}
-						disabled={isCourseInSchedule}
-					>
-						Add
-					</button>
+				<div className={styles.meta}>
+					<div className={styles.semester}>{semester}</div>
+					<div className={styles.actions}>
+						<button
+							className={`${styles.button} ${isCourseInSchedule ? styles.disabled : ''}`}
+							disabled={isCourseInSchedule}
+							onClick={handleAdd}
+						>
+							Add
+						</button>
+					</div>
 				</div>
 			</div>
-		</div>
+		</InfoComponentPopOver>
 	);
 };
 

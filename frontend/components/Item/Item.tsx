@@ -1,10 +1,11 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { memo, forwardRef, useEffect } from 'react'; // todo: not needed in react19
 
-import { InfoComponent } from '@/components/InfoComponent';
+import { InfoComponentPopOver } from '@/components/InfoComponent';
 import { cn } from '@/lib/utils';
 
 import { Handle, Remove } from './components';
+import infoStyles from '../InfoComponent/InfoComponent.module.css';
 import styles from './Item.module.css';
 
 import type { DraggableSyntheticListeners } from '@dnd-kit/core';
@@ -117,7 +118,20 @@ export const Item = memo(
 						{/* Text Container for InfoComponent */}
 						<div className={styles.TextContainer}>
 							{!disabled ? (
-								<InfoComponent value={value.toString().split('|')[1] ?? ''} />
+								<InfoComponentPopOver value={value.toString().split('|')[1] ?? ''}>
+									<div
+										className={infoStyles.Action}
+										style={{
+											cursor: 'pointer',
+											maxWidth: '100%',
+											overflow: 'hidden',
+											whiteSpace: 'nowrap',
+											textOverflow: 'ellipsis',
+										}}
+									>
+										{value.toString().split('|')[1] ?? ''}
+									</div>
+								</InfoComponentPopOver>
 							) : (
 								(value.toString().split('|')[1] ?? '')
 							)}

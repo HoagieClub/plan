@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
+import { InfoComponentPopOver } from '@/components/InfoComponent';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 
@@ -36,14 +37,16 @@ export const SelectedCourses: FC = () => {
 				<Virtuoso
 					data={uniqueCourses}
 					itemContent={(_, course) => (
-						<div key={course.course.guid} className={styles.item}>
-							<div className={styles.textContainer}>
-								{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
+						<InfoComponentPopOver key={course.course.guid} value={course.course.crosslistings}>
+							<div className={styles.item}>
+								<div className={styles.textContainer}>
+									{`${course.course.department_code} ${course.course.catalog_number} - ${course.course.title}`}
+								</div>
+								<div className={styles.actions}>
+									<button onClick={(e) => { e.stopPropagation(); removeCourse(course.key); }}>Remove</button>
+								</div>
 							</div>
-							<div className={styles.actions}>
-								<button onClick={() => removeCourse(course.key)}>Remove</button>
-							</div>
-						</div>
+						</InfoComponentPopOver>
 					)}
 				/>
 			</div>
