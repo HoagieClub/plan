@@ -154,12 +154,36 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 			return;
 		}
 
-		const params = new URLSearchParams({ crosslistings: value });
-		void fetch(`/api/hoagie/course/details?${params}`)
-			.then((response) => response.json())
-			.then((data) => {
-				setCourseDetails(data as CourseDetails);
-			});
+		const controller = new AbortController();
+
+		const fetchCourseDetails = async () => {
+			try {
+				const params = new URLSearchParams({ crosslistings: value });
+				const response = await fetch(`/api/hoagie/course/details/?${params}`, {
+					signal: controller.signal,
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error: ${response.status}`);
+				}
+
+				const data = (await response.json()) as CourseDetails;
+				setCourseDetails(data);
+			} catch (error) {
+				if (controller.signal.aborted) {
+					return;
+				}
+
+				console.error('Error fetching course details:', error);
+				setCourseDetails({ error: 'Failed to load course details.' });
+			}
+		};
+
+		void fetchCourseDetails();
+
+		return () => {
+			controller.abort();
+		};
 	}, [courseDetails, showPopover, value]);
 
 	useEffect(() => {

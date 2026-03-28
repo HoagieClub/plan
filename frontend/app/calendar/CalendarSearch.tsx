@@ -8,6 +8,7 @@ import {
 	AutocompleteOption,
 	Button,
 	Checkbox,
+	Chip,
 	FormLabel,
 	ListItemContent,
 	Snackbar,
@@ -349,6 +350,11 @@ export const CalendarSearch: FC = () => {
 							options={Object.keys(distributionAreas)}
 							placeholder='Distribution area'
 							variant='soft'
+							slotProps={{
+								listbox: {
+									disablePortal: true,
+								},
+							}}
 							value={localDistributionFilters
 								.map((distribution) => distributionAreasInverse[distribution])
 								.filter(Boolean)}
@@ -368,6 +374,17 @@ export const CalendarSearch: FC = () => {
 								setLocalDistributionFilters(uniqueDistributions);
 							}}
 							getOptionLabel={(option) => option.toString()}
+							renderTags={(selectedOptions, getTagProps) =>
+								selectedOptions.map((option, index) => {
+									const { key, ...tagProps } = getTagProps({ index });
+
+									return (
+										<Chip key={key} variant='soft' color='neutral' size='sm' {...tagProps}>
+											{option}
+										</Chip>
+									);
+								})
+							}
 							renderOption={(props, option) => (
 								<AutocompleteOption {...props} key={option}>
 									<ListItemContent>{option}</ListItemContent>

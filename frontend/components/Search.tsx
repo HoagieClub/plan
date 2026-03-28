@@ -266,6 +266,11 @@ export const Search: FC = () => {
 						options={Object.keys(terms)}
 						placeholder='Semester'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={termsInverse[localTermFilter]}
 						isOptionEqualToValue={(option, value) => value === '' || option === value}
 						onChange={(event, newTermName: string | null) => {
@@ -288,6 +293,11 @@ export const Search: FC = () => {
 						options={Object.keys(distributionAreas)}
 						placeholder='Distribution area'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={localDistributionFilters.map(
 							(distribution) => distributionAreasInverse[distribution]
 						)}
