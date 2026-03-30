@@ -50,15 +50,17 @@ def map_evaluation_fields(eval_data):
 
 def parse_evaluations(eval_str):
     try:
-        eval_data = oj.loads(f"{{{eval_str}}}")
+        eval_data = oj.loads(eval_str)
         return map_evaluation_fields(eval_data)
     except ValueError:
         return {}
 
 
 def parse_comments(comment_str):
-    comments = comment_str.strip().split('","')
-    return [comment.strip().strip('"') for comment in comments]
+    try:
+        return oj.loads(comment_str)
+    except ValueError:
+        return []
 
 
 def count_rows(file_path):
