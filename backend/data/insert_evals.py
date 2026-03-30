@@ -16,7 +16,6 @@ django.setup()
 
 from hoagieplan.models import Course, CourseComment
 
-
 # Field mapping for CSV columns to Django model fields
 EVALUATION_FIELD_MAPPING = {
     "Quality of Course": "quality_of_course",
@@ -69,9 +68,6 @@ def count_rows(file_path):
 
 @transaction.atomic
 def import_data(evals):
-    print("Clearing existing CourseComment...")
-    CourseComment.objects.all().delete()
-
     total_rows = count_rows(evals)
     course_batch = []
     comment_batch = []
@@ -128,13 +124,12 @@ def import_data(evals):
             print(f"  ... and {len(missing_courses) - 10} more")
 
 
+# Usage: python insert_evals.py
+# Inserts scores and comments for courses in the CSV. Does not touch existing data.
 def main():
     parser = argparse.ArgumentParser(description="Import course evaluations from a CSV file")
     parser.add_argument(
-        "filename",
-        nargs="?",
-        default="./evals.csv",
-        help="Path to the evaluations CSV file (default: ./evals.csv)"
+        "filename", nargs="?", default="./evals.csv", help="Path to the evaluations CSV file (default: ./evals.csv)"
     )
     args = parser.parse_args()
 
