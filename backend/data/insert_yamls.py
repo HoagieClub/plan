@@ -1,8 +1,7 @@
 import os
 import re
 import sys
-import time
-from datetime import date
+from datetime import date, time
 from pathlib import Path
 
 import django
@@ -88,6 +87,22 @@ def load_data(yaml_file):
     with open(yaml_file, "r") as file:
         data = yaml.safe_load(file)  # this is a Python dict
         return data
+
+# Recursively validates if req_list has sibling requirements of duplicate names
+def validate_yaml(req_list: list[dict], path: str = "root") -> None:
+    req_names = [req.get("name") for req in req_list if isinstance(req, dict)]
+    seen_names = set()
+
+    # Check for duplicate names among siblings
+    for name in req_names:
+        if name in seen_names:
+            raise ValueError(f"Duplicate sibling requirement name '{name}' at {path}")
+        seen_names.add(name)
+
+    # Recursively validate sub-requirements
+    for req in req_list:
+        if isinstance(req, dict) and "req_list" in req:
+            validate_yaml(req["req_list"], path=f"{path} -> {req.get('name')}")
 
 
 def load_course_list(course_list):
