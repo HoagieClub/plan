@@ -88,6 +88,7 @@ def load_data(yaml_file):
         data = yaml.safe_load(file)  # this is a Python dict
         return data
 
+
 # Recursively validates if req_list has sibling requirements of duplicate names
 def validate_yaml(req_list: list[dict], path: str = "root") -> None:
     req_names = [req.get("name") for req in req_list if isinstance(req, dict)]
@@ -103,6 +104,34 @@ def validate_yaml(req_list: list[dict], path: str = "root") -> None:
     for req in req_list:
         if isinstance(req, dict) and "req_list" in req:
             validate_yaml(req["req_list"], path=f"{path} -> {req.get('name')}")
+
+
+# Validate all YAMLs for siblings with duplicate names
+def validate_yamls(
+    degrees_path: Path,
+    majors_path: Path,
+    minors_path: Path,
+    certificates_path: Path,
+) -> None:
+    all_yamls = [
+        degrees_path,
+        majors_path,
+        minors_path,
+        certificates_path,
+    ]
+    errors = []
+    for directory in all_yamls:
+        for yaml_file in directory.glob("*.yaml"):
+            data = load_data(str(yaml_file))
+            try:
+                validate_yaml(data["req_list"], path=data["name"])
+            except ValueError as e:
+                errors.append(str(e))
+
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}")
+        raise ValueError(f"Validation failed with {len(errors)} error(s). Aborting.")
 
 
 def load_course_list(course_list):
@@ -446,8 +475,14 @@ def clear_requirements():
     print("Requirement table cleared!")
 
 
-# TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
-if __name__ == "__main__":
+def main():
+    degrees_path = Path("../degrees").resolve()
+    majors_path = Path("../majors").resolve()
+    minors_path = Path("../minors").resolve()
+    certificates_path = Path("../certificates").resolve()
+
+    validate_yamls(degrees_path, majors_path, minors_path, certificates_path)
+
     start_time = time.time()
     with transaction.atomic():
         clear_user_requirements()
@@ -457,13 +492,18 @@ if __name__ == "__main__":
 
         initialize_caches()
 
-        push_degrees(Path("../degrees").resolve())
+        push_degrees(degrees_path)
         DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
 
-        push_majors(Path("../majors").resolve())
+        push_majors(majors_path)
         MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
 
-        push_certificates(Path("../certificates").resolve())
-        push_minors(Path("../minors").resolve())
+        push_certificates(certificates_path)
+        push_minors(minors_path)
     end_time = time.time()
     print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
+
+
+# TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
+if __name__ == "__main__":
+    main()
