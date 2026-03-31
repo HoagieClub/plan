@@ -248,19 +248,19 @@ req_list:
           max_counted: 1
           min_needed: 3
           req_list:
-            - name:
+            - name: MAT Requirements
               max_counted: 1
               min_needed: 2
               course_list:
                 - MAT 201
                 - MAT 202
-            - name:
+            - name: PHY Mechanics Requirements
               max_counted: 1
               min_needed: 1
               course_list:
                 - PHY 103
                 - PHY 105
-            - name:
+            - name: PHY E&M Requirements
               max_counted: 1
               min_needed: 1
               course_list:
@@ -270,12 +270,12 @@ req_list:
           max_counted: 1
           min_needed: 2
           req_list:
-            - name:
+            - name: MAE 305
               max_counted: 1
               min_needed: 1
               course_list:
                 - MAE 305
-            - name:
+            - name: Core GEO Requirement
               max_counted: 1
               min_needed: 1
               course_list:
