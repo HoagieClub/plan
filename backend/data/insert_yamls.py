@@ -1,8 +1,9 @@
+from datetime import date
 import os
 import re
 import sys
-from datetime import date, time
 from pathlib import Path
+import time
 
 import django
 import orjson as oj
@@ -248,12 +249,15 @@ def push_requirement(
         )
 
     if ("req_list" in req) and (len(req["req_list"]) != 0):
+        seen_ids = set()
         for sub_req in req["req_list"]:
             if "completed_by_semester" in req_fields:
                 sub_req["completed_by_semester"] = req_fields["completed_by_semester"]
             if "double_counting_allowed" in req_fields:
                 sub_req["double_counting_allowed"] = req_fields["double_counting_allowed"]
-            push_requirement(sub_req, parent=req_inst)
+            sub_req_inst = push_requirement(sub_req, parent=req_inst)
+            seen_ids.add(sub_req_inst.id)
+        Requirement.objects.filter(parent=req_inst).exclude(id__in=seen_ids).delete()
 
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
@@ -299,8 +303,11 @@ def push_degree(yaml_file):
         defaults=degree_fields,
     )
 
+    seen_ids = set()
     for req in data["req_list"]:
-        push_requirement(req, degree=degree_inst)
+        req_inst = push_requirement(req, degree=degree_inst)
+        seen_ids.add(req_inst.id)
+    Requirement.objects.filter(degree=degree_inst, parent=None).exclude(id__in=seen_ids).delete()
 
     if created:
         print(f"Created new degree: {degree_inst.name}")
@@ -341,8 +348,11 @@ def push_major(yaml_file):
     else:
         print(f"Degree with code {degree_code} not found")
 
+    seen_ids = set()
     for req in data["req_list"]:
-        push_requirement(req, major=major_inst)
+        req_inst = push_requirement(req, major=major_inst)
+        seen_ids.add(req_inst.id)
+    Requirement.objects.filter(major=major_inst, parent=None).exclude(id__in=seen_ids).delete()
 
     if created:
         print(f"Created new major: {major_inst.code}")
@@ -389,8 +399,11 @@ def push_minor(yaml_file):
         if excluded_minors:
             minor_inst.excluded_minors.set(excluded_minors)
 
+    seen_ids = set()
     for req in data["req_list"]:
-        push_requirement(req, minor=minor_inst)
+        req_inst = push_requirement(req, minor=minor_inst)
+        seen_ids.add(req_inst.id)
+    Requirement.objects.filter(minor=minor_inst, parent=None).exclude(id__in=seen_ids).delete()
 
     if created:
         print(f"Created new minor: {minor_inst.code}")
@@ -427,8 +440,11 @@ def push_certificate(yaml_file):
         if excluded_majors:
             certificate_inst.excluded_majors.set(excluded_majors)
 
+    seen_ids = set()
     for req in data["req_list"]:
-        push_requirement(req, certificate=certificate_inst)
+        req_inst = push_requirement(req, certificate=certificate_inst)
+        seen_ids.add(req_inst.id)
+    Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids).delete()
 
     if created:
         print(f"Created new certificate: {certificate_inst.code}")
