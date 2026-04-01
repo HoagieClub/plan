@@ -310,6 +310,8 @@ def push_degree(data: dict):
         seen_ids.add(req_inst.id)
     delete_orphaned_requirements(Requirement.objects.filter(degree=degree_inst, parent=None).exclude(id__in=seen_ids))
 
+    DEGREE_CACHE[degree_inst.code] = degree_inst
+
     if created:
         print(f"Created new degree: {degree_inst.name}")
     else:
@@ -353,6 +355,8 @@ def push_major(data: dict):
         req_inst = push_requirement(req, major=major_inst)
         seen_ids.add(req_inst.id)
     delete_orphaned_requirements(Requirement.objects.filter(major=major_inst, parent=None).exclude(id__in=seen_ids))
+
+    MAJOR_CACHE[major_inst.code] = major_inst
 
     if created:
         print(f"Created new major: {major_inst.code}")
@@ -456,7 +460,6 @@ def push_degrees(all_data: list[dict]):
     print("Pushing degree requirements...")
     for degree_data in all_data:
         push_degree(degree_data)
-    DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
     print("Degree requirements pushed!")
 
 
@@ -465,7 +468,6 @@ def push_majors(all_data: list[dict]):
     push_undeclared_major()
     for major_data in all_data:
         push_major(major_data)
-    MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
     print("Major requirements pushed!")
 
 
