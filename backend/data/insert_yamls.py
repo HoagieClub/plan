@@ -88,6 +88,10 @@ def load_data(yaml_file):
         return data
 
 
+def load_all_data(path: Path) -> list[dict]:
+    return [load_data(str(f)) for f in path.glob("*.yaml")]
+
+
 # Recursively validates if req_list has sibling requirements of duplicate names
 def validate_yaml(req_list: list[dict], path: str = "root") -> None:
     req_names = [req.get("name") for req in req_list if isinstance(req, dict)]
@@ -108,26 +112,13 @@ def validate_yaml(req_list: list[dict], path: str = "root") -> None:
 
 
 # Validate all YAMLs for siblings with duplicate names
-def validate_yamls(
-    degrees_path: Path,
-    majors_path: Path,
-    minors_path: Path,
-    certificates_path: Path,
-) -> None:
-    all_yamls = [
-        degrees_path,
-        majors_path,
-        minors_path,
-        certificates_path,
-    ]
+def validate_yamls(all_data: list[dict]) -> None:
     errors = []
-    for directory in all_yamls:
-        for yaml_file in directory.glob("*.yaml"):
-            data = load_data(str(yaml_file))
-            try:
-                validate_yaml(data["req_list"], path=data["name"])
-            except ValueError as e:
-                errors.append(str(e))
+    for data in all_data:
+        try:
+            validate_yaml(data["req_list"], path=data["name"])
+        except ValueError as e:
+            errors.append(str(e))
 
     if errors:
         for error in errors:
@@ -288,8 +279,7 @@ def push_requirement(
     return req_inst
 
 
-def push_degree(yaml_file):
-    data = load_data(yaml_file)
+def push_degree(data: dict):
     print(f"{data['name']}")
     degree_fields = {}
 
@@ -329,8 +319,7 @@ def push_undeclared_major():
         print(f"Updated existing major: {UNDECLARED['code']}")
 
 
-def push_major(yaml_file):
-    data = load_data(yaml_file)
+def push_major(data: dict):
     print(f"{data['name']}")
     major_fields = {}
 
@@ -365,8 +354,7 @@ def push_major(yaml_file):
         print(f"Updated existing major: {major_inst.code}")
 
 
-def push_minor(yaml_file):
-    data = load_data(yaml_file)
+def push_minor(data: dict):
     print(f"{data['name']}")
     minor_fields = {}
 
@@ -416,8 +404,7 @@ def push_minor(yaml_file):
         print(f"Updated existing minor: {minor_inst.code}")
 
 
-def push_certificate(yaml_file):
-    data = load_data(yaml_file)
+def push_certificate(data: dict):
     print(f"{data['name']}")
     certificate_fields = {}
 
@@ -457,32 +444,32 @@ def push_certificate(yaml_file):
         print(f"Updated existing certificate: {certificate_inst.code}")
 
 
-def push_degrees(degrees_path):
+def push_degrees(all_data: list[dict]):
     print("Pushing degree requirements...")
-    for file in degrees_path.glob("*.yaml"):
-        push_degree(str(file))
+    for degree_data in all_data:
+        push_degree(degree_data)
     print("Degree requirements pushed!")
 
 
-def push_majors(majors_path):
+def push_majors(all_data: list[dict]):
     print("Pushing major requirements...")
     push_undeclared_major()
-    for file in majors_path.glob("*.yaml"):
-        push_major(str(file))
+    for major_data in all_data:
+        push_major(major_data)
     print("Major requirements pushed!")
 
 
-def push_minors(minors_path):
+def push_minors(all_data: list[dict]):
     print("Pushing minor requirements...")
-    for file in minors_path.glob("*.yaml"):
-        push_minor(str(file))
+    for minor_data in all_data:
+        push_minor(minor_data)
     print("Minor requirements pushed!")
 
 
-def push_certificates(certificates_path):
+def push_certificates(all_data: list[dict]):
     print("Pushing certificate requirements...")
-    for file in certificates_path.glob("*.yaml"):
-        push_certificate(str(file))
+    for certificate_data in all_data:
+        push_certificate(certificate_data)
     print("Certificate requirements pushed!")
 
 
@@ -498,20 +485,25 @@ def main():
     minors_path = Path("../minors").resolve()
     certificates_path = Path("../certificates").resolve()
 
-    validate_yamls(degrees_path, majors_path, minors_path, certificates_path)
+    degrees_data = load_all_data(degrees_path)
+    majors_data = load_all_data(majors_path)
+    minors_data = load_all_data(minors_path)
+    certificates_data = load_all_data(certificates_path)
+
+    validate_yamls(degrees_data + majors_data + minors_data + certificates_data)
 
     start_time = time.time()
     with transaction.atomic():
         initialize_caches()
 
-        push_degrees(degrees_path)
+        push_degrees(degrees_data)
         DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
 
-        push_majors(majors_path)
+        push_majors(majors_data)
         MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
 
-        push_certificates(certificates_path)
-        push_minors(minors_path)
+        push_certificates(certificates_data)
+        push_minors(minors_data)
 
     clear_user_req_dict()
     end_time = time.time()
