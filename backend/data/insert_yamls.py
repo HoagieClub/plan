@@ -135,6 +135,12 @@ def validate_yamls(
         raise ValueError(f"Validation failed with {len(errors)} error(s). Aborting.")
 
 
+def delete_orphaned_requirements(qs) -> None:
+    for orphan in qs:
+        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
+    qs.delete()
+
+
 def load_course_list(course_list):
     course_inst_list = []
     dept_list = []
@@ -256,10 +262,7 @@ def push_requirement(
                 sub_req["double_counting_allowed"] = req_fields["double_counting_allowed"]
             sub_req_inst = push_requirement(sub_req, parent=req_inst)
             seen_ids.add(sub_req_inst.id)
-        deleted_qs = Requirement.objects.filter(parent=req_inst).exclude(id__in=seen_ids)
-        for orphan in deleted_qs:
-            print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-        deleted_qs.delete()
+        delete_orphaned_requirements(Requirement.objects.filter(parent=req_inst).exclude(id__in=seen_ids))
 
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
@@ -309,10 +312,7 @@ def push_degree(yaml_file):
     for req in data["req_list"]:
         req_inst = push_requirement(req, degree=degree_inst)
         seen_ids.add(req_inst.id)
-    deleted_qs = Requirement.objects.filter(degree=degree_inst, parent=None).exclude(id__in=seen_ids)
-    for orphan in deleted_qs:
-        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-    deleted_qs.delete()
+    delete_orphaned_requirements(Requirement.objects.filter(degree=degree_inst, parent=None).exclude(id__in=seen_ids))
 
     if created:
         print(f"Created new degree: {degree_inst.name}")
@@ -357,10 +357,7 @@ def push_major(yaml_file):
     for req in data["req_list"]:
         req_inst = push_requirement(req, major=major_inst)
         seen_ids.add(req_inst.id)
-    deleted_qs = Requirement.objects.filter(major=major_inst, parent=None).exclude(id__in=seen_ids)
-    for orphan in deleted_qs:
-        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-    deleted_qs.delete()
+    delete_orphaned_requirements(Requirement.objects.filter(major=major_inst, parent=None).exclude(id__in=seen_ids))
 
     if created:
         print(f"Created new major: {major_inst.code}")
@@ -411,10 +408,7 @@ def push_minor(yaml_file):
     for req in data["req_list"]:
         req_inst = push_requirement(req, minor=minor_inst)
         seen_ids.add(req_inst.id)
-    deleted_qs = Requirement.objects.filter(minor=minor_inst, parent=None).exclude(id__in=seen_ids)
-    for orphan in deleted_qs:
-        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-    deleted_qs.delete()
+    delete_orphaned_requirements(Requirement.objects.filter(minor=minor_inst, parent=None).exclude(id__in=seen_ids))
 
     if created:
         print(f"Created new minor: {minor_inst.code}")
@@ -455,10 +449,7 @@ def push_certificate(yaml_file):
     for req in data["req_list"]:
         req_inst = push_requirement(req, certificate=certificate_inst)
         seen_ids.add(req_inst.id)
-    deleted_qs = Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids)
-    for orphan in deleted_qs:
-        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-    deleted_qs.delete()
+    delete_orphaned_requirements(Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids))
 
     if created:
         print(f"Created new certificate: {certificate_inst.code}")
