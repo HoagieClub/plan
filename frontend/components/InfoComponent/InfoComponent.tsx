@@ -80,7 +80,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
 	const semesterAvailability = courseDetails?.['Semester Availability'];
-	const semesterTag = semesterAvailability ? getSemesterTag(semesterAvailability) : '';
+	const semesterTag = getSemesterTag(semesterAvailability ?? '');
 	const semesterColor = getSemesterColor(semesterTag);
 	const semesterTitle = getSemesterTitle(semesterTag);
 
