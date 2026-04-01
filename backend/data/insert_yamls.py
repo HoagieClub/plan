@@ -286,7 +286,7 @@ def push_requirement(
 
 
 def push_degree(data: dict):
-    print(f"{data['name']}")
+    print(f"Updating degree {data['name']}")
     degree_fields = {}
 
     for field in DEGREE_FIELDS:
@@ -328,7 +328,7 @@ def push_undeclared_major():
 
 
 def push_major(data: dict):
-    print(f"{data['name']}")
+    print(f"Updating major: {data['name']}")
     major_fields = {}
 
     for field in MAJOR_FIELDS:
@@ -365,7 +365,7 @@ def push_major(data: dict):
 
 
 def push_minor(data: dict):
-    print(f"{data['name']}")
+    print(f"Updating minor: {data['name']}")
     minor_fields = {}
 
     for field in MINOR_FIELDS:
@@ -415,7 +415,7 @@ def push_minor(data: dict):
 
 
 def push_certificate(data: dict):
-    print(f"{data['name']}")
+    print(f"Updating certificate: {data['name']}")
     certificate_fields = {}
 
     for field in CERTIFICATE_FIELDS:
@@ -461,6 +461,7 @@ def push_degrees(all_data: list[dict]):
     for degree_data in all_data:
         push_degree(degree_data)
     print("Degree requirements pushed!")
+    print("-" * 50)
 
 
 def push_majors(all_data: list[dict]):
@@ -469,6 +470,7 @@ def push_majors(all_data: list[dict]):
     for major_data in all_data:
         push_major(major_data)
     print("Major requirements pushed!")
+    print("-" * 50)
 
 
 def push_minors(all_data: list[dict]):
@@ -476,6 +478,7 @@ def push_minors(all_data: list[dict]):
     for minor_data in all_data:
         push_minor(minor_data)
     print("Minor requirements pushed!")
+    print("-" * 50)
 
 
 def push_certificates(all_data: list[dict]):
@@ -483,6 +486,7 @@ def push_certificates(all_data: list[dict]):
     for certificate_data in all_data:
         push_certificate(certificate_data)
     print("Certificate requirements pushed!")
+    print("-" * 50)
 
 
 def clear_user_req_dict():
