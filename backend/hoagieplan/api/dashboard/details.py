@@ -102,12 +102,6 @@ def get_course_info(crosslistings):
 
     # Get all sections for this course
     all_sections = Section.objects.filter(course=course).select_related("term")
-    
-    # Add instructors from Course M2M
-    instructors = course.instructors.all()
-    instructor_names = [i.full_name for i in instructors if i.full_name]
-    if instructor_names:
-        course_dict["Instructors"] = ", ".join(instructor_names)
 
     # Map fields to their display names
     field_mapping = {
