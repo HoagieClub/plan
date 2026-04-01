@@ -188,7 +188,14 @@ def load_course_list(course_list):
     return course_inst_list, dept_list
 
 
-def push_requirement(req):
+def push_requirement(
+    req: dict,
+    parent: Requirement | None = None,
+    degree: Degree | None = None,
+    major: Major | None = None,
+    minor: Minor | None = None,
+    certificate: Certificate | None = None,
+) -> Requirement:
     print(f"{req['name']}")
     req_fields = {}
 
@@ -220,7 +227,25 @@ def push_requirement(req):
                 req_fields["min_needed"] = req[field]
             else:
                 req_fields[field] = req[field]
-    req_inst = Requirement.objects.create(**req_fields)
+
+    # For root requirements, update/create based on the degree/major/minor/cert
+    if parent is None:
+        req_inst, _ = Requirement.objects.update_or_create(
+            parent=None,
+            degree=degree,
+            major=major,
+            minor=minor,
+            certificate=certificate,
+            name=req["name"],
+            defaults=req_fields,
+        )
+    # For non-root requirements, update/create based on the parent
+    else:
+        req_inst, _ = Requirement.objects.update_or_create(
+            parent=parent,
+            name=req["name"],
+            defaults=req_fields,
+        )
 
     if ("req_list" in req) and (len(req["req_list"]) != 0):
         for sub_req in req["req_list"]:
@@ -228,9 +253,7 @@ def push_requirement(req):
                 sub_req["completed_by_semester"] = req_fields["completed_by_semester"]
             if "double_counting_allowed" in req_fields:
                 sub_req["double_counting_allowed"] = req_fields["double_counting_allowed"]
-            sub_req_inst = push_requirement(sub_req)
-            sub_req_inst.parent = req_inst  # assign sub_req_inst as child of req_inst
-            sub_req_inst.save()
+            push_requirement(sub_req, parent=req_inst)
 
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
@@ -277,9 +300,7 @@ def push_degree(yaml_file):
     )
 
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.degree = degree_inst
-        req_inst.save()
+        push_requirement(req, degree=degree_inst)
 
     if created:
         print(f"Created new degree: {degree_inst.name}")
@@ -321,9 +342,7 @@ def push_major(yaml_file):
         print(f"Degree with code {degree_code} not found")
 
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.major = major_inst
-        req_inst.save()
+        push_requirement(req, major=major_inst)
 
     if created:
         print(f"Created new major: {major_inst.code}")
@@ -371,9 +390,7 @@ def push_minor(yaml_file):
             minor_inst.excluded_minors.set(excluded_minors)
 
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.minor = minor_inst
-        req_inst.save()
+        push_requirement(req, minor=minor_inst)
 
     if created:
         print(f"Created new minor: {minor_inst.code}")
@@ -411,9 +428,7 @@ def push_certificate(yaml_file):
             certificate_inst.excluded_majors.set(excluded_majors)
 
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.certificate = certificate_inst
-        req_inst.save()
+        push_requirement(req, certificate=certificate_inst)
 
     if created:
         print(f"Created new certificate: {certificate_inst.code}")
