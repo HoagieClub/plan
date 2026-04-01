@@ -131,9 +131,11 @@ def validate_yamls(all_data: list[dict]) -> None:
 
 
 def delete_orphaned_requirements(qs) -> None:
-    for orphan in qs:
+    orphans = list(qs)
+    for orphan in orphans:
         print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
-    qs.delete()
+    if orphans:
+        qs.delete()
 
 
 def load_course_list(course_list):
