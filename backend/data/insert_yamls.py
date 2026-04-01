@@ -445,6 +445,7 @@ def push_degrees(all_data: list[dict]):
     print("Pushing degree requirements...")
     for degree_data in all_data:
         push_degree(degree_data)
+    DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
     print("Degree requirements pushed!")
 
 
@@ -453,6 +454,7 @@ def push_majors(all_data: list[dict]):
     push_undeclared_major()
     for major_data in all_data:
         push_major(major_data)
+    MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
     print("Major requirements pushed!")
 
 
@@ -494,13 +496,8 @@ def main():
         initialize_caches()
 
         push_degrees(degrees_data)
-        DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
-
         push_majors(majors_data)
-        MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
-
         push_minors(minors_data)
-
         push_certificates(certificates_data)
 
     clear_user_req_dict()
