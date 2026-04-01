@@ -1,9 +1,9 @@
-from datetime import date
 import os
 import re
 import sys
-from pathlib import Path
 import time
+from datetime import date
+from pathlib import Path
 
 import django
 import orjson as oj
@@ -24,7 +24,6 @@ from hoagieplan.models import (
     Major,
     Minor,
     Requirement,
-    UserCourses,
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
@@ -481,29 +480,11 @@ def push_certificates(certificates_path):
     print("Certificate requirements pushed!")
 
 
-def clear_user_requirements():
-    print("Clearing CustomUser_requirements table...")
-    with transaction.atomic():
-        CustomUser.requirements.through.objects.all().delete()
-    print("CustomUser_requirements table cleared!")
-
-
 def clear_user_req_dict():
     print("Clearing CustomUser req_dict cache...")
     CustomUser.objects.update(req_dict=None)
     print("CustomUser req_dict cache cleared!")
 
-
-def clear_requirement_ids():
-    print("Clearing requirement_id column in UserCourses...")
-    UserCourses.requirements.through.objects.all().delete()
-    print("UserCourses_requirements table cleared!")
-
-
-def clear_requirements():
-    print("Clearing Requirement table...")
-    Requirement.objects.all().delete()
-    print("Requirement table cleared!")
 
 
 def main():
@@ -516,10 +497,7 @@ def main():
 
     start_time = time.time()
     with transaction.atomic():
-        clear_user_requirements()
         clear_user_req_dict()
-        clear_requirement_ids()
-        clear_requirements()
 
         initialize_caches()
 
