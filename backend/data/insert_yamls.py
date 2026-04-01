@@ -501,7 +501,6 @@ def clear_user_req_dict():
     print("CustomUser req_dict cache cleared!")
 
 
-
 def main():
     degrees_path = Path("../degrees").resolve()
     majors_path = Path("../majors").resolve()
@@ -512,8 +511,6 @@ def main():
 
     start_time = time.time()
     with transaction.atomic():
-        clear_user_req_dict()
-
         initialize_caches()
 
         push_degrees(degrees_path)
@@ -524,10 +521,11 @@ def main():
 
         push_certificates(certificates_path)
         push_minors(minors_path)
+
+    clear_user_req_dict()
     end_time = time.time()
     print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
 
 
-# TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
 if __name__ == "__main__":
     main()
