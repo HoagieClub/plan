@@ -151,7 +151,7 @@ def get_course_info(crosslistings):
             term_suffix = guid[3]
             if term_suffix == "2":
                 has_fall = True
-            elif term_suffix == "4":
+            if term_suffix == "4":
                 has_spring = True
     if has_fall and has_spring:
         course_dict["Semester Availability"] = "Both"
