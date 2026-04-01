@@ -83,7 +83,6 @@ def initialize_caches():
 
 
 def load_data(yaml_file):
-    print("Loading yaml data...")
     with open(yaml_file, "r") as file:
         data = yaml.safe_load(file)  # this is a Python dict
         return data
@@ -198,7 +197,6 @@ def push_requirement(
     minor: Minor | None = None,
     certificate: Certificate | None = None,
 ) -> Requirement:
-    print(f"{req['name']}")
     req_fields = {}
 
     # If this is a no_req requirement, set min_needed to 0
