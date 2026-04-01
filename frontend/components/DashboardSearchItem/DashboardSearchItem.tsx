@@ -1,9 +1,9 @@
 import type { FC, ReactNode } from 'react';
-
-import Image from 'next/image';
+import { useEffect, useState } from 'react'; // to store the value of previous terms the course was offered in
 
 import type { Course } from '@/types';
 import { getRatingBackground } from '@/utils/ratingColors';
+import { termsInverse } from '@/utils/terms';
 
 import styles from './DashboardSearchItem.module.css';
 
@@ -24,6 +24,27 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 		}
 	};
 
+	const [prevTerms, setPrevTerms] = useState<string[]>([]);
+
+	useEffect(() => {
+		// to display previous terms the course was offered in
+		if (!course.guid) {
+			return;
+		}
+		const courseId = course.guid.slice(4);
+		const currentTermCode = course.guid.slice(0, 4);
+		fetch(`/api/hoagie/course/terms/?course_id=${courseId}`)
+			.then((res) => res.json())
+			.then((data: { terms: string[] }) => {
+				const prior = data.terms
+					.filter((code) => code <= currentTermCode)
+					.map((code) => termsInverse[code]) // convert term codes to readable format
+					.filter(Boolean);
+				setPrevTerms(prior);
+			})
+			.catch(console.error);
+	}, [course.guid]);
+
 	return (
 		<div className={styles.card} onClick={handleClick}>
 			<div className={styles.content}>
@@ -37,15 +58,8 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 							{course.quality_of_course.toFixed(2)}
 						</div>
 					)}
-					{course.guid && (
-						<Image
-							src={Number(course.guid[3]) === 2 ? '/fall tag.svg' : '/spring tag.svg'}
-							alt={Number(course.guid[3]) === 2 ? 'Fall' : 'Spring'}
-							width={Number(course.guid[3]) === 2 ? 56 : 72}
-							height={23}
-						/>
-					)}
 				</div>
+				{prevTerms.length > 0 && <div className={styles.prevTerms}>{prevTerms.join(', ')}</div>}
 				{children && <div className={styles.chipContainer}>{children}</div>}
 			</div>
 		</div>

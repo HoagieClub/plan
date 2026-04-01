@@ -104,3 +104,13 @@
 	outline: none;
 	box-shadow: 0 0 0 2px rgba(9, 62, 112, 0.3);
 }
+
+.prevTerms {
+	margin-top: 4px;
+	font-size: 0.75rem;
+	color: #6b7280;
+	font-style: italic;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
