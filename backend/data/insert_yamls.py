@@ -9,6 +9,7 @@ import django
 import orjson as oj
 import yaml
 from django.db import transaction
+from django.db.models import Q
 
 import constants
 
@@ -133,7 +134,7 @@ def delete_orphaned_requirements(qs) -> None:
 
 
 def load_course_list(course_list):
-    course_inst_list = []
+    query = Q()
     dept_list = []
 
     for course_code in course_list:
@@ -154,15 +155,11 @@ def load_course_list(course_list):
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
                 elif re.match(r"^\d\d\*$", course_num):
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number__startswith=course_num[:2]
-                    )
+                    query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
                 elif re.match(r"^\d\*{1,2}$", course_num):
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
+                    query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
                 else:
-                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                    query |= Q(department_id=dept_id, catalog_number=course_num)
         else:
             dept = DEPT_CACHE.get(dept_code)
             if not dept:
@@ -174,15 +171,13 @@ def load_course_list(course_list):
             if course_num in ["*", "***"]:
                 dept_list.append(dept_code)
             elif re.match(r"^\d\d\*$", course_num):
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number__startswith=course_num[:2]
-                )
+                query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
             elif re.match(r"^\d\*{1,2}$", course_num):
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number__startswith=course_num[0]
-                )
+                query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
             else:
-                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                query |= Q(department_id=dept_id, catalog_number=course_num)
+
+    course_inst_list = list(Course.objects.filter(query)) if query else []
     return course_inst_list, dept_list
 
 
@@ -436,7 +431,9 @@ def push_certificate(data: dict):
     for req in data["req_list"]:
         req_inst = push_requirement(req, certificate=certificate_inst)
         seen_ids.add(req_inst.id)
-    delete_orphaned_requirements(Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids))
+    delete_orphaned_requirements(
+        Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids)
+    )
 
     if created:
         print(f"Created new certificate: {certificate_inst.code}")
@@ -502,8 +499,9 @@ def main():
         push_majors(majors_data)
         MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
 
-        push_certificates(certificates_data)
         push_minors(minors_data)
+
+        push_certificates(certificates_data)
 
     clear_user_req_dict()
     end_time = time.time()
