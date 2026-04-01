@@ -256,14 +256,20 @@ def push_requirement(
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
         if course_inst_list:
-            req_inst.course_list.set(course_inst_list)
+            new_ids = {c.id for c in course_inst_list}
+            existing_ids = set(req_inst.course_list.values_list("id", flat=True))
+            if new_ids != existing_ids:
+                req_inst.course_list.set(course_inst_list)
         if len(dept_list) != 0:
             req_inst.dept_list = oj.dumps(dept_list).decode("utf-8")
             req_inst.save()
         if ("excluded_course_list" in req) and (len(req["excluded_course_list"]) != 0):
             excluded_course_list, _ = load_course_list(req["excluded_course_list"])
             if excluded_course_list:
-                req_inst.excluded_course_list.set(excluded_course_list)
+                new_excluded_ids = {c.id for c in excluded_course_list}
+                existing_excluded_ids = set(req_inst.excluded_course_list.values_list("id", flat=True))
+                if new_excluded_ids != existing_excluded_ids:
+                    req_inst.excluded_course_list.set(excluded_course_list)
 
     elif (
         (("dist_req" not in req) or (req["dist_req"] is None))
