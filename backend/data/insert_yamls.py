@@ -94,8 +94,10 @@ def validate_yaml(req_list: list[dict], path: str = "root") -> None:
     req_names = [req.get("name") for req in req_list if isinstance(req, dict)]
     seen_names = set()
 
-    # Check for duplicate names among siblings
+    # Check for null or duplicate names among siblings
     for name in req_names:
+        if name is None:
+            raise ValueError(f"Requirement with null name found at {path}")
         if name in seen_names:
             raise ValueError(f"Duplicate sibling requirement name '{name}' at {path}")
         seen_names.add(name)
