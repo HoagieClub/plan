@@ -56,6 +56,9 @@ REQUIREMENT_FIELDS = [
 ]
 UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 
+TWO_DIGIT_WILDCARD = re.compile(r"^\d\d\*$")
+ONE_DIGIT_WILDCARD = re.compile(r"^\d\*{1,2}$")
+
 # Global caches to avoid repeated database queries
 DEPT_CACHE = {}
 MAJOR_CACHE = {}
@@ -154,9 +157,9 @@ def load_course_list(course_list):
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif re.match(r"^\d\d\*$", course_num):
+                elif TWO_DIGIT_WILDCARD.match(course_num):
                     query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
-                elif re.match(r"^\d\*{1,2}$", course_num):
+                elif ONE_DIGIT_WILDCARD.match(course_num):
                     query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
                 else:
                     query |= Q(department_id=dept_id, catalog_number=course_num)
@@ -170,9 +173,9 @@ def load_course_list(course_list):
 
             if course_num in ["*", "***"]:
                 dept_list.append(dept_code)
-            elif re.match(r"^\d\d\*$", course_num):
+            elif TWO_DIGIT_WILDCARD.match(course_num):
                 query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
-            elif re.match(r"^\d\*{1,2}$", course_num):
+            elif ONE_DIGIT_WILDCARD.match(course_num):
                 query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
             else:
                 query |= Q(department_id=dept_id, catalog_number=course_num)
