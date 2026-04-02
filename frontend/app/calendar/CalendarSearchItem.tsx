@@ -9,13 +9,18 @@ import styles from './CalendarSearchItem.module.css';
 interface CalendarSearchItemProps {
 	course: Course;
 	children?: React.ReactNode; // For the draggable course chip
+	isSelectedCourseItem?: boolean;
 }
 
-export const CalendarSearchItem: React.FC<CalendarSearchItemProps> = ({ course, children }) => {
-	return (
-		<div className={styles.card}>
-			<div className={styles.content}>
-				{children && <div className={styles.chipContainer}>{children}</div>}
+export const CalendarSearchItem: React.FC<CalendarSearchItemProps> = ({
+	course,
+	children,
+	isSelectedCourseItem = false,
+}) => {
+	const content = (
+		<div className={styles.content}>
+			{children && <div className={styles.chipContainer}>{children}</div>}
+			{!isSelectedCourseItem && (
 				<div className={styles.titleRow}>
 					<div className={styles.title}>{course.title}</div>
 					{course.quality_of_course && (
@@ -27,9 +32,15 @@ export const CalendarSearchItem: React.FC<CalendarSearchItemProps> = ({ course, 
 						</div>
 					)}
 				</div>
-			</div>
+			)}
 		</div>
 	);
+
+	if (isSelectedCourseItem) {
+		return content;
+	}
+
+	return <div className={styles.card}>{content}</div>;
 };
 
 export default CalendarSearchItem;

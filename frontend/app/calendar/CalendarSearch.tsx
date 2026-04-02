@@ -449,59 +449,60 @@ export const CalendarSearch: FC = () => {
 
 	return (
 		<>
-			<div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
-				<ButtonWidget
-					onClick={exportCalendar}
-					text='Export Calendar'
-					icon={<ArrowUpTrayIcon className='h-5 w-5' />}
-				/>
-			</div>
+			<div className='calendar-search-panel'>
+				<div className='calendar-search'>
+					<div className='search-header'>
+						<div className='search-input-container'>
+							<div className='search-icon'>
+								<MagnifyingGlassIcon className='icon' aria-hidden='true' />
+							</div>
 
-			<div className='calendar-search'>
-				<div className='search-header'>
-					<div className='search-input-container'>
-						<div className='search-icon'>
-							<MagnifyingGlassIcon className='icon' aria-hidden='true' />
-						</div>
-
-						<input
-							type='text'
-							name='search'
-							id='search'
-							className='search-input'
-							placeholder='Search courses'
-							autoComplete='off'
-							onChange={handleInputChange}
-						/>
-						<button
-							type='button'
-							className='search-settings-button'
-							onClick={handleSettingsChange}
-							aria-label='Adjust search settings'
-						>
-							<AdjustmentsHorizontalIcon
-								className={`h-5 w-5 ${areFiltersActive() ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`}
-								aria-hidden='true'
+							<input
+								type='text'
+								name='search'
+								id='search'
+								className='search-input'
+								placeholder='Search courses'
+								autoComplete='off'
+								onChange={handleInputChange}
 							/>
-						</button>
-					</div>
-					<div className='recent-searches'>
-						<div className='recent-searches-label'>Recent searches:</div>
-						<div className='recent-searches-list'>
-							{recentSearches.slice(-5).map((search, index) => (
-								<button
-									key={index}
-									className='recent-search-item'
-									onClick={() => retrieveCachedSearch(search)}
-								>
-									{search}
-								</button>
-							))}
+							<button
+								type='button'
+								className='search-settings-button'
+								onClick={handleSettingsChange}
+								aria-label='Adjust search settings'
+							>
+								<AdjustmentsHorizontalIcon
+									className={`h-5 w-5 ${areFiltersActive() ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`}
+									aria-hidden='true'
+								/>
+							</button>
 						</div>
+						<div className='recent-searches'>
+							<div className='recent-searches-label'>Recent searches:</div>
+							<div className='recent-searches-list'>
+								{recentSearches.slice(-5).map((search, index) => (
+									<button
+										key={index}
+										className='recent-search-item'
+										onClick={() => retrieveCachedSearch(search)}
+									>
+										{search}
+									</button>
+								))}
+							</div>
+						</div>
+					</div>
+					<div className='search-results'>
+						<CalendarSearchResults courses={calendarSearchResults} />
 					</div>
 				</div>
-				<div className='search-results'>
-					<CalendarSearchResults courses={calendarSearchResults} />
+				<div className='calendar-search-export'>
+					<ButtonWidget
+						onClick={exportCalendar}
+						text='Export Calendar'
+						icon={<ArrowUpTrayIcon className='h-5 w-5' />}
+					/>
 				</div>
 			</div>
 			<Snackbar

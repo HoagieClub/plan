@@ -37,7 +37,7 @@ export const SelectedCourses: FC = () => {
 					data={uniqueCourses}
 					itemContent={(_, course) => (
 						<div className={styles.item} key={course.course.guid}>
-							<SortableCalendarItem course={course.course} />
+							<SortableCalendarItem course={course.course} isSelectedCourseItem />
 						</div>
 					)}
 				/>

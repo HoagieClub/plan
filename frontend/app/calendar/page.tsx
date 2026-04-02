@@ -1,7 +1,7 @@
 'use client';
 
-import type { FC } from 'react';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import type { FC, PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
@@ -30,9 +30,77 @@ const CalendarUI: FC = () => {
 	const userProfile = UserState((state) => state.profile);
 	const { termFilter, setTermFilter } = useFilterStore((state) => state);
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
+	const leftPanelRef = useRef<HTMLDivElement>(null);
+	const isResizingRef = useRef(false);
+	const [topPanelHeightPercent, setTopPanelHeightPercent] = useState(36);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
 	const loadCourses = useCalendarStore((state) => state.loadCourses);
+
+	const clampTopPanelHeight = useCallback((value: number) => {
+		return Math.min(70, Math.max(20, value));
+	}, []);
+
+	const updateTopPanelHeight = useCallback(
+		(clientY: number) => {
+			if (!leftPanelRef.current) {
+				return;
+			}
+
+			const rect = leftPanelRef.current.getBoundingClientRect();
+			if (rect.height <= 0) {
+				return;
+			}
+
+			const rawPercent = ((clientY - rect.top) / rect.height) * 100;
+			setTopPanelHeightPercent(clampTopPanelHeight(rawPercent));
+		},
+		[clampTopPanelHeight]
+	);
+
+	const stopResizing = useCallback(() => {
+		isResizingRef.current = false;
+		document.body.style.cursor = '';
+		document.body.style.userSelect = '';
+	}, []);
+
+	useEffect(() => {
+		const handlePointerMove = (event: PointerEvent) => {
+			if (!isResizingRef.current) {
+				return;
+			}
+
+			updateTopPanelHeight(event.clientY);
+		};
+
+		window.addEventListener('pointermove', handlePointerMove);
+		window.addEventListener('pointerup', stopResizing);
+		window.addEventListener('pointercancel', stopResizing);
+
+		return () => {
+			window.removeEventListener('pointermove', handlePointerMove);
+			window.removeEventListener('pointerup', stopResizing);
+			window.removeEventListener('pointercancel', stopResizing);
+		};
+	}, [stopResizing, updateTopPanelHeight]);
+
+	const handleDividerPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+		isResizingRef.current = true;
+		document.body.style.cursor = 'row-resize';
+		document.body.style.userSelect = 'none';
+		updateTopPanelHeight(event.clientY);
+	};
+
+	const handleDividerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+			return;
+		}
+
+		event.preventDefault();
+		setTopPanelHeightPercent((prev) =>
+			clampTopPanelHeight(prev + (event.key === 'ArrowUp' ? -3 : 3))
+		);
+	};
 	useEffect(() => {
 		const currentSemester = Object.values(terms)[0] ?? '';
 		setTermFilter(currentSemester);
@@ -193,9 +261,22 @@ const CalendarUI: FC = () => {
 			</div>
 
 			<main className='flex flex-grow justify-center'>
-				<div>
-					<CalendarSearch />
-					<SelectedCourses />
+				<div className='calendar-left-panel' ref={leftPanelRef}>
+					<div className='calendar-left-top' style={{ flexBasis: `${topPanelHeightPercent}%` }}>
+						<SelectedCourses />
+					</div>
+					<div
+						className='calendar-left-divider'
+						role='separator'
+						aria-orientation='horizontal'
+						aria-label='Resize selected courses and search'
+						tabIndex={0}
+						onPointerDown={handleDividerPointerDown}
+						onKeyDown={handleDividerKeyDown}
+					/>
+					<div className='calendar-left-bottom'>
+						<CalendarSearch />
+					</div>
 				</div>
 				<div className='margin flex-grow pr-2'>
 					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}

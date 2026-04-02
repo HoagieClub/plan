@@ -11,9 +11,13 @@ import { CalendarSearchItem } from './CalendarSearchItem';
 
 interface SortableCalendarItemProps {
 	course: Course;
+	isSelectedCourseItem?: boolean;
 }
 
-export const SortableCalendarItem: FC<SortableCalendarItemProps> = ({ course }) => {
+export const SortableCalendarItem: FC<SortableCalendarItemProps> = ({
+	course,
+	isSelectedCourseItem = false,
+}) => {
 	const addCourse = useCalendarStore((state) => state.addCourse);
 	const removeCourse = useCalendarStore((state) => state.removeCourse);
 	const termCode = course.guid.slice(0, 4);
@@ -36,7 +40,7 @@ export const SortableCalendarItem: FC<SortableCalendarItemProps> = ({ course }) 
 	};
 
 	return (
-		<CalendarSearchItem course={course}>
+		<CalendarSearchItem course={course} isSelectedCourseItem={isSelectedCourseItem}>
 			<InfoComponentPopOver value={course.crosslistings ?? ''}>
 				<div
 					style={{
