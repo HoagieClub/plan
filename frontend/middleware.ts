@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
 			request.nextUrl.pathname.startsWith('/calendar')) &&
 		!session
 	) {
-		return NextResponse.redirect(`${origin}/auth/login`);
+		return NextResponse.redirect(`${origin}/auth/login?returnTo=${request.nextUrl.pathname}`);
 	}
 
 	return authRes;
