@@ -10,6 +10,9 @@ from rest_framework.decorators import api_view
 # Maps from day abbreviations to days used in ical rrule
 DAY_DICT = {"M": "MO", "T": "TU", "W": "WE", "Th": "TH", "F": "FR"}
 
+# Maps from day abbreviations to weekday index
+DAY_INDEX = {"M": 0, "T": 1, "W": 2, "Th": 3, "F": 4}
+
 # Offset for first class of the semester
 DAYS_OFFSET = {
     "M": timedelta(days=0),
@@ -42,6 +45,35 @@ END_DATE = {
     "1262": date(2025, 12, 4),
     "1264": date(2026, 4, 24),
     "1272": date(2026, 12, 7),
+}
+
+# Inclusive dates with no scheduled classes
+NO_CLASS_RANGES = {
+    "1242": [
+        (date(2023, 10, 14), date(2023, 10, 22)), # Fall recess
+        (date(2023, 11, 22), date(2023, 11, 26)), # Thanksgiving recess
+    ],
+    "1244": [
+        (date(2024, 3, 9), date(2024, 3, 17)), # Spring recess
+    ],
+    "1252": [
+        (date(2024, 10, 12), date(2024, 10, 20)), # Fall recess
+        (date(2024, 11, 26), date(2024, 12, 1)), # Thanksgiving recess
+    ],
+    "1254": [
+        (date(2025, 3, 8), date(2025, 3, 16)), # Spring recess
+    ],
+    "1262": [
+        (date(2025, 10, 11), date(2025, 10, 19)), # Fall recess
+        (date(2025, 11, 25), date(2025, 11, 30)), # Thanksgiving recess
+    ],
+    "1264": [
+        (date(2026, 3, 7), date(2026, 3, 15)), # Spring recess
+    ],
+    "1272": [
+        (date(2026, 10, 17), date(2026, 10, 25)), # Fall recess
+        (date(2026, 11, 24), date(2026, 11, 29)), # Thanksgiving recess
+    ],
 }
 
 
@@ -143,6 +175,11 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
         },
     )
 
+    no_class_ranges = NO_CLASS_RANGES.get(semester_code)
+    if no_class_ranges:
+        for exdate in break_exdates(days_of_week, no_class_ranges, est_tz, start_time):
+            event.add("exdate", exdate)
+
     # Add event to calendar
     cal.add_component(event)
 
@@ -175,6 +212,29 @@ def days_of_week_list(days_of_week: str) -> List[str]:
         new_days_of_week_list.append(DAY_DICT[day])
 
     return new_days_of_week_list
+
+
+def weekdays_to_indices(days_of_week):
+    indices = set()
+    for raw in days_of_week.split(","):
+        token = raw.strip()
+        indices.add(DAY_INDEX[token])
+    return indices
+
+
+def break_exdates(days_of_week, ranges, tz, start_time):
+    weekdays = weekdays_to_indices(days_of_week)
+    seen = set()
+    out = []
+    for range_start, range_end in ranges:
+        d = range_start
+        while d <= range_end:
+            if d.weekday() in weekdays and d not in seen:
+                seen.add(d)
+                out.append(tz.localize(datetime.combine(d, start_time)))
+            d += timedelta(days=1)
+    out.sort()
+    return out
 
 
 # Example usage
@@ -213,7 +273,7 @@ def main():
                 "web_address": "www.cs.princeton.edu/courses/archive/spring24/cos418",
             },
             "endRowIndex": 19,
-            "endTime": "10:50",
+            "endTime": "10:50 AM",
             "isActive": True,
             "isChosen": False,
             "key": "guid: 1254013749, section id: 87114, class meeting id: 63680, column: 1",
@@ -224,10 +284,10 @@ def main():
                     {
                         "building_name": "ComSciBldg 104",
                         "days": "M,W",
-                        "end_time": "10:50",
+                        "end_time": "10:50 AM",
                         "id": 63680,
                         "room": "TBD",
-                        "start_time": "10:00",
+                        "start_time": "10:00 AM",
                     }
                 ],
                 "class_section": "L01",
@@ -237,7 +297,7 @@ def main():
                 "id": 87114,
                 "startColumnIndex": 1,
                 "startRowIndex": 14,
-                "startTime": "10:00",
+                "startTime": "10:00 AM",
             },
         },
         {
@@ -269,7 +329,7 @@ def main():
                 "web_address": "stellato.io/teaching/orf307",
             },
             "endRowIndex": 28,
-            "endTime": "12:20",
+            "endTime": "12:20 PM",
             "isActive": True,
             "isChosen": False,
             "key": "guid: 1254007998, section id: 85784, class meeting id: 61373, column: 2",
@@ -280,10 +340,10 @@ def main():
                     {
                         "building_name": "Sherrerd Hall 104",
                         "days": "T, Th",
-                        "end_time": "12:20",
+                        "end_time": "12:20 PM",
                         "id": 61373,
                         "room": "TBD",
-                        "start_time": "11:00",
+                        "start_time": "11:00 AM",
                     }
                 ],
                 "class_section": "L01",
@@ -293,7 +353,7 @@ def main():
                 "id": 85784,
                 "startColumnIndex": 2,
                 "startRowIndex": 20,
-                "startTime": "11:00",
+                "startTime": "11:00 AM",
             },
         },
     ]
