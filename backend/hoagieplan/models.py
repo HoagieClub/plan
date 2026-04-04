@@ -241,7 +241,7 @@ class ClassYearEnrollment(models.Model):
 
 class Requirement(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
+    name = models.CharField(max_length=150, db_index=True)
     max_counted = models.IntegerField(default=1, db_index=True)
     min_needed = models.IntegerField(default=1, db_index=True)
     explanation = models.TextField(db_index=True, null=True)
