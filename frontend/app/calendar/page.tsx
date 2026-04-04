@@ -1,7 +1,7 @@
 'use client';
 
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import type { FC, PointerEvent as ReactPointerEvent } from 'react';
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
