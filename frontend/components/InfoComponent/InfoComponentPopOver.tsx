@@ -16,6 +16,7 @@ import { getDepartmentGradient } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 interface InfoComponentPopOverProps {
 	value: string;
@@ -433,7 +434,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 									{selectedTerm.quality_of_course != null ? (
 										<div
 											style={{
-												backgroundColor: '#4caf50',
+												background: getRatingBackground(selectedTerm.quality_of_course),
 												color: 'white',
 												padding: '2px 8px',
 												borderRadius: '4px',
@@ -525,7 +526,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 												{term.quality_of_course != null ? (
 													<div
 														style={{
-															backgroundColor: '#4caf50',
+															background: getRatingBackground(term.quality_of_course),
 															color: 'white',
 															padding: '1px 7px',
 															borderRadius: '4px',
@@ -607,6 +608,38 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 								</div>
 							</CourseDetailSection>
 						</div>
+
+						{/* Grading */}
+						{Array.isArray(courseDetails['Grading']) && courseDetails['Grading'].length > 0 && (
+							<div>
+								<SectionTitle label='Grading' iconSrc='/icons/grading.svg' />
+								<CourseDetailSection>
+									<div
+										style={{
+											fontSize: '0.85rem',
+											fontWeight: 600,
+											display: 'flex',
+											flexDirection: 'column',
+										}}
+									>
+										{(
+											courseDetails['Grading'] as unknown as { label: string; percent: number }[]
+										).map(({ label, percent }, index, arr) => (
+											<div
+												key={label}
+												style={{
+													paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+													marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+													borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+												}}
+											>
+												{percent}% {label}
+											</div>
+										))}
+									</div>
+								</CourseDetailSection>
+							</div>
+						)}
 
 						{/* Student Feedback */}
 						<div>
