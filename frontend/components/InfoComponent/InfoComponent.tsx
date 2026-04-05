@@ -16,6 +16,7 @@ import { departmentColors } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
+import { getSemesterColor, getSemesterTag, getSemesterTitle } from '@/utils/semesterTag';
 
 import styles from './InfoComponent.module.css';
 
@@ -77,6 +78,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
+
+	const semesterAvailability = courseDetails?.['Semester Availability'];
+	const semesterTag = getSemesterTag(semesterAvailability ?? '');
+	const semesterColor = getSemesterColor(semesterTag);
+	const semesterTitle = getSemesterTitle(semesterTag);
 
 	// Use course_setup from API response
 	const courseSetup = courseDetails?.course_setup || [];
@@ -239,6 +245,25 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													}}
 												>
 													{auditTag}
+												</div>
+											</Tooltip>
+										)}
+										{semesterTag && (
+											<Tooltip title={semesterTitle} variant='soft'>
+												<div
+													style={{
+														backgroundColor: semesterColor,
+														color: 'white',
+														padding: '0 14px',
+														borderRadius: '10px',
+														fontWeight: '600',
+														fontSize: '1.2rem',
+														width: 'fit-content',
+														display: 'flex',
+														alignItems: 'center',
+													}}
+												>
+													{semesterTag}
 												</div>
 											</Tooltip>
 										)}
