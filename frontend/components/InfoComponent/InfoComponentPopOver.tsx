@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useRef, useState, type FC, type ReactNode } 
 
 import { Tooltip } from '@mui/joy';
 import { CircularProgress, Rating } from '@mui/material';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Maximize2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
+import { InfoComponent } from '@/components/InfoComponent';
 import { ReviewMenu } from '@/components/ReviewMenu';
 import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
@@ -16,6 +17,7 @@ import { getDepartmentGradient } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 interface InfoComponentPopOverProps {
 	value: string;
@@ -54,6 +56,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
 	const [showTermDropdown, setShowTermDropdown] = useState(false);
+	const [showModal, setShowModal] = useState(false);
 
 	const instanceId = useRef(Math.random());
 	const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -367,7 +370,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 									</h3>
 								)}
 							</div>
-							{/* Right: external links */}
+							{/* Right: external links + expand button */}
 							<div style={{ display: 'flex', alignItems: 'stretch', gap: '8px', flexShrink: 0 }}>
 								{links.princeton && (
 									<ExternalLink href={links.princeton}>
@@ -383,6 +386,32 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 										Registrar
 									</ExternalLink>
 								)}
+								<button
+									type='button'
+									onClick={(e) => {
+										e.stopPropagation();
+										setIsVisible(false);
+										setTimeout(() => setShowPopover(false), 150);
+										setShowModal(true);
+									}}
+									title='Expand'
+									className='transition-all duration-150 hover:brightness-90 active:scale-95'
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										minHeight: '40px',
+										width: '40px',
+										borderRadius: '11px',
+										border: '1.5px solid #8b8b8b',
+										background: '#d3d3d3',
+										cursor: 'pointer',
+										color: 'black',
+										flexShrink: 0,
+									}}
+								>
+									<Maximize2 size={16} />
+								</button>
 							</div>
 						</div>
 
@@ -433,7 +462,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 									{selectedTerm.quality_of_course != null ? (
 										<div
 											style={{
-												backgroundColor: '#4caf50',
+												backgroundColor: getRatingBackground(selectedTerm.quality_of_course),
 												color: 'white',
 												padding: '2px 8px',
 												borderRadius: '4px',
@@ -525,7 +554,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 												{term.quality_of_course != null ? (
 													<div
 														style={{
-															backgroundColor: '#4caf50',
+															background: getRatingBackground(term.quality_of_course),
 															color: 'white',
 															padding: '1px 7px',
 															borderRadius: '4px',
@@ -671,6 +700,15 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 				{children}
 			</div>
 			{popoverContent && createPortal(popoverContent, document.body)}
+			{showModal && (
+				<InfoComponent
+					value={value}
+					open={showModal}
+					onClose={() => {
+						setShowModal(false);
+					}}
+				/>
+			)}
 		</>
 	);
 };

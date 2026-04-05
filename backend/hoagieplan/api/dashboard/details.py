@@ -11,6 +11,7 @@ from hoagieplan.models import (
     CourseComment,
     CourseEvalSummary,
     Department,
+    GradingInfo,
     Section,
 )
 
@@ -259,6 +260,23 @@ def get_course_info(crosslistings):
 
     # === Per-term history ===
     course_dict["terms"] = _build_terms_list(crosslistings)
+
+    # === Grading breakdown ===
+    try:
+        grading = course.grading_info
+        grading_fields = [
+            "grading_final_exam", "grading_mid_exam", "grading_home_final_exam",
+            "grading_home_mid_exam", "grading_paper_final_exam", "grading_paper_mid_exam",
+            "grading_other_exam", "grading_oral_pres", "grading_quizzes",
+            "grading_lab_reports", "grading_papers", "grading_prob_sets",
+            "grading_prog_assign", "grading_precept_part", "grading_term_papers",
+            "grading_design_projects", "grading_other",
+        ]
+        grading_dict = {f: getattr(grading, f, 0) for f in grading_fields}
+        if any(v > 0 for v in grading_dict.values()):
+            course_dict["grading_info"] = grading_dict
+    except GradingInfo.DoesNotExist:
+        pass
 
     return course_dict
 

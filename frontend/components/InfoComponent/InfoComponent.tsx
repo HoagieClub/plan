@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FC } from 'react';
 
 import { Button as JoyButton, Tooltip } from '@mui/joy';
 import { CircularProgress, Rating } from '@mui/material';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import { Modal } from '@/components/Modal';
@@ -9,16 +10,32 @@ import { ReviewMenu } from '@/components/ReviewMenu';
 import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
+import GradingInfo from '@/components/ui/GradingInfo';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag from '@/components/ui/SemesterTag';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
-import { getSemesterColor, getSemesterTag, getSemesterTitle } from '@/utils/semesterTag';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 import styles from './InfoComponent.module.css';
+
+interface CourseSetupItem {
+	class_type: string;
+	count: number;
+	duration?: number;
+}
+
+interface TermEntry {
+	term_code: string;
+	label: string;
+	instructors: string[];
+	quality_of_course: number | null;
+	course_setup: CourseSetupItem[];
+}
 
 const darken = (hex: string, amount: number) => {
 	const n = parseInt(hex.slice(1), 16);
@@ -30,13 +47,17 @@ const darken = (hex: string, amount: number) => {
 
 interface InfoComponentProps {
 	value: string;
+	open?: boolean;
+	onClose?: () => void;
 }
 
-export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
+export const InfoComponent: FC<InfoComponentProps> = ({ value, open, onClose }) => {
 	const dept = value.split(' ')[0];
 	const coursenum = value.split(' ')[1];
 	const [showPopup, setShowPopup] = useState<boolean>(false);
 	const [feedbackRating, setFeedbackRating] = useState<number>(0);
+	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
+	const [showTermDropdown, setShowTermDropdown] = useState(false);
 	const [courseDetails, setCourseDetails] = useState<{
 		// TODO: Address this typing eventually.
 
@@ -47,6 +68,20 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const modalRef = useRef(null);
 	const feedbackScrollRef = useRef<HTMLDivElement>(null);
 	const [showFeedbackGradient, setShowFeedbackGradient] = useState(false);
+
+	// Sync with controlled `open` prop
+	useEffect(() => {
+		if (open !== undefined) {
+			setShowPopup(open);
+			if (open) {
+				document.addEventListener('keydown', handleKeyDown);
+				document.addEventListener('mousedown', handleOutsideClick);
+			} else {
+				document.removeEventListener('keydown', handleKeyDown);
+				document.removeEventListener('mousedown', handleOutsideClick);
+			}
+		}
+	}, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const feedbackInnerRef = (el: HTMLDivElement | null) => {
 		if (!el) {
@@ -79,13 +114,23 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
-	const semesterAvailability = courseDetails?.['Semester Availability'];
-	const semesterTag = getSemesterTag(semesterAvailability ?? '');
-	const semesterColor = getSemesterColor(semesterTag);
-	const semesterTitle = getSemesterTitle(semesterTag);
-
-	// Use course_setup from API response
-	const courseSetup = courseDetails?.course_setup || [];
+	const terms: TermEntry[] = Array.isArray(courseDetails?.['terms'])
+		? (courseDetails['terms'] as TermEntry[])
+		: [];
+	const selectedTerm: TermEntry | undefined = terms[selectedTermIdx];
+	const courseSetup: CourseSetupItem[] = selectedTerm?.course_setup ?? [];
+	const hasFall = terms.some((t) => t.label.startsWith('Fall'));
+	const hasSpring = terms.some((t) => t.label.startsWith('Spring'));
+	const [termSeason, termYearStr] = selectedTerm?.label.split(' ') ?? ['', ''];
+	const termYear = termYearStr ? parseInt(termYearStr, 10) : 0;
+	let termTagSeason: 'Fall' | 'Spring' | 'Multiple' | undefined;
+	if (hasFall && hasSpring) {
+		termTagSeason = 'Multiple';
+	} else if (termSeason === 'Fall') {
+		termTagSeason = 'Fall';
+	} else if (termSeason === 'Spring') {
+		termTagSeason = 'Spring';
+	}
 
 	useEffect(() => {
 		if (showPopup && value) {
@@ -99,6 +144,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				})
 				.then((data) => {
 					setCourseDetails(data);
+					setSelectedTermIdx(0);
+					setShowTermDropdown(false);
 				})
 				.catch((error) => {
 					console.error('Error fetching course details:', error);
@@ -132,6 +179,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 		setShowPopup(false);
 		document.removeEventListener('keydown', handleKeyDown);
 		document.removeEventListener('mousedown', handleOutsideClick);
+		onClose?.();
 	};
 
 	const modalContent = showPopup ? (
@@ -248,25 +296,6 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 												</div>
 											</Tooltip>
 										)}
-										{semesterTag && (
-											<Tooltip title={semesterTitle} variant='soft'>
-												<div
-													style={{
-														backgroundColor: semesterColor,
-														color: 'white',
-														padding: '0 14px',
-														borderRadius: '10px',
-														fontWeight: '600',
-														fontSize: '1.2rem',
-														width: 'fit-content',
-														display: 'flex',
-														alignItems: 'center',
-													}}
-												>
-													{semesterTag}
-												</div>
-											</Tooltip>
-										)}
 									</div>
 								</div>
 								{courseDetails['Title'] && (
@@ -298,6 +327,186 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							</div>
 						</div>
 
+						{/* Term row + dropdown */}
+						{selectedTerm && (
+							<div
+								style={{
+									borderRadius: '6px',
+									border: '1px solid #e5e7eb',
+									overflow: 'hidden',
+									marginTop: '8px',
+									marginBottom: '4px',
+								}}
+							>
+								{/* Header row — click to toggle dropdown */}
+								<div
+									role='button'
+									tabIndex={0}
+									onClick={(e) => {
+										e.stopPropagation();
+										setShowTermDropdown((prev) => !prev);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											setShowTermDropdown((prev) => !prev);
+										}
+									}}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '10px',
+										padding: '6px 8px',
+										backgroundColor: '#fafafa',
+										cursor: 'pointer',
+										userSelect: 'none',
+									}}
+								>
+									{termTagSeason && (
+										<SemesterTag
+											semester={termTagSeason}
+											year={termTagSeason !== 'Multiple' ? termYear || undefined : undefined}
+										/>
+									)}
+									<span
+										style={{
+											flex: 1,
+											fontSize: '0.82rem',
+											color: '#555',
+											overflow: 'hidden',
+											textOverflow: 'ellipsis',
+											whiteSpace: 'nowrap',
+										}}
+									>
+										{selectedTerm.instructors.join(', ')}
+									</span>
+									{selectedTerm.quality_of_course != null ? (
+										<div
+											style={{
+												backgroundColor: getRatingBackground(selectedTerm.quality_of_course),
+												color: 'white',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											{selectedTerm.quality_of_course.toFixed(2)}
+										</div>
+									) : (
+										<div
+											style={{
+												backgroundColor: '#d1d5db',
+												color: '#6b7280',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											N/A
+										</div>
+									)}
+									<div style={{ flexShrink: 0, color: '#9ca3af', display: 'flex' }}>
+										{showTermDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+									</div>
+								</div>
+
+								{/* Dropdown list */}
+								{showTermDropdown && terms.length > 1 && (
+									<div
+										style={{
+											maxHeight: '220px',
+											overflowY: 'auto',
+											borderTop: '1px solid #e5e7eb',
+										}}
+									>
+										{terms.map((term, i) => (
+											<div
+												key={term.term_code}
+												role='button'
+												tabIndex={0}
+												onClick={(e) => {
+													e.stopPropagation();
+													setSelectedTermIdx(i);
+													setShowTermDropdown(false);
+												}}
+												onKeyDown={(e) => {
+													if (e.key === 'Enter' || e.key === ' ') {
+														setSelectedTermIdx(i);
+														setShowTermDropdown(false);
+													}
+												}}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '10px',
+													padding: '7px 10px',
+													cursor: 'pointer',
+													backgroundColor: i === selectedTermIdx ? '#e8f0fe' : 'white',
+													borderBottom: i < terms.length - 1 ? '1px solid #f3f4f6' : 'none',
+												}}
+											>
+												<span
+													style={{
+														fontWeight: i === selectedTermIdx ? 700 : 600,
+														fontSize: '0.82rem',
+														color: i === selectedTermIdx ? '#1d4ed8' : '#374151',
+														minWidth: '88px',
+														flexShrink: 0,
+													}}
+												>
+													{term.label}
+												</span>
+												<span
+													style={{
+														flex: 1,
+														fontSize: '0.8rem',
+														color: '#6b7280',
+														overflow: 'hidden',
+														textOverflow: 'ellipsis',
+														whiteSpace: 'nowrap',
+													}}
+												>
+													{term.instructors.join(', ')}
+												</span>
+												{term.quality_of_course != null ? (
+													<div
+														style={{
+															background: getRatingBackground(term.quality_of_course),
+															color: 'white',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														{term.quality_of_course.toFixed(2)}
+													</div>
+												) : (
+													<div
+														style={{
+															backgroundColor: '#d1d5db',
+															color: '#6b7280',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														N/A
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
 						{/* Two-column body */}
 						<div
 							style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, gap: '24px' }}
@@ -325,8 +534,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													flexDirection: 'column',
 												}}
 											>
-												{typeof courseDetails?.Instructors === 'string' ? (
-													courseDetails.Instructors.split(',').map((name, index, arr) => (
+												{selectedTerm && selectedTerm.instructors.length > 0 ? (
+													selectedTerm.instructors.map((name, index, arr) => (
 														<div
 															key={index}
 															style={{
@@ -335,7 +544,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 																borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
 															}}
 														>
-															{name.trim()}
+															{name}
 														</div>
 													))
 												) : (
@@ -356,6 +565,17 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								<CourseDetailSection>
 									<div style={{ fontSize: '0.85rem' }}>{courseDetails['Description']}</div>
 								</CourseDetailSection>
+
+								{courseDetails['grading_info'] && (
+									<>
+										<SectionTitle label='Grading' iconSrc='/icons/course-setup.svg' />
+										<CourseDetailSection>
+											<GradingInfo
+												gradingInfo={courseDetails['grading_info'] as Record<string, number>}
+											/>
+										</CourseDetailSection>
+									</>
+								)}
 							</div>
 							<div
 								style={{
@@ -452,21 +672,23 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	return (
 		<>
-			<div
-				onClick={handleClick}
-				style={{
-					position: 'relative',
-					display: 'block',
-					cursor: 'pointer',
-					maxWidth: '100%',
-					overflow: 'hidden',
-					whiteSpace: 'nowrap',
-					textOverflow: 'ellipsis',
-				}}
-				className={cn(styles.Action)}
-			>
-				{value}
-			</div>
+			{open === undefined && (
+				<div
+					onClick={handleClick}
+					style={{
+						position: 'relative',
+						display: 'block',
+						cursor: 'pointer',
+						maxWidth: '100%',
+						overflow: 'hidden',
+						whiteSpace: 'nowrap',
+						textOverflow: 'ellipsis',
+					}}
+					className={cn(styles.Action)}
+				>
+					{value}
+				</div>
+			)}
 			{modalContent && createPortal(modalContent, document.body)}
 		</>
 	);
