@@ -1,14 +1,17 @@
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from collections import defaultdict
 from datetime import datetime
 
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+
 from hoagieplan.models import (
+    AcademicTerm,
+    ClassMeeting,
     Course,
     CourseComment,
+    CourseEvalSummary,
     Department,
     Section,
-    ClassMeeting,
-    CourseEvalSummary,
 )
 
 
@@ -75,6 +78,99 @@ def get_course_comments(dept, num):
     return result
 
 
+def _term_label(term_code: str) -> str:
+    """Convert a 4-digit term code (e.g. '1264') to a human label ('Spring 2026')."""
+    suffix = AcademicTerm.objects.filter(term_code=term_code).values_list("suffix", flat=True).first()
+    if not suffix:
+        return term_code
+    if suffix.startswith("S"):
+        season = "Spring"
+    elif suffix.startswith("F"):
+        season = "Fall"
+    else:
+        season = suffix[:1]
+    year = suffix[1:]
+    return f"{season} {year}"
+
+
+def _build_course_setup(sections_qs) -> list:
+    """Build a course_setup list from a Section queryset for a single term."""
+    section_ids = list(sections_qs.values_list("id", flat=True))
+    meetings = ClassMeeting.objects.filter(section_id__in=section_ids).select_related("section")
+
+    # Group meetings by section
+    meetings_by_section = defaultdict(list)
+    for m in meetings:
+        meetings_by_section[m.section_id].append(m)
+
+    course_setup_dict = {}
+    for section in sections_qs:
+        class_type = section.class_type
+        total_duration = 0
+        meeting_count = 0
+        for meeting in meetings_by_section[section.id]:
+            if meeting.start_time and meeting.end_time:
+                start = datetime.combine(datetime.today(), meeting.start_time)
+                end = datetime.combine(datetime.today(), meeting.end_time)
+                total_duration += int((end - start).total_seconds() / 60)
+                meeting_count += 1
+        if class_type not in course_setup_dict and total_duration > 0:
+            course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
+
+    return [
+        {"class_type": ct, "count": info["count"], "duration": info["duration"]}
+        for ct, info in course_setup_dict.items()
+    ]
+
+
+def _build_terms_list(crosslistings: str) -> list:
+    """Return a list of per-term dicts for all historical offerings of a course."""
+    all_term_courses = (
+        Course.objects.filter(crosslistings__icontains=crosslistings)
+        .prefetch_related("instructors")
+        .order_by("-guid")
+    )
+
+    # Bulk-fetch all sections for these courses
+    course_ids = list(all_term_courses.values_list("id", flat=True))
+    all_sections = (
+        Section.objects.filter(course_id__in=course_ids)
+        .select_related("term")
+    )
+    sections_by_course = defaultdict(list)
+    for s in all_sections:
+        sections_by_course[s.course_id].append(s)
+
+    terms = []
+    seen_term_codes = set()
+    for course in all_term_courses:
+        if not course.guid:
+            continue
+        term_code = course.guid[:4]
+        if term_code in seen_term_codes:
+            continue
+        seen_term_codes.add(term_code)
+
+        instructor_names = [i.full_name for i in course.instructors.all() if i.full_name]
+
+        from django.db.models.query import QuerySet
+        course_sections = sections_by_course[course.id]
+        # Wrap in a queryset-like iterable for _build_course_setup; pass list directly
+        # _build_course_setup expects a queryset (needs .values_list), so query fresh but cheaply
+        term_sections_qs = Section.objects.filter(course=course)
+        course_setup = _build_course_setup(term_sections_qs)
+
+        terms.append({
+            "term_code": term_code,
+            "label": _term_label(term_code),
+            "instructors": instructor_names,
+            "quality_of_course": course.quality_of_course,
+            "course_setup": course_setup,
+        })
+
+    return terms
+
+
 def get_course_info(crosslistings):
     """Retrieve detailed course information."""
     try:
@@ -134,13 +230,10 @@ def get_course_info(crosslistings):
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
     # === Semester Availability ===
-    all_courses = (
-        Course.objects.filter(crosslistings__icontains=crosslistings)
-        .values_list("guid", flat=True)
-    )
+    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
     has_fall = False
     has_spring = False
-    for guid in all_courses:
+    for guid in all_guids:
         if guid and len(guid) >= 4:
             term_suffix = guid[3]
             if term_suffix == "2":
@@ -154,53 +247,18 @@ def get_course_info(crosslistings):
     elif has_spring:
         course_dict["Semester Availability"] = "Spring"
 
-    # === NEW: Add Course Setup ===
-    # Get the most recent term's sections
-    latest_term_section = all_sections.order_by('-term__term_code').first()
-    
+    # === Course Setup (latest term, kept for backward compat) ===
+    latest_term_section = all_sections.order_by("-term__term_code").first()
     if latest_term_section:
+        if latest_term_section.term:
+            course_dict["Term"] = latest_term_section.term.suffix
         latest_term_sections = all_sections.filter(term=latest_term_section.term)
-        
-        # Calculate course setup based on meeting times
-        course_setup_dict = {}
-        
-        for section in latest_term_sections:
-            class_type = section.class_type
-            
-            # Get all meetings for this section
-            meetings = ClassMeeting.objects.filter(section=section)
-            
-            # Calculate total weekly duration for this section
-            total_duration = 0
-            meeting_count = 0
-            for meeting in meetings:
-                if meeting.start_time and meeting.end_time:
-                    start = datetime.combine(datetime.today(), meeting.start_time)
-                    end = datetime.combine(datetime.today(), meeting.end_time)
-                    duration = int((end - start).total_seconds() / 60)
-                    total_duration += duration
-                    meeting_count += 1
-            
-            # If we haven't seen this class type yet, or if this is the first section
-            # we're examining, store its total duration
-            if class_type not in course_setup_dict and total_duration > 0:
-                course_setup_dict[class_type] = {
-                    'count': meeting_count,  # Number of meetings per week
-                    'duration': total_duration
-                }
-        
-        # Build course setup array
-        course_setup = [
-            {
-                'class_type': class_type,
-                'count': info['count'],
-                'duration': info['duration']
-            }
-            for class_type, info in course_setup_dict.items()
-        ]
-        
+        course_setup = _build_course_setup(latest_term_sections)
         if course_setup:
             course_dict["course_setup"] = course_setup
+
+    # === Per-term history ===
+    course_dict["terms"] = _build_terms_list(crosslistings)
 
     return course_dict
 

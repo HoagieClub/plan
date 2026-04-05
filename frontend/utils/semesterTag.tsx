@@ -14,11 +14,11 @@ export const getSemesterTag = (semesterAvailability: string): string => {
 export const getSemesterColor = (semesterTag: string): string => {
 	switch (semesterTag) {
 		case 'F':
-			return '#e07c3e';
+			return '#47aad4';
 		case 'S':
-			return '#4caf50';
+			return '#f0a030';
 		case 'F/S':
-			return '#7c4dff';
+			return '#7c3aed';
 		default:
 			return '#9e9e9e';
 	}

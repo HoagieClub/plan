@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, type FC, type ReactNode } 
 
 import { Tooltip } from '@mui/joy';
 import { CircularProgress, Rating } from '@mui/material';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import { ReviewMenu } from '@/components/ReviewMenu';
@@ -9,6 +10,7 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag from '@/components/ui/SemesterTag';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { getDepartmentGradient } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
@@ -26,8 +28,16 @@ interface CourseSetupItem {
 	duration?: number;
 }
 
+interface TermEntry {
+	term_code: string;
+	label: string;
+	instructors: string[];
+	quality_of_course: number | null;
+	course_setup: CourseSetupItem[];
+}
+
 interface CourseDetails {
-	[key: string]: string | number | boolean | null | undefined | CourseSetupItem[];
+	[key: string]: string | number | boolean | null | undefined | CourseSetupItem[] | TermEntry[];
 }
 
 const PANEL_WIDTH = 560;
@@ -42,6 +52,8 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	const [feedbackRating, setFeedbackRating] = useState(0);
 	const [showScrollGradient, setShowScrollGradient] = useState(false);
 	const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
+	const [showTermDropdown, setShowTermDropdown] = useState(false);
 
 	const instanceId = useRef(Math.random());
 	const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -60,9 +72,27 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
-	const courseSetup: CourseSetupItem[] = Array.isArray(courseDetails?.course_setup)
-		? (courseDetails.course_setup as CourseSetupItem[])
+	// Per-term data
+	const terms: TermEntry[] = Array.isArray(courseDetails?.['terms'])
+		? (courseDetails['terms'] as TermEntry[])
 		: [];
+	const selectedTerm: TermEntry | undefined = terms[selectedTermIdx];
+
+	const courseSetup: CourseSetupItem[] = selectedTerm?.course_setup ?? [];
+
+	// Derive semester tag: "Multiple" if course has been offered in both Fall and Spring
+	const hasFall = terms.some((t) => t.label.startsWith('Fall'));
+	const hasSpring = terms.some((t) => t.label.startsWith('Spring'));
+	const [termSeason, termYearStr] = selectedTerm?.label.split(' ') ?? ['', ''];
+	const termYear = termYearStr ? parseInt(termYearStr, 10) : 0;
+	let termTagSeason: 'Fall' | 'Spring' | 'Multiple' | undefined;
+	if (hasFall && hasSpring) {
+		termTagSeason = 'Multiple';
+	} else if (termSeason === 'Fall') {
+		termTagSeason = 'Fall';
+	} else if (termSeason === 'Spring') {
+		termTagSeason = 'Spring';
+	}
 
 	const links = useMemo(() => {
 		const registrarValue = courseDetails?.Registrar;
@@ -140,6 +170,8 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 		setCourseDetails(null);
 		setFeedbackRating(0);
 		setShowScrollGradient(false);
+		setSelectedTermIdx(0);
+		setShowTermDropdown(false);
 	}, [value]);
 
 	useEffect(() => {
@@ -354,6 +386,178 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 							</div>
 						</div>
 
+						{/* Term row + dropdown */}
+						{selectedTerm && (
+							<div style={{ borderRadius: '6px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+								{/* Header row — click to toggle dropdown */}
+								<div
+									role='button'
+									tabIndex={0}
+									onClick={(e) => {
+										e.stopPropagation();
+										setShowTermDropdown((prev) => !prev);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											setShowTermDropdown((prev) => !prev);
+										}
+									}}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '10px',
+										padding: '6px 8px',
+										backgroundColor: '#fafafa',
+										cursor: 'pointer',
+										userSelect: 'none',
+									}}
+								>
+									{termTagSeason && (
+										<SemesterTag
+											semester={termTagSeason}
+											year={termTagSeason !== 'Multiple' ? termYear || undefined : undefined}
+										/>
+									)}
+									<span
+										style={{
+											flex: 1,
+											fontSize: '0.82rem',
+											color: '#555',
+											overflow: 'hidden',
+											textOverflow: 'ellipsis',
+											whiteSpace: 'nowrap',
+										}}
+									>
+										{selectedTerm.instructors.join(', ')}
+									</span>
+									{selectedTerm.quality_of_course != null ? (
+										<div
+											style={{
+												backgroundColor: '#4caf50',
+												color: 'white',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											{selectedTerm.quality_of_course.toFixed(2)}
+										</div>
+									) : (
+										<div
+											style={{
+												backgroundColor: '#d1d5db',
+												color: '#6b7280',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											N/A
+										</div>
+									)}
+									<div style={{ flexShrink: 0, color: '#9ca3af', display: 'flex' }}>
+										{showTermDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+									</div>
+								</div>
+
+								{/* Dropdown list */}
+								{showTermDropdown && terms.length > 1 && (
+									<div
+										style={{
+											maxHeight: '220px',
+											overflowY: 'auto',
+											borderTop: '1px solid #e5e7eb',
+										}}
+									>
+										{terms.map((term, i) => (
+											<div
+												key={term.term_code}
+												role='button'
+												tabIndex={0}
+												onClick={(e) => {
+													e.stopPropagation();
+													setSelectedTermIdx(i);
+													setShowTermDropdown(false);
+												}}
+												onKeyDown={(e) => {
+													if (e.key === 'Enter' || e.key === ' ') {
+														setSelectedTermIdx(i);
+														setShowTermDropdown(false);
+													}
+												}}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '10px',
+													padding: '7px 10px',
+													cursor: 'pointer',
+													backgroundColor: i === selectedTermIdx ? '#e8f0fe' : 'white',
+													borderBottom: i < terms.length - 1 ? '1px solid #f3f4f6' : 'none',
+												}}
+											>
+												<span
+													style={{
+														fontWeight: i === selectedTermIdx ? 700 : 600,
+														fontSize: '0.82rem',
+														color: i === selectedTermIdx ? '#1d4ed8' : '#374151',
+														minWidth: '88px',
+														flexShrink: 0,
+													}}
+												>
+													{term.label}
+												</span>
+												<span
+													style={{
+														flex: 1,
+														fontSize: '0.8rem',
+														color: '#6b7280',
+														overflow: 'hidden',
+														textOverflow: 'ellipsis',
+														whiteSpace: 'nowrap',
+													}}
+												>
+													{term.instructors.join(', ')}
+												</span>
+												{term.quality_of_course != null ? (
+													<div
+														style={{
+															backgroundColor: '#4caf50',
+															color: 'white',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														{term.quality_of_course.toFixed(2)}
+													</div>
+												) : (
+													<div
+														style={{
+															backgroundColor: '#d1d5db',
+															color: '#6b7280',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														N/A
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
 						{/* Instructors + Course Setup side by side */}
 						<div style={{ display: 'flex', gap: '16px' }}>
 							<div style={{ flex: 1 }}>
@@ -367,21 +571,19 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 											flexDirection: 'column',
 										}}
 									>
-										{typeof courseDetails['Instructors'] === 'string' ? (
-											String(courseDetails['Instructors'])
-												.split(',')
-												.map((name, index, arr) => (
-													<div
-														key={index}
-														style={{
-															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-														}}
-													>
-														{name.trim()}
-													</div>
-												))
+										{selectedTerm && selectedTerm.instructors.length > 0 ? (
+											selectedTerm.instructors.map((name, index, arr) => (
+												<div
+													key={index}
+													style={{
+														paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+														marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+													}}
+												>
+													{name}
+												</div>
+											))
 										) : (
 											<div>No instructor listed</div>
 										)}

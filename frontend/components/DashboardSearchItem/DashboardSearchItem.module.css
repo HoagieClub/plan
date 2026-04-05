@@ -5,8 +5,12 @@
 	border-radius: 8px;
 	width: calc(23vw - 12px);
 	min-width: 250px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow:
+		-2px -2px 6px rgba(0, 0, 0, 0.1),
+		0 1px 3px rgba(0, 0, 0, 0.06);
 	cursor: pointer;
+	margin-top: 4px;
+	margin-left: 6px;
 }
 
 .content {
@@ -105,12 +109,37 @@
 	box-shadow: 0 0 0 2px rgba(9, 62, 112, 0.3);
 }
 
-.prevTerms {
-	margin-top: 4px;
+.tagsRow {
+	display: flex;
+	gap: 10px;
 	font-size: 0.75rem;
-	color: #6b7280;
-	font-style: italic;
+	font-weight: 600;
+	margin-bottom: 2px;
+}
+
+.divider {
+	border: none;
+	border-top: 1px solid #e5e7eb;
+	margin: 5px 0;
+}
+
+.termRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.termList {
+	flex: 1;
+	min-width: 0;
+	font-size: 0.75rem;
+	color: #9ca3af;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.infoIcon {
+	color: #9ca3af;
+	flex-shrink: 0;
 }

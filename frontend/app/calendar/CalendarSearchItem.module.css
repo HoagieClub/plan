@@ -74,6 +74,36 @@
 	width: 100%;
 }
 
+.tagsRow {
+	display: flex;
+	gap: 10px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	margin-bottom: 2px;
+}
+
+.divider {
+	border: none;
+	border-top: 1px solid #e5e7eb;
+	margin: 5px 0;
+}
+
+.termRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.termList {
+	flex: 1;
+	min-width: 0;
+	font-size: 0.75rem;
+	color: #9ca3af;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .meta {
 	display: flex;
 	flex-direction: column;
