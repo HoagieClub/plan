@@ -42,50 +42,56 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 					<div
 						style={{ borderBottom: '1px solid #e0e0e0', marginTop: '6px', marginBottom: '10px' }}
 					/>
-					<div style={{ paddingBottom: '3px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
-						{courseSetup.map((item, idx) => {
+					<div style={{ paddingBottom: '3px', display: 'flex', flexWrap: 'wrap' }}>
+						{courseSetup.flatMap((item, idx) => {
 							const config = getSectionColor[item.class_type] || getSectionColor['Unknown'];
-							const isFirst = idx === 0;
-							const isLast = idx === courseSetup.length - 1;
-							const weight = item.count * (item.duration ?? 1);
-							return (
-								<div
-									key={item.class_type}
-									style={{
-										textAlign: 'center',
-										fontWeight: 600,
-										flex: weight,
-										minWidth: '40px',
-										overflow: 'hidden',
-										borderTopLeftRadius: isFirst ? '6px' : 0,
-										borderBottomLeftRadius: isFirst ? '6px' : 0,
-										borderTopRightRadius: isLast ? '6px' : 0,
-										borderBottomRightRadius: isLast ? '6px' : 0,
-									}}
-								>
+							const totalBoxes = courseSetup.reduce((acc, i) => acc + i.count, 0);
+							const startIdx = courseSetup.slice(0, idx).reduce((acc, i) => acc + i.count, 0);
+
+							return Array.from({ length: item.count }).map((_, countIdx) => {
+								const absoluteIdx = startIdx + countIdx;
+								const isFirst = absoluteIdx === 0;
+								const isLast = absoluteIdx === totalBoxes - 1;
+
+								return (
 									<div
+										key={`${item.class_type}-${countIdx}`}
 										style={{
-											backgroundColor: config.color,
-											color: 'white',
-											fontSize: '0.9rem',
-											fontWeight: 'bold',
-											padding: '4px 0',
+											textAlign: 'center',
+											fontWeight: 600,
+											flex: item.duration ?? 1,
+											minWidth: '40px',
+											overflow: 'hidden',
+											borderTopLeftRadius: isFirst ? '6px' : 0,
+											borderBottomLeftRadius: isFirst ? '6px' : 0,
+											borderTopRightRadius: isLast ? '6px' : 0,
+											borderBottomRightRadius: isLast ? '6px' : 0,
 										}}
 									>
-										{config.abbr}
+										<div
+											style={{
+												backgroundColor: config.color,
+												color: 'white',
+												fontSize: '0.9rem',
+												fontWeight: 'bold',
+												padding: '4px 0',
+											}}
+										>
+											{config.abbr}
+										</div>
+										<div
+											style={{
+												backgroundColor: config.lightColor ?? config.color + '99',
+												color: 'white',
+												fontSize: '0.75rem',
+												padding: '3px 0',
+											}}
+										>
+											{item.duration} m.
+										</div>
 									</div>
-									<div
-										style={{
-											backgroundColor: config.lightColor ?? config.color + '99',
-											color: 'white',
-											fontSize: '0.75rem',
-											padding: '3px 0',
-										}}
-									>
-										{item.duration} m.
-									</div>
-								</div>
-							);
+								);
+							});
 						})}
 					</div>
 				</>

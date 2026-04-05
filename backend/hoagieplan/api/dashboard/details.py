@@ -140,35 +140,31 @@ def get_course_info(crosslistings):
     if latest_term_section:
         latest_term_sections = all_sections.filter(term=latest_term_section.term)
         
-        # Calculate course setup based on meeting times
         course_setup_dict = {}
-        
+
         for section in latest_term_sections:
             class_type = section.class_type
             
-            # Get all meetings for this section
-            meetings = ClassMeeting.objects.filter(section=section)
+            if class_type in course_setup_dict:
+                continue
             
-            # Calculate total weekly duration for this section
-            total_duration = 0
-            meeting_count = 0
+            meetings = ClassMeeting.objects.filter(section=section)
+            duration = None
+            
             for meeting in meetings:
                 if meeting.start_time and meeting.end_time:
                     start = datetime.combine(datetime.today(), meeting.start_time)
                     end = datetime.combine(datetime.today(), meeting.end_time)
                     duration = int((end - start).total_seconds() / 60)
-                    total_duration += duration
-                    meeting_count += 1
-            
-            # If we haven't seen this class type yet, or if this is the first section
-            # we're examining, store its total duration
-            if class_type not in course_setup_dict and total_duration > 0:
+                    count = len(meeting.days.split(',')) if meeting.days else 1
+                    break
+
+            if duration is not None:
                 course_setup_dict[class_type] = {
-                    'count': meeting_count,  # Number of meetings per week
-                    'duration': total_duration
+                    'count': count,
+                    'duration': duration
                 }
-        
-        # Build course setup array
+
         course_setup = [
             {
                 'class_type': class_type,
@@ -177,10 +173,10 @@ def get_course_info(crosslistings):
             }
             for class_type, info in course_setup_dict.items()
         ]
-        
+
         if course_setup:
             course_dict["course_setup"] = course_setup
-
+        
     return course_dict
 
 
