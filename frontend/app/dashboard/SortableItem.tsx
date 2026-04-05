@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 
 import { DashboardSearchItem } from '@/components/DashboardSearchItem';
+import { InfoComponentPopOver } from '@/components/InfoComponent';
 import { Item } from '@/components/Item';
 import type { Course } from '@/types';
 import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
@@ -53,27 +54,30 @@ export function SortableItem({
 	// For search results, render DashboardSearchItem with Item as child
 	if (containerId === SEARCH_RESULTS_ID) {
 		const cleanId = id.toString().replace('|disabled', '');
+		const crosslisting = cleanId.split('|')[1] ?? cleanId;
 		return (
-			<DashboardSearchItem course={course}>
-				<Item
-					disabled={disabled}
-					ref={disabled ? undefined : setNodeRef}
-					value={cleanId}
-					dragging={isDragging}
-					sorting={isSorting}
-					handle={handle && !disabled}
-					handleProps={disabled ? undefined : setActivatorNodeRef}
-					index={index}
-					wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
-					color_primary={getPrimaryColor(cleanId)}
-					color_secondary={getSecondaryColor(cleanId)}
-					transition={transition}
-					transform={transform}
-					fadeIn={mountedWhileDragging}
-					listeners={disabled ? undefined : listeners}
-					onRemove={() => {}}
-				/>
-			</DashboardSearchItem>
+			<InfoComponentPopOver value={crosslisting}>
+				<DashboardSearchItem course={course}>
+					<Item
+						disabled={disabled}
+						ref={disabled ? undefined : setNodeRef}
+						value={cleanId}
+						dragging={isDragging}
+						sorting={isSorting}
+						handle={handle && !disabled}
+						handleProps={disabled ? undefined : setActivatorNodeRef}
+						index={index}
+						wrapperStyle={{ ...wrapperStyle({ index }), width: '100%' }}
+						color_primary={getPrimaryColor(cleanId)}
+						color_secondary={getSecondaryColor(cleanId)}
+						transition={transition}
+						transform={transform}
+						fadeIn={mountedWhileDragging}
+						listeners={disabled ? undefined : listeners}
+						onRemove={() => {}}
+					/>
+				</DashboardSearchItem>
+			</InfoComponentPopOver>
 		);
 	}
 

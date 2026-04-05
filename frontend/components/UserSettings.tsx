@@ -188,6 +188,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your major'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={major}
 						// inputValue={major.code === undeclared.code ? '' : major.code}
 						isOptionEqualToValue={isOptionEqual}
@@ -216,6 +221,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your minor(s)'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={minors}
 						isOptionEqualToValue={isOptionEqual}
 						onChange={(event, newMinors: MajorMinorType[]) => {
@@ -258,6 +268,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your certificate(s)'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={certificates}
 						isOptionEqualToValue={isOptionEqual}
 						onChange={(event, newCertificates: MajorMinorType[]) => {
@@ -339,6 +354,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						options={generateClassYears()}
 						placeholder='Class year'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={classYear}
 						isOptionEqualToValue={(option, value) => value === undefined || option === value}
 						onChange={(event, newClassYear: number | undefined) => {

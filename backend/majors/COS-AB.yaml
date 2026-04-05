@@ -178,7 +178,7 @@ req_list:
     MAE 345, MOL 437/NEU 437, NEU 330, and ECO 326 count as electives.
     Graduate courses in other departments may not be used as electives.
   req_list:
-    - name:
+    - name: 300/400-level COS
       max_counted: 3
       min_needed: 1
       explanation:
@@ -190,7 +190,7 @@ req_list:
         - COS 398
         - COS 497
         - COS 498
-    - name:
+    - name: Non-COS Electives
       max_counted: 2
       min_needed: 1
       explanation:

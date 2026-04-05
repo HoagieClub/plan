@@ -84,18 +84,14 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
-			void fetch(`/api/hoagie/course/details?${params}`).then((response) => response.json());
-			console.log('Fetching course details for:', value);
-			void fetch(`/api/hoagie/course/details/?${params}`)
+			void fetch(`/api/hoagie/course/details?${params}`)
 				.then((response) => {
-					console.log('Response status:', response.status);
 					if (!response.ok) {
 						throw new Error(`HTTP error! status: ${response.status}`);
 					}
 					return response.json();
 				})
 				.then((data) => {
-					console.log('Course details received:', data);
 					setCourseDetails(data);
 				})
 				.catch((error) => {
@@ -138,7 +134,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				className={styles.modal}
 				style={{
 					width: '75%',
-					height: courseDetails ? '82vh' : '160px',
+					height: courseDetails ? '70vh' : '160px',
+					maxHeight: courseDetails ? '70vh' : '160px',
 					gap: '10px',
 					padding: '25px',
 					display: 'flex',

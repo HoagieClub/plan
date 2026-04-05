@@ -4,7 +4,7 @@ import { Virtuoso } from 'react-virtuoso';
 
 import type { SearchResults } from '@/types';
 
-import CalendarSearchItem from './CalendarSearchItem';
+import { SortableCalendarItem } from './SortableCalendarItem';
 
 const CalendarSearchResults: FC<SearchResults> = ({ courses = [] }) => {
 	return (
@@ -12,8 +12,8 @@ const CalendarSearchResults: FC<SearchResults> = ({ courses = [] }) => {
 			data={courses}
 			itemContent={(_, course) => (
 				// Padding between course cards
-				<div className='mb-2'>
-					<CalendarSearchItem course={course} />
+				<div className='mb-2.5'>
+					<SortableCalendarItem course={course} />
 				</div>
 			)}
 		/>
