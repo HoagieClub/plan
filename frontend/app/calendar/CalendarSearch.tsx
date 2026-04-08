@@ -93,7 +93,13 @@ interface RangeSliderProps {
 }
 
 const RangeSlider: FC<RangeSliderProps> = ({ min, max, value, onChange }) => {
-	const handleChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
+	const [timeBlocks, setTimeBlocks] = useState<[number, number][]>([]);
+
+	const handleTimeBlocksChange = (newBlocks: [number, number][]) => {
+		setTimeBlocks(newBlocks);
+	};
+
+	const handleRangeSliderChange = (_event: Event, newValue: number | number[], activeThumb: number) => {
 		if (!Array.isArray(newValue)) return;
 		if (newValue[1] - newValue[0] < MIN_CLASS_TIME) {
 			if (activeThumb === 0) {
@@ -111,14 +117,36 @@ const RangeSlider: FC<RangeSliderProps> = ({ min, max, value, onChange }) => {
 	return (
 		<div>
 			<div>
+				{timeBlocks.map((block, i) => (
+					<span key={i}>
+						{minutesToString(block[0])} – {minutesToString(block[1])}
+						<button
+							type='button'
+							onClick={() => handleTimeBlocksChange(timeBlocks.filter((_, j) => j !== i))}
+							aria-label='Remove time block'
+						>
+							×
+						</button>
+					</span>
+				))}
+				<span>Add Time Block</span>
+				<button
+					type='button'
+					onClick={() => handleTimeBlocksChange([...timeBlocks, value])}
+					aria-label='Add time block'
+				>
+					+
+				</button>
+			</div>
+			<div>
 				<span>{minutesToString(value[0])}</span>
-				<span>:</span>
+				<span> : </span>
 				<span>{minutesToString(value[1])}</span>
 			</div>
 			<Box>
 				<Slider
 					value={value}
-					onChange={handleChange}
+					onChange={handleRangeSliderChange}
 					min={min}
 					max={max}
 					step={5}
