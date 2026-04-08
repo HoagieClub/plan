@@ -12,6 +12,7 @@ contacts:
   - type: Program Director
     name: Sandra L. Bermann
     email: sandralb@princeton.edu
+iw_required: true
 req_list:
   - name: Prerequisites
     max_counted: 1

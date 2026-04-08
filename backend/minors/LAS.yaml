@@ -18,6 +18,7 @@ contacts:
 - type: Director of the Program in Latin American Studies
   name: Gabriella Nouzeilles 
   email: gnouzeil@princeton.edu
+iw_required: true
 req_list:
 - name: Language Requirement
   explanation: |-

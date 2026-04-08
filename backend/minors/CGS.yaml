@@ -18,6 +18,7 @@ contacts:
 - type: Program Director
   name: Anna Colasante
   email: anna@princeton.edu
+iw_required: false
 req_list:
   - name: Total Courses
     explanation: Students are required to take five courses in cognitive science. At most, two courses counted towards the minor that are also counted towards the major. At most, one course with a primary course listing from the student's department of concentration unless permission is obtained from the faculty director."

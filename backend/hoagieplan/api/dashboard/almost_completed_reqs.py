@@ -4,12 +4,13 @@ from constants import CERTIFICATES, MINORS
 from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequirements
 from hoagieplan.api.dashboard.requirements import check_user
 from hoagieplan.api.profile.info import fetch_user_info
+from hoagieplan.models import CustomUser
 
 TOP_ALMOST_COMPLETED = 100
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
-    all_outstanding_reqs = _get_all_outstanding_reqs_for_user(net_id)
+    all_outstanding_reqs = _get_all_outstanding_reqs_for_user(CustomUser.objects.get(net_id=net_id))
     # Sort by number of outstanding courses in ascending order and take the top N
     pairs = sorted(all_outstanding_reqs.items(), key=lambda item: item[1])
     top_pairs = pairs[:top_almost_completed]
@@ -85,15 +86,15 @@ def _get_incomplete_subrequirements(requirement: Requirement, max_items: int = 3
     return incomplete
 
 
-def _get_all_outstanding_reqs_for_user(net_id: str) -> Dict[str, int]:
-    user_info = fetch_user_info(net_id)
+def _get_all_outstanding_reqs_for_user(user: CustomUser) -> Dict[str, int]:
+    user_info = fetch_user_info(user)
     user_major = user_info["major"]
 
     minors_as_list = _convert_dict_to_list(MINORS)
     certs_as_list = _convert_dict_to_list(CERTIFICATES)
 
     user_req_output = check_user(
-        net_id,
+        user,
         user_major,
         minors_as_list,
         certs_as_list,
@@ -226,14 +227,14 @@ def _is_parent_of_leaf(requirement: Requirement) -> bool:
     return True
 
 
-def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED):
+def get_all_program_data(user: CustomUser, top_almost_completed=TOP_ALMOST_COMPLETED):
     """Optimized function that computes all program data in a single pass.
     
     Returns a tuple of (almost_completed_dict, prereq_status_dict, iw_status_dict, incomplete_subreqs_dict)
     where almost_completed_dict contains {code: courses_needed_to_complete}
     and incomplete_subreqs_dict contains {code: [list of incomplete subrequirement descriptions]}
     """
-    user_info = fetch_user_info(net_id)
+    user_info = fetch_user_info(user)
     user_major = user_info["major"]
 
     minors_as_list = _convert_dict_to_list(MINORS)
@@ -241,7 +242,7 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
 
     # Single call to check_user
     user_req_output = check_user(
-        net_id,
+        user,
         user_major,
         minors_as_list,
         certs_as_list,

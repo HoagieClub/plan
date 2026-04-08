@@ -20,6 +20,7 @@ contacts:
 - type: Director
   name: Mala Murthy
   email: mmurthy@princeton.edu
+iw_required: false
 req_list:
 - name: Core Courses
   max_counted: 1

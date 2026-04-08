@@ -29,6 +29,7 @@ contacts:
 - type: Administrative Coordinator
   name: Jackie Wasneski
   email: wasneski@princeton.edu
+iw_required: true
 req_list:
 - name: Core
   max_counted: 1

@@ -29,6 +29,7 @@ contacts:
 - type: Director of Spanish Language Program
   name: Alberto Bruzos Moro
   email: abruzos@princeton.edu
+iw_required: true
 req_list:
 - name: Core Requirement
   max_counted: 1

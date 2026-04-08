@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import sys
@@ -12,9 +11,6 @@ import yaml
 from django.db import transaction
 
 import constants
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
-logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path("../").resolve()))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -32,8 +28,8 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts", "iw_required"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester", "iw_required"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
@@ -42,6 +38,7 @@ CERTIFICATE_FIELDS = [
     "contacts",
     "apply_by_semester",
     "active_until",
+    "iw_required",
 ]
 REQUIREMENT_FIELDS = [
     "name",
@@ -70,24 +67,24 @@ def initialize_caches():
     """Load all reference data into memory to avoid repeated DB queries."""
     global DEPT_CACHE, MAJOR_CACHE, MINOR_CACHE, DEGREE_CACHE
 
-    logging.info("Initializing caches...")
+    print("Initializing caches...")
     DEPT_CACHE = {dept.code: dept for dept in Department.objects.all()}
-    logging.info(f"Cached {len(DEPT_CACHE)} departments")
+    print(f"Cached {len(DEPT_CACHE)} departments")
 
     DEGREE_CACHE = {degree.code: degree for degree in Degree.objects.all()}
-    logging.info(f"Cached {len(DEGREE_CACHE)} degrees")
+    print(f"Cached {len(DEGREE_CACHE)} degrees")
 
     MAJOR_CACHE = {major.code: major for major in Major.objects.all()}
-    logging.info(f"Cached {len(MAJOR_CACHE)} majors")
+    print(f"Cached {len(MAJOR_CACHE)} majors")
 
     MINOR_CACHE = {minor.code: minor for minor in Minor.objects.all()}
-    logging.info(f"Cached {len(MINOR_CACHE)} minors")
+    print(f"Cached {len(MINOR_CACHE)} minors")
 
-    logging.info("Caches initialized!")
+    print("Caches initialized!")
 
 
 def load_data(yaml_file):
-    logging.info("Loading yaml data...")
+    print("Loading yaml data...")
     with open(yaml_file, "r") as file:
         data = yaml.safe_load(file)  # this is a Python dict
         return data
@@ -107,7 +104,7 @@ def load_course_list(course_list):
             for lang_dept in constants.LANG_DEPTS:
                 dept = DEPT_CACHE.get(lang_dept)
                 if not dept:
-                    logging.info(f"Dept with code {lang_dept} not found")
+                    print(f"Dept with code {lang_dept} not found")
                     continue
 
                 dept_id = dept.id
@@ -127,7 +124,7 @@ def load_course_list(course_list):
         else:
             dept = DEPT_CACHE.get(dept_code)
             if not dept:
-                logging.info(f"Dept with code {dept_code} not found")
+                print(f"Dept with code {dept_code} not found")
                 continue
 
             dept_id = dept.id
@@ -148,7 +145,7 @@ def load_course_list(course_list):
 
 
 def push_requirement(req):
-    logging.info(f"{req['name']}")
+    print(f"{req['name']}")
     req_fields = {}
 
     # If this is a no_req requirement, set min_needed to 0
@@ -217,7 +214,7 @@ def push_requirement(req):
 
 def push_degree(yaml_file):
     data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+    print(f"{data['name']}")
     degree_fields = {}
 
     for field in DEGREE_FIELDS:
@@ -241,23 +238,23 @@ def push_degree(yaml_file):
         req_inst.save()
 
     if created:
-        logging.info(f"Created new degree: {degree_inst.name}")
+        print(f"Created new degree: {degree_inst.name}")
     else:
-        logging.info(f"Updated existing degree: {degree_inst.name}")
+        print(f"Updated existing degree: {degree_inst.name}")
 
 
 def push_undeclared_major():
-    logging.info("Undeclared")
+    print("Undeclared")
     _, created = Major.objects.update_or_create(name=UNDECLARED["name"], code=UNDECLARED["code"], defaults=UNDECLARED)
     if created:
-        logging.info(f"Created new major: {UNDECLARED['code']}")
+        print(f"Created new major: {UNDECLARED['code']}")
     else:
-        logging.info(f"Updated existing major: {UNDECLARED['code']}")
+        print(f"Updated existing major: {UNDECLARED['code']}")
 
 
 def push_major(yaml_file):
     data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+    print(f"{data['name']}")
     major_fields = {}
 
     for field in MAJOR_FIELDS:
@@ -277,7 +274,7 @@ def push_major(yaml_file):
     if degree_inst:
         major_inst.degree.add(degree_inst)
     else:
-        logging.info(f"Degree with code {degree_code} not found")
+        print(f"Degree with code {degree_code} not found")
 
     for req in data["req_list"]:
         req_inst = push_requirement(req)
@@ -285,14 +282,14 @@ def push_major(yaml_file):
         req_inst.save()
 
     if created:
-        logging.info(f"Created new major: {major_inst.code}")
+        print(f"Created new major: {major_inst.code}")
     else:
-        logging.info(f"Updated existing major: {major_inst.code}")
+        print(f"Updated existing major: {major_inst.code}")
 
 
 def push_minor(yaml_file):
     data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+    print(f"{data['name']}")
     minor_fields = {}
 
     for field in MINOR_FIELDS:
@@ -314,7 +311,7 @@ def push_minor(yaml_file):
             if major_inst:
                 excluded_majors.append(major_inst)
             else:
-                logging.info(f"Major with code {major_code} not found")
+                print(f"Major with code {major_code} not found")
         if excluded_majors:
             minor_inst.excluded_majors.set(excluded_majors)
 
@@ -325,7 +322,7 @@ def push_minor(yaml_file):
             if other_minor_inst:
                 excluded_minors.append(other_minor_inst)
             else:
-                logging.info(f"Minor with code {minor_code} not found")
+                print(f"Minor with code {minor_code} not found")
         if excluded_minors:
             minor_inst.excluded_minors.set(excluded_minors)
 
@@ -335,14 +332,14 @@ def push_minor(yaml_file):
         req_inst.save()
 
     if created:
-        logging.info(f"Created new minor: {minor_inst.code}")
+        print(f"Created new minor: {minor_inst.code}")
     else:
-        logging.info(f"Updated existing minor: {minor_inst.code}")
+        print(f"Updated existing minor: {minor_inst.code}")
 
 
 def push_certificate(yaml_file):
     data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+    print(f"{data['name']}")
     certificate_fields = {}
 
     for field in CERTIFICATE_FIELDS:
@@ -365,7 +362,7 @@ def push_certificate(yaml_file):
             if major_inst:
                 excluded_majors.append(major_inst)
             else:
-                logging.info(f"Major with code {major_code} not found")
+                print(f"Major with code {major_code} not found")
         if excluded_majors:
             certificate_inst.excluded_majors.set(excluded_majors)
 
@@ -375,63 +372,63 @@ def push_certificate(yaml_file):
         req_inst.save()
 
     if created:
-        logging.info(f"Created new certificate: {certificate_inst.code}")
+        print(f"Created new certificate: {certificate_inst.code}")
     else:
-        logging.info(f"Updated existing certificate: {certificate_inst.code}")
+        print(f"Updated existing certificate: {certificate_inst.code}")
 
 
 def push_degrees(degrees_path):
-    logging.info("Pushing degree requirements...")
+    print("Pushing degree requirements...")
     for file in degrees_path.glob("*.yaml"):
         push_degree(str(file))
-    logging.info("Degree requirements pushed!")
+    print("Degree requirements pushed!")
 
 
 def push_majors(majors_path):
-    logging.info("Pushing major requirements...")
+    print("Pushing major requirements...")
     push_undeclared_major()
     for file in majors_path.glob("*.yaml"):
         push_major(str(file))
-    logging.info("Major requirements pushed!")
+    print("Major requirements pushed!")
 
 
 def push_minors(minors_path):
-    logging.info("Pushing minor requirements...")
+    print("Pushing minor requirements...")
     for file in minors_path.glob("*.yaml"):
         push_minor(str(file))
-    logging.info("Minor requirements pushed!")
+    print("Minor requirements pushed!")
 
 
 def push_certificates(certificates_path):
-    logging.info("Pushing certificate requirements...")
+    print("Pushing certificate requirements...")
     for file in certificates_path.glob("*.yaml"):
         push_certificate(str(file))
-    logging.info("Certificate requirements pushed!")
+    print("Certificate requirements pushed!")
 
 
 def clear_user_requirements():
-    logging.info("Clearing CustomUser_requirements table...")
+    print("Clearing CustomUser_requirements table...")
     with transaction.atomic():
         CustomUser.requirements.through.objects.all().delete()
-    logging.info("CustomUser_requirements table cleared!")
+    print("CustomUser_requirements table cleared!")
 
 
 def clear_user_req_dict():
-    logging.info("Clearing CustomUser req_dict cache...")
+    print("Clearing CustomUser req_dict cache...")
     CustomUser.objects.update(req_dict=None)
-    logging.info("CustomUser req_dict cache cleared!")
+    print("CustomUser req_dict cache cleared!")
 
 
 def clear_requirement_ids():
-    logging.info("Clearing requirement_id column in UserCourses...")
+    print("Clearing requirement_id column in UserCourses...")
     UserCourses.requirements.through.objects.all().delete()
-    logging.info("UserCourses_requirements table cleared!")
+    print("UserCourses_requirements table cleared!")
 
 
 def clear_requirements():
-    logging.info("Clearing Requirement table...")
+    print("Clearing Requirement table...")
     Requirement.objects.all().delete()
-    logging.info("Requirement table cleared!")
+    print("Requirement table cleared!")
 
 
 # TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
