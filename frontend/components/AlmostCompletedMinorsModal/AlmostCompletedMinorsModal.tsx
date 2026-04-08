@@ -5,6 +5,7 @@ import { Snackbar } from '@mui/joy';
 import { Modal } from '@/components/Modal';
 import { getAlmostCompletedPrograms, type Program } from '@/services/almostCompletedService';
 import { getProgramDetails, type ProgramDetails } from '@/services/programDetailsService';
+import { updateUserProfile } from '@/services/userService';
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
@@ -143,17 +144,7 @@ export function useAlmostCompletedMinorsModal() {
 		const newProfile = { [fieldName]: newItems };
 
 		try {
-			const response = await fetch(`/api/hoagie/profile/update`, {
-				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
-				body: JSON.stringify(updatedProfile),
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to update profile');
-			}
+			updateUserProfile(updatedProfile);
 			updateProfile(newProfile);
 			await updateRequirements();
 		} catch (error) {

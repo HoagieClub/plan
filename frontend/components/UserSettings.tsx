@@ -17,6 +17,7 @@ import { fetchCsrfToken } from '@/utils/csrf';
 import { CERTIFICATE_OPTIONS, MAJOR_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
 
 import { isOptionEqual, smartSearch } from './MajorMinorSearch';
+import { updateUserProfile } from '@/services/userService';
 
 function generateClassYears() {
 	const currentYear = new Date().getFullYear();
@@ -97,17 +98,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		};
 
 		try {
-			const response = await fetch(`/api/hoagie/profile/update`, {
-				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
-				body: JSON.stringify(profile),
-			});
-
-			if (!response.ok) {
-				throw new Error('POST request to update profile failed.');
-			}
+			updateUserProfile(profile)
 
 			updateProfile(profile);
 			onSave(profile);
