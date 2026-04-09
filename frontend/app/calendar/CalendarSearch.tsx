@@ -126,7 +126,11 @@ export const CalendarSearch: FC = () => {
 				const data: { courses: Course[] } = await response.json();
 				setCalendarSearchResults(data.courses);
 				if (data.courses.length > 0) {
-					addRecentSearch(searchQuery);
+					if (searchQuery.length > 14) {
+						addRecentSearch(searchQuery.slice(0, 10) + '...');
+					} else {
+						addRecentSearch(searchQuery);
+					}
 					searchCache.set(searchQuery, data.courses);
 				}
 			} catch (error) {

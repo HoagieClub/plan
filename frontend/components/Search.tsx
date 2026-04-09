@@ -113,7 +113,11 @@ export const Search: FC = () => {
 					const data: { courses: Course[] } = await response.json();
 					setSearchResults(data.courses);
 					if (data.courses.length > 0) {
-						addRecentSearch(searchQuery);
+						if (searchQuery.length > 14) {
+							addRecentSearch(searchQuery.slice(0, 10) + '...');
+						} else {
+							addRecentSearch(searchQuery);
+						}
 						searchCache.set(searchQuery, data.courses);
 					}
 				} else {
@@ -400,7 +404,7 @@ export const Search: FC = () => {
 							</button>
 						</div>
 					</div>
-					<div className='flex space-x-2 overflow-x-auto pb-2'>
+					<div className='flex flex-wrap gap-2 space-x-2 overflow-x-scroll pb-2'>
 						{recentSearches.map((search, index) => (
 							<button
 								key={index}
