@@ -177,8 +177,9 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
 
     no_class_ranges = NO_CLASS_RANGES.get(semester_code)
     if no_class_ranges:
-        for exdate in break_exdates(days_of_week, no_class_ranges, est_tz, start_time):
-            event.add("exdate", exdate)
+        exdates = break_exdates(days_of_week, no_class_ranges, est_tz, start_time)
+        if exdates:
+            event.add("exdate", exdates)
 
     # Add event to calendar
     cal.add_component(event)
