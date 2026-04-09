@@ -143,7 +143,7 @@ const RangeSlider: FC<RangeSliderProps> = ({ min, max, value, onChange }) => {
 				<span> : </span>
 				<span>{minutesToString(value[1])}</span>
 			</div>
-			<Box>
+			<Box className='range-slider'>
 				<Slider
 					value={value}
 					onChange={handleRangeSliderChange}

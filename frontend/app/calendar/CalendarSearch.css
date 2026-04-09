@@ -169,3 +169,31 @@
 		0 0 0 2px rgba(255, 255, 255, 0),
 		0 0px 0px 2px #4c9ffe;
 }
+
+.range-slider .MuiSlider-mark {
+	display: none;
+}
+
+.range-slider .MuiSlider-markLabel {
+	color: #868c92;
+}
+
+.range-slider .MuiSlider-thumb {
+	background-color: #f0f4f8;
+	border: 2px solid #868c92;
+}
+
+.range-slider .MuiSlider-thumb:hover,
+.range-slider .MuiSlider-thumb.Mui-focusVisible {
+	box-shadow: 0 0 0 4px rgba(134, 140, 146, 0.16);
+}
+
+.range-slider .MuiSlider-track {
+	background-color: #000;
+	border-color: #000;
+}
+
+.range-slider .MuiSlider-rail {
+	background-color: #868c92;
+	opacity: 1;
+}
