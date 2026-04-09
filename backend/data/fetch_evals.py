@@ -141,9 +141,8 @@ def save(data: str, term: str, course_id: str) -> None:
     _comments = scrape_comments(webpage)
     fieldnames = ["course_id", "term", "scores", "comments"]
 
-    # Ensure scores and comments are properly formatted as JSON strings
-    scores = oj.dumps(_scores).decode("utf-8").replace("\\/", "/")[1:-1]
-    comments = oj.dumps(_comments).decode("utf-8").replace("\\/", "/")[1:-1]
+    scores = oj.dumps(_scores).decode("utf-8")
+    comments = oj.dumps(_comments).decode("utf-8")
 
     with csv_lock:
         with open(EVALS_CSV, "a", newline="", encoding="utf-8") as file:
