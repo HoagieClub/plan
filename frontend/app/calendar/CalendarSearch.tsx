@@ -23,7 +23,6 @@ import {
 	createCalendar,
 	deleteCalendar,
 	renameCalendar,
-	getCalendarEvents,
 } from '@/services/calendarService';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
@@ -88,22 +87,26 @@ export const CalendarSearch: FC = () => {
 	const [newScheduleName, setNewScheduleName] = useState('');
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [editingSchedule, setEditingSchedule] = useState<{ id: string; name: string } | null>(null);
-	const [activeScheduleId, setActiveScheduleId] = useState('1');
+	const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null);
 	const timerRef = useRef<number>(undefined);
 	const {
+		setActiveCalendarName,
 		setCalendarSearchResults,
 		calendarSearchResults,
 		addRecentSearch,
 		recentSearches,
 		setError,
 		setLoading,
+		loadCourses,
 	} = useCalendarStore((state) => ({
+		setActiveCalendarName: state.setActiveCalendarName,
 		setCalendarSearchResults: state.setCalendarSearchResults,
 		calendarSearchResults: state.calendarSearchResults,
 		addRecentSearch: state.addRecentSearch,
 		recentSearches: state.recentSearches,
 		setError: state.setError,
 		setLoading: state.setLoading,
+		loadCourses: state.loadCourses,
 	}));
 
 	const {
@@ -176,12 +179,29 @@ export const CalendarSearch: FC = () => {
 		const loadCalendars = async () => {
 			const calendars = await getCalendars(Number(termFilter));
 
-			setSchedules(calendars.map((c) => ({ id: c.id, name: c.name })));
+			setSchedules(calendars.map((c) => ({ id: String(c.id), name: c.name })));
 			setActiveScheduleId(String(calendars[0].id));
+			setActiveCalendarName(calendars[0].name);
 		};
 
 		loadCalendars();
 	}, [termFilter]);
+
+	useEffect(() => {
+		if (!activeScheduleId || !termFilter) {
+			return;
+		}
+
+		const changeCalendar = async () => {
+			const calendar = schedules.find((c) => c.id === activeScheduleId);
+			if (!calendar) {
+				return;
+			}
+			setActiveCalendarName(calendar.name);
+			await loadCourses(termFilter);
+		};
+		changeCalendar();
+	}, [activeScheduleId, termFilter, schedules, loadCourses]);
 
 	function retrieveCachedSearch(search: string) {
 		setCalendarSearchResults(searchCache.get(search) || []);
@@ -366,6 +386,7 @@ export const CalendarSearch: FC = () => {
 		if (created) {
 			setSchedules([...schedules, { id: String(created.id), name: created.name }]);
 			setActiveScheduleId(String(created.id));
+			setActiveCalendarName(created.name);
 		}
 
 		setNewScheduleName('');
@@ -373,7 +394,7 @@ export const CalendarSearch: FC = () => {
 	};
 
 	const handleDeleteSchedule = async (schedule) => {
-		if (!termFilter) {
+		if (!termFilter || schedules.length <= 1) {
 			return;
 		}
 
@@ -382,6 +403,7 @@ export const CalendarSearch: FC = () => {
 		setSchedules(remaining);
 		if (activeScheduleId === schedule.id) {
 			setActiveScheduleId(remaining[0]?.id || '');
+			setActiveCalendarName(remaining[0]?.name || '');
 		}
 		setShowEditModal(false);
 	};
@@ -406,7 +428,9 @@ export const CalendarSearch: FC = () => {
 			setSchedules(
 				schedules.map((s) => (s.id === schedule.id ? { ...s, name: newScheduleName.trim() } : s))
 			);
+			setActiveCalendarName(newScheduleName.trim());
 		}
+		setNewScheduleName('');
 		setShowEditModal(false);
 	};
 
@@ -519,7 +543,10 @@ export const CalendarSearch: FC = () => {
 					<button
 						key={schedule.id}
 						className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded px-3 py-1 text-sm ${activeScheduleId === schedule.id ? 'bg-purple-700 text-white' : 'bg-gray-200'}`}
-						onClick={() => setActiveScheduleId(schedule.id)}
+						onClick={() => {
+							setActiveScheduleId(schedule.id);
+							setActiveCalendarName(schedule.name);
+						}}
 					>
 						{schedule.name}
 						<PencilIcon
@@ -723,8 +750,10 @@ export const CalendarSearch: FC = () => {
 									fontWeight: 'bold',
 									padding: '8px 40px',
 									borderRadius: '10px',
+									opacity: schedules.length <= 1 ? 0.5 : 1,
 								}}
 								onClick={() => handleDeleteSchedule(editingSchedule)}
+								disabled={schedules.length <= 1}
 							>
 								Delete
 							</button>
