@@ -1,7 +1,7 @@
 import type { ChangeEvent, FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { MagnifyingGlassIcon, PencilIcon } from '@heroicons/react/20/solid';
 import { AdjustmentsHorizontalIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import {
 	Autocomplete,
@@ -13,10 +13,18 @@ import {
 	Snackbar,
 } from '@mui/joy';
 import Alert from '@mui/material/Alert';
+import { PlusIcon } from 'evergreen-ui';
 import { LRUCache } from 'typescript-lru-cache';
 
-import { FilterModal } from '@/components/Modal';
+import { FilterModal, Modal } from '@/components/Modal';
 import { ButtonWidget } from '@/components/Widgets/Widget';
+import {
+	getCalendars,
+	createCalendar,
+	deleteCalendar,
+	renameCalendar,
+	getCalendarEvents,
+} from '@/services/calendarService';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
@@ -75,6 +83,12 @@ export const CalendarSearch: FC = () => {
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
 	const [query, setQuery] = useState<string>('');
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [schedules, setSchedules] = useState([]);
+	const [newScheduleName, setNewScheduleName] = useState('');
+	const [showEditModal, setShowEditModal] = useState(false);
+	const [editingSchedule, setEditingSchedule] = useState<{ id: string; name: string } | null>(null);
+	const [activeScheduleId, setActiveScheduleId] = useState('1');
 	const timerRef = useRef<number>(undefined);
 	const {
 		setCalendarSearchResults,
@@ -153,6 +167,21 @@ export const CalendarSearch: FC = () => {
 			void search('', filters);
 		}
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
+
+	useEffect(() => {
+		if (!termFilter) {
+			return;
+		}
+
+		const loadCalendars = async () => {
+			const calendars = await getCalendars(Number(termFilter));
+
+			setSchedules(calendars.map((c) => ({ id: c.id, name: c.name })));
+			setActiveScheduleId(String(calendars[0].id));
+		};
+
+		loadCalendars();
+	}, [termFilter]);
 
 	function retrieveCachedSearch(search: string) {
 		setCalendarSearchResults(searchCache.get(search) || []);
@@ -328,6 +357,59 @@ export const CalendarSearch: FC = () => {
 		}
 	};
 
+	const handleCreateSchedule = async () => {
+		if (!newScheduleName.trim() || !termFilter) {
+			return;
+		}
+
+		const created = await createCalendar(newScheduleName.trim(), Number(termFilter));
+		if (created) {
+			setSchedules([...schedules, { id: String(created.id), name: created.name }]);
+			setActiveScheduleId(String(created.id));
+		}
+
+		setNewScheduleName('');
+		setShowCreateModal(false);
+	};
+
+	const handleDeleteSchedule = async (schedule) => {
+		if (!termFilter) {
+			return;
+		}
+
+		await deleteCalendar(schedule.name, Number(termFilter));
+		const remaining = schedules.filter((s) => s.id !== schedule.id);
+		setSchedules(remaining);
+		if (activeScheduleId === schedule.id) {
+			setActiveScheduleId(remaining[0]?.id || '');
+		}
+		setShowEditModal(false);
+	};
+
+	const handleDuplicateSchedule = (schedule) => {
+		if (!termFilter) {
+			return;
+		}
+		const duplicate = { id: String(Date.now()), name: `${schedule.name} (copy)` };
+		setSchedules([...schedules, duplicate]);
+		setActiveScheduleId(duplicate.id);
+		setShowEditModal(false);
+	};
+
+	const handleUpdateSchedule = async (schedule) => {
+		if (!newScheduleName.trim() || !termFilter) {
+			return;
+		}
+
+		const updated = await renameCalendar(schedule.name, newScheduleName.trim(), Number(termFilter));
+		if (updated) {
+			setSchedules(
+				schedules.map((s) => (s.id === schedule.id ? { ...s, name: newScheduleName.trim() } : s))
+			);
+		}
+		setShowEditModal(false);
+	};
+
 	const distributionAreasInverse = invert(distributionAreas);
 
 	const modalContent =
@@ -432,6 +514,31 @@ export const CalendarSearch: FC = () => {
 
 	return (
 		<>
+			<div className='mt-2.1 mx-[0.5vw] my-[1vh] flex w-[24vw] items-center gap-2 overflow-x-auto rounded border-2 border-purple-700 px-2 py-1'>
+				{schedules.map((schedule) => (
+					<button
+						key={schedule.id}
+						className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded px-3 py-1 text-sm ${activeScheduleId === schedule.id ? 'bg-purple-700 text-white' : 'bg-gray-200'}`}
+						onClick={() => setActiveScheduleId(schedule.id)}
+					>
+						{schedule.name}
+						<PencilIcon
+							className='h-3 w-3 opacity-50 hover:opacity-100'
+							onClick={(e) => {
+								e.stopPropagation();
+								setEditingSchedule(schedule);
+								setNewScheduleName(schedule.name);
+								setShowEditModal(true);
+							}}
+						/>
+					</button>
+				))}
+
+				<button className='flex h-7 w-7 items-center' onClick={() => setShowCreateModal(true)}>
+					<PlusIcon className='h-4 w-4 hover:text-purple-700' />
+				</button>
+			</div>
+
 			<div className='mt-2.1 mx-[0.5vw] my-[1vh] w-[24vw]'>
 				<ButtonWidget
 					onClick={exportCalendar}
@@ -524,6 +631,136 @@ export const CalendarSearch: FC = () => {
 				</Alert>
 			</Snackbar>
 			{modalContent}
+			{showCreateModal && (
+				<Modal onClose={() => setShowCreateModal(false)}>
+					<div className='flex flex-col gap-4'>
+						<div className='text-center'>
+							<h1 className='text-center text-3xl font-bold'>
+								Create <span style={{ color: '#7f23cf' }}>New Schedule</span>
+							</h1>
+							<hr className='mt-2 border-b-2 border-black' />
+						</div>
+						<span className='text-lg font-bold'>Schedule Name:</span>
+
+						<input
+							type='text'
+							value={newScheduleName}
+							onChange={(e) => {
+								setNewScheduleName(e.target.value);
+							}}
+							placeholder='New Schedule'
+							className='rounded-full border border-black px-3 py-2'
+						/>
+
+						<div className='flex justify-center gap-10'>
+							<button
+								style={{
+									backgroundColor: '#9ca3af',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={() => setShowCreateModal(false)}
+							>
+								Cancel
+							</button>
+							<button
+								style={{
+									backgroundColor: '#10b981',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={handleCreateSchedule}
+							>
+								Create
+							</button>
+						</div>
+					</div>
+				</Modal>
+			)}
+
+			{showEditModal && editingSchedule && (
+				<Modal onClose={() => setShowEditModal(false)}>
+					<div className='flex flex-col gap-4'>
+						<div className='text-center'>
+							<h1 className='text-center text-3xl font-bold'>
+								Edit <span style={{ color: '#7f23cf' }}> Schedule</span>
+							</h1>
+							<hr className='mt-2 border-b-2 border-black' />
+						</div>
+						<span className='text-lg font-bold'>Schedule Name:</span>
+
+						<input
+							type='text'
+							value={newScheduleName}
+							onChange={(e) => {
+								setNewScheduleName(e.target.value);
+							}}
+							placeholder='New Schedule'
+							className='rounded-full border border-black px-3 py-2'
+						/>
+
+						<div className='flex justify-center gap-5'>
+							<button
+								style={{
+									backgroundColor: '#9ca3af',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={() => setShowEditModal(false)}
+							>
+								Cancel
+							</button>
+							<button
+								style={{
+									backgroundColor: '#fa3e3e',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={() => handleDeleteSchedule(editingSchedule)}
+							>
+								Delete
+							</button>
+							<button
+								style={{
+									backgroundColor: '#1d9ade',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={
+									/* () => handleDuplicateSchedule(editingSchedule) todo later */
+									() => {
+										return;
+									}
+								}
+							>
+								Duplicate
+							</button>
+							<button
+								style={{
+									backgroundColor: '#10b981',
+									color: 'white',
+									fontWeight: 'bold',
+									padding: '8px 40px',
+									borderRadius: '10px',
+								}}
+								onClick={() => handleUpdateSchedule(editingSchedule)}
+							>
+								Save
+							</button>
+						</div>
+					</div>
+				</Modal>
+			)}
 		</>
 	);
 };
