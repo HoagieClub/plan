@@ -408,7 +408,7 @@ export const CalendarSearch: FC = () => {
 		setShowEditModal(false);
 	};
 
-	const handleDuplicateSchedule = (schedule) => {
+	const _handleDuplicateSchedule = (schedule) => {
 		if (!termFilter) {
 			return;
 		}
