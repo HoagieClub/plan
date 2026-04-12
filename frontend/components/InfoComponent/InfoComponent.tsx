@@ -78,14 +78,10 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
-	let displaySemester: 'Fall' | 'Spring' | 'Summer' | 'Multiple' | undefined;
+	let displaySemester: 'Fall' | 'Spring' | 'Multiple' | undefined;
 	if (semesterAvailability === 'Both') {
 		displaySemester = 'Multiple';
-	} else if (
-		semesterAvailability === 'Fall' ||
-		semesterAvailability === 'Spring' ||
-		semesterAvailability === 'Summer'
-	) {
+	} else if (semesterAvailability === 'Fall' || semesterAvailability === 'Spring') {
 		displaySemester = semesterAvailability;
 	}
 
