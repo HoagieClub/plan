@@ -10,16 +10,15 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag from '@/components/ui/SemesterTag';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
-import { getSemesterColor, getSemesterTag, getSemesterTitle } from '@/utils/semesterTag';
 
 import styles from './InfoComponent.module.css';
-
 const darken = (hex: string, amount: number) => {
 	const n = parseInt(hex.slice(1), 16);
 	const r = Math.max(0, (n >> 16) - Math.round(amount * 255));
@@ -78,11 +77,17 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
-
-	const semesterAvailability = courseDetails?.['Semester Availability'];
-	const semesterTag = getSemesterTag(semesterAvailability ?? '');
-	const semesterColor = getSemesterColor(semesterTag);
-	const semesterTitle = getSemesterTitle(semesterTag);
+	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
+	let displaySemester: 'Fall' | 'Spring' | 'Summer' | 'Multiple' | undefined;
+	if (semesterAvailability === 'Both') {
+		displaySemester = 'Multiple';
+	} else if (
+		semesterAvailability === 'Fall' ||
+		semesterAvailability === 'Spring' ||
+		semesterAvailability === 'Summer'
+	) {
+		displaySemester = semesterAvailability;
+	}
 
 	// Use course_setup from API response
 	const courseSetup = courseDetails?.course_setup || [];
@@ -251,27 +256,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 												</div>
 											</Tooltip>
 										)}
-										{semesterTag && (
-											<Tooltip title={semesterTitle} variant='soft'>
-												<div
-													style={{
-														backgroundColor: semesterColor,
-														color: 'white',
-														padding: '0 14px',
-														borderRadius: '10px',
-														fontWeight: '600',
-														fontSize: '1.2rem',
-														width: 'fit-content',
-														display: 'flex',
-														alignItems: 'center',
-													}}
-												>
-													{semesterTag}
-												</div>
-											</Tooltip>
-										)}
 									</div>
 								</div>
+								{displaySemester && <SemesterTag semester={displaySemester} />}
 								{courseDetails['Title'] && (
 									<h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: 0 }}>
 										{courseDetails['Title']}
