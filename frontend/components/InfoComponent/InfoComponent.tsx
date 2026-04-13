@@ -294,7 +294,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											<div
 												style={{
 													fontSize: '0.9rem',
-													fontWeight: 600,
+													fontWeight: 500,
 													display: 'flex',
 													flexDirection: 'column',
 												}}
@@ -339,7 +339,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 											<div
 												style={{
 													fontSize: '0.85rem',
-													fontWeight: 600,
+													fontWeight: 500,
 													display: 'flex',
 													flexDirection: 'column',
 												}}
