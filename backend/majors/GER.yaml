@@ -223,12 +223,12 @@ req_list:
           explanation: Five upper-level courses in the German department
             (at least three of which should be 300-level courses).
           req_list:
-            - name:
+            - name: 300-level GER
               max_counted: 5
               min_needed: 1
               course_list:
                 - GER 3*
-            - name:
+            - name: 400/500-level GER
               max_counted: 2
               min_needed: 1
               course_list:
@@ -279,12 +279,12 @@ req_list:
             departmental courses are GER 207, 208, 211, 306, 307, 309 and
             324.
           req_list:
-            - name:
+            - name: 300-level GER
               max_counted: 4
               min_needed: 1
               course_list:
                 - GER 3*
-            - name:
+            - name: 400/500-level GER
               max_counted: 2
               min_needed: 1
               course_list:
@@ -298,12 +298,13 @@ req_list:
             <i>Editor's Note: Not all of these courses fall under this requirement and hoagieplan does not verify this.</i><br><br>
 
             Four cognate courses in German/European politics or political theory will be taken in the Department of Politics (at least two of which should be 300-level courses). Recommended cognates in Politics include POL 210, 230, 240, 301, 303, 313, 316, 349, 385, and 388.
-            - name:
+          req_list:
+            - name: 300-level POL
               max_counted: 4
               min_needed: 1
               course_list:
                 - POL 3*
-            - name:
+            - name: 400/500-level POL
               max_counted: 2
               min_needed: 1
               course_list:
