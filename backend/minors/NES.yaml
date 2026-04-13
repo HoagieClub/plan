@@ -17,6 +17,7 @@ contacts:
 description: |-
   The Department of Near Eastern Studies offers a wide variety of undergraduate classes focused on the languages, histories and cultures of the Near East. It provides opportunities for those who plan to major in other disciplines to simultaneously obtain proficiency in a language of the Near East (Arabic, Turkish, Hebrew and Persian) and to deepen their knowledge of the history, politics, literature, religion and culture of the Near Eastern region and broader Islamic world.
   A student majoring in a department other than Near Eastern studies may earn a minor in Near Eastern studies by completing a gateway (200-level) course in Near Eastern studies, as well as at least four other courses in Near Eastern studies.
+iw_required: true
 req_list:
   - name: Gateway Course
     max_counted: 1

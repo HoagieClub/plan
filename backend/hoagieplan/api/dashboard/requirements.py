@@ -24,11 +24,11 @@ from hoagieplan.serializers import CourseSerializer
 
 
 @cumulative_time
-def check_user(net_id, major, minors, certificates):
+def check_user(user_inst: CustomUser, major, minors, certificates):
     output = {}
 
-    user_inst = CustomUser.objects.get(net_id=net_id)
     user_courses = create_courses(user_inst)
+    manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
 
     if major is not None:
         major_code = major["code"]
@@ -38,13 +38,13 @@ def check_user(net_id, major, minors, certificates):
         degrees = major_obj.degree.all()
         for degree in degrees:
             output[degree.code] = {}
-            formatted_req = check_requirements(user_inst, "Degree", degree.code, copy.deepcopy(user_courses))
+            formatted_req = check_requirements(user_inst, "Degree", degree.code, copy.deepcopy(user_courses), manually_satisfied_reqs)
             output[degree.code]["requirements"] = formatted_req
 
         # Check for major
         output[major_code] = {}
         if major_code != "Undeclared":
-            formatted_req = check_requirements(user_inst, "Major", major_code, copy.deepcopy(user_courses))
+            formatted_req = check_requirements(user_inst, "Major", major_code, copy.deepcopy(user_courses), manually_satisfied_reqs)
         else:
             formatted_req = {"code": "Undeclared", "satisfied": True}
         output[major_code]["requirements"] = formatted_req
@@ -54,7 +54,7 @@ def check_user(net_id, major, minors, certificates):
     for minor in minors:
         minor_code = minor["code"]
         output["Minors"][minor_code] = {}
-        formatted_req = check_requirements(user_inst, "Minor", minor_code, copy.deepcopy(user_courses))
+        formatted_req = check_requirements(user_inst, "Minor", minor_code, copy.deepcopy(user_courses), manually_satisfied_reqs)
         output["Minors"][minor_code]["requirements"] = formatted_req
 
     # Check for certificates
@@ -62,7 +62,7 @@ def check_user(net_id, major, minors, certificates):
     for certificate in certificates:
         certificate_code = certificate["code"]
         output["Certificates"][certificate_code] = {}
-        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, copy.deepcopy(user_courses))
+        formatted_req = check_requirements(user_inst, "Certificate", certificate_code, copy.deepcopy(user_courses), manually_satisfied_reqs)
         output["Certificates"][certificate_code]["requirements"] = formatted_req
 
     # print(f"create_courses: {create_courses.total_time} seconds")
@@ -82,7 +82,7 @@ def check_user(net_id, major, minors, certificates):
 
 
 @cumulative_time
-def check_requirements(user_inst, table, code, courses):
+def check_requirements(user_inst, table, code, courses, manually_satisfied_reqs):
     """Determine whether requirements for 'user_inst' and 'table' are satisfied, based on the 'courses'.
 
     Args:
@@ -91,6 +91,7 @@ def check_requirements(user_inst, table, code, courses):
         table: The table containing the root of the requirement tree.
         code: The primary key or identifier in the table.
         courses: A 2D array of dictionaries, where each dictionary represents a course.
+        manually_satisfied_reqs: List of requirement IDs the user has manually marked as satisfied.
 
     Returns:
     -------
@@ -100,7 +101,6 @@ def check_requirements(user_inst, table, code, courses):
             - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
     """
     req = cached_init_req(user_inst, table, code)
-    manually_satisfied_reqs = list(user_inst.requirements.values_list("id", flat=True))
     courses = _init_courses(courses)
     mark_possible_reqs(req, courses)
     assign_settled_courses_to_reqs(req, courses, manually_satisfied_reqs)
@@ -258,7 +258,7 @@ def create_courses(user_inst):
     cleanup_invalid_usercourses()
     
     courses = [[] for _ in range(8)]  # Initialize empty list for 8 semesters
-    course_insts = UserCourses.objects.select_related("user", "course", "course__department").filter(user=user_inst)
+    course_insts = UserCourses.objects.select_related("course", "course__department").prefetch_related("requirements").filter(user=user_inst)
 
     for course_inst in course_insts:
         if not course_inst or not course_inst.course:
@@ -276,7 +276,7 @@ def create_courses(user_inst):
             "cat_num": course_inst.course.catalog_number,
         }
 
-        req_ids = list(course_inst.requirements.values_list("id", flat=True))
+        req_ids = [req.id for req in course_inst.requirements.all()]
         course["manually_settled"] = req_ids
         courses[course_inst.semester - 1].append(course)
 
@@ -577,8 +577,7 @@ def manually_settle(request):
     data = oj.loads(request.body)
     crosslistings = data.get("crosslistings")
     req_id = int(data.get("reqId"))
-    net_id = request.user.net_id
-    user_inst = CustomUser.objects.get(net_id=net_id)
+    user_inst = request.user
     course_inst = (
         Course.objects.select_related("department")
         .filter(crosslistings__iexact=crosslistings, usercourses__user=user_inst)
@@ -607,9 +606,8 @@ def mark_satisfied(request):
     data = oj.loads(request.body)
     req_id = int(data.get("reqId"))
     marked_satisfied = data.get("markedSatisfied")
-    net_id = request.user.net_id
 
-    user_inst = CustomUser.objects.get(net_id=net_id)
+    user_inst = request.user
     req_inst = Requirement.objects.get(id=req_id)
 
     if marked_satisfied == "true":
@@ -627,14 +625,13 @@ def mark_satisfied(request):
 
 @api_view(["GET"])
 def update_requirements(request):
-    net_id = request.user.net_id
-    user_info = fetch_user_info(net_id)
+    user_info = fetch_user_info(request.user)
 
     this_major = user_info["major"]["code"]
     these_minors = [minor["code"] for minor in user_info["minors"]]
     these_certificates = [certificate["code"] for certificate in user_info["certificates"]]
 
-    req_dict = check_user(user_info["netId"], user_info["major"], user_info["minors"], user_info["certificates"])
+    req_dict = check_user(request.user, user_info["major"], user_info["minors"], user_info["certificates"])
 
     # Rewrite req_dict so that it is stratified by requirements being met
     formatted_dict = {}
@@ -666,7 +663,6 @@ def update_requirements(request):
 @api_view(["GET"])
 def requirement_info(request):
     req_id = request.GET.get("reqId", "")
-    net_id = request.user.net_id
     explanation = ""
     completed_by_semester = 8
     dist_req = []
@@ -677,7 +673,7 @@ def requirement_info(request):
 
     try:
         req_inst = Requirement.objects.get(id=req_id)
-        user_inst = CustomUser.objects.get(net_id=net_id)
+        user_inst = request.user
 
         explanation = req_inst.explanation
         completed_by_semester = req_inst.completed_by_semester
@@ -788,10 +784,7 @@ def update_transcript_courses(request):
         if not isinstance(data, dict):
             raise TypeError(f"Expected dictionary but got {type(data)}")
 
-        net_id = request.user.net_id
-        user_inst = CustomUser.objects.get(net_id=net_id)
-
-        return update_transcript_courses_helper(user_inst, data)
+        return update_transcript_courses_helper(request.user, data)
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -847,8 +840,6 @@ def update_transcript_courses_helper(user_inst, data):
 
     except json.JSONDecodeError:
         return JsonResponse({"status": "error", "message": "Invalid JSON format"}, status=400)
-    except CustomUser.DoesNotExist:
-        return JsonResponse({"status": "error", "message": f"User with NetID {net_id} not found"}, status=404)
     except Exception as e:
         logger.error(f"❌ Internal error: {e}", exc_info=True)
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -862,7 +853,7 @@ def update_courses(request):
         crosslistings = data.get("crosslistings")
         container = data.get("semesterId")
         net_id = request.user.net_id
-        user_inst = CustomUser.objects.get(net_id=net_id)
+        user_inst = request.user
         class_year = user_inst.class_year
     
 
@@ -880,14 +871,11 @@ def update_courses(request):
                 .first()
             )
 
-        message = ""
-
         if container == "Search Results":
             if not course_inst:
                 return JsonResponse({'status': 'error', 'message': f"Course '{crosslistings}' not found"}, status=404)
             user_course = UserCourses.objects.get(user=user_inst, course=course_inst)
             user_course.delete()
-            message = f"User course deleted: {crosslistings}, {net_id}"
         else:
             semester = parse_semester(container, class_year)
 

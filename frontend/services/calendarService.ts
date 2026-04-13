@@ -10,8 +10,8 @@ const CALENDAR_EVENTS_URL = `/api/hoagie/calendar_events/`;
 const CalendarEventSchema = z.object({
 	id: z.number(),
 	calendar: z.number(), // Calendar id
-	course: z.number(), // Course id
-	section: z.number(), // Section id
+	course: z.any(), // Course object
+	section: z.any(), // Section object
 	start_time: z.string(),
 	end_time: z.string(),
 	start_column_index: z.number(),
@@ -29,14 +29,14 @@ const CalendarConfigurationSchema = z.object({
 });
 
 type CalendarConfiguration = z.infer<typeof CalendarConfigurationSchema>;
-type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
 
 const CalendarEventArraySchema = z.array(CalendarEventSchema);
 const CalendarConfigurationArraySchema = z.array(CalendarConfigurationSchema);
 
 enum CalendarEventPostAction {
 	AddAllCalendarEventsForCourse = 'ADD_ALL_CALENDAR_EVENTS_FOR_COURSE',
-	AddCalendarEvent = 'ADD_CALENDAR_EVENT',
+	BulkAddCalendarEvents = 'BULK_ADD_CALENDAR_EVENTS',
 }
 
 interface AddCoursePayload {
@@ -45,7 +45,7 @@ interface AddCoursePayload {
 
 interface AddCalendarEventPayload {
 	guid: string;
-	section_id: number;
+	class_section: string;
 	start_time: string;
 	end_time: string;
 	start_column_index: number;
@@ -54,7 +54,11 @@ interface AddCalendarEventPayload {
 	is_chosen: boolean;
 }
 
-type CalendarEventPostPayload = AddCoursePayload | AddCalendarEventPayload;
+interface BulkAddCalendarEventsPayload {
+	events: AddCalendarEventPayload[];
+}
+
+type CalendarEventPostPayload = AddCoursePayload | BulkAddCalendarEventsPayload;
 
 // Returns the list of all calendars for the user in term
 export async function getCalendars(term: number): Promise<CalendarConfiguration[] | null> {
@@ -201,26 +205,43 @@ export async function addCourseToCalendar(
 	);
 }
 
-// Adds calendarEvent to calendar with calendarName in term
-export async function addCalendarEventObjectToCalendar(
+// Converts 12-hour time "H:MM AM/PM" to 24-hour time "HH:MM:SS" for backend
+const convertTo24HourFormat = (time12: string): string => {
+	const [time, period] = time12.split(' ');
+	const [hourStr, minuteStr] = time.split(':');
+	let hour = parseInt(hourStr, 10);
+
+	if (period === 'PM' && hour !== 12) {
+		hour += 12;
+	} else if (period === 'AM' && hour === 12) {
+		hour = 0;
+	}
+
+	return `${hour.toString().padStart(2, '0')}:${minuteStr}:00`;
+};
+
+// Adds multiple calendarEvents to calendar with calendarName in term (single request)
+export async function bulkAddCalendarEventsToCalendar(
 	calendarName: string,
 	term: number,
-	calendarEvent: OldCalendarEvent
+	calendarEvents: OldCalendarEvent[]
 ): Promise<CalendarEvent[] | null> {
+	const events = calendarEvents.map((event) => ({
+		guid: event.course.guid,
+		class_section: event.section.class_section,
+		start_time: convertTo24HourFormat(event.startTime),
+		end_time: convertTo24HourFormat(event.endTime),
+		start_column_index: event.startColumnIndex,
+		is_active: event.isActive,
+		needs_choice: event.needsChoice,
+		is_chosen: event.isChosen,
+	}));
+
 	return performPostCalendarOperation(
 		calendarName,
 		term,
-		CalendarEventPostAction.AddCalendarEvent,
-		{
-			guid: calendarEvent.course.guid,
-			section_id: calendarEvent.section.id,
-			start_time: calendarEvent.startTime,
-			end_time: calendarEvent.endTime,
-			start_column_index: calendarEvent.startColumnIndex,
-			is_active: calendarEvent.isActive,
-			needs_choice: calendarEvent.needsChoice,
-			is_chosen: calendarEvent.isChosen,
-		}
+		CalendarEventPostAction.BulkAddCalendarEvents,
+		{ events }
 	);
 }
 
@@ -254,18 +275,11 @@ export async function deleteCourseFromCalendar(
 	term: number,
 	guid: string
 ): Promise<void> {
-	try {
-		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(url, buildRequest(HttpRequestType.DELETE, null, { guid: guid }));
+	const url = buildCalendarEventsUrl(calendarName, term);
+	const response = await fetch(url, buildRequest(HttpRequestType.DELETE, null, { guid: guid }));
 
-		if (!response.ok) {
-			return null;
-		}
-
-		return null;
-	} catch {
-		// TODO: Handle error
-		return null;
+	if (!response.ok) {
+		throw new Error('Failed to delete course');
 	}
 }
 
@@ -276,28 +290,21 @@ export async function invertSectionInCalendar(
 	guid: string,
 	classSection: string
 ): Promise<void> {
-	try {
-		const url = buildCalendarEventsUrl(calendarName, term);
-		const response = await fetch(
-			url,
-			buildRequest(HttpRequestType.PUT, null, { guid: guid, classSection: classSection })
-		);
+	const url = buildCalendarEventsUrl(calendarName, term);
+	const response = await fetch(
+		url,
+		buildRequest(HttpRequestType.PUT, null, { guid: guid, classSection: classSection })
+	);
 
-		if (!response.ok) {
-			return null;
-		}
-
-		return null;
-	} catch {
-		// TODO: Handle error
-		return null;
+	if (!response.ok) {
+		throw new Error('Failed to update section');
 	}
 }
 
 function buildCalendarsUrl(term: number): string {
 	const encodedTerm = encodeURIComponent(term.toString());
 
-	return `${CALENDARS_URL}${encodedTerm}/`;
+	return `${CALENDARS_URL}${encodedTerm}`;
 }
 
 function buildCalendarEventsUrl(
@@ -308,7 +315,7 @@ function buildCalendarEventsUrl(
 	const encodedCalendarName = encodeURIComponent(calendarName.toString());
 	const encodedTerm = encodeURIComponent(term.toString());
 
-	const baseUrl = `${CALENDAR_EVENTS_URL}${encodedCalendarName}/${encodedTerm}/`;
+	const baseUrl = `${CALENDAR_EVENTS_URL}${encodedCalendarName}/${encodedTerm}`;
 
 	if (queryParams && Object.keys(queryParams).length > 0) {
 		const searchParams = new URLSearchParams();

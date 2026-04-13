@@ -175,6 +175,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         exact_match_with_rating = (
             Course.objects.select_related("department")
             .prefetch_related('section_set__classmeeting_set')
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -189,6 +190,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         exact_match_without_rating = (
             Course.objects.select_related("department")
             .prefetch_related('section_set__classmeeting_set')
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -219,6 +221,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         courses_with_rating = (
             Course.objects.select_related("department")
             .prefetch_related('section_set__classmeeting_set')
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -233,6 +236,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         courses_without_rating = (
             Course.objects.select_related("department")
             .prefetch_related('section_set__classmeeting_set')
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")

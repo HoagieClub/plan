@@ -21,6 +21,7 @@ contacts:
 - type: Undergraduate Administrator
   name: Anna Lovett
   email: easugadmin@princeton.edu
+iw_required: true
 req_list:
 - name: Prerequisites
   explanation: The program is open to undergraduates in all departments.

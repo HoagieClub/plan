@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import sys
@@ -10,11 +9,9 @@ import django
 import orjson as oj
 import yaml
 from django.db import transaction
+from django.db.models import Q
 
 import constants
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
-logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path("../").resolve()))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -28,12 +25,11 @@ from hoagieplan.models import (
     Major,
     Minor,
     Requirement,
-    UserCourses,
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
-MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester"]
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts", "iw_required"]
+MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester", "iw_required"]
 CERTIFICATE_FIELDS = [
     "name",
     "code",
@@ -42,6 +38,7 @@ CERTIFICATE_FIELDS = [
     "contacts",
     "apply_by_semester",
     "active_until",
+    "iw_required",
 ]
 REQUIREMENT_FIELDS = [
     "name",
@@ -59,6 +56,9 @@ REQUIREMENT_FIELDS = [
 ]
 UNDECLARED = {"code": "Undeclared", "name": "Undeclared"}
 
+TWO_DIGIT_WILDCARD = re.compile(r"^\d\d\*$")
+ONE_DIGIT_WILDCARD = re.compile(r"^\d\*{1,2}$")
+
 # Global caches to avoid repeated database queries
 DEPT_CACHE = {}
 MAJOR_CACHE = {}
@@ -70,31 +70,76 @@ def initialize_caches():
     """Load all reference data into memory to avoid repeated DB queries."""
     global DEPT_CACHE, MAJOR_CACHE, MINOR_CACHE, DEGREE_CACHE
 
-    logging.info("Initializing caches...")
+    print("Initializing caches...")
     DEPT_CACHE = {dept.code: dept for dept in Department.objects.all()}
-    logging.info(f"Cached {len(DEPT_CACHE)} departments")
+    print(f"Cached {len(DEPT_CACHE)} departments")
 
     DEGREE_CACHE = {degree.code: degree for degree in Degree.objects.all()}
-    logging.info(f"Cached {len(DEGREE_CACHE)} degrees")
+    print(f"Cached {len(DEGREE_CACHE)} degrees")
 
     MAJOR_CACHE = {major.code: major for major in Major.objects.all()}
-    logging.info(f"Cached {len(MAJOR_CACHE)} majors")
+    print(f"Cached {len(MAJOR_CACHE)} majors")
 
     MINOR_CACHE = {minor.code: minor for minor in Minor.objects.all()}
-    logging.info(f"Cached {len(MINOR_CACHE)} minors")
+    print(f"Cached {len(MINOR_CACHE)} minors")
 
-    logging.info("Caches initialized!")
+    print("Caches initialized!")
 
 
 def load_data(yaml_file):
-    logging.info("Loading yaml data...")
     with open(yaml_file, "r") as file:
         data = yaml.safe_load(file)  # this is a Python dict
         return data
 
 
+def load_all_data(path: Path) -> list[dict]:
+    return [load_data(str(f)) for f in path.glob("*.yaml")]
+
+
+# Recursively validates if req_list has sibling requirements of duplicate names
+def validate_yaml(req_list: list[dict], path: str = "root") -> None:
+    req_names = [req.get("name") for req in req_list if isinstance(req, dict)]
+    seen_names = set()
+
+    # Check for null or duplicate names among siblings
+    for name in req_names:
+        if name is None:
+            raise ValueError(f"Requirement with null name found at {path}")
+        if name in seen_names:
+            raise ValueError(f"Duplicate sibling requirement name '{name}' at {path}")
+        seen_names.add(name)
+
+    # Recursively validate sub-requirements
+    for req in req_list:
+        if isinstance(req, dict) and "req_list" in req:
+            validate_yaml(req["req_list"], path=f"{path} -> {req.get('name')}")
+
+
+# Validate all YAMLs for siblings with duplicate names
+def validate_yamls(all_data: list[dict]) -> None:
+    errors = []
+    for data in all_data:
+        try:
+            validate_yaml(data["req_list"], path=data["name"])
+        except ValueError as e:
+            errors.append(str(e))
+
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}")
+        raise ValueError(f"Validation failed with {len(errors)} error(s). Aborting.")
+
+
+def delete_orphaned_requirements(qs) -> None:
+    orphans = list(qs)
+    for orphan in orphans:
+        print(f"Deleting orphaned requirement: {orphan.name!r} (id={orphan.id})")
+    if orphans:
+        qs.delete()
+
+
 def load_course_list(course_list):
-    course_inst_list = []
+    query = Q()
     dept_list = []
 
     for course_code in course_list:
@@ -107,48 +152,48 @@ def load_course_list(course_list):
             for lang_dept in constants.LANG_DEPTS:
                 dept = DEPT_CACHE.get(lang_dept)
                 if not dept:
-                    logging.info(f"Dept with code {lang_dept} not found")
+                    print(f"Dept with code {lang_dept} not found")
                     continue
 
                 dept_id = dept.id
 
                 if course_num in ["*", "***"]:
                     dept_list.append(lang_dept)
-                elif re.match(r"^\d\d\*$", course_num):
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number__startswith=course_num[:2]
-                    )
-                elif re.match(r"^\d\*{1,2}$", course_num):
-                    course_inst_list += Course.objects.filter(
-                        department_id=dept_id, catalog_number__startswith=course_num[0]
-                    )
+                elif TWO_DIGIT_WILDCARD.match(course_num):
+                    query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
+                elif ONE_DIGIT_WILDCARD.match(course_num):
+                    query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
                 else:
-                    course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                    query |= Q(department_id=dept_id, catalog_number=course_num)
         else:
             dept = DEPT_CACHE.get(dept_code)
             if not dept:
-                logging.info(f"Dept with code {dept_code} not found")
+                print(f"Dept with code {dept_code} not found")
                 continue
 
             dept_id = dept.id
 
             if course_num in ["*", "***"]:
                 dept_list.append(dept_code)
-            elif re.match(r"^\d\d\*$", course_num):
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number__startswith=course_num[:2]
-                )
-            elif re.match(r"^\d\*{1,2}$", course_num):
-                course_inst_list += Course.objects.filter(
-                    department_id=dept_id, catalog_number__startswith=course_num[0]
-                )
+            elif TWO_DIGIT_WILDCARD.match(course_num):
+                query |= Q(department_id=dept_id, catalog_number__startswith=course_num[:2])
+            elif ONE_DIGIT_WILDCARD.match(course_num):
+                query |= Q(department_id=dept_id, catalog_number__startswith=course_num[0])
             else:
-                course_inst_list += Course.objects.filter(department_id=dept_id, catalog_number=course_num)
+                query |= Q(department_id=dept_id, catalog_number=course_num)
+
+    course_inst_list = list(Course.objects.filter(query)) if query else []
     return course_inst_list, dept_list
 
 
-def push_requirement(req):
-    logging.info(f"{req['name']}")
+def push_requirement(
+    req: dict,
+    parent: Requirement | None = None,
+    degree: Degree | None = None,
+    major: Major | None = None,
+    minor: Minor | None = None,
+    certificate: Certificate | None = None,
+) -> Requirement:
     req_fields = {}
 
     # If this is a no_req requirement, set min_needed to 0
@@ -179,29 +224,54 @@ def push_requirement(req):
                 req_fields["min_needed"] = req[field]
             else:
                 req_fields[field] = req[field]
-    req_inst = Requirement.objects.create(**req_fields)
+
+    # For root requirements, update/create based on the degree/major/minor/cert
+    if parent is None:
+        req_inst, _ = Requirement.objects.update_or_create(
+            parent=None,
+            degree=degree,
+            major=major,
+            minor=minor,
+            certificate=certificate,
+            name=req["name"],
+            defaults=req_fields,
+        )
+    # For non-root requirements, update/create based on the parent
+    else:
+        req_inst, _ = Requirement.objects.update_or_create(
+            parent=parent,
+            name=req["name"],
+            defaults=req_fields,
+        )
 
     if ("req_list" in req) and (len(req["req_list"]) != 0):
+        seen_ids = set()
         for sub_req in req["req_list"]:
             if "completed_by_semester" in req_fields:
                 sub_req["completed_by_semester"] = req_fields["completed_by_semester"]
             if "double_counting_allowed" in req_fields:
                 sub_req["double_counting_allowed"] = req_fields["double_counting_allowed"]
-            sub_req_inst = push_requirement(sub_req)
-            sub_req_inst.parent = req_inst  # assign sub_req_inst as child of req_inst
-            sub_req_inst.save()
+            sub_req_inst = push_requirement(sub_req, parent=req_inst)
+            seen_ids.add(sub_req_inst.id)
+        delete_orphaned_requirements(Requirement.objects.filter(parent=req_inst).exclude(id__in=seen_ids))
 
     elif ("course_list" in req) and (len(req["course_list"]) != 0):
         course_inst_list, dept_list = load_course_list(req["course_list"])
         if course_inst_list:
-            req_inst.course_list.set(course_inst_list)
+            new_ids = {c.id for c in course_inst_list}
+            existing_ids = set(req_inst.course_list.values_list("id", flat=True))
+            if new_ids != existing_ids:
+                req_inst.course_list.set(course_inst_list)
         if len(dept_list) != 0:
             req_inst.dept_list = oj.dumps(dept_list).decode("utf-8")
             req_inst.save()
         if ("excluded_course_list" in req) and (len(req["excluded_course_list"]) != 0):
             excluded_course_list, _ = load_course_list(req["excluded_course_list"])
             if excluded_course_list:
-                req_inst.excluded_course_list.set(excluded_course_list)
+                new_excluded_ids = {c.id for c in excluded_course_list}
+                existing_excluded_ids = set(req_inst.excluded_course_list.values_list("id", flat=True))
+                if new_excluded_ids != existing_excluded_ids:
+                    req_inst.excluded_course_list.set(excluded_course_list)
 
     elif (
         (("dist_req" not in req) or (req["dist_req"] is None))
@@ -215,9 +285,8 @@ def push_requirement(req):
     return req_inst
 
 
-def push_degree(yaml_file):
-    data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+def push_degree(data: dict):
+    print(f"Updating degree {data['name']}")
     degree_fields = {}
 
     for field in DEGREE_FIELDS:
@@ -235,29 +304,31 @@ def push_degree(yaml_file):
         defaults=degree_fields,
     )
 
+    seen_ids = set()
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.degree = degree_inst
-        req_inst.save()
+        req_inst = push_requirement(req, degree=degree_inst)
+        seen_ids.add(req_inst.id)
+    delete_orphaned_requirements(Requirement.objects.filter(degree=degree_inst, parent=None).exclude(id__in=seen_ids))
+
+    DEGREE_CACHE[degree_inst.code] = degree_inst
 
     if created:
-        logging.info(f"Created new degree: {degree_inst.name}")
+        print(f"Created new degree: {degree_inst.name}")
     else:
-        logging.info(f"Updated existing degree: {degree_inst.name}")
+        print(f"Updated existing degree: {degree_inst.name}")
 
 
 def push_undeclared_major():
-    logging.info("Undeclared")
+    print("Undeclared")
     _, created = Major.objects.update_or_create(name=UNDECLARED["name"], code=UNDECLARED["code"], defaults=UNDECLARED)
     if created:
-        logging.info(f"Created new major: {UNDECLARED['code']}")
+        print(f"Created new major: {UNDECLARED['code']}")
     else:
-        logging.info(f"Updated existing major: {UNDECLARED['code']}")
+        print(f"Updated existing major: {UNDECLARED['code']}")
 
 
-def push_major(yaml_file):
-    data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+def push_major(data: dict):
+    print(f"Updating major: {data['name']}")
     major_fields = {}
 
     for field in MAJOR_FIELDS:
@@ -277,22 +348,24 @@ def push_major(yaml_file):
     if degree_inst:
         major_inst.degree.add(degree_inst)
     else:
-        logging.info(f"Degree with code {degree_code} not found")
+        print(f"Degree with code {degree_code} not found")
 
+    seen_ids = set()
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.major = major_inst
-        req_inst.save()
+        req_inst = push_requirement(req, major=major_inst)
+        seen_ids.add(req_inst.id)
+    delete_orphaned_requirements(Requirement.objects.filter(major=major_inst, parent=None).exclude(id__in=seen_ids))
+
+    MAJOR_CACHE[major_inst.code] = major_inst
 
     if created:
-        logging.info(f"Created new major: {major_inst.code}")
+        print(f"Created new major: {major_inst.code}")
     else:
-        logging.info(f"Updated existing major: {major_inst.code}")
+        print(f"Updated existing major: {major_inst.code}")
 
 
-def push_minor(yaml_file):
-    data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+def push_minor(data: dict):
+    print(f"Updating minor: {data['name']}")
     minor_fields = {}
 
     for field in MINOR_FIELDS:
@@ -314,7 +387,7 @@ def push_minor(yaml_file):
             if major_inst:
                 excluded_majors.append(major_inst)
             else:
-                logging.info(f"Major with code {major_code} not found")
+                print(f"Major with code {major_code} not found")
         if excluded_majors:
             minor_inst.excluded_majors.set(excluded_majors)
 
@@ -325,24 +398,24 @@ def push_minor(yaml_file):
             if other_minor_inst:
                 excluded_minors.append(other_minor_inst)
             else:
-                logging.info(f"Minor with code {minor_code} not found")
+                print(f"Minor with code {minor_code} not found")
         if excluded_minors:
             minor_inst.excluded_minors.set(excluded_minors)
 
+    seen_ids = set()
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.minor = minor_inst
-        req_inst.save()
+        req_inst = push_requirement(req, minor=minor_inst)
+        seen_ids.add(req_inst.id)
+    delete_orphaned_requirements(Requirement.objects.filter(minor=minor_inst, parent=None).exclude(id__in=seen_ids))
 
     if created:
-        logging.info(f"Created new minor: {minor_inst.code}")
+        print(f"Created new minor: {minor_inst.code}")
     else:
-        logging.info(f"Updated existing minor: {minor_inst.code}")
+        print(f"Updated existing minor: {minor_inst.code}")
 
 
-def push_certificate(yaml_file):
-    data = load_data(yaml_file)
-    logging.info(f"{data['name']}")
+def push_certificate(data: dict):
+    print(f"Updating certificate: {data['name']}")
     certificate_fields = {}
 
     for field in CERTIFICATE_FIELDS:
@@ -365,93 +438,89 @@ def push_certificate(yaml_file):
             if major_inst:
                 excluded_majors.append(major_inst)
             else:
-                logging.info(f"Major with code {major_code} not found")
+                print(f"Major with code {major_code} not found")
         if excluded_majors:
             certificate_inst.excluded_majors.set(excluded_majors)
 
+    seen_ids = set()
     for req in data["req_list"]:
-        req_inst = push_requirement(req)
-        req_inst.certificate = certificate_inst
-        req_inst.save()
+        req_inst = push_requirement(req, certificate=certificate_inst)
+        seen_ids.add(req_inst.id)
+    delete_orphaned_requirements(
+        Requirement.objects.filter(certificate=certificate_inst, parent=None).exclude(id__in=seen_ids)
+    )
 
     if created:
-        logging.info(f"Created new certificate: {certificate_inst.code}")
+        print(f"Created new certificate: {certificate_inst.code}")
     else:
-        logging.info(f"Updated existing certificate: {certificate_inst.code}")
+        print(f"Updated existing certificate: {certificate_inst.code}")
 
 
-def push_degrees(degrees_path):
-    logging.info("Pushing degree requirements...")
-    for file in degrees_path.glob("*.yaml"):
-        push_degree(str(file))
-    logging.info("Degree requirements pushed!")
+def push_degrees(all_data: list[dict]):
+    print("Pushing degree requirements...")
+    for degree_data in all_data:
+        push_degree(degree_data)
+    print("Degree requirements pushed!")
+    print("-" * 50)
 
 
-def push_majors(majors_path):
-    logging.info("Pushing major requirements...")
+def push_majors(all_data: list[dict]):
+    print("Pushing major requirements...")
     push_undeclared_major()
-    for file in majors_path.glob("*.yaml"):
-        push_major(str(file))
-    logging.info("Major requirements pushed!")
+    for major_data in all_data:
+        push_major(major_data)
+    print("Major requirements pushed!")
+    print("-" * 50)
 
 
-def push_minors(minors_path):
-    logging.info("Pushing minor requirements...")
-    for file in minors_path.glob("*.yaml"):
-        push_minor(str(file))
-    logging.info("Minor requirements pushed!")
+def push_minors(all_data: list[dict]):
+    print("Pushing minor requirements...")
+    for minor_data in all_data:
+        push_minor(minor_data)
+    print("Minor requirements pushed!")
+    print("-" * 50)
 
 
-def push_certificates(certificates_path):
-    logging.info("Pushing certificate requirements...")
-    for file in certificates_path.glob("*.yaml"):
-        push_certificate(str(file))
-    logging.info("Certificate requirements pushed!")
-
-
-def clear_user_requirements():
-    logging.info("Clearing CustomUser_requirements table...")
-    with transaction.atomic():
-        CustomUser.requirements.through.objects.all().delete()
-    logging.info("CustomUser_requirements table cleared!")
+def push_certificates(all_data: list[dict]):
+    print("Pushing certificate requirements...")
+    for certificate_data in all_data:
+        push_certificate(certificate_data)
+    print("Certificate requirements pushed!")
+    print("-" * 50)
 
 
 def clear_user_req_dict():
-    logging.info("Clearing CustomUser req_dict cache...")
+    print("Clearing CustomUser req_dict cache...")
     CustomUser.objects.update(req_dict=None)
-    logging.info("CustomUser req_dict cache cleared!")
+    print("CustomUser req_dict cache cleared!")
 
 
-def clear_requirement_ids():
-    logging.info("Clearing requirement_id column in UserCourses...")
-    UserCourses.requirements.through.objects.all().delete()
-    logging.info("UserCourses_requirements table cleared!")
+def main():
+    degrees_path = Path("../degrees").resolve()
+    majors_path = Path("../majors").resolve()
+    minors_path = Path("../minors").resolve()
+    certificates_path = Path("../certificates").resolve()
 
+    degrees_data = load_all_data(degrees_path)
+    majors_data = load_all_data(majors_path)
+    minors_data = load_all_data(minors_path)
+    certificates_data = load_all_data(certificates_path)
 
-def clear_requirements():
-    logging.info("Clearing Requirement table...")
-    Requirement.objects.all().delete()
-    logging.info("Requirement table cleared!")
+    validate_yamls(degrees_data + majors_data + minors_data + certificates_data)
 
-
-# TODO: This should create or update so we don't have duplicates in the database, also with atomicity too
-if __name__ == "__main__":
     start_time = time.time()
     with transaction.atomic():
-        clear_user_requirements()
-        clear_user_req_dict()
-        clear_requirement_ids()
-        clear_requirements()
-
         initialize_caches()
 
-        push_degrees(Path("../degrees").resolve())
-        DEGREE_CACHE.update({degree.code: degree for degree in Degree.objects.all()})
+        push_degrees(degrees_data)
+        push_majors(majors_data)
+        push_minors(minors_data)
+        push_certificates(certificates_data)
 
-        push_majors(Path("../majors").resolve())
-        MAJOR_CACHE.update({major.code: major for major in Major.objects.all()})
-
-        push_certificates(Path("../certificates").resolve())
-        push_minors(Path("../minors").resolve())
+    clear_user_req_dict()
     end_time = time.time()
     print(f"\nTotal execution time: {(end_time - start_time):.2f} seconds")
+
+
+if __name__ == "__main__":
+    main()

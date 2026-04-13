@@ -35,6 +35,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Ian C. Bourg
   email: bourg@princeton.edu
+iw_required: true
 req_list:
 - name: Departmental Track
   max_counted: 1

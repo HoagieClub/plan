@@ -6,30 +6,11 @@ import { type User } from '@auth0/nextjs-auth0/types';
 import { create } from 'zustand';
 
 import type { Profile, MajorMinorType, UserState } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 
 // Fetch user profile from the backend
-async function fetchCustomUser(
-	netId: string,
-	firstName: string,
-	lastName: string,
-	email: string
-): Promise<Profile | null> {
+async function fetchCustomUser(): Promise<Profile | null> {
 	try {
-		const csrfToken = await fetchCsrfToken();
-
-		const response = await fetch(`/api/hoagie/profile/get_user`, {
-			method: 'POST',
-			headers: {
-				'X-CSRFToken': csrfToken,
-			},
-			body: JSON.stringify({
-				netId,
-				firstName,
-				lastName,
-				email,
-			}),
-		});
+		const response = await fetch(`/api/hoagie/profile/get_user`);
 
 		if (!response.ok) {
 			if (response.status === 401) {
@@ -66,7 +47,7 @@ async function mapUserProfileToProfile(userProfile: User): Promise<Profile> {
 		name: 'Undeclared',
 	};
 
-	const user = await fetchCustomUser(netId, firstName, lastName, email);
+	const user = await fetchCustomUser();
 
 	return {
 		firstName: user.firstName || firstName,

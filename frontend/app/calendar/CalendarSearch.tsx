@@ -120,7 +120,7 @@ export const CalendarSearch: FC = () => {
 			setLoading(true);
 			try {
 				const queryString = buildQuery(searchQuery, filter);
-				const response = await fetch(`/api/hoagie/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search?${queryString}`);
 
 				if (!response.ok) {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
@@ -224,7 +224,7 @@ export const CalendarSearch: FC = () => {
 	};
 
 	const generateCalendarData = () => {
-		const { selectedCourses } = useCalendarStore.getState();
+		const { getSelectedCourses } = useCalendarStore.getState();
 		const termFilter = useFilterStore.getState().termFilter;
 
 		if (!termFilter) {
@@ -232,7 +232,7 @@ export const CalendarSearch: FC = () => {
 		}
 
 		// All courses in the selected semester
-		const currentSemesterCourses = selectedCourses[termFilter] || [];
+		const currentSemesterCourses = getSelectedCourses(termFilter);
 
 		// We need to make sure user doesn't have any unsettled courses
 		const hasUnselectedRequired = currentSemesterCourses.some(
