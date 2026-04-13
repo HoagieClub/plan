@@ -1,24 +1,31 @@
 import { Snowflake, SunSnowIcon, Sun } from 'lucide-react';
 
+export enum SemesterType {
+	Fall = 'Fall',
+	Spring = 'Spring',
+	Summer = 'Summer',
+	Multiple = 'Multiple',
+}
+
 interface SemesterTagProps {
-	semester: 'Fall' | 'Spring' | 'Summer' | 'Multiple';
+	semester: SemesterType;
 	year?: number;
 }
 
-const COLORS: Record<SemesterTagProps['semester'], string> = {
-	Spring: '#f0a030',
-	Summer: '#f0a030',
-	Fall: '#47aad4',
-	Multiple: '#7c3aed',
+const COLORS: Record<SemesterType, string> = {
+	[SemesterType.Spring]: '#f0a030',
+	[SemesterType.Summer]: '#f0a030',
+	[SemesterType.Fall]: '#47aad4',
+	[SemesterType.Multiple]: '#7c3aed',
 };
 
 export default function SemesterTag({ semester, year }: SemesterTagProps) {
 	const bg = COLORS[semester];
 
 	let icon;
-	if (semester === 'Multiple') {
+	if (semester === SemesterType.Multiple) {
 		icon = <SunSnowIcon size={18} color='white' />;
-	} else if (semester === 'Fall') {
+	} else if (semester === SemesterType.Fall) {
 		icon = <Snowflake size={18} color='white' />;
 	} else {
 		icon = <Sun size={18} color='white' />;

@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react';
 
-import SemesterTag from '@/components/ui/SemesterTag';
+import SemesterTag, { SemesterType } from '@/components/ui/SemesterTag';
 import type { Course } from '@/types';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { getDistributionColors } from '@/utils/distributionColors';
@@ -9,6 +9,28 @@ import { getRatingBackground } from '@/utils/ratingColors';
 import { termsInverse } from '@/utils/terms';
 
 import styles from './DashboardSearchItem.module.css';
+
+function getDisplaySemester(course: Course): SemesterType | undefined {
+	const currentTermCode = course.guid?.slice(0, 4) ?? '';
+	const prevTerms = (course.terms ?? [])
+		.filter((code) => code <= currentTermCode)
+		.map((code) => termsInverse[code])
+		.filter(Boolean);
+
+	const hasFall = prevTerms.some((t) => t.startsWith('Fall'));
+	const hasSpring = prevTerms.some((t) => t.startsWith('Spring'));
+
+	if (hasFall && hasSpring) {
+		return SemesterType.Multiple;
+	}
+	if (hasFall) {
+		return SemesterType.Fall;
+	}
+	if (hasSpring) {
+		return SemesterType.Spring;
+	}
+	return undefined;
+}
 
 interface DashboardSearchItemProps {
 	course: Course;
@@ -38,17 +60,7 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 	const pdfColor = getPdfColor(pdfTag);
 	const auditTag = getAuditTag(course.grading_basis);
 	const auditColor = getAuditColor(auditTag);
-
-	let displaySemester: 'Fall' | 'Spring' | 'Multiple' | undefined;
-	const hasFall = prevTerms.some((t) => t.startsWith('Fall'));
-	const hasSpring = prevTerms.some((t) => t.startsWith('Spring'));
-	if (hasFall && hasSpring) {
-		displaySemester = 'Multiple';
-	} else if (hasFall) {
-		displaySemester = 'Fall';
-	} else if (hasSpring) {
-		displaySemester = 'Spring';
-	}
+	const displaySemester = getDisplaySemester(course);
 
 	return (
 		<div className={styles.card} onClick={handleClick}>
