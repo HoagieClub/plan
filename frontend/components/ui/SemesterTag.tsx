@@ -3,7 +3,6 @@ import { Snowflake, SunSnowIcon, Sun } from 'lucide-react';
 export enum SemesterType {
 	Fall = 'Fall',
 	Spring = 'Spring',
-	Summer = 'Summer',
 	Multiple = 'Multiple',
 }
 
@@ -24,7 +23,6 @@ function getSemesterIcon(semester: SemesterType) {
 
 const COLORS: Record<SemesterType, string> = {
 	[SemesterType.Spring]: '#f0a030',
-	[SemesterType.Summer]: '#f0a030',
 	[SemesterType.Fall]: '#47aad4',
 	[SemesterType.Multiple]: '#7c3aed',
 };
