@@ -67,7 +67,7 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 										style={{
 											backgroundColor: config.color,
 											color: 'white',
-											fontSize: '0.9rem',
+											fontSize: '0.85rem',
 											fontWeight: 'bold',
 											padding: '4px 0',
 										}}

@@ -293,7 +293,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										<CourseDetailSection>
 											<div
 												style={{
-													fontSize: '0.9rem',
+													fontSize: '0.85rem',
 													fontWeight: 500,
 													display: 'flex',
 													flexDirection: 'column',
@@ -349,7 +349,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 														label: string;
 														percent: number;
 													}[]
-												).map(({ label, percent }, index, arr) => (
+												).slice().sort((a, b) => b.percent - a.percent).map(({ label, percent }, index, arr) => (
 													<div
 														key={label}
 														style={{
