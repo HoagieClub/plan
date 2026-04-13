@@ -10,6 +10,7 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag from '@/components/ui/SemesterTag';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
@@ -18,7 +19,6 @@ import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
-
 const darken = (hex: string, amount: number) => {
 	const n = parseInt(hex.slice(1), 16);
 	const r = Math.max(0, (n >> 16) - Math.round(amount * 255));
@@ -77,6 +77,13 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
+	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
+	let displaySemester: 'Fall' | 'Spring' | 'Multiple' | undefined;
+	if (semesterAvailability === 'Both') {
+		displaySemester = 'Multiple';
+	} else if (semesterAvailability === 'Fall' || semesterAvailability === 'Spring') {
+		displaySemester = semesterAvailability;
+	}
 
 	// Use course_setup from API response
 	const courseSetup = courseDetails?.course_setup || [];
@@ -84,18 +91,14 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
-			void fetch(`/api/hoagie/course/details?${params}`).then((response) => response.json());
-			console.log('Fetching course details for:', value);
-			void fetch(`/api/hoagie/course/details/?${params}`)
+			void fetch(`/api/hoagie/course/details?${params}`)
 				.then((response) => {
-					console.log('Response status:', response.status);
 					if (!response.ok) {
 						throw new Error(`HTTP error! status: ${response.status}`);
 					}
 					return response.json();
 				})
 				.then((data) => {
-					console.log('Course details received:', data);
 					setCourseDetails(data);
 				})
 				.catch((error) => {
@@ -247,6 +250,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										)}
 									</div>
 								</div>
+								{displaySemester && <SemesterTag semester={displaySemester} />}
 								{courseDetails['Title'] && (
 									<h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: 0 }}>
 										{courseDetails['Title']}

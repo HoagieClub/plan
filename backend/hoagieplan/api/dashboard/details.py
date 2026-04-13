@@ -102,12 +102,6 @@ def get_course_info(crosslistings):
 
     # Get all sections for this course
     all_sections = Section.objects.filter(course=course).select_related("term")
-    
-    # Add instructors from Course M2M
-    instructors = course.instructors.all()
-    instructor_names = [i.full_name for i in instructors if i.full_name]
-    if instructor_names:
-        course_dict["Instructors"] = ", ".join(instructor_names)
 
     # Map fields to their display names
     field_mapping = {
@@ -138,6 +132,27 @@ def get_course_info(crosslistings):
     # Add reading/writing assignments if they exist
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
+
+    # === Semester Availability ===
+    all_courses = (
+        Course.objects.filter(crosslistings__icontains=crosslistings)
+        .values_list("guid", flat=True)
+    )
+    has_fall = False
+    has_spring = False
+    for guid in all_courses:
+        if guid and len(guid) >= 4:
+            term_suffix = guid[3]
+            if term_suffix == "2":
+                has_fall = True
+            if term_suffix == "4":
+                has_spring = True
+    if has_fall and has_spring:
+        course_dict["Semester Availability"] = "Both"
+    elif has_fall:
+        course_dict["Semester Availability"] = "Fall"
+    elif has_spring:
+        course_dict["Semester Availability"] = "Spring"
 
     # === NEW: Add Course Setup ===
     # Get the most recent term's sections
