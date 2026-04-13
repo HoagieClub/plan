@@ -406,6 +406,44 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 							</CourseDetailSection>
 						</div>
 
+						{/* Grading */}
+						{Array.isArray(courseDetails['Grading']) && courseDetails['Grading'].length > 0 && (
+							<div>
+								<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
+								<CourseDetailSection>
+									<div
+										style={{
+											fontSize: '0.85rem',
+											fontWeight: 500,
+											display: 'flex',
+											flexDirection: 'column',
+										}}
+									>
+										{(
+											courseDetails['Grading'] as unknown as {
+												label: string;
+												percent: number;
+											}[]
+										)
+											.slice()
+											.sort((a, b) => b.percent - a.percent)
+											.map(({ label, percent }, index, arr) => (
+												<div
+													key={label}
+													style={{
+														paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+														marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+													}}
+												>
+													{percent}% {label}
+												</div>
+											))}
+									</div>
+								</CourseDetailSection>
+							</div>
+						)}
+
 						{/* Student Feedback */}
 						<div>
 							<div
