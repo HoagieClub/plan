@@ -12,6 +12,16 @@ interface SemesterTagProps {
 	year?: number;
 }
 
+function getSemesterIcon(semester: SemesterType) {
+	if (semester === SemesterType.Multiple) {
+		return <SunSnowIcon size={18} color='white' />;
+	}
+	if (semester === SemesterType.Fall) {
+		return <Snowflake size={18} color='white' />;
+	}
+	return <Sun size={18} color='white' />;
+}
+
 const COLORS: Record<SemesterType, string> = {
 	[SemesterType.Spring]: '#f0a030',
 	[SemesterType.Summer]: '#f0a030',
@@ -22,14 +32,7 @@ const COLORS: Record<SemesterType, string> = {
 export default function SemesterTag({ semester, year }: SemesterTagProps) {
 	const bg = COLORS[semester];
 
-	let icon;
-	if (semester === SemesterType.Multiple) {
-		icon = <SunSnowIcon size={18} color='white' />;
-	} else if (semester === SemesterType.Fall) {
-		icon = <Snowflake size={18} color='white' />;
-	} else {
-		icon = <Sun size={18} color='white' />;
-	}
+	const icon = getSemesterIcon(semester);
 
 	return (
 		<div
