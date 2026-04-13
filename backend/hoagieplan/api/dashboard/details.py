@@ -133,6 +133,27 @@ def get_course_info(crosslistings):
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
+    # === Semester Availability ===
+    all_courses = (
+        Course.objects.filter(crosslistings__icontains=crosslistings)
+        .values_list("guid", flat=True)
+    )
+    has_fall = False
+    has_spring = False
+    for guid in all_courses:
+        if guid and len(guid) >= 4:
+            term_suffix = guid[3]
+            if term_suffix == "2":
+                has_fall = True
+            if term_suffix == "4":
+                has_spring = True
+    if has_fall and has_spring:
+        course_dict["Semester Availability"] = "Both"
+    elif has_fall:
+        course_dict["Semester Availability"] = "Fall"
+    elif has_spring:
+        course_dict["Semester Availability"] = "Spring"
+
     # === NEW: Add Course Setup ===
     # Get the most recent term's sections
     latest_term_section = all_sections.order_by('-term__term_code').first()
