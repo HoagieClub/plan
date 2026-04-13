@@ -34,7 +34,15 @@ export const CourseSetup: FC<CourseSetupProps> = ({ courseSetup }) => {
 						{courseSetup.map((item, idx) => (
 							<span key={item.class_type}>
 								{item.count} {item.class_type}
-								{item.count > 1 ? 's' : ''}
+								{(() => {
+									if (item.count > 1) {
+										if (item.class_type === 'Class') {
+											return 'es';
+										}
+										return 's';
+									}
+									return '';
+								})()}
 								{idx < courseSetup.length - 1 ? ', ' : ''}
 							</span>
 						))}
