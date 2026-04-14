@@ -54,7 +54,6 @@ urlpatterns = [
     path("requirement_info/", requirements.requirement_info, name="requirement_info"),
     path("course/details/", details.course_details, name="course_details"),
     path("course/comments/", details.course_comments_view, name="course_comments"),
-    path("course/terms/", details.course_terms, name="course_terms"),
     path("upload/", upload.upload_file, name="upload_file"),
     path("almost_completed/", almost_completed_api.almost_completed, name="almost_completed"),
     path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
