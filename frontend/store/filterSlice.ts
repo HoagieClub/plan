@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { terms } from '@/utils/terms';
+
 interface FilterState {
 	termFilter: string;
 	distributionFilters: string[];
@@ -25,7 +27,7 @@ interface FilterState {
 export const useFilterStore = create<FilterState>()(
 	persist(
 		(set) => ({
-			termFilter: '',
+			termFilter: Object.values(terms)[0] ?? '',
 			distributionFilters: [],
 			levelFilter: [],
 			gradingFilter: [],

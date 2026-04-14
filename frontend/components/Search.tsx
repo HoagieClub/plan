@@ -107,7 +107,7 @@ export const Search: FC = () => {
 			try {
 				const queryString = buildQuery(searchQuery, filter);
 
-				const response = await fetch(`/api/hoagie/search/?${queryString}`);
+				const response = await fetch(`/api/hoagie/search?${queryString}`);
 
 				if (response.ok) {
 					const data: { courses: Course[] } = await response.json();

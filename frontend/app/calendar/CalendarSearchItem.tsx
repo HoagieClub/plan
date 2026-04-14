@@ -5,18 +5,17 @@ import { termsInverse } from '@/utils/terms';
 import styles from './CalendarSearchItem.module.css';
 
 const CalendarSearchItem = ({ course }) => {
-	const selectedCourses = useCalendarStore((state) => state.selectedCourses);
 	const addCourse = useCalendarStore((state) => state.addCourse);
+
+	const termCode = course.guid.slice(0, 4);
+	const semester = termsInverse[termCode];
+	const isCourseInSchedule = useCalendarStore((state) =>
+		state.getSelectedCourses(termCode).some((event) => event.course.guid === course.guid)
+	);
 
 	const handleClick = () => {
 		void addCourse(course);
 	};
-
-	const termCode = course.guid.slice(0, 4);
-	const semester = termsInverse[termCode];
-	const isCourseInSchedule = (selectedCourses[termCode] || []).some(
-		(event) => event.course.guid === course.guid
-	);
 
 	return (
 		<div className={styles.card} onClick={handleClick}>

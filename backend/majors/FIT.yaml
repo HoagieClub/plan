@@ -65,7 +65,7 @@ req_list:
                 Up to two of the five departmental courses may be taken at the
                 200-level (but FRE 207 and 208, or ITA 207 and 208, cannot both be counted).
               req_list:
-                - name:
+                - name: Any FRE 200-Level Course
                   max_counted: 2
                   min_needed: 1
                   course_list:
@@ -73,7 +73,7 @@ req_list:
                   excluded_course_list:
                     - FRE 207
                     - FRE 208
-                - name:
+                - name: FRE 207/208
                   max_counted: 1
                   min_needed: 1
                   course_list:
@@ -219,7 +219,7 @@ req_list:
                 Up to two of the five departmental courses may be taken at the
                 200-level (but FRE 207 and 208, or ITA 207 and 208, cannot both be counted).
               req_list:
-                - name:
+                - name: Any ITA 200-Level Course
                   max_counted: 2
                   min_needed: 1
                   course_list:
@@ -227,7 +227,7 @@ req_list:
                   excluded_course_list:
                     - ITA 207
                     - ITA 208
-                - name:
+                - name: ITA 207/208
                   max_counted: 1
                   min_needed: 1
                   course_list:
