@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, type FC, type ReactNode } 
 
 import { Tooltip } from '@mui/joy';
 import { CircularProgress, Rating } from '@mui/material';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import { ReviewMenu } from '@/components/ReviewMenu';
@@ -9,11 +10,13 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag, { SemesterType } from '@/components/ui/SemesterTag';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { getDepartmentGradient } from '@/utils/departmentColors';
 import { distributionAreasInverse } from '@/utils/distributionAreas';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 interface InfoComponentPopOverProps {
 	value: string;
@@ -26,8 +29,16 @@ interface CourseSetupItem {
 	duration?: number;
 }
 
+interface TermEntry {
+	term_code: string;
+	label: string;
+	instructors: string[];
+	quality_of_course: number | null;
+	course_setup: CourseSetupItem[];
+}
+
 interface CourseDetails {
-	[key: string]: string | number | boolean | null | undefined | CourseSetupItem[];
+	[key: string]: string | number | boolean | null | undefined | CourseSetupItem[] | TermEntry[];
 }
 
 const PANEL_WIDTH = 560;
@@ -39,9 +50,33 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	const [showPopover, setShowPopover] = useState(false);
 	const [isVisible, setIsVisible] = useState(false);
 	const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
-	const [feedbackRating, setFeedbackRating] = useState(0);
 	const [showScrollGradient, setShowScrollGradient] = useState(false);
 	const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
+
+	// Per-term data (move up so it's available for useEffect)
+	const terms: TermEntry[] = Array.isArray(courseDetails?.['terms'])
+		? (courseDetails['terms'] as TermEntry[])
+		: [];
+
+	// If the selected term has no student feedback, opt to the previous semester with feedback if available
+	useEffect(() => {
+		if (!terms.length) {
+			return;
+		}
+		const current = terms[selectedTermIdx];
+		if (!current || current.quality_of_course === null || current.quality_of_course === 0) {
+			// Look for the most recent previous term with feedback
+			for (let i = selectedTermIdx - 1; i >= 0; i--) {
+				const prev = terms[i];
+				if (prev && prev.quality_of_course !== null && prev.quality_of_course !== 0) {
+					setSelectedTermIdx(i);
+					break;
+				}
+			}
+		}
+	}, [terms, selectedTermIdx]);
+	const [showTermDropdown, setShowTermDropdown] = useState(false);
 
 	const instanceId = useRef(Math.random());
 	const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -60,9 +95,46 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 
-	const courseSetup: CourseSetupItem[] = Array.isArray(courseDetails?.course_setup)
-		? (courseDetails.course_setup as CourseSetupItem[])
-		: [];
+	// ...existing code...
+	const selectedTerm: TermEntry | undefined = terms[selectedTermIdx];
+
+	const courseSetup: CourseSetupItem[] = selectedTerm?.course_setup ?? [];
+
+	// Per-term description and grading
+	const selectedDescription = Array.isArray(courseDetails?.descriptions)
+		? (courseDetails.descriptions[selectedTermIdx] ?? courseDetails['Description'])
+		: courseDetails?.['Description'];
+	// Prefer grading from selectedTerm if available, else fallback
+	let selectedGrading;
+	if (selectedTerm && Array.isArray((selectedTerm as any).grading)) {
+		selectedGrading = (selectedTerm as any).grading;
+	} else if (Array.isArray(courseDetails?.gradings)) {
+		selectedGrading = courseDetails.gradings[selectedTermIdx] ?? courseDetails['Grading'];
+	} else {
+		selectedGrading = courseDetails?.['Grading'];
+	}
+
+	// Per-term student feedback (stars)
+	const selectedQuality = selectedTerm?.quality_of_course ?? null;
+	const selectedTermCode = selectedTerm?.term_code;
+
+	// Display the selected semester as the tag
+	let termTagSeason: SemesterType | undefined;
+	let termYear: number | undefined;
+	if (selectedTerm && selectedTerm.label) {
+		const [season, yearStr] = selectedTerm.label.split(' ');
+		if (season === SemesterType.Fall) {
+			termTagSeason = SemesterType.Fall;
+		} else if (season === SemesterType.Spring) {
+			termTagSeason = SemesterType.Spring;
+		} else {
+			termTagSeason = undefined;
+		}
+		termYear = yearStr ? parseInt(yearStr, 10) : undefined;
+	} else {
+		termTagSeason = undefined;
+		termYear = undefined;
+	}
 
 	const links = useMemo(() => {
 		const registrarValue = courseDetails?.Registrar;
@@ -138,8 +210,9 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 
 	useEffect(() => {
 		setCourseDetails(null);
-		setFeedbackRating(0);
 		setShowScrollGradient(false);
+		setSelectedTermIdx(0);
+		setShowTermDropdown(false);
 	}, [value]);
 
 	useEffect(() => {
@@ -354,6 +427,175 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 							</div>
 						</div>
 
+						{/* Term row + dropdown */}
+						{selectedTerm && (
+							<div style={{ borderRadius: '6px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+								{/* Header row — click to toggle dropdown */}
+								<div
+									role='button'
+									tabIndex={0}
+									onClick={(e) => {
+										e.stopPropagation();
+										setShowTermDropdown((prev) => !prev);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											setShowTermDropdown((prev) => !prev);
+										}
+									}}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '10px',
+										padding: '6px 8px',
+										backgroundColor: '#fafafa',
+										cursor: 'pointer',
+										userSelect: 'none',
+									}}
+								>
+									{termTagSeason && (
+										<SemesterTag semester={termTagSeason} year={termYear || undefined} />
+									)}
+									<span
+										style={{
+											flex: 1,
+											fontSize: '0.82rem',
+											color: '#555',
+											overflow: 'hidden',
+											textOverflow: 'ellipsis',
+											whiteSpace: 'nowrap',
+										}}
+									>
+										{selectedTerm.instructors.join(', ')}
+									</span>
+									{selectedTerm.quality_of_course != null ? (
+										<div
+											style={{
+												background: getRatingBackground(selectedTerm.quality_of_course),
+												color: 'white',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											{selectedTerm.quality_of_course.toFixed(2)}
+										</div>
+									) : (
+										<div
+											style={{
+												backgroundColor: '#d1d5db',
+												color: '#6b7280',
+												padding: '2px 8px',
+												borderRadius: '4px',
+												fontWeight: 700,
+												fontSize: '0.82rem',
+												flexShrink: 0,
+											}}
+										>
+											N/A
+										</div>
+									)}
+									<div style={{ flexShrink: 0, color: '#9ca3af', display: 'flex' }}>
+										{showTermDropdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+									</div>
+								</div>
+
+								{/* Dropdown list */}
+								{showTermDropdown && terms.length > 1 && (
+									<div
+										style={{
+											maxHeight: '220px',
+											overflowY: 'auto',
+											borderTop: '1px solid #e5e7eb',
+										}}
+									>
+										{terms.map((term, i) => (
+											<div
+												key={term.term_code}
+												role='button'
+												tabIndex={0}
+												onClick={(e) => {
+													e.stopPropagation();
+													setSelectedTermIdx(i);
+													setShowTermDropdown(false);
+												}}
+												onKeyDown={(e) => {
+													if (e.key === 'Enter' || e.key === ' ') {
+														setSelectedTermIdx(i);
+														setShowTermDropdown(false);
+													}
+												}}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '10px',
+													padding: '7px 10px',
+													cursor: 'pointer',
+													backgroundColor: i === selectedTermIdx ? '#e8f0fe' : 'white',
+													borderBottom: i < terms.length - 1 ? '1px solid #f3f4f6' : 'none',
+												}}
+											>
+												<span
+													style={{
+														fontWeight: i === selectedTermIdx ? 700 : 600,
+														fontSize: '0.82rem',
+														color: i === selectedTermIdx ? '#1d4ed8' : '#374151',
+														minWidth: '88px',
+														flexShrink: 0,
+													}}
+												>
+													{term.label}
+												</span>
+												<span
+													style={{
+														flex: 1,
+														fontSize: '0.8rem',
+														color: '#6b7280',
+														overflow: 'hidden',
+														textOverflow: 'ellipsis',
+														whiteSpace: 'nowrap',
+													}}
+												>
+													{term.instructors.join(', ')}
+												</span>
+												{term.quality_of_course != null ? (
+													<div
+														style={{
+															background: getRatingBackground(term.quality_of_course),
+															color: 'white',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														{term.quality_of_course.toFixed(2)}
+													</div>
+												) : (
+													<div
+														style={{
+															backgroundColor: '#d1d5db',
+															color: '#6b7280',
+															padding: '1px 7px',
+															borderRadius: '4px',
+															fontWeight: 700,
+															fontSize: '0.78rem',
+															flexShrink: 0,
+														}}
+													>
+														N/A
+													</div>
+												)}
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
 						{/* Instructors + Course Setup side by side */}
 						<div style={{ display: 'flex', gap: '16px' }}>
 							<div style={{ flex: 1 }}>
@@ -367,21 +609,19 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 											flexDirection: 'column',
 										}}
 									>
-										{typeof courseDetails['Instructors'] === 'string' ? (
-											String(courseDetails['Instructors'])
-												.split(',')
-												.map((name, index, arr) => (
-													<div
-														key={index}
-														style={{
-															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-														}}
-													>
-														{name.trim()}
-													</div>
-												))
+										{selectedTerm && selectedTerm.instructors.length > 0 ? (
+											selectedTerm.instructors.map((name, index, arr) => (
+												<div
+													key={index}
+													style={{
+														paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+														marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+													}}
+												>
+													{name}
+												</div>
+											))
 										) : (
 											<div>No instructor listed</div>
 										)}
@@ -401,48 +641,46 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 							<SectionTitle label='Description' iconSrc='/icons/description.svg' />
 							<CourseDetailSection>
 								<div style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
-									{String(courseDetails['Description'] ?? '')}
+									{String(selectedDescription ?? '')}
 								</div>
 							</CourseDetailSection>
 						</div>
 
 						{/* Grading */}
-						{Array.isArray(courseDetails['Grading']) && courseDetails['Grading'].length > 0 && (
-							<div>
-								<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
-								<CourseDetailSection>
-									<div
-										style={{
-											fontSize: '0.85rem',
-											fontWeight: 500,
-											display: 'flex',
-											flexDirection: 'column',
-										}}
-									>
-										{(
-											courseDetails['Grading'] as unknown as {
-												label: string;
-												percent: number;
-											}[]
-										)
-											.slice()
-											.sort((a, b) => b.percent - a.percent)
-											.map(({ label, percent }, index, arr) => (
-												<div
-													key={label}
-													style={{
-														paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-														marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-														borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-													}}
-												>
-													{percent}% {label}
-												</div>
-											))}
-									</div>
-								</CourseDetailSection>
-							</div>
-						)}
+						{Array.isArray(selectedGrading) &&
+							selectedGrading.length > 0 &&
+							(selectedGrading as unknown[]).every(
+								(g) => typeof g === 'object' && g !== null && 'label' in g && 'percent' in g
+							) && (
+								<div>
+									<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
+									<CourseDetailSection>
+										<div
+											style={{
+												fontSize: '0.85rem',
+												fontWeight: 600,
+												display: 'flex',
+												flexDirection: 'column',
+											}}
+										>
+											{(selectedGrading as { label: string; percent: number }[]).map(
+												(item, index, arr) => (
+													<div
+														key={item.label}
+														style={{
+															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+														}}
+													>
+														{item.percent}% {item.label}
+													</div>
+												)
+											)}
+										</div>
+									</CourseDetailSection>
+								</div>
+							)}
 
 						{/* Student Feedback */}
 						<div>
@@ -450,14 +688,16 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 								style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
 							>
 								<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
-								{feedbackRating > 0 && (
-									<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-										<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
-											{feedbackRating.toFixed(1)}
-										</span>
-										<Rating value={feedbackRating} precision={0.1} readOnly size='small' />
-									</div>
-								)}
+								{selectedQuality !== null &&
+									selectedQuality !== undefined &&
+									selectedQuality > 0 && (
+										<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+											<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
+												{selectedQuality.toFixed(2)}
+											</span>
+											<Rating value={selectedQuality} precision={0.1} readOnly size='small' />
+										</div>
+									)}
 							</div>
 							<div
 								style={{
@@ -467,7 +707,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 									padding: '12px',
 								}}
 							>
-								<ReviewMenu dept={dept} coursenum={coursenum} onRatingLoaded={setFeedbackRating} />
+								<ReviewMenu dept={dept} coursenum={coursenum} term_code={selectedTermCode} />
 							</div>
 						</div>
 					</div>
