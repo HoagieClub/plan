@@ -10,7 +10,7 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
-import SemesterTag from '@/components/ui/SemesterTag';
+import SemesterTag, { SemesterType } from '@/components/ui/SemesterTag';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
@@ -19,6 +19,19 @@ import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
+function getSemesterType(semesterAvailability: string): SemesterType | undefined {
+	if (semesterAvailability === 'Both') {
+		return SemesterType.Multiple;
+	}
+	if (semesterAvailability === 'Fall') {
+		return SemesterType.Fall;
+	}
+	if (semesterAvailability === 'Spring') {
+		return SemesterType.Spring;
+	}
+	return undefined;
+}
+
 const darken = (hex: string, amount: number) => {
 	const n = parseInt(hex.slice(1), 16);
 	const r = Math.max(0, (n >> 16) - Math.round(amount * 255));
@@ -78,12 +91,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
 	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
-	let displaySemester: 'Fall' | 'Spring' | 'Multiple' | undefined;
-	if (semesterAvailability === 'Both') {
-		displaySemester = 'Multiple';
-	} else if (semesterAvailability === 'Fall' || semesterAvailability === 'Spring') {
-		displaySemester = semesterAvailability;
-	}
+	const displaySemester = getSemesterType(semesterAvailability);
 
 	// Use course_setup from API response
 	const courseSetup = courseDetails?.course_setup || [];
