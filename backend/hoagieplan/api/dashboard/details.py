@@ -6,6 +6,7 @@ from hoagieplan.models import (
     Course,
     CourseComment,
     Department,
+    GradingInfo,
     Section,
     ClassMeeting,
     CourseEvalSummary,
@@ -123,6 +124,38 @@ def get_course_info(crosslistings):
             f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
         )
         course_dict["Registrar"] = registrar_link
+    
+    # Add grading info if available
+    GRADING_LABELS = {
+        "grading_final_exam": "Final Exam",
+        "grading_mid_exam": "Midterm Exam",
+        "grading_home_final_exam": "Home Final Exam",
+        "grading_home_mid_exam": "Home Midterm Exam",
+        "grading_paper_final_exam": "Paper in lieu of final",
+        "grading_paper_mid_exam": "Paper in lieu of midterm",
+        "grading_other_exam": "Other Exam",
+        "grading_oral_pres": "Oral Presentation",
+        "grading_quizzes": "Quizzes",
+        "grading_lab_reports": "Lab Reports",
+        "grading_papers": "Papers",
+        "grading_prob_sets": "Problem Sets",
+        "grading_prog_assign": "Programming Assignments",
+        "grading_precept_part": "Class/precept participation",
+        "grading_term_papers": "Term Papers",
+        "grading_design_projects": "Design Projects",
+        "grading_other": "Other",
+    }
+    try:
+        grading_info = course.grading_info
+        grading_breakdown = [
+            {"label": label, "percent": getattr(grading_info, field)}
+            for field, label in GRADING_LABELS.items()
+            if getattr(grading_info, field, 0)
+        ]
+        if grading_breakdown:
+            course_dict["Grading"] = grading_breakdown
+    except GradingInfo.DoesNotExist:
+        pass
 
     # Handle reading list specially due to cleaning requirements
     if course.reading_list:
