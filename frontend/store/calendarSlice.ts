@@ -128,12 +128,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set((state) => ({ recentSearches: [...state.recentSearches, search] })),
 	setError: (error) => set({ error }),
 	setLoading: (loading) => set({ loading }),
-	setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
 	clearRecentSearches: () => set({ recentSearches: [] }),
-	addRecentSearch: (search) =>
-		set((state) => ({ recentSearches: [...state.recentSearches, search] })),
-	setError: (error) => set({ error }),
-	setLoading: (loading) => set({ loading }),
 
 	addCourse: async (course: Course) => {
 		const term = course.guid.substring(0, 4);
