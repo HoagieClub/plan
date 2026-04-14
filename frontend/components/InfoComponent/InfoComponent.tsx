@@ -349,18 +349,21 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 														label: string;
 														percent: number;
 													}[]
-												).slice().sort((a, b) => b.percent - a.percent).map(({ label, percent }, index, arr) => (
-													<div
-														key={label}
-														style={{
-															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-														}}
-													>
-														{percent}% {label}
-													</div>
-												))}
+												)
+													.slice()
+													.sort((a, b) => b.percent - a.percent)
+													.map(({ label, percent }, index, arr) => (
+														<div
+															key={label}
+															style={{
+																paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+																marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+																borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+															}}
+														>
+															{percent}% {label}
+														</div>
+													))}
 											</div>
 										</CourseDetailSection>
 									</div>
