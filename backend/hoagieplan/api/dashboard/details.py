@@ -1,14 +1,16 @@
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
 from datetime import datetime
 
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+
 from hoagieplan.models import (
+    ClassMeeting,
     Course,
     CourseComment,
-    Department,
-    Section,
-    ClassMeeting,
     CourseEvalSummary,
+    Department,
+    GradingInfo,
+    Section,
 )
 
 
@@ -67,7 +69,7 @@ def get_course_comments(dept, num):
 
     if evaluation and evaluation.quality_of_course:
         result["rating"] = evaluation.quality_of_course
-    
+
     summary = CourseEvalSummary.objects.filter(course=course).first()
     if summary:
         result["summary"] = summary.summary
@@ -102,12 +104,6 @@ def get_course_info(crosslistings):
 
     # Get all sections for this course
     all_sections = Section.objects.filter(course=course).select_related("term")
-    
-    # Add instructors from Course M2M
-    instructors = course.instructors.all()
-    instructor_names = [i.full_name for i in instructors if i.full_name]
-    if instructor_names:
-        course_dict["Instructors"] = ", ".join(instructor_names)
 
     # Map fields to their display names
     field_mapping = {
@@ -129,6 +125,38 @@ def get_course_info(crosslistings):
             f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
         )
         course_dict["Registrar"] = registrar_link
+    
+    # Add grading info if available
+    GRADING_LABELS = {
+        "grading_final_exam": "Final Exam",
+        "grading_mid_exam": "Midterm Exam",
+        "grading_home_final_exam": "Home Final Exam",
+        "grading_home_mid_exam": "Home Midterm Exam",
+        "grading_paper_final_exam": "Paper in lieu of final",
+        "grading_paper_mid_exam": "Paper in lieu of midterm",
+        "grading_other_exam": "Other Exam",
+        "grading_oral_pres": "Oral Presentation",
+        "grading_quizzes": "Quizzes",
+        "grading_lab_reports": "Lab Reports",
+        "grading_papers": "Papers",
+        "grading_prob_sets": "Problem Sets",
+        "grading_prog_assign": "Programming Assignments",
+        "grading_precept_part": "Class/precept participation",
+        "grading_term_papers": "Term Papers",
+        "grading_design_projects": "Design Projects",
+        "grading_other": "Other",
+    }
+    try:
+        grading_info = course.grading_info
+        grading_breakdown = [
+            {"label": label, "percent": getattr(grading_info, field)}
+            for field, label in GRADING_LABELS.items()
+            if getattr(grading_info, field, 0)
+        ]
+        if grading_breakdown:
+            course_dict["Grading"] = grading_breakdown
+    except GradingInfo.DoesNotExist:
+        pass
 
     # Handle reading list specially due to cleaning requirements
     if course.reading_list:
@@ -139,22 +167,40 @@ def get_course_info(crosslistings):
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
+    # === Semester Availability ===
+    all_courses = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
+    has_fall = False
+    has_spring = False
+    for guid in all_courses:
+        if guid and len(guid) >= 4:
+            term_suffix = guid[3]
+            if term_suffix == "2":
+                has_fall = True
+            if term_suffix == "4":
+                has_spring = True
+    if has_fall and has_spring:
+        course_dict["Semester Availability"] = "Both"
+    elif has_fall:
+        course_dict["Semester Availability"] = "Fall"
+    elif has_spring:
+        course_dict["Semester Availability"] = "Spring"
+
     # === NEW: Add Course Setup ===
     # Get the most recent term's sections
-    latest_term_section = all_sections.order_by('-term__term_code').first()
-    
+    latest_term_section = all_sections.order_by("-term__term_code").first()
+
     if latest_term_section:
         latest_term_sections = all_sections.filter(term=latest_term_section.term)
-        
+
         # Calculate course setup based on meeting times
         course_setup_dict = {}
-        
+
         for section in latest_term_sections:
             class_type = section.class_type
-            
+
             # Get all meetings for this section
             meetings = ClassMeeting.objects.filter(section=section)
-            
+
             # Calculate total weekly duration for this section
             total_duration = 0
             meeting_count = 0
@@ -165,25 +211,21 @@ def get_course_info(crosslistings):
                     duration = int((end - start).total_seconds() / 60)
                     total_duration += duration
                     meeting_count += 1
-            
+
             # If we haven't seen this class type yet, or if this is the first section
             # we're examining, store its total duration
             if class_type not in course_setup_dict and total_duration > 0:
                 course_setup_dict[class_type] = {
-                    'count': meeting_count,  # Number of meetings per week
-                    'duration': total_duration
+                    "count": meeting_count,  # Number of meetings per week
+                    "duration": total_duration,
                 }
-        
+
         # Build course setup array
         course_setup = [
-            {
-                'class_type': class_type,
-                'count': info['count'],
-                'duration': info['duration']
-            }
+            {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
             for class_type, info in course_setup_dict.items()
         ]
-        
+
         if course_setup:
             course_dict["course_setup"] = course_setup
 

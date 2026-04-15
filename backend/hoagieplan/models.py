@@ -178,6 +178,30 @@ class Course(models.Model):
         return self.title
 
 
+class GradingInfo(models.Model):
+    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="grading_info")
+    grading_final_exam = models.IntegerField(null=True)
+    grading_mid_exam = models.IntegerField(null=True)
+    grading_home_final_exam = models.IntegerField(null=True)
+    grading_home_mid_exam = models.IntegerField(null=True)
+    grading_paper_final_exam = models.IntegerField(null=True)
+    grading_paper_mid_exam = models.IntegerField(null=True)
+    grading_other_exam = models.IntegerField(null=True)
+    grading_oral_pres = models.IntegerField(null=True)
+    grading_quizzes = models.IntegerField(null=True)
+    grading_lab_reports = models.IntegerField(null=True)
+    grading_papers = models.IntegerField(null=True)
+    grading_prob_sets = models.IntegerField(null=True)
+    grading_prog_assign = models.IntegerField(null=True)
+    grading_precept_part = models.IntegerField(null=True)
+    grading_term_papers = models.IntegerField(null=True)
+    grading_design_projects = models.IntegerField(null=True)
+    grading_other = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "GradingInfo"
+
+
 class Section(models.Model):
     CLASS_TYPE_CHOICES = [
         ("Seminar", "Seminar"),
@@ -241,7 +265,7 @@ class ClassYearEnrollment(models.Model):
 
 class Requirement(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
+    name = models.CharField(max_length=150, db_index=True)
     max_counted = models.IntegerField(default=1, db_index=True)
     min_needed = models.IntegerField(default=1, db_index=True)
     explanation = models.TextField(db_index=True, null=True)

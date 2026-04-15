@@ -10,6 +10,7 @@ import { CourseDetailSection } from '@/components/ui/CourseDetailSection';
 import { CourseSetup } from '@/components/ui/CourseSetup';
 import { ExternalLink } from '@/components/ui/ExternalLink';
 import { SectionTitle } from '@/components/ui/SectionTitle';
+import SemesterTag, { SemesterType } from '@/components/ui/SemesterTag';
 import { cn } from '@/lib/utils';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { departmentColors } from '@/utils/departmentColors';
@@ -18,6 +19,18 @@ import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 
 import styles from './InfoComponent.module.css';
+function getSemesterType(semesterAvailability: string): SemesterType | undefined {
+	if (semesterAvailability === 'Both') {
+		return SemesterType.Multiple;
+	}
+	if (semesterAvailability === 'Fall') {
+		return SemesterType.Fall;
+	}
+	if (semesterAvailability === 'Spring') {
+		return SemesterType.Spring;
+	}
+	return undefined;
+}
 
 const darken = (hex: string, amount: number) => {
 	const n = parseInt(hex.slice(1), 16);
@@ -77,6 +90,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
+	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
+	const displaySemester = getSemesterType(semesterAvailability);
 
 	// Use course_setup from API response
 	const courseSetup = courseDetails?.course_setup || [];
@@ -84,18 +99,14 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	useEffect(() => {
 		if (showPopup && value) {
 			const params = new URLSearchParams({ crosslistings: value });
-			void fetch(`/api/hoagie/course/details?${params}`).then((response) => response.json());
-			console.log('Fetching course details for:', value);
-			void fetch(`/api/hoagie/course/details/?${params}`)
+			void fetch(`/api/hoagie/course/details?${params}`)
 				.then((response) => {
-					console.log('Response status:', response.status);
 					if (!response.ok) {
 						throw new Error(`HTTP error! status: ${response.status}`);
 					}
 					return response.json();
 				})
 				.then((data) => {
-					console.log('Course details received:', data);
 					setCourseDetails(data);
 				})
 				.catch((error) => {
@@ -247,6 +258,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										)}
 									</div>
 								</div>
+								{displaySemester && <SemesterTag semester={displaySemester} />}
 								{courseDetails['Title'] && (
 									<h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: 0 }}>
 										{courseDetails['Title']}
@@ -297,8 +309,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 										<CourseDetailSection>
 											<div
 												style={{
-													fontSize: '0.9rem',
-													fontWeight: 600,
+													fontSize: '0.85rem',
+													fontWeight: 500,
 													display: 'flex',
 													flexDirection: 'column',
 												}}
@@ -334,6 +346,44 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 								<CourseDetailSection>
 									<div style={{ fontSize: '0.85rem' }}>{courseDetails['Description']}</div>
 								</CourseDetailSection>
+
+								{/* Grading */}
+								{Array.isArray(courseDetails['Grading']) && courseDetails['Grading'].length > 0 && (
+									<div>
+										<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
+										<CourseDetailSection>
+											<div
+												style={{
+													fontSize: '0.85rem',
+													fontWeight: 500,
+													display: 'flex',
+													flexDirection: 'column',
+												}}
+											>
+												{(
+													courseDetails['Grading'] as unknown as {
+														label: string;
+														percent: number;
+													}[]
+												)
+													.slice()
+													.sort((a, b) => b.percent - a.percent)
+													.map(({ label, percent }, index, arr) => (
+														<div
+															key={label}
+															style={{
+																paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+																marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+																borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+															}}
+														>
+															{percent}% {label}
+														</div>
+													))}
+											</div>
+										</CourseDetailSection>
+									</div>
+								)}
 							</div>
 							<div
 								style={{
