@@ -1,23 +1,46 @@
+.calendar-search-panel {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+	min-height: 0;
+}
+
 .calendar-search {
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
 	appearance: none;
 	outline: none;
-	margin: 1vh 0.5vw;
+	margin: 0;
 	border-radius: 8px;
 	transition: background-color 350ms ease;
 	border: 1px solid rgba(0, 0, 0, 0.05);
 	font-size: 1em;
-	width: 24vw;
-	min-width: 270px;
-	height: 53vh;
+	width: 100%;
+	min-width: 0;
+	flex: 1;
+	min-height: 0;
 	overflow: hidden;
 }
 
+.calendar-search-export {
+	margin: 0.6rem 0 0;
+	width: 100%;
+}
+
 @media (max-width: 768px) {
+	.calendar-search-panel {
+		height: auto;
+	}
+
 	.calendar-search {
 		padding: 0.5rem;
+		flex: none;
+	}
+
+	.calendar-search-export {
+		margin: 0.5rem 0 0;
 	}
 }
 
