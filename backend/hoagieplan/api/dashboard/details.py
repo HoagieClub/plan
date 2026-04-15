@@ -140,9 +140,7 @@ def _build_terms_list(crosslistings: str) -> list:
     This version issues exactly 4 queries total regardless of how many terms exist.
     """
     all_term_courses = (
-        Course.objects.filter(crosslistings__icontains=crosslistings)
-        .prefetch_related("instructors")
-        .order_by("-guid")
+        Course.objects.filter(crosslistings__icontains=crosslistings).prefetch_related("instructors").order_by("-guid")
     )
 
     course_ids = list(all_term_courses.values_list("id", flat=True))
@@ -234,8 +232,7 @@ def get_course_info(crosslistings):
         course_id = course.guid[4:]
         term = course.guid[:4]
         course_dict["Registrar"] = (
-            f"https://registrar.princeton.edu/course-offerings/course-details"
-            f"?term={term}&courseid={course_id}"
+            f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
         )
 
     GRADING_LABELS = {
@@ -346,10 +343,6 @@ def course_terms(request):
     course_id = request.GET.get("course_id", "")
     if not course_id:
         return JsonResponse({"error": "Missing course_id parameter"}, status=400)
-    guids = (
-        Course.objects.filter(course_id=course_id)
-        .values_list("guid", flat=True)
-        .order_by("-guid")
-    )
+    guids = Course.objects.filter(course_id=course_id).values_list("guid", flat=True).order_by("-guid")
     terms = [guid[:4] for guid in guids if guid]
     return JsonResponse({"terms": terms})
