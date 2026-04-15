@@ -232,7 +232,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 		const fetchCourseDetails = async () => {
 			try {
 				const params = new URLSearchParams({ crosslistings: value });
-				const response = await fetch(`/api/hoagie/course/details/?${params}`, {
+				const response = await fetch(`/api/hoagie/course/details?${params}`, {
 					signal: controller.signal,
 				});
 
