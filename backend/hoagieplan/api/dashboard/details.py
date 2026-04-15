@@ -335,14 +335,3 @@ def course_comments_view(request):
         return JsonResponse({"error": "Course not found"}, status=404)
 
     return JsonResponse(comments)
-
-
-@api_view(["GET"])
-def course_terms(request):
-    """API endpoint for course terms."""
-    course_id = request.GET.get("course_id", "")
-    if not course_id:
-        return JsonResponse({"error": "Missing course_id parameter"}, status=400)
-    guids = Course.objects.filter(course_id=course_id).values_list("guid", flat=True).order_by("-guid")
-    terms = [guid[:4] for guid in guids if guid]
-    return JsonResponse({"terms": terms})
