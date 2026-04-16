@@ -278,18 +278,24 @@ export const CalendarSearch: FC = () => {
 		// All courses in the selected semester
 		const currentSemesterCourses = getSelectedCourses(termFilter);
 
-		// We need to make sure user doesn't have any unsettled courses
+		const hasMeetingTime = (course: (typeof currentSemesterCourses)[number]) => {
+			const meetings = course.section?.class_meetings;
+			return meetings && meetings.length > 0 && meetings[0]?.days && meetings[0].days.trim() !== '';
+		};
+
+		// We need to make sure user doesn't have any unsettled courses that have an assigned time
 		const hasUnselectedRequired = currentSemesterCourses.some(
-			(course) => course.isActive && course.needsChoice && !course.isChosen
+			(course) =>
+				course.isActive && course.needsChoice && !course.isChosen && hasMeetingTime(course)
 		);
 
 		if (hasUnselectedRequired) {
 			return null;
 		}
 
-		// Filter out sections that are active
+		// Filter out sections that are active and have an assigned meeting time
 		const class_sections = currentSemesterCourses.filter(
-			(course) => course.isChosen || !course.needsChoice
+			(course) => (course.isChosen || !course.needsChoice) && hasMeetingTime(course)
 		);
 
 		const seenSectionIds = new Set<number>();

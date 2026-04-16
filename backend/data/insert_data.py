@@ -26,6 +26,7 @@ from hoagieplan.models import (
     ClassYearEnrollment,
     Course,
     Department,
+    GradingInfo,
     Instructor,
     Section,
 )
@@ -33,6 +34,26 @@ from hoagieplan.models import (
 # -------------------------------------------------------------------------------------#
 
 CLASS_YEAR_ENROLLMENT_PATTERN = re.compile(r"Year (\d+): (\d+) students")
+
+GRADING_FIELDS = {
+    "Grading Final Exam": "grading_final_exam",
+    "Grading Mid Exam": "grading_mid_exam",
+    "Grading Home Final Exam": "grading_home_final_exam",
+    "Grading Home Mid Exam": "grading_home_mid_exam",
+    "Grading Paper Final Exam": "grading_paper_final_exam",
+    "Grading Paper Midterm Exam": "grading_paper_mid_exam",
+    "Grading Other Exam": "grading_other_exam",
+    "Grading Oral Presentation": "grading_oral_pres",
+    "Grading Quizzes": "grading_quizzes",
+    "Grading Lab Reports": "grading_lab_reports",
+    "Grading Papers": "grading_papers",
+    "Grading Problem Sets": "grading_prob_sets",
+    "Grading Prog Assign": "grading_prog_assign",
+    "Grading Precept Part": "grading_precept_part",
+    "Grading Term Papers": "grading_term_papers",
+    "Grading Design Projects": "grading_design_projects",
+    "Grading Other": "grading_other",
+}
 
 
 def _parse_class_year_enrollments(str, pattern):
@@ -555,6 +576,63 @@ def insert_class_meetings(rows):
 # -------------------------------------------------------------------------------------#
 
 
+def insert_grading_info(rows):
+    logger.info("Starting GradingInfo insertions and updates...")
+
+    # Create map of Course GUID to grading info from CSV
+    guid_to_grading_data = {}
+    for row in rows:
+        guid = row["Course GUID"].strip()
+        if guid not in guid_to_grading_data:
+            guid_to_grading_data[guid] = {
+                model_field_name: int(row.get(csv_col_name, 0) or 0)
+                for csv_col_name, model_field_name in GRADING_FIELDS.items()
+            }
+
+    course_cache = {course.guid: course for course in Course.objects.filter(guid__in=guid_to_grading_data.keys())}
+    existing_grading_infos = {
+        gi.course.guid: gi
+        for gi in GradingInfo.objects.select_related("course").filter(course__guid__in=guid_to_grading_data.keys())
+    }
+
+    new_grading_infos = []
+    updated_grading_infos = []
+    update_fields = list(GRADING_FIELDS.values())
+
+    for guid, grading_data in tqdm(guid_to_grading_data.items(), desc="Processing GradingInfo..."):
+        course = course_cache.get(guid)
+        if not course:
+            logger.warning(f"Course not found for GUID {guid}, skipping GradingInfo")
+            continue
+
+        existing_grading_info = existing_grading_infos.get(guid)
+        if existing_grading_info:
+            update_required = False
+            for field, value in grading_data.items():
+                if getattr(existing_grading_info, field) != value:
+                    setattr(existing_grading_info, field, value)
+                    update_required = True
+            if update_required:
+                updated_grading_infos.append(existing_grading_info)
+        else:
+            new_grading_infos.append(GradingInfo(course=course, **grading_data))
+
+    try:
+        with transaction.atomic():
+            if new_grading_infos:
+                GradingInfo.objects.bulk_create(new_grading_infos)
+            if updated_grading_infos:
+                GradingInfo.objects.bulk_update(updated_grading_infos, update_fields)
+    except Exception as e:
+        logger.error(f"Error in inserting/updating GradingInfo: {e}")
+
+    logger.info(f"Inserted {len(new_grading_infos)} new GradingInfo rows, updated {len(updated_grading_infos)} existing.")
+    logger.info("GradingInfo insertions and updates completed!")
+
+
+# -------------------------------------------------------------------------------------#
+
+
 def insert_class_year_enrollments(rows):
     logger.info("Starting ClassYearEnrollment insertions and updates...")
 
@@ -674,6 +752,9 @@ def insert_course_data(csv_path):
 
             with transaction.atomic():
                 insert_courses(formatted_rows)
+
+            with transaction.atomic():
+                insert_grading_info(formatted_rows)
 
             with transaction.atomic():
                 insert_instructors(formatted_rows)
