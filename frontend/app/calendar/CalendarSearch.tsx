@@ -23,6 +23,7 @@ import {
 	createCalendar,
 	deleteCalendar,
 	renameCalendar,
+	duplicateCalendar,
 } from '@/services/calendarService';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
@@ -414,13 +415,19 @@ export const CalendarSearch: FC = () => {
 		setShowEditModal(false);
 	};
 
-	const _handleDuplicateSchedule = (schedule) => {
+	const handleDuplicateSchedule = async (schedule: { id: string; name: string }) => {
 		if (!termFilter) {
 			return;
 		}
-		const duplicate = { id: String(Date.now()), name: `${schedule.name} (copy)` };
-		setSchedules([...schedules, duplicate]);
-		setActiveScheduleId(duplicate.id);
+
+		const calendarName = schedule.name;
+		const newCalendarName = `${calendarName} (copy)`;
+
+		const duplicate = await duplicateCalendar(calendarName, newCalendarName, Number(termFilter));
+		if (duplicate) {
+			setSchedules([...schedules, { id: String(duplicate.id), name: duplicate.name }]);
+			setActiveScheduleId(String(duplicate.id));
+		}
 		setShowEditModal(false);
 	};
 
@@ -771,12 +778,7 @@ export const CalendarSearch: FC = () => {
 									padding: '8px 40px',
 									borderRadius: '10px',
 								}}
-								onClick={
-									/* () => handleDuplicateSchedule(editingSchedule) todo later */
-									() => {
-										return;
-									}
-								}
+								onClick={() => handleDuplicateSchedule(editingSchedule)}
 							>
 								Duplicate
 							</button>
