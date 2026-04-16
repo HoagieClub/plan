@@ -210,6 +210,8 @@ class CalendarConfigurationView(APIView):
                     for event in queryset
                 ])
 
+                prefetched_events = Prefetch("calendar_events",queryset = CalendarEvent.objects.select_related("course__department",).prefetch_related("course__instructors","course__section_set__classmeeting_set"),)
+                calendar_config = ( CalendarConfiguration.objects.prefetch_related(prefetched_events).get(pk = calendar_config.pk))
                 serializer = CalendarConfigurationSerializer(calendar_config)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
