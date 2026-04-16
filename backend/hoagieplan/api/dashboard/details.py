@@ -40,6 +40,117 @@ GRADING_LABELS = {
 }
 
 
+@api_view(["GET"])
+def course_details(request):
+    """Return course detail JSON for a ``crosslistings`` query param."""
+    crosslistings = request.GET.get("crosslistings")
+    if not crosslistings:
+        return JsonResponse({"error": "Missing crosslistings parameter"}, status=400)
+
+    course_info = get_course_info(crosslistings)
+    if course_info is None:
+        return JsonResponse({"error": "Course not found"}, status=404)
+
+    return JsonResponse(course_info)
+
+
+def get_course_info(crosslistings):
+    """Assemble the detail payload for a course's latest offering.
+
+    Collects title, instructors, description, distribution area, grading
+    basis, registrar link, grading breakdown, reading list, semester
+    availability, latest-term course setup, and per-term history.
+
+    Args:
+        crosslistings: Crosslistings string used to locate the course.
+
+    Returns:
+        Dict of course detail fields, or ``None`` if no course matches.
+
+    """
+    try:
+        course = (
+            Course.objects.select_related("department")
+            .prefetch_related("instructors")
+            .filter(crosslistings__icontains=crosslistings)
+            .latest("guid")
+        )
+    except Course.DoesNotExist:
+        return None
+
+    course_dict = {}
+
+    title = getattr(course, "title", None)
+    if title:
+        course_dict["Title"] = title
+
+    instructors = course.instructors.all()
+    instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
+    if instructor_names:
+        course_dict["Instructors"] = ", ".join(instructor_names)
+
+    all_sections = Section.objects.filter(course=course).select_related("term")
+
+    for field, display_name in FIELD_MAPPING.items():
+        if value := getattr(course, field):
+            course_dict[display_name] = value
+
+    if course.guid:
+        term, course_id = get_term_and_course_id(course.guid)
+        course_dict["Registrar"] = (
+            f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
+        )
+    try:
+        grading_info = course.grading_info
+        grading_breakdown = [
+            {"label": label, "percent": getattr(grading_info, field)}
+            for field, label in GRADING_LABELS.items()
+            if getattr(grading_info, field, 0)
+        ]
+        if grading_breakdown:
+            course_dict["Grading"] = grading_breakdown
+    except GradingInfo.DoesNotExist:
+        pass
+
+    if course.reading_list:
+        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
+
+    if course.reading_writing_assignment:
+        course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
+
+    # Semester availability
+    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
+    has_fall = False
+    has_spring = False
+    for guid in all_guids:
+        if guid and len(guid) >= 4:
+            if is_fall_course(guid):
+                has_fall = True
+            if is_spring_course(guid):
+                has_spring = True
+    if has_fall and has_spring:
+        course_dict["Semester Availability"] = "Both"
+    elif has_fall:
+        course_dict["Semester Availability"] = "Fall"
+    elif has_spring:
+        course_dict["Semester Availability"] = "Spring"
+
+    # Latest-term course_setup (one extra query pair, but only for the single latest term)
+    latest_term_section = all_sections.order_by("-term__term_code").first()
+    if latest_term_section:
+        if latest_term_section.term:
+            course_dict["Term"] = latest_term_section.term.suffix
+        latest_term_sections = all_sections.filter(term=latest_term_section.term)
+        course_setup = _build_course_setup(latest_term_sections)
+        if course_setup:
+            course_dict["course_setup"] = course_setup
+
+    # Per-term history (now uses bulk queries)
+    course_dict["terms"] = _build_terms_list(crosslistings)
+
+    return course_dict
+
+
 def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
     """Summarize meeting count and total duration per class type.
 
@@ -164,114 +275,3 @@ def _build_terms_list(crosslistings: str) -> list:
         )
 
     return terms
-
-
-def get_course_info(crosslistings):
-    """Assemble the detail payload for a course's latest offering.
-
-    Collects title, instructors, description, distribution area, grading
-    basis, registrar link, grading breakdown, reading list, semester
-    availability, latest-term course setup, and per-term history.
-
-    Args:
-        crosslistings: Crosslistings string used to locate the course.
-
-    Returns:
-        Dict of course detail fields, or ``None`` if no course matches.
-
-    """
-    try:
-        course = (
-            Course.objects.select_related("department")
-            .prefetch_related("instructors")
-            .filter(crosslistings__icontains=crosslistings)
-            .latest("guid")
-        )
-    except Course.DoesNotExist:
-        return None
-
-    course_dict = {}
-
-    title = getattr(course, "title", None)
-    if title:
-        course_dict["Title"] = title
-
-    instructors = course.instructors.all()
-    instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
-    if instructor_names:
-        course_dict["Instructors"] = ", ".join(instructor_names)
-
-    all_sections = Section.objects.filter(course=course).select_related("term")
-
-    for field, display_name in FIELD_MAPPING.items():
-        if value := getattr(course, field):
-            course_dict[display_name] = value
-
-    if course.guid:
-        term, course_id = get_term_and_course_id(course.guid)
-        course_dict["Registrar"] = (
-            f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
-        )
-    try:
-        grading_info = course.grading_info
-        grading_breakdown = [
-            {"label": label, "percent": getattr(grading_info, field)}
-            for field, label in GRADING_LABELS.items()
-            if getattr(grading_info, field, 0)
-        ]
-        if grading_breakdown:
-            course_dict["Grading"] = grading_breakdown
-    except GradingInfo.DoesNotExist:
-        pass
-
-    if course.reading_list:
-        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
-
-    if course.reading_writing_assignment:
-        course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
-
-    # Semester availability
-    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
-    has_fall = False
-    has_spring = False
-    for guid in all_guids:
-        if guid and len(guid) >= 4:
-            if is_fall_course(guid):
-                has_fall = True
-            if is_spring_course(guid):
-                has_spring = True
-    if has_fall and has_spring:
-        course_dict["Semester Availability"] = "Both"
-    elif has_fall:
-        course_dict["Semester Availability"] = "Fall"
-    elif has_spring:
-        course_dict["Semester Availability"] = "Spring"
-
-    # Latest-term course_setup (one extra query pair, but only for the single latest term)
-    latest_term_section = all_sections.order_by("-term__term_code").first()
-    if latest_term_section:
-        if latest_term_section.term:
-            course_dict["Term"] = latest_term_section.term.suffix
-        latest_term_sections = all_sections.filter(term=latest_term_section.term)
-        course_setup = _build_course_setup(latest_term_sections)
-        if course_setup:
-            course_dict["course_setup"] = course_setup
-
-    # Per-term history (now uses bulk queries)
-    course_dict["terms"] = _build_terms_list(crosslistings)
-
-    return course_dict
-
-
-@api_view(["GET"])
-def course_details(request):
-    """Return course detail JSON for a ``crosslistings`` query param."""
-    crosslistings = request.GET.get("crosslistings")
-    if not crosslistings:
-        return JsonResponse({"error": "Missing crosslistings parameter"}, status=400)
-
-    course_info = get_course_info(crosslistings)
-    if course_info is None:
-        return JsonResponse({"error": "Course not found"}, status=404)
-
-    return JsonResponse(course_info)
