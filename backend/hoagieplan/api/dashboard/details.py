@@ -143,43 +143,10 @@ def get_course_info(crosslistings):
         if course_setup:
             course_dict["course_setup"] = course_setup
 
-    # Per-term history (now uses bulk queries)
+    # Per-term history
     course_dict["terms"] = _build_terms_list(crosslistings)
 
     return course_dict
-
-
-def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
-    """Summarize meeting count and total duration per class type.
-
-    Args:
-        sections: Section objects for a single course offering.
-        meetings_by_section: Map of section id to its ClassMeeting objects.
-
-    Returns:
-        List of dicts with ``class_type``, ``count``, and ``duration`` (minutes).
-
-    """
-    course_setup_dict = {}
-    for section in sections:
-        class_type = section.class_type
-        if class_type in course_setup_dict:
-            continue
-        total_duration = 0
-        meeting_count = 0
-        for meeting in meetings_by_section.get(section.id, []):
-            if meeting.start_time and meeting.end_time:
-                start = datetime.combine(datetime.today(), meeting.start_time)
-                end = datetime.combine(datetime.today(), meeting.end_time)
-                total_duration += int((end - start).total_seconds() / 60)
-                meeting_count += len(meeting.days.split(",")) if meeting.days else 0
-        if total_duration > 0:
-            course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
-
-    return [
-        {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
-        for class_type, info in course_setup_dict.items()
-    ]
 
 
 def _build_course_setup(sections_queryset) -> list:
@@ -273,3 +240,36 @@ def _build_terms_list(crosslistings: str) -> list:
         )
 
     return terms
+
+
+def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
+    """Summarize meeting count and total duration per class type.
+
+    Args:
+        sections: Section objects for a single course offering.
+        meetings_by_section: Map of section id to its ClassMeeting objects.
+
+    Returns:
+        List of dicts with ``class_type``, ``count``, and ``duration`` (minutes).
+
+    """
+    course_setup_dict = {}
+    for section in sections:
+        class_type = section.class_type
+        if class_type in course_setup_dict:
+            continue
+        total_duration = 0
+        meeting_count = 0
+        for meeting in meetings_by_section.get(section.id, []):
+            if meeting.start_time and meeting.end_time:
+                start = datetime.combine(datetime.today(), meeting.start_time)
+                end = datetime.combine(datetime.today(), meeting.end_time)
+                total_duration += int((end - start).total_seconds() / 60)
+                meeting_count += len(meeting.days.split(",")) if meeting.days else 0
+        if total_duration > 0:
+            course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
+
+    return [
+        {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
+        for class_type, info in course_setup_dict.items()
+    ]
