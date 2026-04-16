@@ -54,6 +54,8 @@ def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
     course_setup_dict = {}
     for section in sections:
         class_type = section.class_type
+        if class_type in course_setup_dict:
+            continue
         total_duration = 0
         meeting_count = 0
         for meeting in meetings_by_section.get(section.id, []):
@@ -61,8 +63,8 @@ def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
                 start = datetime.combine(datetime.today(), meeting.start_time)
                 end = datetime.combine(datetime.today(), meeting.end_time)
                 total_duration += int((end - start).total_seconds() / 60)
-                meeting_count += 1
-        if class_type not in course_setup_dict and total_duration > 0:
+                meeting_count += len(meeting.days.split(",")) if meeting.days else 0
+        if total_duration > 0:
             course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
 
     return [
