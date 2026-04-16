@@ -17,10 +17,8 @@ def almost_completed(request):
     Response format: [{"code": "COS", "name": "Computer Science", "needed": 1, "type": "minor", "prereqFulfilled": true|false|null, "independentWorkRequired": true|false, "incompleteRequirements": ["Electives (1 more)", "Advanced Courses (2 more)"]}, ...]
     """
     try:
-        net_id = request.user.net_id
-        
         # Optimized: compute all data in a single check_user() call
-        results, prereq_status, iw_status, incomplete_subreqs = get_all_program_data(net_id)
+        results, prereq_status, iw_status, incomplete_subreqs = get_all_program_data(request.user)
 
         # results is dict{code: needed_count}. Convert to list with names from MINORS/CERTIFICATES
         out: List[Dict] = []

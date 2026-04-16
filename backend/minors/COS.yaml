@@ -19,6 +19,7 @@ contacts:
 - type: Co-Director of Undergraduate Studies
   name: Kevin Wayne
   email: wayne@princeton.edu
+iw_required: false
 req_list:
 - name: Core
   max_counted: 1

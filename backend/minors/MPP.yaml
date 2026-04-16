@@ -19,6 +19,7 @@ contacts:
 - type: Director
   name: Michael J. Pratt
   email: mjpratt@princeton.edu
+iw_required: true
 req_list:
 - name: Core Course
   max_counted: 1

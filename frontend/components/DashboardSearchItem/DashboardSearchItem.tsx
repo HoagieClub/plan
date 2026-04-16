@@ -1,12 +1,36 @@
 import type { FC, ReactNode } from 'react';
 
+import SemesterTag, { SemesterType } from '@/components/ui/SemesterTag';
 import type { Course } from '@/types';
 import { getAuditColor, getAuditTag } from '@/utils/auditTag';
 import { getDistributionColors } from '@/utils/distributionColors';
 import { getPdfColor, getPdfTag } from '@/utils/pdfTag';
 import { getRatingBackground } from '@/utils/ratingColors';
+import { termsInverse } from '@/utils/terms';
 
 import styles from './DashboardSearchItem.module.css';
+
+function getDisplaySemester(course: Course): SemesterType | undefined {
+	const currentTermCode = course.guid?.slice(0, 4) ?? '';
+	const prevTerms = (course.terms ?? [])
+		.filter((code) => code <= currentTermCode)
+		.map((code) => termsInverse[code])
+		.filter(Boolean);
+
+	const hasFall = prevTerms.some((t) => t.startsWith('Fall'));
+	const hasSpring = prevTerms.some((t) => t.startsWith('Spring'));
+
+	if (hasFall && hasSpring) {
+		return SemesterType.Multiple;
+	}
+	if (hasFall) {
+		return SemesterType.Fall;
+	}
+	if (hasSpring) {
+		return SemesterType.Spring;
+	}
+	return undefined;
+}
 
 interface DashboardSearchItemProps {
 	course: Course;
@@ -25,6 +49,7 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 		}
 	};
 
+<<<<<<< HEAD
 	const distColor = getDistributionColors(course.distribution_area_short);
 
 	const gradingBasis = course.grading_basis?.['Grading Basis'];
@@ -33,6 +58,20 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
+=======
+	const currentTermCode = course.guid?.slice(0, 4) ?? '';
+	const prevTerms = (course.terms ?? [])
+		.filter((code) => code <= currentTermCode)
+		.map((code) => termsInverse[code])
+		.filter(Boolean);
+
+	const distColor = getDistributionColors(course.distribution_area_short);
+	const pdfTag = getPdfTag(course.grading_basis);
+	const pdfColor = getPdfColor(pdfTag);
+	const auditTag = getAuditTag(course.grading_basis);
+	const auditColor = getAuditColor(auditTag);
+	const displaySemester = getDisplaySemester(course);
+>>>>>>> origin/preview
 
 	return (
 		<div className={styles.card} onClick={handleClick}>
@@ -52,6 +91,7 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 						</div>
 					)}
 				</div>
+<<<<<<< HEAD
 				<div className={styles.titleRow} style={{ justifyContent: 'left' }}>
 					<div style={{ color: distColor, paddingRight: '10px' }}>
 						{course.distribution_area_short}
@@ -59,6 +99,26 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 					<div style={{ color: pdfColor, paddingRight: '10px' }}>{getPdfTag(gradingBasis)}</div>
 					<div style={{ color: auditColor }}>{getAuditTag(gradingBasis)}</div>
 				</div>
+=======
+				<div className={styles.tagsRow}>
+					{course.distribution_area_short && (
+						<span style={{ color: distColor }}>{course.distribution_area_short}</span>
+					)}
+					<span style={{ color: pdfColor }}>{pdfTag}</span>
+					<span style={{ color: auditColor }}>{auditTag}</span>
+				</div>
+				{displaySemester && (
+					<>
+						<hr className={styles.divider} />
+						<div className={styles.termRow}>
+							<SemesterTag semester={displaySemester} />
+							{prevTerms.length > 0 && (
+								<span className={styles.termList}>{prevTerms.join(', ')}</span>
+							)}
+						</div>
+					</>
+				)}
+>>>>>>> origin/preview
 			</div>
 		</div>
 	);

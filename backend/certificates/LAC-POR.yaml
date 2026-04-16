@@ -29,6 +29,7 @@ contacts:
 - type: Acting Director, Portuguese Language Program
   name: Luis Gonçalves
   email: lgoncalv@princeton.edu
+iw_required: true
 req_list:
 - name: Core Requirement
   max_counted: 1

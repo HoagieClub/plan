@@ -16,6 +16,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Keeanga-Yamahtta Taylor
   email: kytaylor@princeton.edu
+iw_required: true
 req_list:
 - name: Core Survey
   max_counted: 1

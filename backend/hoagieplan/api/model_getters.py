@@ -3,18 +3,10 @@ from typing import List
 from hoagieplan.models import AcademicTerm, CalendarConfiguration, CalendarEvent, Course, CustomUser, Section
 
 
-def get_user(net_id: str) -> CustomUser:
-    """Retrieve CustomUser."""
-    try:
-        return CustomUser.objects.get(net_id=net_id)
-    except CustomUser.DoesNotExist as error:
-        raise Exception("User not found") from error
-
-
 def get_course(guid: str) -> Course:
     """Retrieve Course."""
     try:
-        return Course.objects.get(guid=guid)
+        return Course.objects.select_related("department").get(guid=guid)
     except Course.DoesNotExist as error:
         raise Exception("Course not found") from error
 
@@ -27,10 +19,10 @@ def get_section(course: Course, class_section: str) -> List[Section]:
         raise Exception("Course not found") from error
 
 
-def get_term(term_code: str) -> AcademicTerm:
-    """Retrieve CustomUser."""
+def get_term(term_code: str | int) -> AcademicTerm:
+    """Retrieve AcademicTerm by term code."""
     try:
-        return AcademicTerm.objects.get(term_code=term_code)
+        return AcademicTerm.objects.get(term_code=str(term_code))
     except AcademicTerm.DoesNotExist as error:
         raise Exception("AcademicTerm not found") from error
 
@@ -47,9 +39,14 @@ def get_calendar_event(
     calendar_configuration: CalendarConfiguration, course: Course, section: Section
 ) -> CalendarEvent:
     """Retrieve CalendarEvent."""
-    event = CalendarEvent.objects.filter(
-        calendar_configuration=calendar_configuration, course=course, section=section
-    ).first()
+    event = (
+        CalendarEvent.objects.filter(calendar_configuration=calendar_configuration, course=course, section=section)
+        .select_related(
+            "course",
+            "section",
+        )
+        .first()
+    )
     if event is None:
         raise Exception("CalendarEvent not found")
 
@@ -57,10 +54,15 @@ def get_calendar_event(
 
 
 def get_calendar_events(calendar_configuration: CalendarConfiguration, course: Course):
-    events = CalendarEvent.objects.filter(
-        calendar_configuration=calendar_configuration,
-        course=course,
+    events = list(
+        CalendarEvent.objects.filter(
+            calendar_configuration=calendar_configuration,
+            course=course,
+        ).select_related(
+            "course",
+            "section",
+        )
     )
-    if not events.exists():
+    if not events:
         raise Exception("CalendarEvent not found")
     return events

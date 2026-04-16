@@ -20,6 +20,7 @@ contacts:
 - type: Director
   name: Todd W. Kent
   email: twkent@princeton.edu
+iw_required: true
 req_list:
 - name: General Education Requirements
   max_counted: 1

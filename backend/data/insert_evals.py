@@ -14,8 +14,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 django.setup()
 
-from hoagieplan.models import Course, CourseComments
-
+from hoagieplan.models import Course, CourseComment
 
 # Field mapping for CSV columns to Django model fields
 EVALUATION_FIELD_MAPPING = {
@@ -51,15 +50,17 @@ def map_evaluation_fields(eval_data):
 
 def parse_evaluations(eval_str):
     try:
-        eval_data = oj.loads(f"{{{eval_str}}}")
+        eval_data = oj.loads(eval_str)
         return map_evaluation_fields(eval_data)
     except ValueError:
         return {}
 
 
 def parse_comments(comment_str):
-    comments = comment_str.strip().split('","')
-    return [comment.strip().strip('"') for comment in comments]
+    try:
+        return oj.loads(comment_str)
+    except ValueError:
+        return []
 
 
 def count_rows(file_path):
@@ -69,9 +70,6 @@ def count_rows(file_path):
 
 @transaction.atomic
 def import_data(evals):
-    print("Clearing existing CourseComments...")
-    CourseComments.objects.all().delete()
-
     total_rows = count_rows(evals)
     course_batch = []
     comment_batch = []
@@ -102,22 +100,22 @@ def import_data(evals):
 
             course_batch.append(curr_course)
 
-            # Create CourseComments objects
+            # Create CourseComment objects
             comment_texts = parse_comments(comments)
             for text in comment_texts:
-                comment = CourseComments(course_guid=course_guid, comment=text)
+                comment = CourseComment(course=curr_course, comment=text)
                 comment_batch.append(comment)
 
             # Bulk create in batches
             if len(course_batch) >= 1000:
                 Course.objects.bulk_update(course_batch, fields=list(EVALUATION_FIELD_MAPPING.values()))
-                CourseComments.objects.bulk_create(comment_batch)
+                CourseComment.objects.bulk_create(comment_batch)
                 course_batch, comment_batch = [], []
 
     # Handle any remaining batches
     if course_batch:
         Course.objects.bulk_update(course_batch, fields=list(EVALUATION_FIELD_MAPPING.values()))
-        CourseComments.objects.bulk_create(comment_batch)
+        CourseComment.objects.bulk_create(comment_batch)
 
     # Print summary of missing courses
     if missing_courses:
@@ -128,13 +126,12 @@ def import_data(evals):
             print(f"  ... and {len(missing_courses) - 10} more")
 
 
+# Usage: python insert_evals.py
+# Inserts scores and comments for courses in the CSV. Does not touch existing data.
 def main():
     parser = argparse.ArgumentParser(description="Import course evaluations from a CSV file")
     parser.add_argument(
-        "filename",
-        nargs="?",
-        default="./evals.csv",
-        help="Path to the evaluations CSV file (default: ./evals.csv)"
+        "filename", nargs="?", default="./evals.csv", help="Path to the evaluations CSV file (default: ./evals.csv)"
     )
     args = parser.parse_args()
 

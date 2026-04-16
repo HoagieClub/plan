@@ -2,10 +2,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.db.models import Prefetch
 from hoagieplan.api.model_getters import get_calendar, get_term
 from hoagieplan.models import (
     AcademicTerm,
     CalendarConfiguration,
+    CalendarEvent,
     CustomUser,
 )
 from hoagieplan.serializers import (
@@ -20,21 +22,38 @@ class CalendarConfigurationView(APIView):
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
         user_inst: CustomUser = request.user
 
+        prefetched_events = Prefetch(
+            "calendar_events",
+            queryset=CalendarEvent.objects.select_related(
+                "course__department",
+            ).prefetch_related(
+                "course__instructors",
+                "course__section_set__classmeeting_set",
+            ),
+        )
+
         if term:
             try:
-                term_id = AcademicTerm.objects.get(term_code=term).id
-                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id)
+                term_id = AcademicTerm.objects.get(term_code=str(term)).id
+                queryset = CalendarConfiguration.objects.filter(
+                    user=user_inst, term_id=term_id
+                ).prefetch_related(prefetched_events)
             except AcademicTerm.DoesNotExist:
                 return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
-            queryset = CalendarConfiguration.objects.filter(user=user_inst)
+            queryset = CalendarConfiguration.objects.filter(
+                user=user_inst
+            ).prefetch_related(prefetched_events)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def put(self, request, term: int) -> Response:
         """Create a new calendar configuration for the user."""
-        term_id = AcademicTerm.objects.get(term_code=term).id
+        try:
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
 
         calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
@@ -96,7 +115,10 @@ class CalendarConfigurationView(APIView):
 
     def delete(self, request, term: int) -> Response:
         """Delete an existing calendar configuration."""
-        term_id = AcademicTerm.objects.get(term_code=term).id
+        try:
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
 
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
