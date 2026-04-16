@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+from enum import Enum
 
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
@@ -13,6 +14,14 @@ from hoagieplan.models import (
 )
 from hoagieplan.utils import get_term, get_term_and_course_id, is_fall_course, is_spring_course, suffix_to_label
 
+class SemesterOffered(str, Enum):
+    FALL = "Fall"
+    SPRING = "Spring"
+    BOTH = "Both"
+
+
+REGISTRAR_URL = "https://registrar.princeton.edu/course-offerings/course-details"
+
 COURSE_FIELD_LABELS = {
     "title": "Title",
     "description": "Description",
@@ -21,7 +30,7 @@ COURSE_FIELD_LABELS = {
     "reading_writing_assignment": "Reading / Writing Assignments",
 }
 
-GRADING_LABELS = {
+GRADING_FIELD_LABELS = {
     "grading_final_exam": "Final Exam",
     "grading_mid_exam": "Midterm Exam",
     "grading_home_final_exam": "Home Final Exam",
@@ -89,50 +98,32 @@ def get_course_info(crosslistings):
         if value:
             course_dict[display_name] = value
 
+    # Add course reading list with cleaned formatting
+    if course.reading_list:
+        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
+
     # Add instructors as a comma-separated string
     instructors = course.instructors.all()
     instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
     if instructor_names:
         course_dict["Instructors"] = ", ".join(instructor_names)
 
-    if course.guid:
-        term, course_id = get_term_and_course_id(course.guid)
-        course_dict["Registrar"] = (
-            f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
-        )
-    try:
-        grading_info = course.grading_info
-        grading_breakdown = [
-            {"label": label, "percent": getattr(grading_info, field)}
-            for field, label in GRADING_LABELS.items()
-            if getattr(grading_info, field, 0)
-        ]
-        if grading_breakdown:
-            course_dict["Grading"] = grading_breakdown
-    except GradingInfo.DoesNotExist:
-        pass
+    # Add registrar url
+    registrar_url = _build_registrar_url(course.guid)
+    if registrar_url:
+        course_dict["Registrar"] = registrar_url
 
-    if course.reading_list:
-        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
+    # Add grading breakdown
+    grading_breakdown = _build_grading_breakdown(course)
+    if grading_breakdown:
+        course_dict["Grading"] = grading_breakdown
 
-    # Semester availability
-    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
-    has_fall = False
-    has_spring = False
-    for guid in all_guids:
-        if guid and len(guid) >= 4:
-            if is_fall_course(guid):
-                has_fall = True
-            if is_spring_course(guid):
-                has_spring = True
-    if has_fall and has_spring:
-        course_dict["Semester Availability"] = "Both"
-    elif has_fall:
-        course_dict["Semester Availability"] = "Fall"
-    elif has_spring:
-        course_dict["Semester Availability"] = "Spring"
+    # Add semester offered (Both, Fall, Spring)
+    semester_offered = _get_semester_offered(crosslistings)
+    if semester_offered:
+        course_dict["Semester Availability"] = semester_offered
 
-    # Latest-term course_setup (one extra query pair, but only for the single latest term)
+    # Latest-term course_setup
     all_sections = Section.objects.filter(course=course).select_related("term")
     latest_term_section = all_sections.order_by("-term__term_code").first()
     if latest_term_section:
@@ -147,6 +138,44 @@ def get_course_info(crosslistings):
     course_dict["terms"] = _build_terms_list(crosslistings)
 
     return course_dict
+
+
+def _build_registrar_url(guid: str | None) -> str | None:
+    """Return the registrar course-details URL for a given course guid, or None."""
+    if not guid:
+        return None
+    term, course_id = get_term_and_course_id(guid)
+    return f"{REGISTRAR_URL}?term={term}&courseid={course_id}"
+
+
+def _build_grading_breakdown(course) -> list:
+    """Return a list of grading components for a course, or an empty list if none exist."""
+    try:
+        grading_info = course.grading_info
+    except GradingInfo.DoesNotExist:
+        return []
+
+    breakdown = []
+    for field, label in GRADING_FIELD_LABELS.items():
+        percent = getattr(grading_info, field, 0)
+        if percent:
+            breakdown.append({"label": label, "percent": percent})
+    return breakdown
+
+
+def _get_semester_offered(crosslistings: str) -> SemesterOffered | None:
+    """Return a SemesterOffered value based on historical offerings, or None if unknown."""
+    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
+    valid_guids = [guid for guid in all_guids if guid and len(guid) >= 4]
+    has_fall = any(is_fall_course(guid) for guid in valid_guids)
+    has_spring = any(is_spring_course(guid) for guid in valid_guids)
+    if has_fall and has_spring:
+        return SemesterOffered.BOTH
+    if has_fall:
+        return SemesterOffered.FALL
+    if has_spring:
+        return SemesterOffered.SPRING
+    return None
 
 
 def _build_course_setup(sections_queryset) -> list:
