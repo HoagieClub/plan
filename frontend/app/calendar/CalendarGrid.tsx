@@ -91,7 +91,7 @@ const CalendarGrid: FC<CalendarGridProps> = memo(
 							justifyContent: 'flex-start',
 						}}
 					>
-						{formatHour(rowIndex + startHour - 1)}
+						{formatHour(rowIndex + startHour)}
 					</div>
 				))}
 

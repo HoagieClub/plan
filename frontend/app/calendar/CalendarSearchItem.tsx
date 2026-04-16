@@ -1,43 +1,46 @@
 // CalendarSearchItem.jsx
-import useCalendarStore from '@/store/calendarSlice';
-import { termsInverse } from '@/utils/terms';
+import React from 'react';
+
+import type { Course } from '@/types';
+import { getRatingBackground } from '@/utils/ratingColors';
 
 import styles from './CalendarSearchItem.module.css';
 
-const CalendarSearchItem = ({ course }) => {
-	const addCourse = useCalendarStore((state) => state.addCourse);
+interface CalendarSearchItemProps {
+	course: Course;
+	children?: React.ReactNode; // For the draggable course chip
+	isSelectedCourseItem?: boolean;
+}
 
-	const termCode = course.guid.slice(0, 4);
-	const semester = termsInverse[termCode];
-	const isCourseInSchedule = useCalendarStore((state) =>
-		state.getSelectedCourses(termCode).some((event) => event.course.guid === course.guid)
-	);
-
-	const handleClick = () => {
-		void addCourse(course);
-	};
-
-	return (
-		<div className={styles.card} onClick={handleClick}>
-			<div className={styles.content}>
-				<div className={styles.header}>
-					<div className={styles.crosslistings}>{course.crosslistings}</div>
+export const CalendarSearchItem: React.FC<CalendarSearchItemProps> = ({
+	course,
+	children,
+	isSelectedCourseItem = false,
+}) => {
+	const content = (
+		<div className={styles.content}>
+			{children && <div className={styles.chipContainer}>{children}</div>}
+			{!isSelectedCourseItem && (
+				<div className={styles.titleRow}>
+					<div className={styles.title}>{course.title}</div>
+					{course.quality_of_course && (
+						<div
+							className={styles.rating}
+							style={{ background: getRatingBackground(course.quality_of_course) }}
+						>
+							{course.quality_of_course.toFixed(2)}
+						</div>
+					)}
 				</div>
-				<div className={styles.title}>{course.title}</div>
-			</div>
-			<div className={styles.meta}>
-				<div className={styles.semester}>{semester}</div>
-				<div className={styles.actions}>
-					<button
-						className={`${styles.button} ${isCourseInSchedule ? styles.disabled : ''}`}
-						disabled={isCourseInSchedule}
-					>
-						Add
-					</button>
-				</div>
-			</div>
+			)}
 		</div>
 	);
+
+	if (isSelectedCourseItem) {
+		return content;
+	}
+
+	return <div className={styles.card}>{content}</div>;
 };
 
 export default CalendarSearchItem;
