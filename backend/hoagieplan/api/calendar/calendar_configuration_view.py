@@ -187,8 +187,8 @@ class CalendarConfigurationView(APIView):
                         {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                for event in queryset:
-                    CalendarEvent.objects.create(
+                CalendarEvent.objects.bulk_create([
+                    CalendarEvent(
                         calendar_configuration=calendar_config,
                         course=event.course,
                         section=event.section,
@@ -198,8 +198,9 @@ class CalendarConfigurationView(APIView):
                         is_active=event.is_active,
                         needs_choice=event.needs_choice,
                         is_chosen=event.is_chosen,
-
                     )
+                    for event in queryset
+                ])
 
                 serializer = CalendarConfigurationSerializer(calendar_config)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
