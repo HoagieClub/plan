@@ -68,33 +68,33 @@ def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
             course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
 
     return [
-        {"class_type": ct, "count": info["count"], "duration": info["duration"]}
-        for ct, info in course_setup_dict.items()
+        {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
+        for class_type, info in course_setup_dict.items()
     ]
 
 
-def _build_course_setup(sections_qs) -> list:
+def _build_course_setup(sections_queryset) -> list:
     """Build a course_setup list from a Section queryset for one term.
 
     Fetches ClassMeeting rows for the given sections, then delegates to
     :func:`_build_course_setup_from_data`.
 
     Args:
-        sections_qs: Section queryset scoped to a single term.
+        sections_queryset: Section queryset scoped to a single term.
 
     Returns:
         List of dicts with ``class_type``, ``count``, and ``duration``
         (minutes).
 
     """
-    section_ids = list(sections_qs.values_list("id", flat=True))
+    section_ids = list(sections_queryset.values_list("id", flat=True))
     meetings = ClassMeeting.objects.filter(section_id__in=section_ids).select_related("section")
 
     meetings_by_section: dict = defaultdict(list)
-    for m in meetings:
-        meetings_by_section[m.section_id].append(m)
+    for meeting in meetings:
+        meetings_by_section[meeting.section_id].append(meeting)
 
-    return _build_course_setup_from_data(list(sections_qs), meetings_by_section)
+    return _build_course_setup_from_data(list(sections_queryset), meetings_by_section)
 
 
 def _build_terms_list(crosslistings: str) -> list:
@@ -121,18 +121,18 @@ def _build_terms_list(crosslistings: str) -> list:
     all_sections = Section.objects.filter(course_id__in=course_ids)
     sections_by_course: dict = defaultdict(list)
     all_section_ids = []
-    for s in all_sections:
-        sections_by_course[s.course_id].append(s)
-        all_section_ids.append(s.id)
+    for section in all_sections:
+        sections_by_course[section.course_id].append(section)
+        all_section_ids.append(section.id)
 
     # Get all meetings for every section
     all_meetings = ClassMeeting.objects.filter(section_id__in=all_section_ids)
     meetings_by_section: dict = defaultdict(list)
-    for m in all_meetings:
-        meetings_by_section[m.section_id].append(m)
+    for meeting in all_meetings:
+        meetings_by_section[meeting.section_id].append(meeting)
 
     # Get all term labels at once
-    term_codes = {get_term(c.guid) for c in all_term_courses if c.guid}
+    term_codes = {get_term(course.guid) for course in all_term_courses if course.guid}
     term_suffix_map: dict = dict(
         AcademicTerm.objects.filter(term_code__in=term_codes).values_list("term_code", "suffix")
     )
@@ -148,7 +148,7 @@ def _build_terms_list(crosslistings: str) -> list:
             continue
         seen_term_codes.add(term_code)
 
-        instructor_names = [i.full_name for i in course.instructors.all() if i.full_name]
+        instructor_names = [instructor.full_name for instructor in course.instructors.all() if instructor.full_name]
         course_sections = sections_by_course[course.id]
         course_setup = _build_course_setup_from_data(course_sections, meetings_by_section)
         label = suffix_to_label(term_suffix_map.get(term_code, ""), term_code)
@@ -197,7 +197,7 @@ def get_course_info(crosslistings):
         course_dict["Title"] = title
 
     instructors = course.instructors.all()
-    instructor_names = [i.full_name for i in instructors if i.full_name]
+    instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
     if instructor_names:
         course_dict["Instructors"] = ", ".join(instructor_names)
 
