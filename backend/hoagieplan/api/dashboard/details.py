@@ -13,10 +13,12 @@ from hoagieplan.models import (
 )
 from hoagieplan.utils import get_term, get_term_and_course_id, is_fall_course, is_spring_course, suffix_to_label
 
-FIELD_MAPPING = {
+COURSE_FIELD_LABELS = {
+    "title": "Title",
     "description": "Description",
     "distribution_area_short": "Distribution Area",
     "grading_basis": "Grading Basis",
+    "reading_writing_assignment": "Reading / Writing Assignments",
 }
 
 GRADING_LABELS = {
@@ -78,22 +80,20 @@ def get_course_info(crosslistings):
     except Course.DoesNotExist:
         return None
 
+    # Dictionary to be returned
     course_dict = {}
 
-    title = getattr(course, "title", None)
-    if title:
-        course_dict["Title"] = title
+    # Add fields that are on the Course model
+    for field, display_name in COURSE_FIELD_LABELS.items():
+        value = getattr(course, field, None)
+        if value:
+            course_dict[display_name] = value
 
+    # Add instructors as a comma-separated string
     instructors = course.instructors.all()
     instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
     if instructor_names:
         course_dict["Instructors"] = ", ".join(instructor_names)
-
-    all_sections = Section.objects.filter(course=course).select_related("term")
-
-    for field, display_name in FIELD_MAPPING.items():
-        if value := getattr(course, field):
-            course_dict[display_name] = value
 
     if course.guid:
         term, course_id = get_term_and_course_id(course.guid)
@@ -115,9 +115,6 @@ def get_course_info(crosslistings):
     if course.reading_list:
         course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
 
-    if course.reading_writing_assignment:
-        course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
-
     # Semester availability
     all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
     has_fall = False
@@ -136,6 +133,7 @@ def get_course_info(crosslistings):
         course_dict["Semester Availability"] = "Spring"
 
     # Latest-term course_setup (one extra query pair, but only for the single latest term)
+    all_sections = Section.objects.filter(course=course).select_related("term")
     latest_term_section = all_sections.order_by("-term__term_code").first()
     if latest_term_section:
         if latest_term_section.term:
