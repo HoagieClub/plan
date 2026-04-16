@@ -31,6 +31,72 @@
 	overflow-y: auto;
 }
 
+.calendar-left-panel {
+	display: flex;
+	flex-direction: column;
+	width: 24vw;
+	min-width: 270px;
+	height: calc(88vh - 24px);
+	margin: 0 0.5vw 1vh;
+	min-height: 500px;
+	gap: 0;
+}
+
+.calendar-left-top,
+.calendar-left-bottom {
+	min-height: 0;
+	overflow: hidden;
+}
+
+.calendar-left-top {
+	flex-shrink: 0;
+}
+
+.calendar-left-bottom {
+	flex: 1;
+}
+
+.calendar-left-divider {
+	height: 10px;
+	position: relative;
+	cursor: row-resize;
+	user-select: none;
+	touch-action: none;
+	background: transparent;
+	flex-shrink: 0;
+}
+
+.calendar-left-divider::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	height: 2px;
+	transform: translateY(-50%);
+	background-color: #cbd5e1;
+	border-radius: 999px;
+	transition: background-color 0.2s ease;
+}
+
+.calendar-left-divider:hover::before,
+.calendar-left-divider:focus-visible::before {
+	background-color: #64748b;
+}
+
+@media (max-width: 768px) {
+	.calendar-left-panel {
+		width: 95vw;
+		min-width: 0;
+		height: auto;
+		min-height: 0;
+	}
+
+	.calendar-left-divider {
+		display: none;
+	}
+}
+
 /* Semester pagination */
 .carouselTab {
 	transition:
@@ -278,5 +344,5 @@
 	z-index: 1;
 }
 .margin {
-	margin: 1vh 0;
+	margin: 0 0 1vh;
 }
