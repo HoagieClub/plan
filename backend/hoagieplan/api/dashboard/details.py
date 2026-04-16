@@ -11,7 +11,7 @@ from hoagieplan.models import (
     GradingInfo,
     Section,
 )
-from hoagieplan.utils import get_term_and_course_id, suffix_to_label
+from hoagieplan.utils import get_term, get_term_and_course_id, is_fall_course, is_spring_course, suffix_to_label
 
 FIELD_MAPPING = {
     "description": "Description",
@@ -132,7 +132,7 @@ def _build_terms_list(crosslistings: str) -> list:
         meetings_by_section[m.section_id].append(m)
 
     # Get all term labels at once
-    term_codes = {c.guid[:4] for c in all_term_courses if c.guid}
+    term_codes = {get_term(c.guid) for c in all_term_courses if c.guid}
     term_suffix_map: dict = dict(
         AcademicTerm.objects.filter(term_code__in=term_codes).values_list("term_code", "suffix")
     )
@@ -143,7 +143,7 @@ def _build_terms_list(crosslistings: str) -> list:
     for course in all_term_courses:
         if not course.guid:
             continue
-        term_code = course.guid[:4]
+        term_code = get_term(course.guid)
         if term_code in seen_term_codes:
             continue
         seen_term_codes.add(term_code)
@@ -236,10 +236,9 @@ def get_course_info(crosslistings):
     has_spring = False
     for guid in all_guids:
         if guid and len(guid) >= 4:
-            term_suffix = guid[3]
-            if term_suffix == "2":
+            if is_fall_course(guid):
                 has_fall = True
-            if term_suffix == "4":
+            if is_spring_course(guid):
                 has_spring = True
     if has_fall and has_spring:
         course_dict["Semester Availability"] = "Both"
