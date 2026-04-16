@@ -102,17 +102,22 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            term_id = get_term(term).id
-            calendar = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+        except CalendarConfiguration.DoesNotExist:
+            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
         new_calendar_name = request.data.get("new_calendar_name")
         try:
             # Check if there exists another calendar with the new calendar name
             existing = (
                 CalendarConfiguration.objects.filter(
-                    user=user_inst, name=new_calendar_name)
+                    user=user_inst, name=new_calendar_name,
+                    term_id=term_id)
                 .exclude(name=calendar_name)
                 .exists()
             )
@@ -164,20 +169,23 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            term_id = get_term(term).id
-            calendar = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            term_id = AcademicTerm.objects.get(term_code=str(term)).id
+        except AcademicTerm.DoesNotExist:
+            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+        except CalendarConfiguration.DoesNotExist:
+            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
         new_calendar_name = request.data.get(
             "new_calendar_name", f"{calendar.name} (Copy)"
         )
 
-        queryset = CalendarEvent.objects.filter(
-            calendar_configuration=calendar)
-
         try:
             with transaction.atomic():
+                queryset = CalendarEvent.objects.filter(
+            calendar_configuration=calendar)
                 calendar_config, created = CalendarConfiguration.objects.get_or_create(
                     user=user_inst, name=new_calendar_name, term_id=calendar.term_id
                 )
@@ -190,8 +198,8 @@ class CalendarConfigurationView(APIView):
                 CalendarEvent.objects.bulk_create([
                     CalendarEvent(
                         calendar_configuration=calendar_config,
-                        course=event.course,
-                        section=event.section,
+                        course_id=event.course_id,
+                        section_id=event.section_id,
                         start_time=event.start_time,
                         end_time=event.end_time,
                         start_column_index=event.start_column_index,
