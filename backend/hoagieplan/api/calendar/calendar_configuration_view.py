@@ -88,9 +88,9 @@ class CalendarConfigurationView(APIView):
     def post(self, request, term: int) -> Response:
         """Handle post operations for calendar configurations for the user.
         The default is to update the calendar"""
-        action: str = request.query_params.get("action")
+        action: str = request.data.get("action")
         if action == CalendarConfigurationPostAction.DuplicateCalendar.value:
-            return self._duplicate_calendar(request)
+            return self._duplicate_calendar(request, term)
         else:
             return self._update_calendar(request, term)
         
@@ -157,16 +157,17 @@ class CalendarConfigurationView(APIView):
         except Exception:
             return Response({"detail": "Failed to delete calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def _duplicate_calendar(self, request) -> Response:
-        calendar_id = request.data.get("calendar_id")
-        if not calendar_id:
-            return Response({"detail": "Calendar id is required."}, status=status.HTTP_400_BAD_REQUEST)
+    def _duplicate_calendar(self, request, term: int) -> Response:
+        calendar_name = request.data.get("calendar_name")
+        if not calendar_name:
+            return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
         user_inst: CustomUser = request.user
         try:
-            calendar = CalendarConfiguration.objects.get(
-                user=user_inst, id=calendar_id)
-        except CalendarConfiguration.DoesNotExist:
-            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+            term_id = get_term(term).id
+            calendar = get_calendar(user_inst, calendar_name, term_id)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         new_calendar_name = request.data.get(
             "new_calendar_name", f"{calendar.name} (Copy)"
