@@ -1,84 +1,183 @@
+from collections import defaultdict
 from datetime import datetime
 
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
 from hoagieplan.models import (
+    AcademicTerm,
     ClassMeeting,
     Course,
-    CourseComment,
-    CourseEvalSummary,
-    Department,
     GradingInfo,
     Section,
 )
+from hoagieplan.utils import get_term_and_course_id, suffix_to_label
+
+FIELD_MAPPING = {
+    "description": "Description",
+    "distribution_area_short": "Distribution Area",
+    "grading_basis": "Grading Basis",
+}
+
+GRADING_LABELS = {
+    "grading_final_exam": "Final Exam",
+    "grading_mid_exam": "Midterm Exam",
+    "grading_home_final_exam": "Home Final Exam",
+    "grading_home_mid_exam": "Home Midterm Exam",
+    "grading_paper_final_exam": "Paper in lieu of final",
+    "grading_paper_mid_exam": "Paper in lieu of midterm",
+    "grading_other_exam": "Other Exam",
+    "grading_oral_pres": "Oral Presentation",
+    "grading_quizzes": "Quizzes",
+    "grading_lab_reports": "Lab Reports",
+    "grading_papers": "Papers",
+    "grading_prob_sets": "Problem Sets",
+    "grading_prog_assign": "Programming Assignments",
+    "grading_precept_part": "Class/precept participation",
+    "grading_term_papers": "Term Papers",
+    "grading_design_projects": "Design Projects",
+    "grading_other": "Other",
+}
 
 
-def clean_comment(comment):
-    """Clean a single comment string."""
-    if not (2 <= len(comment) <= 2000):
-        return None
+def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
+    """Summarize meeting count and total duration per class type.
 
-    comment = comment.replace('\\"', '"')
-    comment = comment.replace("it?s", "it's")
-    comment = comment.replace("?s", "'s")
-    comment = comment.replace("?r", "'r")
+    Args:
+        sections: Section objects for a single course offering.
+        meetings_by_section: Map of section id to its ClassMeeting objects.
 
-    # Remove surrounding brackets if present
-    if comment[0] == "[" and comment[-1] == "]":
-        comment = comment[1:-1]
+    Returns:
+        List of dicts with ``class_type``, ``count``, and ``duration`` (minutes).
 
-    return comment
+    """
+    course_setup_dict = {}
+    for section in sections:
+        class_type = section.class_type
+        total_duration = 0
+        meeting_count = 0
+        for meeting in meetings_by_section.get(section.id, []):
+            if meeting.start_time and meeting.end_time:
+                start = datetime.combine(datetime.today(), meeting.start_time)
+                end = datetime.combine(datetime.today(), meeting.end_time)
+                total_duration += int((end - start).total_seconds() / 60)
+                meeting_count += 1
+        if class_type not in course_setup_dict and total_duration > 0:
+            course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
+
+    return [
+        {"class_type": ct, "count": info["count"], "duration": info["duration"]}
+        for ct, info in course_setup_dict.items()
+    ]
 
 
-def get_course_comments(dept, num):
-    """Retrieve and process course comments."""
-    # Get department or return None
-    department = Department.objects.filter(code=dept).first()
-    if not department:
-        return None
+def _build_course_setup(sections_qs) -> list:
+    """Build a course_setup list from a Section queryset for one term.
 
-    # Get course or return None
-    course = Course.objects.filter(department=department, catalog_number=str(num)).first()
-    if not course:
-        return None
+    Fetches ClassMeeting rows for the given sections, then delegates to
+    :func:`_build_course_setup_from_data`.
 
-    # Get comments
-    comments = CourseComment.objects.filter(course=course)
+    Args:
+        sections_qs: Section queryset scoped to a single term.
 
-    # Process comments
-    cleaned_comments = []
-    for comment_obj in comments:
-        cleaned = clean_comment(comment_obj.comment)
-        if cleaned:
-            cleaned_comments.append(cleaned)
+    Returns:
+        List of dicts with ``class_type``, ``count``, and ``duration``
+        (minutes).
 
-    # Remove duplicates while preserving order
-    cleaned_comments = list(dict.fromkeys(cleaned_comments))
+    """
+    section_ids = list(sections_qs.values_list("id", flat=True))
+    meetings = ClassMeeting.objects.filter(section_id__in=section_ids).select_related("section")
 
-    # Build result dictionary
-    result = {"reviews": cleaned_comments}
+    meetings_by_section: dict = defaultdict(list)
+    for m in meetings:
+        meetings_by_section[m.section_id].append(m)
 
-    # Try to get course evaluation
-    evaluation = (
-        Course.objects.filter(department=department, catalog_number=str(num))
-        .filter(quality_of_course__isnull=False)  # Extract only courses with non-null rating
-        .order_by("course_id", "-guid")
-        .first()
+    return _build_course_setup_from_data(list(sections_qs), meetings_by_section)
+
+
+def _build_terms_list(crosslistings: str) -> list:
+    """Return per-term dicts for every historical offering of a course.
+
+    Uses four bulk queries (courses, sections, meetings, term labels) so
+    the total cost is independent of the number of historical terms.
+
+    Args:
+        crosslistings: Crosslistings string used to match course offerings.
+
+    Returns:
+        List of dicts with ``term_code``, ``label``, ``instructors``,
+        ``quality_of_course``, and ``course_setup``, ordered newest first.
+
+    """
+    all_term_courses = (
+        Course.objects.filter(crosslistings__icontains=crosslistings).prefetch_related("instructors").order_by("-guid")
     )
 
-    if evaluation and evaluation.quality_of_course:
-        result["rating"] = evaluation.quality_of_course
+    course_ids = list(all_term_courses.values_list("id", flat=True))
 
-    summary = CourseEvalSummary.objects.filter(course=course).first()
-    if summary:
-        result["summary"] = summary.summary
+    # Get all sections for every historical offering
+    all_sections = Section.objects.filter(course_id__in=course_ids)
+    sections_by_course: dict = defaultdict(list)
+    all_section_ids = []
+    for s in all_sections:
+        sections_by_course[s.course_id].append(s)
+        all_section_ids.append(s.id)
 
-    return result
+    # Get all meetings for every section
+    all_meetings = ClassMeeting.objects.filter(section_id__in=all_section_ids)
+    meetings_by_section: dict = defaultdict(list)
+    for m in all_meetings:
+        meetings_by_section[m.section_id].append(m)
+
+    # Get all term labels at once
+    term_codes = {c.guid[:4] for c in all_term_courses if c.guid}
+    term_suffix_map: dict = dict(
+        AcademicTerm.objects.filter(term_code__in=term_codes).values_list("term_code", "suffix")
+    )
+
+    # Build result list
+    terms = []
+    seen_term_codes: set = set()
+    for course in all_term_courses:
+        if not course.guid:
+            continue
+        term_code = course.guid[:4]
+        if term_code in seen_term_codes:
+            continue
+        seen_term_codes.add(term_code)
+
+        instructor_names = [i.full_name for i in course.instructors.all() if i.full_name]
+        course_sections = sections_by_course[course.id]
+        course_setup = _build_course_setup_from_data(course_sections, meetings_by_section)
+        label = suffix_to_label(term_suffix_map.get(term_code, ""), term_code)
+
+        terms.append(
+            {
+                "term_code": term_code,
+                "label": label,
+                "instructors": instructor_names,
+                "quality_of_course": course.quality_of_course,
+                "course_setup": course_setup,
+            }
+        )
+
+    return terms
 
 
 def get_course_info(crosslistings):
-    """Retrieve detailed course information."""
+    """Assemble the detail payload for a course's latest offering.
+
+    Collects title, instructors, description, distribution area, grading
+    basis, registrar link, grading breakdown, reading list, semester
+    availability, latest-term course setup, and per-term history.
+
+    Args:
+        crosslistings: Crosslistings string used to locate the course.
+
+    Returns:
+        Dict of course detail fields, or ``None`` if no course matches.
+
+    """
     try:
         course = (
             Course.objects.select_related("department")
@@ -91,61 +190,26 @@ def get_course_info(crosslistings):
 
     course_dict = {}
 
-    # Add title of course
     title = getattr(course, "title", None)
     if title:
         course_dict["Title"] = title
 
-    # Add instructors from Course M2M
     instructors = course.instructors.all()
     instructor_names = [i.full_name for i in instructors if i.full_name]
     if instructor_names:
         course_dict["Instructors"] = ", ".join(instructor_names)
 
-    # Get all sections for this course
     all_sections = Section.objects.filter(course=course).select_related("term")
 
-    # Map fields to their display names
-    field_mapping = {
-        "description": "Description",
-        "distribution_area_short": "Distribution Area",
-        "grading_basis": "Grading Basis",
-    }
-
-    # Add basic fields if they exist
-    for field, display_name in field_mapping.items():
+    for field, display_name in FIELD_MAPPING.items():
         if value := getattr(course, field):
             course_dict[display_name] = value
 
-    # Add registrar link
     if course.guid:
-        course_id = course.guid[4:]
-        term = course.guid[:4]
-        registrar_link = (
+        term, course_id = get_term_and_course_id(course.guid)
+        course_dict["Registrar"] = (
             f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
         )
-        course_dict["Registrar"] = registrar_link
-    
-    # Add grading info if available
-    GRADING_LABELS = {
-        "grading_final_exam": "Final Exam",
-        "grading_mid_exam": "Midterm Exam",
-        "grading_home_final_exam": "Home Final Exam",
-        "grading_home_mid_exam": "Home Midterm Exam",
-        "grading_paper_final_exam": "Paper in lieu of final",
-        "grading_paper_mid_exam": "Paper in lieu of midterm",
-        "grading_other_exam": "Other Exam",
-        "grading_oral_pres": "Oral Presentation",
-        "grading_quizzes": "Quizzes",
-        "grading_lab_reports": "Lab Reports",
-        "grading_papers": "Papers",
-        "grading_prob_sets": "Problem Sets",
-        "grading_prog_assign": "Programming Assignments",
-        "grading_precept_part": "Class/precept participation",
-        "grading_term_papers": "Term Papers",
-        "grading_design_projects": "Design Projects",
-        "grading_other": "Other",
-    }
     try:
         grading_info = course.grading_info
         grading_breakdown = [
@@ -158,20 +222,17 @@ def get_course_info(crosslistings):
     except GradingInfo.DoesNotExist:
         pass
 
-    # Handle reading list specially due to cleaning requirements
     if course.reading_list:
-        reading_list = course.reading_list.replace("//", ", by ").replace(";", "; ")
-        course_dict["Reading List"] = reading_list
+        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
 
-    # Add reading/writing assignments if they exist
     if course.reading_writing_assignment:
         course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
 
-    # === Semester Availability ===
-    all_courses = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
+    # Semester availability
+    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
     has_fall = False
     has_spring = False
-    for guid in all_courses:
+    for guid in all_guids:
         if guid and len(guid) >= 4:
             term_suffix = guid[3]
             if term_suffix == "2":
@@ -185,56 +246,25 @@ def get_course_info(crosslistings):
     elif has_spring:
         course_dict["Semester Availability"] = "Spring"
 
-    # === NEW: Add Course Setup ===
-    # Get the most recent term's sections
+    # Latest-term course_setup (one extra query pair, but only for the single latest term)
     latest_term_section = all_sections.order_by("-term__term_code").first()
-
     if latest_term_section:
+        if latest_term_section.term:
+            course_dict["Term"] = latest_term_section.term.suffix
         latest_term_sections = all_sections.filter(term=latest_term_section.term)
-
-        # Calculate course setup based on meeting times
-        course_setup_dict = {}
-
-        for section in latest_term_sections:
-            class_type = section.class_type
-
-            # Get all meetings for this section
-            meetings = ClassMeeting.objects.filter(section=section)
-
-            # Calculate total weekly duration for this section
-            total_duration = 0
-            meeting_count = 0
-            for meeting in meetings:
-                if meeting.start_time and meeting.end_time:
-                    start = datetime.combine(datetime.today(), meeting.start_time)
-                    end = datetime.combine(datetime.today(), meeting.end_time)
-                    duration = int((end - start).total_seconds() / 60)
-                    total_duration += duration
-                    meeting_count += 1
-
-            # If we haven't seen this class type yet, or if this is the first section
-            # we're examining, store its total duration
-            if class_type not in course_setup_dict and total_duration > 0:
-                course_setup_dict[class_type] = {
-                    "count": meeting_count,  # Number of meetings per week
-                    "duration": total_duration,
-                }
-
-        # Build course setup array
-        course_setup = [
-            {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
-            for class_type, info in course_setup_dict.items()
-        ]
-
+        course_setup = _build_course_setup(latest_term_sections)
         if course_setup:
             course_dict["course_setup"] = course_setup
+
+    # Per-term history (now uses bulk queries)
+    course_dict["terms"] = _build_terms_list(crosslistings)
 
     return course_dict
 
 
 @api_view(["GET"])
 def course_details(request):
-    """API endpoint for course details."""
+    """Return course detail JSON for a ``crosslistings`` query param."""
     crosslistings = request.GET.get("crosslistings")
     if not crosslistings:
         return JsonResponse({"error": "Missing crosslistings parameter"}, status=400)
@@ -244,19 +274,3 @@ def course_details(request):
         return JsonResponse({"error": "Course not found"}, status=404)
 
     return JsonResponse(course_info)
-
-
-@api_view(["GET"])
-def course_comments_view(request):
-    """API endpoint for course comments."""
-    dept = request.GET.get("dept")
-    num = request.GET.get("coursenum")
-
-    if not (dept and num):
-        return JsonResponse({"error": "Missing department or course number"}, status=400)
-
-    comments = get_course_comments(dept, num)
-    if comments is None:
-        return JsonResponse({"error": "Course not found"}, status=404)
-
-    return JsonResponse(comments)
