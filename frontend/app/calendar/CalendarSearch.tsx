@@ -160,7 +160,6 @@ export const CalendarSearch: FC = () => {
 		}, 500);
 	};
 
-
 	const handleSave = useCallback(() => {
 		setDistributionFilters(localDistributionFilters);
 		setLevelFilter(localLevelFilter);
