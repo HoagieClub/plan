@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hoagieplan.api.model_getters import get_calendar
 from hoagieplan.models import AcademicTerm, CalendarConfiguration, CalendarEvent, CustomUser
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
@@ -36,13 +35,9 @@ class CalendarConfigurationView(APIView):
         )
 
         if term:
-            try:
-                term_id = AcademicTerm.objects.get(term_code=str(term)).id
-                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id).prefetch_related(
-                    prefetched_events
-                )
-            except AcademicTerm.DoesNotExist:
-                return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
+            queryset = CalendarConfiguration.objects.filter(
+                user=user_inst, term__term_code=str(term)
+            ).prefetch_related(prefetched_events)
         else:
             queryset = CalendarConfiguration.objects.filter(user=user_inst).prefetch_related(prefetched_events)
 
@@ -96,12 +91,9 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            term_id = AcademicTerm.objects.get(term_code=str(term)).id
-        except AcademicTerm.DoesNotExist:
-            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+            calendar = CalendarConfiguration.objects.get(
+                user=user_inst, name=calendar_name, term__term_code=str(term)
+            )
         except CalendarConfiguration.DoesNotExist:
             return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -109,7 +101,7 @@ class CalendarConfigurationView(APIView):
         try:
             # Check if there exists another calendar with the new calendar name
             existing = (
-                CalendarConfiguration.objects.filter(user=user_inst, name=new_calendar_name, term_id=term_id)
+                CalendarConfiguration.objects.filter(user=user_inst, name=new_calendar_name, term_id=calendar.term_id)
                 .exclude(name=calendar_name)
                 .exists()
             )
@@ -130,20 +122,17 @@ class CalendarConfigurationView(APIView):
 
     def delete(self, request, term: int) -> Response:
         """Delete an existing calendar configuration."""
-        try:
-            term_id = AcademicTerm.objects.get(term_code=str(term)).id
-        except AcademicTerm.DoesNotExist:
-            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
-
         calendar_name = request.data.get("calendar_name")
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_inst: CustomUser = request.user
         try:
-            calendar = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            calendar = CalendarConfiguration.objects.get(
+                user=user_inst, name=calendar_name, term__term_code=str(term)
+            )
+        except CalendarConfiguration.DoesNotExist:
+            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             calendar_name = calendar.name
