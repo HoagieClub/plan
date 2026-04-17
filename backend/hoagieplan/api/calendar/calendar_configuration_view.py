@@ -144,12 +144,9 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            term_id = AcademicTerm.objects.get(term_code=str(term)).id
-        except AcademicTerm.DoesNotExist:
-            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+            calendar = CalendarConfiguration.objects.get(
+                user=user_inst, name=calendar_name, term__term_code=str(term)
+            )
         except CalendarConfiguration.DoesNotExist:
             return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
