@@ -74,9 +74,7 @@ class CalendarConfigurationView(APIView):
             return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, term: int) -> Response:
-        """Handle post operations for calendar configurations for the user.
-        The default is to update the calendar
-        """
+        """Handle post operations for calendar configurations for the user. The default is to update the calendar."""
         action: str = request.data.get("action")
         if action == CalendarConfigurationPostAction.DuplicateCalendar.value:
             return self._duplicate_calendar(request, term)
@@ -91,9 +89,7 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            calendar = CalendarConfiguration.objects.get(
-                user=user_inst, name=calendar_name, term__term_code=str(term)
-            )
+            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term__term_code=str(term))
         except CalendarConfiguration.DoesNotExist:
             return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -128,9 +124,7 @@ class CalendarConfigurationView(APIView):
 
         user_inst: CustomUser = request.user
         try:
-            calendar = CalendarConfiguration.objects.get(
-                user=user_inst, name=calendar_name, term__term_code=str(term)
-            )
+            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term__term_code=str(term))
         except CalendarConfiguration.DoesNotExist:
             return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
