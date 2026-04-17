@@ -18,6 +18,18 @@ class CalendarConfigurationPostAction(Enum):
     DuplicateCalendar = "DUPLICATE_CALENDAR"
 
 
+_CALENDAR_EVENTS_PREFETCH = Prefetch(
+    "calendar_events",
+    queryset=CalendarEvent.objects.select_related(
+        "course__department",
+        "section",
+    ).prefetch_related(
+        "course__instructors",
+        "section__classmeeting_set",
+    ),
+)
+
+
 class CalendarConfigurationView(APIView):
     DEFAULT_CALENDAR_NAME = "My Calendar"
 
@@ -25,25 +37,15 @@ class CalendarConfigurationView(APIView):
         """Fetch all calendar configurations for the user, or for a specific term if provided."""
         user_inst: CustomUser = request.user
 
-        prefetched_events = Prefetch(
-            "calendar_events",
-            queryset=CalendarEvent.objects.select_related(
-                "course__department",
-            ).prefetch_related(
-                "course__instructors",
-                "course__section_set__classmeeting_set",
-            ),
-        )
-
         # TODO: Filter by calendar name if provided
         # Fetch all calendars associated with the user for the given term
         if term:
             queryset = CalendarConfiguration.objects.filter(
                 user=user_inst, term__term_code=str(term)
-            ).prefetch_related(prefetched_events)
+            ).prefetch_related(_CALENDAR_EVENTS_PREFETCH)
         else:
             # Fetch all calendars associated with the user
-            queryset = CalendarConfiguration.objects.filter(user=user_inst).prefetch_related(prefetched_events)
+            queryset = CalendarConfiguration.objects.filter(user=user_inst).prefetch_related(_CALENDAR_EVENTS_PREFETCH)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -111,6 +113,7 @@ class CalendarConfigurationView(APIView):
             # If not, update the calendar name
             calendar.name = new_calendar_name
             calendar.save()
+            calendar = CalendarConfiguration.objects.prefetch_related(_CALENDAR_EVENTS_PREFETCH).get(id=calendar.id)
             serializer = CalendarConfigurationSerializer(calendar)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -179,14 +182,8 @@ class CalendarConfigurationView(APIView):
                     ]
                 )
 
-                prefetched_events = Prefetch(
-                    "calendar_events",
-                    queryset=CalendarEvent.objects.select_related(
-                        "course__department",
-                    ).prefetch_related("course__instructors", "course__section_set__classmeeting_set"),
-                )
-                calendar_config = CalendarConfiguration.objects.prefetch_related(prefetched_events).get(
-                    pk=calendar_config.pk
+                calendar_config = CalendarConfiguration.objects.prefetch_related(_CALENDAR_EVENTS_PREFETCH).get(
+                    id=calendar_config.id
                 )
                 serializer = CalendarConfigurationSerializer(calendar_config)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
