@@ -1,22 +1,17 @@
 from enum import Enum
 
+from django.db import transaction
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.db.models import Prefetch
-from hoagieplan.api.model_getters import get_calendar, get_term
-from hoagieplan.models import (
-    AcademicTerm,
-    CalendarConfiguration,
-    CalendarEvent,
-    CustomUser,
-    CalendarEvent
-)
+from hoagieplan.api.model_getters import get_calendar
+from hoagieplan.models import AcademicTerm, CalendarConfiguration, CalendarEvent, CustomUser
 from hoagieplan.serializers import (
     CalendarConfigurationSerializer,
 )
-from django.db import transaction
+
 
 class CalendarConfigurationPostAction(Enum):
     UpdateCalendar = "UPDATE_CALENDAR"
@@ -87,7 +82,8 @@ class CalendarConfigurationView(APIView):
         
     def post(self, request, term: int) -> Response:
         """Handle post operations for calendar configurations for the user.
-        The default is to update the calendar"""
+        The default is to update the calendar
+        """
         action: str = request.data.get("action")
         if action == CalendarConfigurationPostAction.DuplicateCalendar.value:
             return self._duplicate_calendar(request, term)
