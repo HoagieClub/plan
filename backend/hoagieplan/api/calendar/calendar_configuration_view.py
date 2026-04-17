@@ -34,11 +34,14 @@ class CalendarConfigurationView(APIView):
             ),
         )
 
+        # TODO: Filter by calendar name if provided
+        # Fetch all calendars associated with the user for the given term
         if term:
             queryset = CalendarConfiguration.objects.filter(
                 user=user_inst, term__term_code=str(term)
             ).prefetch_related(prefetched_events)
         else:
+            # Fetch all calendars associated with the user
             queryset = CalendarConfiguration.objects.filter(user=user_inst).prefetch_related(prefetched_events)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
@@ -58,6 +61,7 @@ class CalendarConfigurationView(APIView):
         user_inst: CustomUser = request.user
 
         try:
+            # Create the calendar if no calendar exists with the same name for the user in the given term
             calendar_config, created = CalendarConfiguration.objects.get_or_create(
                 user=user_inst, name=calendar_name, term_id=term_id
             )
@@ -153,6 +157,7 @@ class CalendarConfigurationView(APIView):
         new_calendar_name = request.data.get("new_calendar_name", f"{calendar.name} (Copy)")
 
         try:
+            # Bulk duplication of calendar events
             with transaction.atomic():
                 queryset = CalendarEvent.objects.filter(calendar_configuration=calendar)
                 calendar_config, created = CalendarConfiguration.objects.get_or_create(
