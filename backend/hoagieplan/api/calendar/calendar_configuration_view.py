@@ -17,6 +17,7 @@ class CalendarConfigurationPostAction(Enum):
     UpdateCalendar = "UPDATE_CALENDAR"
     DuplicateCalendar = "DUPLICATE_CALENDAR"
 
+
 class CalendarConfigurationView(APIView):
     DEFAULT_CALENDAR_NAME = "My Calendar"
 
@@ -37,15 +38,13 @@ class CalendarConfigurationView(APIView):
         if term:
             try:
                 term_id = AcademicTerm.objects.get(term_code=str(term)).id
-                queryset = CalendarConfiguration.objects.filter(
-                    user=user_inst, term_id=term_id
-                ).prefetch_related(prefetched_events)
+                queryset = CalendarConfiguration.objects.filter(user=user_inst, term_id=term_id).prefetch_related(
+                    prefetched_events
+                )
             except AcademicTerm.DoesNotExist:
                 return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
-            queryset = CalendarConfiguration.objects.filter(
-                user=user_inst
-            ).prefetch_related(prefetched_events)
+            queryset = CalendarConfiguration.objects.filter(user=user_inst).prefetch_related(prefetched_events)
 
         serializer = CalendarConfigurationSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -57,8 +56,7 @@ class CalendarConfigurationView(APIView):
         except AcademicTerm.DoesNotExist:
             return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        calendar_name = request.data.get(
-            "calendar_name", self.DEFAULT_CALENDAR_NAME)
+        calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -79,7 +77,7 @@ class CalendarConfigurationView(APIView):
 
         except Exception:
             return Response({"detail": "Failed to create calendar."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
     def post(self, request, term: int) -> Response:
         """Handle post operations for calendar configurations for the user.
         The default is to update the calendar
@@ -89,7 +87,7 @@ class CalendarConfigurationView(APIView):
             return self._duplicate_calendar(request, term)
         else:
             return self._update_calendar(request, term)
-        
+
     def _update_calendar(self, request, term: int) -> Response:
         """Update an existing calendar configuration."""
         calendar_name = request.data.get("calendar_name")
@@ -111,9 +109,7 @@ class CalendarConfigurationView(APIView):
         try:
             # Check if there exists another calendar with the new calendar name
             existing = (
-                CalendarConfiguration.objects.filter(
-                    user=user_inst, name=new_calendar_name,
-                    term_id=term_id)
+                CalendarConfiguration.objects.filter(user=user_inst, name=new_calendar_name, term_id=term_id)
                 .exclude(name=calendar_name)
                 .exists()
             )
@@ -174,14 +170,11 @@ class CalendarConfigurationView(APIView):
         except CalendarConfiguration.DoesNotExist:
             return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        new_calendar_name = request.data.get(
-            "new_calendar_name", f"{calendar.name} (Copy)"
-        )
+        new_calendar_name = request.data.get("new_calendar_name", f"{calendar.name} (Copy)")
 
         try:
             with transaction.atomic():
-                queryset = CalendarEvent.objects.filter(
-            calendar_configuration=calendar)
+                queryset = CalendarEvent.objects.filter(calendar_configuration=calendar)
                 calendar_config, created = CalendarConfiguration.objects.get_or_create(
                     user=user_inst, name=new_calendar_name, term_id=calendar.term_id
                 )
@@ -191,23 +184,32 @@ class CalendarConfigurationView(APIView):
                         {"detail": "Calendar with this name already exists."}, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                CalendarEvent.objects.bulk_create([
-                    CalendarEvent(
-                        calendar_configuration=calendar_config,
-                        course_id=event.course_id,
-                        section_id=event.section_id,
-                        start_time=event.start_time,
-                        end_time=event.end_time,
-                        start_column_index=event.start_column_index,
-                        is_active=event.is_active,
-                        needs_choice=event.needs_choice,
-                        is_chosen=event.is_chosen,
-                    )
-                    for event in queryset
-                ])
+                CalendarEvent.objects.bulk_create(
+                    [
+                        CalendarEvent(
+                            calendar_configuration=calendar_config,
+                            course_id=event.course_id,
+                            section_id=event.section_id,
+                            start_time=event.start_time,
+                            end_time=event.end_time,
+                            start_column_index=event.start_column_index,
+                            is_active=event.is_active,
+                            needs_choice=event.needs_choice,
+                            is_chosen=event.is_chosen,
+                        )
+                        for event in queryset
+                    ]
+                )
 
-                prefetched_events = Prefetch("calendar_events",queryset = CalendarEvent.objects.select_related("course__department",).prefetch_related("course__instructors","course__section_set__classmeeting_set"),)
-                calendar_config = ( CalendarConfiguration.objects.prefetch_related(prefetched_events).get(pk = calendar_config.pk))
+                prefetched_events = Prefetch(
+                    "calendar_events",
+                    queryset=CalendarEvent.objects.select_related(
+                        "course__department",
+                    ).prefetch_related("course__instructors", "course__section_set__classmeeting_set"),
+                )
+                calendar_config = CalendarConfiguration.objects.prefetch_related(prefetched_events).get(
+                    pk=calendar_config.pk
+                )
                 serializer = CalendarConfigurationSerializer(calendar_config)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
