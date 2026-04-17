@@ -2,6 +2,7 @@ from enum import Enum
 
 from django.db import transaction
 from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -49,10 +50,7 @@ class CalendarConfigurationView(APIView):
 
     def put(self, request, term: int) -> Response:
         """Create a new calendar configuration for the user."""
-        try:
-            term_id = AcademicTerm.objects.get(term_code=str(term)).id
-        except AcademicTerm.DoesNotExist:
-            return Response({"detail": "Term not found."}, status=status.HTTP_404_NOT_FOUND)
+        term_id = get_object_or_404(AcademicTerm, term_code=str(term)).id
 
         calendar_name = request.data.get("calendar_name", self.DEFAULT_CALENDAR_NAME)
         if not calendar_name:
@@ -92,10 +90,9 @@ class CalendarConfigurationView(APIView):
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_inst: CustomUser = request.user
-        try:
-            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term__term_code=str(term))
-        except CalendarConfiguration.DoesNotExist:
-            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+        calendar = get_object_or_404(
+            CalendarConfiguration, user=user_inst, name=calendar_name, term__term_code=str(term)
+        )
 
         new_calendar_name = request.data.get("new_calendar_name")
         try:
@@ -127,10 +124,9 @@ class CalendarConfigurationView(APIView):
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_inst: CustomUser = request.user
-        try:
-            calendar = CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term__term_code=str(term))
-        except CalendarConfiguration.DoesNotExist:
-            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+        calendar = get_object_or_404(
+            CalendarConfiguration, user=user_inst, name=calendar_name, term__term_code=str(term)
+        )
 
         try:
             calendar_name = calendar.name
@@ -147,12 +143,9 @@ class CalendarConfigurationView(APIView):
             return Response({"detail": "Calendar name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_inst: CustomUser = request.user
-        try:
-            calendar = CalendarConfiguration.objects.get(
-                user=user_inst, name=calendar_name, term__term_code=str(term)
-            )
-        except CalendarConfiguration.DoesNotExist:
-            return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
+        calendar = get_object_or_404(
+            CalendarConfiguration, user=user_inst, name=calendar_name, term__term_code=str(term)
+        )
 
         new_calendar_name = request.data.get("new_calendar_name", f"{calendar.name} (Copy)")
 
