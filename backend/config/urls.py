@@ -28,7 +28,15 @@ from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
-from hoagieplan.api.dashboard import almost_completed_api, details, program_details_api, requirements, search, upload
+from hoagieplan.api.dashboard import (
+    almost_completed_api,
+    comments,
+    details,
+    program_details_api,
+    requirements,
+    search,
+    upload,
+)
 from hoagieplan.api.profile import info, tutorial
 
 urlpatterns = [
@@ -53,7 +61,7 @@ urlpatterns = [
     path("update_requirements/", requirements.update_requirements, name="update_requirements"),
     path("requirement_info/", requirements.requirement_info, name="requirement_info"),
     path("course/details/", details.course_details, name="course_details"),
-    path("course/comments/", details.course_comments_view, name="course_comments"),
+    path("course/comments/", comments.course_comments_view, name="course_comments"),
     path("upload/", upload.upload_file, name="upload_file"),
     path("almost_completed/", almost_completed_api.almost_completed, name="almost_completed"),
     path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
