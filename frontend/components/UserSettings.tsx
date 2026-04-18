@@ -75,7 +75,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		setOpenSnackbar(false);
 	};
 
-
 	const handleSave = useCallback(async () => {
 		const oldProfile = useUserSlice.getState().profile;
 		const profile = {

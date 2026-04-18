@@ -183,7 +183,6 @@ export const CalendarSearch: FC = () => {
 				return;
 			}
 
-
 			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
 				body: JSON.stringify(calendarData),
