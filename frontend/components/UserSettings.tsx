@@ -13,7 +13,6 @@ import {
 
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType, ProfileProps } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { CERTIFICATE_OPTIONS, MAJOR_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
 
 import { isOptionEqual, smartSearch } from './MajorMinorSearch';
@@ -76,13 +75,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		setOpenSnackbar(false);
 	};
 
-	const [csrfToken, setCsrfToken] = useState('');
-	useEffect(() => {
-		void (async () => {
-			const token = await fetchCsrfToken();
-			setCsrfToken(token);
-		})();
-	}, []);
 
 	const handleSave = useCallback(async () => {
 		const oldProfile = useUserSlice.getState().profile;
@@ -99,9 +91,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		try {
 			const response = await fetch(`/api/hoagie/profile/update`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 				body: JSON.stringify(profile),
 			});
 
@@ -123,7 +112,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		minors,
 		certificates,
 		classYear,
-		csrfToken,
 		onSave,
 		updateRequirements,
 	]);

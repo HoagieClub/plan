@@ -20,7 +20,6 @@ import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
@@ -184,13 +183,9 @@ export const CalendarSearch: FC = () => {
 				return;
 			}
 
-			const csrfToken = await fetchCsrfToken();
 
 			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 				body: JSON.stringify(calendarData),
 			});
 

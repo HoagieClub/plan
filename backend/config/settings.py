@@ -48,13 +48,8 @@ INSTALLED_APPS = [
     "hoagieplan",
 ]
 
-# Required since frontend and backend are served on different domains. Do not change!
-SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE")
-CSRF_COOKIE_SAMESITE = os.getenv("CSRF_COOKIE_SAMESITE")
-
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "false").lower() == "true"
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
-CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "false").lower() == "true"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -62,21 +57,15 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-HOMEPAGE = os.getenv("HOAGIEPLAN")
-DASHBOARD = urljoin(os.getenv("HOAGIEPLAN"), "dashboard")
-
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
-
-CSRF_TRUSTED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
 LOGS = os.getenv("LOGS", "False").lower() == "true"
 
