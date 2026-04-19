@@ -20,7 +20,6 @@ maintainers = [
 # Project dependencies
 dependencies = [
     "requests>=2.32.5",
-    "ruff>=0.15.7",
     "django>=6.0.3",
     "dj_database_url>=3.1.2",
     "python-dotenv>=1.2.2",
@@ -126,6 +125,11 @@ quote-style = "double"                  # Use double quotes for auto-formatting
 indent-style = "space"                  # Indent with spaces instead of tabs
 skip-magic-trailing-comma = false       # Respect magic trailing commas
 line-ending = "auto"                    # Automatically detect line endings
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.4",
+]
 
 [build-system]
 requires = ["hatchling"]
