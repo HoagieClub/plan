@@ -49,7 +49,7 @@ def _check_prereq_satisfied(requirement: Requirement) -> Optional[bool]:
 
 
 def _check_independent_work_required(code: str, table: ProgramTable) -> bool:
-    """Check if a program requires independent work by using the iw_required field
+    """Check if a program requires independent work by using the independent_work field.
 
     Returns:
         - True if independent work requirement exists
@@ -57,9 +57,9 @@ def _check_independent_work_required(code: str, table: ProgramTable) -> bool:
 
     """
     if table == ProgramTable.MINOR:
-        return Minor.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
+        return Minor.objects.filter(code=code).values_list("independent_work", flat=True).first() or False
     if table == ProgramTable.CERTIFICATE:
-        return Certificate.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
+        return Certificate.objects.filter(code=code).values_list("independent_work", flat=True).first() or False
 
     return False
 
