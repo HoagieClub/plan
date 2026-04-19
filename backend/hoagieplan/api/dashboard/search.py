@@ -36,6 +36,26 @@ def make_sort_key(dept):
     return sort_key
 
 
+def attach_terms(serialized_courses, course_objects):
+    """Bulk-fetch all term codes for the given courses and inject them into the serialized dicts."""
+    course_ids = [c.course_id for c in course_objects]
+    rows = (
+        Course.objects.filter(course_id__in=course_ids)
+        .values_list("course_id", "guid")
+        .order_by("-guid")
+    )
+    terms_map: dict[int, list[str]] = {}
+    for course_id, guid in rows:
+        if guid:
+            terms_map.setdefault(course_id, []).append(guid[:4])
+    result = []
+    for item in serialized_courses:
+        item = dict(item)
+        item["terms"] = terms_map.get(item["course_id"], [])
+        result.append(item)
+    return result
+
+
 @api_view(["GET"])
 def search_courses(request):
     """Handle search queries for courses."""
@@ -113,6 +133,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses with ratings (most recent offering with non-null rating)
         exact_match_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -125,6 +146,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses without any rated offerings (most recent offering regardless of rating)
         exact_match_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -137,7 +159,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         if exact_match_course:
             # If an exact match is found, return only that course
             serialized_course = CourseSerializer(exact_match_course, many=True)
-            return JsonResponse({"courses": serialized_course.data})
+            return JsonResponse({"courses": attach_terms(serialized_course.data, exact_match_course)})
 
         filtered_query = query_conditions
         if len(search_key) > 3:
@@ -148,6 +170,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses with ratings (most recent offering with non-null rating)
         courses_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -160,6 +183,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses without any rated offerings (most recent offering regardless of rating)
         courses_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -171,7 +195,8 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 
         if courses:
             serialized_courses = CourseSerializer(courses, many=True)
-            sorted_data = sorted(serialized_courses.data, key=make_sort_key(dept))
+            with_terms = attach_terms(serialized_courses.data, courses)
+            sorted_data = sorted(with_terms, key=make_sort_key(dept))
             return JsonResponse({"courses": sorted_data})
         return JsonResponse({"courses": []})
     except Exception as e:
