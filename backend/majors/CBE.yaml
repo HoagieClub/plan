@@ -29,6 +29,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Mark P. Brynildsen
   email: mbrynild@princeton.edu
+iw_required: true
 req_list:
 - name: Chemical and Biological Engineering Core
   max_counted: 1

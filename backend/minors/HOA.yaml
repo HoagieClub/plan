@@ -45,6 +45,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Basile Baudez
   email: bbaudez@princeton.edu
+iw_required: false
 req_list:
 - name: Requirements
   max_counted: 1

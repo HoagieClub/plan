@@ -29,18 +29,19 @@ description: |-
   requirements for the School of Engineering and Applied Science
   and the University.
 urls:
-  - https://ua.princeton.edu/academic-units/department-operations-research-and-financial-engineering
-  - https://orfe.princeton.edu/documents/undergraduate-academic-guides
+- https://ua.princeton.edu/academic-units/department-operations-research-and-financial-engineering
+- https://orfe.princeton.edu/documents/undergraduate-academic-guides
 contacts:
-  - type: Chair
-    name: Ronnie Sircar
-    email: sircar@princeton.edu
-  - type: Director of Undergraduate Studies
-    name: Alain L. Kornhauser
-    email: alaink@princeton.edu
-  - type: Director of Graduate Studies
-    name: Matias D. Cattaneo
-    email: cattaneo@princeton.edu
+- type: Chair
+  name: Ronnie Sircar
+  email: sircar@princeton.edu
+- type: Director of Undergraduate Studies
+  name: Alain L. Kornhauser
+  email: alaink@princeton.edu
+- type: Director of Graduate Studies
+  name: Matias D. Cattaneo
+  email: cattaneo@princeton.edu
+iw_required: true
 req_list:
 - name: Core
   max_counted: 1
@@ -52,10 +53,10 @@ req_list:
   pdfs_allowed: false
   completed_by_semester: 8
   course_list:
-  - ORF 245
-  - ORF 307
-  - ORF 309
-  - ORF 335
+    - ORF 245
+    - ORF 307
+    - ORF 309
+    - ORF 335
 - name: Departmental Electives
   max_counted: 1
   min_needed: 10
@@ -78,24 +79,24 @@ req_list:
       min_needed: 4
       explanation: There must be at least four courses from ORFE.
       course_list:
-      - ORF 311
-      - ORF 350
-      - ORF 360
-      - ORF 363
-      - ORF 375
-      - ORF 376
-      - ORF 387
-      - ORF 401
-      - ORF 405
-      - ORF 407
-      - ORF 409
-      - ORF 418
-      - ORF 435
-      - ORF 445
-      - ORF 455
-      - ORF 467
-      - ORF 473
-      - ORF 474
+        - ORF 311
+        - ORF 350
+        - ORF 360
+        - ORF 363
+        - ORF 375
+        - ORF 376
+        - ORF 387
+        - ORF 401
+        - ORF 405
+        - ORF 407
+        - ORF 409
+        - ORF 418
+        - ORF 435
+        - ORF 445
+        - ORF 455
+        - ORF 467
+        - ORF 473
+        - ORF 474
     - name: Other Departments
       max_counted: 6
       min_needed: 1
@@ -104,107 +105,107 @@ req_list:
 
         MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar.
       req_list:
-      - name: Civil and Environmental Engineering
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - CEE 304
-        - CEE 460
-      - name: Chemistry
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - CHM 301
-        - CHM 302
-        - CHM 304
-      - name: Computer Science
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - COS 217
-        - COS 226
-        - COS 423
-        - COS 485
-      - name: Electrical and Computer Engineering
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - ECE 301
-        - ECE 381
-        - ECE 473
-        - ECE 486
-      - name: Economics
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - ECO 310
-        - ECO 311
-        - ECO 312
-        - ECO 317
-        - ECO 332
-        - ECO 341
-        - ECO 342
-        - ECO 361
-        - ECO 362
-        - ECO 363
-        - ECO 418
-        - ECO 462
-        - ECO 464
-        - ECO 466
-        - ECO 467
-      - name: Ecology and Evolutionary Biology
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - EEB 324
-        - EEB 325
-      - name: Environmental Studies
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - ENV 302
-      - name: Mechanical and Aerospace Engineering
-        max_counted: 3
-        min_needed: 1
-        explanation: |-
-          <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
-        course_list:
-        - MAE 206
-        - MAE 305
-        - MAE 306
-        - MAE 345
-        - MAE 433
-        - MAE 434
-      - name: Mathematics
-        max_counted: 3
-        min_needed: 1
-        explanation: |-
-          <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
-        course_list:
-        - MAT 320
-        - MAT 375
-        - MAT 377
-        - MAT 378
-        - MAT 385
-        - MAT 427
-        - MAT 486
-        - MAT 522
-      - name: Molecular Biology
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - MOL 345
-      - name: Neuroscience
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - NEU 437
-        - NEU 330
-      - name: Psychology
-        max_counted: 3
-        min_needed: 1
-        course_list:
-        - PSY 360
+        - name: Civil and Environmental Engineering
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - CEE 304
+            - CEE 460
+        - name: Chemistry
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - CHM 301
+            - CHM 302
+            - CHM 304
+        - name: Computer Science
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - COS 217
+            - COS 226
+            - COS 423
+            - COS 485
+        - name: Electrical and Computer Engineering
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - ECE 301
+            - ECE 381
+            - ECE 473
+            - ECE 486
+        - name: Economics
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - ECO 310
+            - ECO 311
+            - ECO 312
+            - ECO 317
+            - ECO 332
+            - ECO 341
+            - ECO 342
+            - ECO 361
+            - ECO 362
+            - ECO 363
+            - ECO 418
+            - ECO 462
+            - ECO 464
+            - ECO 466
+            - ECO 467
+        - name: Ecology and Evolutionary Biology
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - EEB 324
+            - EEB 325
+        - name: Environmental Studies
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - ENV 302
+        - name: Mechanical and Aerospace Engineering
+          max_counted: 3
+          min_needed: 1
+          explanation: |-
+            <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
+          course_list:
+            - MAE 206
+            - MAE 305
+            - MAE 306
+            - MAE 345
+            - MAE 433
+            - MAE 434
+        - name: Mathematics
+          max_counted: 3
+          min_needed: 1
+          explanation: |-
+            <i>Editor's Note: MAT 391/MAE 305 and MAT 427 cannot both be taken because the content is too similar. </i><br><br>
+          course_list:
+            - MAT 320
+            - MAT 375
+            - MAT 377
+            - MAT 378
+            - MAT 385
+            - MAT 427
+            - MAT 486
+            - MAT 522
+        - name: Molecular Biology
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - MOL 345
+        - name: Neuroscience
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - NEU 437
+            - NEU 330
+        - name: Psychology
+          max_counted: 3
+          min_needed: 1
+          course_list:
+            - PSY 360
 - name: Senior Independent Research
   max_counted: 1
   min_needed: 1

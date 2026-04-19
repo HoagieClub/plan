@@ -19,6 +19,7 @@ contacts:
   email: pesendor@princeton.edu
 excluded_majors:
 - ECO
+iw_required: false
 req_list:
 - name: Prerequisites
   max_counted: 1

@@ -13,6 +13,7 @@ contacts:
 - type: Program Director
   name: Benjamin Conisbee Baer
   email: bencbaer@princeton.edu
+iw_required: true
 req_list:
 - name: Language Requirement
   max_counted: 1

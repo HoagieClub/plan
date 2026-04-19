@@ -147,6 +147,7 @@ class Course(models.Model):
     reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
     grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
     reading_list = models.TextField(blank=True, db_index=True, null=True)
+    instructors = models.ManyToManyField(Instructor, related_name="courses", blank=True)
 
     # Course evaluation fields
     quality_of_course = models.FloatField(null=True)
@@ -179,6 +180,30 @@ class Course(models.Model):
         return self.title
 
 
+class GradingInfo(models.Model):
+    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="grading_info")
+    grading_final_exam = models.IntegerField(null=True)
+    grading_mid_exam = models.IntegerField(null=True)
+    grading_home_final_exam = models.IntegerField(null=True)
+    grading_home_mid_exam = models.IntegerField(null=True)
+    grading_paper_final_exam = models.IntegerField(null=True)
+    grading_paper_mid_exam = models.IntegerField(null=True)
+    grading_other_exam = models.IntegerField(null=True)
+    grading_oral_pres = models.IntegerField(null=True)
+    grading_quizzes = models.IntegerField(null=True)
+    grading_lab_reports = models.IntegerField(null=True)
+    grading_papers = models.IntegerField(null=True)
+    grading_prob_sets = models.IntegerField(null=True)
+    grading_prog_assign = models.IntegerField(null=True)
+    grading_precept_part = models.IntegerField(null=True)
+    grading_term_papers = models.IntegerField(null=True)
+    grading_design_projects = models.IntegerField(null=True)
+    grading_other = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "GradingInfo"
+
+
 class Section(models.Model):
     CLASS_TYPE_CHOICES = [
         ("Seminar", "Seminar"),
@@ -199,7 +224,6 @@ class Section(models.Model):
     term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
     track = models.CharField(max_length=5, db_index=True, null=True)
     seat_reservations = models.CharField(max_length=1, db_index=True, null=True)
-    instructor = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True)
     capacity = models.IntegerField(db_index=True, null=True)
     status = models.CharField(max_length=10, db_index=True, null=True)
     enrollment = models.IntegerField(db_index=True, default=0)
@@ -243,7 +267,7 @@ class ClassYearEnrollment(models.Model):
 
 class Requirement(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
+    name = models.CharField(max_length=150, db_index=True)
     max_counted = models.IntegerField(default=1, db_index=True)
     min_needed = models.IntegerField(default=1, db_index=True)
     explanation = models.TextField(db_index=True, null=True)
@@ -316,7 +340,7 @@ class CustomUser(AbstractUser):
     net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     # TODO: Refactor backend code to use username instead of net_id
 
-    email = models.EmailField(max_length=100, null=True, blank=True)
+    email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     class_year = models.IntegerField(null=True, blank=True)
@@ -422,15 +446,22 @@ class CalendarEvent(models.Model):
         return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
 
 
-class CourseComments(models.Model):
-    course_guid = models.CharField(max_length=15, db_index=True, null=True)
-    comment = models.TextField(null=True)
+class CourseComment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="comments")
+    comment = models.TextField()
 
     class Meta:
-        db_table = "CourseComments"
+        db_table = "CourseComment"
 
-    def __str__(self):
-        return f"{self.comment}"
+
+class CourseEvalSummary(models.Model):
+    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="eval_summary")
+    summary = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "CourseEvalSummary"
 
 
 # ----------------------------------------------------------------------#

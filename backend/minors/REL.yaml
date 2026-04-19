@@ -12,6 +12,7 @@ contacts:
 - type: Director of Undergraduate Studies
   name: Bryan Lowe
   email: bdlowe@princeton.edu
+iw_required: true
 req_list:
 - name: REL Minor Courses
   max_counted: 1
