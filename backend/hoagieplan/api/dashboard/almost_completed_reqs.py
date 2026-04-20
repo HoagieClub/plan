@@ -160,18 +160,6 @@ def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) 
         )
         return val
 
-    val = max(
-        requirement.min_needed - requirement.count,
-        sum(
-            sorted(
-                [
-                    count_outstanding_courses_helper(subrequirement, used)
-                    for subrequirement in requirement.subrequirements.values()
-                ]
-            )[: requirement.min_needed]
-        ),
-    )
-
     return max(
         requirement.min_needed - requirement.count,
         sum(
