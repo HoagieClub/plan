@@ -28,10 +28,6 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 		}
 	}
 
-	if (request.headers.has('X-CSRFToken')) {
-		fetchReq.headers['X-CSRFToken'] = request.headers.get('X-CSRFToken');
-	}
-
 	try {
 		// TODO: Does this need to be called in the middleware too?
 		const accessToken = await auth0.getAccessToken();

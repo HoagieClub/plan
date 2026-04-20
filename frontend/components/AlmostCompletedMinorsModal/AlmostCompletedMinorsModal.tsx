@@ -7,7 +7,6 @@ import { getAlmostCompletedPrograms, type Program } from '@/services/almostCompl
 import { getProgramDetails, type ProgramDetails } from '@/services/programDetailsService';
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { CERTIFICATE_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
 
 import { MinorDetailsPanel } from './MinorDetailsPanel';
@@ -29,20 +28,11 @@ export function useAlmostCompletedMinorsModal() {
 	const [query, setQuery] = useState('');
 	const [minors, setMinors] = useState<Program[]>([]);
 	const [openSnackbar, setOpenSnackbar] = useState(false);
-	const [csrfToken, setCsrfToken] = useState('');
 	const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 	const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
 	const [loadingDetails, setLoadingDetails] = useState(false);
 	const [loadingPrograms, setLoadingPrograms] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-	// Fetch CSRF token on mount
-	useEffect(() => {
-		void (async () => {
-			const token = await fetchCsrfToken();
-			setCsrfToken(token);
-		})();
-	}, []);
 
 	// Check if a minor is already in the user's profile
 	const isMinorAdded = (code: string) => {
@@ -145,9 +135,6 @@ export function useAlmostCompletedMinorsModal() {
 		try {
 			const response = await fetch(`/api/hoagie/profile/update`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 				body: JSON.stringify(updatedProfile),
 			});
 

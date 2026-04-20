@@ -24,7 +24,6 @@ limitations under the License.
 from django.contrib import admin
 from django.urls import path
 
-from hoagieplan.api.auth import csrf
 from hoagieplan.api.calendar import ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
@@ -42,8 +41,6 @@ from hoagieplan.api.profile import info, tutorial
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
-    # CSRF Token for approving POST requests
-    path("csrf/", csrf.csrf_token_view, name="csrf"),
     # Profile
     path("profile/get_user/", info.get_user, name="get_user"),
     path("profile/update/", info.update_profile, name="update_profile"),
