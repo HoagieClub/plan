@@ -74,7 +74,7 @@ class Minor(models.Model):
     apply_by_semester = models.IntegerField(default=6)
     max_counted = models.IntegerField(db_index=True, null=True)
     min_needed = models.IntegerField(db_index=True, default=1)
-    independent_work = models.BooleanField(null=True)
+    iw_required = models.BooleanField(null=True)
 
     class Meta:
         db_table = "Minor"
@@ -94,7 +94,7 @@ class Certificate(models.Model):
     # to help with phasing out certificates
     # filter out for new users, keep for existing users pursuing it
     active_until = models.DateField(null=True, blank=True)
-    independent_work = models.BooleanField(null=True)
+    iw_required = models.BooleanField(null=True)
 
     class Meta:
         db_table = "Certificate"
