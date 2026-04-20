@@ -1,10 +1,14 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
+
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 from constants import CERTIFICATES, MINORS
 from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequirements
 from hoagieplan.api.dashboard.requirements import check_user
 from hoagieplan.api.profile.info import fetch_user_info
+from hoagieplan.logger import logger
 from hoagieplan.models import Certificate, CustomUser, Minor
 
 TOP_ALMOST_COMPLETED = 100
@@ -13,6 +17,43 @@ TOP_ALMOST_COMPLETED = 100
 class ProgramTable(Enum):
     MINOR = "Minor"
     CERTIFICATE = "Certificate"
+
+
+@api_view(["GET"])
+def almost_completed(request):
+    """Return a JSON list of almost-completed programs for the current user.
+
+    Response format: [{"code": "COS", "name": "Computer Science", "needed": 1, "type": "minor", "prereqFulfilled": true|false|null, "independentWorkRequired": true|false, "incompleteRequirements": ["Electives (1 more)", "Advanced Courses (2 more)"]}, ...]
+    """
+    try:
+        # Optimized: compute all data in a single check_user() call
+        results, prereq_status, iw_status, incomplete_subreqs = get_all_program_data(request.user)
+
+        # results is dict{code: needed_count}. Convert to list with names from MINORS/CERTIFICATES
+        out: List[Dict] = []
+        for code, needed in results.items():
+            name = MINORS.get(code) or CERTIFICATES.get(code) or code
+            typ = "minor" if code in MINORS else ("certificate" if code in CERTIFICATES else "unknown")
+            prereq_fulfilled = prereq_status.get(code)  # Can be True, False, or None
+            independent_work_required = iw_status.get(code, False)  # Default to False if not found
+            incomplete_requirements = incomplete_subreqs.get(code, [])
+
+            out.append(
+                {
+                    "code": code,
+                    "name": name,
+                    "needed": needed,
+                    "type": typ,
+                    "prereqFulfilled": prereq_fulfilled,
+                    "independentWorkRequired": independent_work_required,
+                    "incompleteRequirements": incomplete_requirements,
+                }
+            )
+
+        return JsonResponse({"programs": out})
+    except Exception as e:
+        logger.error(f"Failed to compute almost completed programs: {e}", exc_info=True)
+        return JsonResponse({"programs": []})
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
