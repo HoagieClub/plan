@@ -4,6 +4,7 @@
 		"Add your courses from TigerHub",
 		"Search for courses",
 		"Manage requirements",
+		"Check almost completed minors",
 		"You're all set!"
 	],
 	"pages": [
@@ -11,7 +12,8 @@
 		"<span style=\"font-weight: 500;\">1. Open TigerHub <br>2. Under Grades and Transcripts, click View Internal Transcript <br> 3. Upload your transcript into HoagiePlan. We don't store your data!</span>",
 		"<span style=\"font-weight: 500;\">1. Use the search bar to add classes <br> 2. Drag classes into your desired semester <br> 3. Filter by distribution area, grading, or course level using the filter button</span>",
 		"<span style=\"font-weight: 500;\">1. Click on a requirement's name to view more info or find classes <br> 2. In case of AP credit or summer classes, you can manually mark the requirement as satisfied </span>",
+		"<span style=\"font-weight: 500;\">1. Click Almost Completed Minors in the top left <br> 2. Check which minors/certificates you’re close to completing! You can see which requirements or prerequisites you’re missing <br> 3. Add minors to your plan as desired </span>",
 		"<span style=\"font-weight: 500;\">Some courses can only count towards one of multiple requirements. They are displayed in red. Click on the course to settle it into your desired requirement. </span>"
 	],
-	"photos": ["/profile.png", "/transcript.png", "/search.png", "/requirement.png", "/settle.png"]
+	"photos": ["/profile.png", "/transcript.png", "/search.png", "/requirement.png", "/almost_completed_minors.png", "/settle.png"]
 }
