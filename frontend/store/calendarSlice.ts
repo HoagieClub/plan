@@ -97,21 +97,12 @@ function transformToOldCalendarEvent(event: CalendarEvent): OldCalendarEvent {
 	};
 }
 
-<<<<<<< HEAD
-			setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
-			clearRecentSearches: () => set({ recentSearches: [] }),
-			addRecentSearch: (search) =>
-				set((state) => ({ recentSearches: [...state.recentSearches, search] })),
-			setError: (error) => set({ error }),
-			setLoading: (loading) => set({ loading }),
-=======
 const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	calendarSearchResults: [],
 	selectedCourses: {},
 	recentSearches: [],
 	error: null,
 	loading: false,
->>>>>>> origin/preview
 
 	loadCourses: async (semester: string) => {
 		set({ loading: true, error: null });
@@ -137,6 +128,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set((state) => ({ recentSearches: [...state.recentSearches, search] })),
 	setError: (error) => set({ error }),
 	setLoading: (loading) => set({ loading }),
+	clearRecentSearches: () => set({ recentSearches: [] }),
 
 	addCourse: async (course: Course) => {
 		const term = course.guid.substring(0, 4);

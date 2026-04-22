@@ -200,6 +200,7 @@ export type Course = {
 	sections: Section[];
 	crosslistings: string;
 	quality_of_course?: number; // Add course review rating (optional)
+	terms?: string[];
 };
 
 export type Section = {
