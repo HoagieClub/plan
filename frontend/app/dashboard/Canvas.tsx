@@ -262,7 +262,7 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`/api/hoagie/fetch_courses/`);
+			const response = await fetch(`/api/hoagie/fetch_courses`);
 			const data = await response.json();
 			return data;
 		} catch {

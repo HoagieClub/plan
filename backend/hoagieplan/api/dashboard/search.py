@@ -113,6 +113,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses with ratings (most recent offering with non-null rating)
         exact_match_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -125,6 +126,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses without any rated offerings (most recent offering regardless of rating)
         exact_match_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
@@ -148,6 +150,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses with ratings (most recent offering with non-null rating)
         courses_with_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .filter(quality_of_course__isnull=False)
             .order_by("course_id", "-guid")
@@ -160,6 +163,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
         # Get courses without any rated offerings (most recent offering regardless of rating)
         courses_without_rating = (
             Course.objects.select_related("department")
+            .prefetch_related("instructors")
             .filter(filtered_query)
             .exclude(course_id__in=course_ids_with_ratings)
             .order_by("course_id", "-guid")
