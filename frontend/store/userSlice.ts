@@ -83,7 +83,6 @@ const useUserSlice = create<UserState>((set) => ({
 	academicPlan: {},
 	updateProfile: (updates: Partial<Profile>) =>
 		set((state) => ({ profile: { ...state.profile, ...updates } })),
-	setAcademicPlan: (plan: Record<string, any>) => set(() => ({ academicPlan: plan })),
 	updateRequirements: async () => {
 		try {
 			const response = await fetch(`/api/hoagie/update_requirements`, {

@@ -29,7 +29,6 @@ export type UserState = {
 	profile: Profile;
 	academicPlan: { [key: string]: any }; // TODO: Use a more specific type for academicPlan
 	updateProfile: (updates: Partial<Profile>) => void;
-	setAcademicPlan: (plan: { [key: string]: any }) => void;
 	updateRequirements: () => Promise<any | null>; // TODO: Try to type this better
 	fetchAndUpdateProfile: (userProfile: User) => void;
 };
