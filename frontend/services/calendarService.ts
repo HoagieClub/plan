@@ -125,6 +125,37 @@ export async function renameCalendar(
 			buildRequest(HttpRequestType.POST, null, {
 				calendar_name: calendarName,
 				new_calendar_name: newCalendarName,
+				action: 'UPDATE_CALENDAR',
+			})
+		);
+
+		if (!response.ok) {
+			// TODO: Handle error
+			return null;
+		}
+
+		const responseData = await response.json();
+		const validatedData = CalendarConfigurationSchema.parse(responseData) as CalendarConfiguration;
+		return validatedData;
+	} catch {
+		// TODO: Handle error
+		return null;
+	}
+}
+
+export async function duplicateCalendar(
+	calendarName: string,
+	newCalendarName: string,
+	term: number
+): Promise<CalendarConfiguration | null> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.POST, null, {
+				calendar_name: calendarName,
+				new_calendar_name: newCalendarName,
+				action: 'DUPLICATE_CALENDAR',
 			})
 		);
 

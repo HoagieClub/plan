@@ -13,6 +13,7 @@ import type {
 } from '@/types';
 
 interface CalendarStore {
+	activeCalendarName: string;
 	calendarSearchResults: Course[];
 	// Map of term id to (guid, section id, column) to calendar event
 	selectedCourses: Record<string, Record<string, OldCalendarEvent>>;
@@ -35,6 +36,7 @@ interface CalendarStore {
 
 	setError: (error: string | null) => void;
 	setLoading: (loading: boolean) => void;
+	setActiveCalendarName: (name: string) => void;
 
 	// Getters
 	getSelectedCourses: (semester: string) => OldCalendarEvent[];
@@ -98,6 +100,7 @@ function transformToOldCalendarEvent(event: CalendarEvent): OldCalendarEvent {
 }
 
 const useCalendarStore = create<CalendarStore>()((set, get) => ({
+	activeCalendarName: '',
 	calendarSearchResults: [],
 	selectedCourses: {},
 	recentSearches: [],
@@ -106,7 +109,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 
 	loadCourses: async (semester: string) => {
 		set({ loading: true, error: null });
-		const events = await getCalendarEvents(DEFAULT_CALENDAR_NAME, Number(semester));
+		const events = await getCalendarEvents(get().activeCalendarName, Number(semester));
 
 		const eventsRecord: Record<string, OldCalendarEvent> = {};
 		if (events) {
@@ -141,7 +144,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 
 		try {
 			const addCourseResponse = await addCourseToCalendar(
-				DEFAULT_CALENDAR_NAME,
+				get().activeCalendarName,
 				Number(term),
 				course.guid
 			);
@@ -169,6 +172,8 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 			});
 		}
 	},
+
+	setActiveCalendarName: (name: string) => set({ activeCalendarName: name }),
 
 	activateSection: (clickedSection) => {
 		const term = clickedSection.course.guid.substring(0, 4);
@@ -230,16 +235,18 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		const guid = clickedSection.course.guid;
 		const classSection = clickedSection.section.class_section;
 
-		invertSectionInCalendar(DEFAULT_CALENDAR_NAME, Number(term), guid, classSection).catch(() => {
-			// Rollback on failure: restore only the keys we changed
-			set((state) => ({
-				selectedCourses: {
-					...state.selectedCourses,
-					[term]: { ...(state.selectedCourses[term] ?? {}), ...rollback },
-				},
-				error: 'Failed to save section change',
-			}));
-		});
+		invertSectionInCalendar(get().activeCalendarName, Number(term), guid, classSection).catch(
+			() => {
+				// Rollback on failure: restore only the keys we changed
+				set((state) => ({
+					selectedCourses: {
+						...state.selectedCourses,
+						[term]: { ...(state.selectedCourses[term] ?? {}), ...rollback },
+					},
+					error: 'Failed to save section change',
+				}));
+			}
+		);
 	},
 
 	removeCourse: (sectionKey) => {
@@ -285,7 +292,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		});
 
 		// Persist to DB in background
-		deleteCourseFromCalendar(DEFAULT_CALENDAR_NAME, Number(term), courseToRemove).catch(() => {
+		deleteCourseFromCalendar(get().activeCalendarName, Number(term), courseToRemove).catch(() => {
 			// Rollback on failure: re-add only the events we removed
 			set((state) => ({
 				selectedCourses: {
