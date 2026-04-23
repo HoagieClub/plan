@@ -118,7 +118,7 @@ inline-quotes = "double"     # Enforce double quotes for inline strings
 # -------------------------------
 [tool.ruff.format]
 quote-style = "double"                  # Use double quotes for auto-formatting
-indent-style = "tab"                    # Indent with spaces instead of tabs
+indent-style = "tab"                    # Indent with tabs instead of spaces
 skip-magic-trailing-comma = false       # Respect magic trailing commas
 line-ending = "auto"                    # Automatically detect line endings
 
