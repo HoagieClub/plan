@@ -24,11 +24,11 @@ class SemesterOffered(str, Enum):
 REGISTRAR_URL = "https://registrar.princeton.edu/course-offerings/course-details"
 
 COURSE_FIELD_LABELS = {
-	"title": "Title",
-	"description": "Description",
-	"distribution_area_short": "Distribution Area",
-	"grading_basis": "Grading Basis",
-	"reading_writing_assignment": "Reading / Writing Assignments",
+	"title": "title",
+	"description": "description",
+	"distribution_area_short": "distribution_area",
+	"grading_basis": "grading_basis",
+	"reading_writing_assignment": "reading_writing_assignments",
 }
 
 GRADING_FIELD_LABELS = {
@@ -101,35 +101,35 @@ def get_course_info(crosslistings):
 
 	# Add course reading list with cleaned formatting
 	if course.reading_list:
-		course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
+		course_dict["reading_list"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
 
 	# Add instructors as a comma-separated string
 	instructors = course.instructors.all()
 	instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
 	if instructor_names:
-		course_dict["Instructors"] = ", ".join(instructor_names)
+		course_dict["instructors"] = ", ".join(instructor_names)
 
 	# Add registrar url
 	registrar_url = _build_registrar_url(course.guid)
 	if registrar_url:
-		course_dict["Registrar"] = registrar_url
+		course_dict["registrar"] = registrar_url
 
 	# Add grading breakdown
 	grading_breakdown = _build_grading_breakdown(course)
 	if grading_breakdown:
-		course_dict["Grading"] = grading_breakdown
+		course_dict["grading"] = grading_breakdown
 
 	# Add semester offered (Both, Fall, Spring)
 	semester_offered = _get_semester_offered(crosslistings)
 	if semester_offered:
-		course_dict["Semester Availability"] = semester_offered
+		course_dict["semester_availability"] = semester_offered
 
 	# Latest-term course_setup
 	all_sections = Section.objects.filter(course=course).select_related("term")
 	latest_term_section = all_sections.order_by("-term__term_code").first()
 	if latest_term_section:
 		if latest_term_section.term:
-			course_dict["Term"] = latest_term_section.term.suffix
+			course_dict["term"] = latest_term_section.term.suffix
 		latest_term_sections = all_sections.filter(term=latest_term_section.term)
 		course_setup = _build_course_setup(latest_term_sections)
 		if course_setup:
