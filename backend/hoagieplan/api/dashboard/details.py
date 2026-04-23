@@ -3,7 +3,9 @@ from datetime import datetime
 from enum import Enum
 
 from django.http import JsonResponse
+from rest_framework import serializers
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from hoagieplan.models import (
 	AcademicTerm,
@@ -52,6 +54,41 @@ GRADING_FIELD_LABELS = {
 }
 
 
+class GradingComponentSerializer(serializers.Serializer):
+	label = serializers.CharField()
+	percent = serializers.IntegerField()
+
+
+class CourseSetupSerializer(serializers.Serializer):
+	class_type = serializers.CharField()
+	count = serializers.IntegerField()
+	duration = serializers.IntegerField()
+
+
+class TermSerializer(serializers.Serializer):
+	term_code = serializers.CharField()
+	label = serializers.CharField()
+	instructors = serializers.ListField(child=serializers.CharField())
+	quality_of_course = serializers.FloatField(allow_null=True)
+	course_setup = CourseSetupSerializer(many=True)
+
+
+class CourseDetailSerializer(serializers.Serializer):
+	title = serializers.CharField(required=False)
+	description = serializers.CharField(required=False)
+	distribution_area = serializers.CharField(required=False)
+	grading_basis = serializers.CharField(required=False)
+	reading_writing_assignments = serializers.CharField(required=False)
+	reading_list = serializers.CharField(required=False)
+	instructors = serializers.ListField(child=serializers.CharField(), required=False)
+	registrar = serializers.CharField(required=False)
+	grading = GradingComponentSerializer(many=True, required=False)
+	semester_availability = serializers.CharField(required=False)
+	term = serializers.CharField(required=False)
+	course_setup = CourseSetupSerializer(many=True, required=False)
+	terms = TermSerializer(many=True)
+
+
 @api_view(["GET"])
 def course_details(request):
 	"""Return course detail JSON for a ``crosslistings`` query param."""
@@ -63,7 +100,8 @@ def course_details(request):
 	if course_info is None:
 		return JsonResponse({"error": "Course not found"}, status=404)
 
-	return JsonResponse(course_info)
+	serializer = CourseDetailSerializer(course_info)
+	return Response(serializer.data)
 
 
 def get_course_info(crosslistings):
@@ -107,7 +145,7 @@ def get_course_info(crosslistings):
 	instructors = course.instructors.all()
 	instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
 	if instructor_names:
-		course_dict["instructors"] = ", ".join(instructor_names)
+		course_dict["instructors"] = instructor_names
 
 	# Add registrar url
 	registrar_url = _build_registrar_url(course.guid)
