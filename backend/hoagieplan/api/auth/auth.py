@@ -7,91 +7,92 @@ import requests
 from jwt.algorithms import RSAAlgorithm
 from django.core.cache import cache
 
+
 class Auth0JWTAuthentication(authentication.BaseAuthentication):
-    def authenticate(self, request):
-        auth_header = request.headers.get("Authorization")
+	def authenticate(self, request):
+		auth_header = request.headers.get("Authorization")
 
-        if not auth_header:
-            return None
+		if not auth_header:
+			return None
 
-        if not auth_header.startswith("Bearer "):
-            raise exceptions.AuthenticationFailed("Invalid token header")
+		if not auth_header.startswith("Bearer "):
+			raise exceptions.AuthenticationFailed("Invalid token header")
 
-        token = auth_header.split(" ")[1]
-        try:
-            # Verify and decode the token
-            payload = self.verify_token(token)
+		token = auth_header.split(" ")[1]
+		try:
+			# Verify and decode the token
+			payload = self.verify_token(token)
 
-            # Get or create user based on Auth0 sub (subject)
-            auth0_id = payload["sub"]
+			# Get or create user based on Auth0 sub (subject)
+			auth0_id = payload["sub"]
 
-            net_id = auth0_id.split("|")[2].split("@")[0]
-            first_name = payload.get("https://hoagie.io/name", "").split(" ")[0]
-            last_name = payload.get("https://hoagie.io/name", "").split(" ")[-1]
-            email = auth0_id.split("|")[2]
+			net_id = auth0_id.split("|")[2].split("@")[0]
+			first_name = payload.get("https://hoagie.io/name", "").split(" ")[0]
+			last_name = payload.get("https://hoagie.io/name", "").split(" ")[-1]
+			email = auth0_id.split("|")[2]
 
-            user_inst, created = CustomUser.objects.get_or_create(
-                email=email,
-                defaults={
-                    "role": "student",
-                    "net_id": "",
-                    "first_name": "",
-                    "last_name": "",
-                    "class_year": datetime.now().year + 1,
-                },
-            )
-            if created:
-                user_inst.first_name = first_name
-                user_inst.last_name = last_name
-                user_inst.net_id = net_id
-                user_inst.username = net_id
-                user_inst.save()
-            else:
-                # Necessary for the CAS to Auth0 migration, changes net_id to alias
-                email_prefix = email.split("@")[0]
-                if user_inst.net_id != email_prefix or user_inst.username != email_prefix:
-                    user_inst.net_id = email_prefix
-                    user_inst.username = email_prefix
-                    user_inst.save(update_fields=["net_id", "username"])
+			user_inst, created = CustomUser.objects.get_or_create(
+				email=email,
+				defaults={
+					"role": "student",
+					"net_id": "",
+					"first_name": "",
+					"last_name": "",
+					"class_year": datetime.now().year + 1,
+				},
+			)
+			if created:
+				user_inst.first_name = first_name
+				user_inst.last_name = last_name
+				user_inst.net_id = net_id
+				user_inst.username = net_id
+				user_inst.save()
+			else:
+				# Necessary for the CAS to Auth0 migration, changes net_id to alias
+				email_prefix = email.split("@")[0]
+				if user_inst.net_id != email_prefix or user_inst.username != email_prefix:
+					user_inst.net_id = email_prefix
+					user_inst.username = email_prefix
+					user_inst.save(update_fields=["net_id", "username"])
 
-            return (user_inst, payload)
+			return (user_inst, payload)
 
-        except jwt.ExpiredSignatureError:
-            raise exceptions.AuthenticationFailed("Token has expired")
-        except jwt.InvalidTokenError as e:
-            raise exceptions.AuthenticationFailed(f"Invalid token: {str(e)}")
-        except Exception as e:
-            raise exceptions.AuthenticationFailed(f"Authentication failed: {str(e)}")
+		except jwt.ExpiredSignatureError:
+			raise exceptions.AuthenticationFailed("Token has expired")
+		except jwt.InvalidTokenError as e:
+			raise exceptions.AuthenticationFailed(f"Invalid token: {str(e)}")
+		except Exception as e:
+			raise exceptions.AuthenticationFailed(f"Authentication failed: {str(e)}")
 
-    def verify_token(self, token):
-        # Get Auth0 public keys (cached to avoid HTTP round-trip on every request)
-        jwks_url = f"https://{settings.AUTH0_DOMAIN}/.well-known/jwks.json"
-        jwks = cache.get("auth0_jwks")
-        if jwks is None:
-            jwks = requests.get(jwks_url).json()
-            cache.set("auth0_jwks", jwks, timeout=3600)
+	def verify_token(self, token):
+		# Get Auth0 public keys (cached to avoid HTTP round-trip on every request)
+		jwks_url = f"https://{settings.AUTH0_DOMAIN}/.well-known/jwks.json"
+		jwks = cache.get("auth0_jwks")
+		if jwks is None:
+			jwks = requests.get(jwks_url).json()
+			cache.set("auth0_jwks", jwks, timeout=3600)
 
-        # Decode token header to get key id
-        unverified_header = jwt.get_unverified_header(token)
+		# Decode token header to get key id
+		unverified_header = jwt.get_unverified_header(token)
 
-        # Find the right key
-        rsa_key = None
-        for key in jwks["keys"]:
-            if key["kid"] == unverified_header["kid"]:
-                # Convert JWK to PEM format
-                rsa_key = RSAAlgorithm.from_jwk(key)
-                break
+		# Find the right key
+		rsa_key = None
+		for key in jwks["keys"]:
+			if key["kid"] == unverified_header["kid"]:
+				# Convert JWK to PEM format
+				rsa_key = RSAAlgorithm.from_jwk(key)
+				break
 
-        if rsa_key is None:
-            raise exceptions.AuthenticationFailed("Unable to find appropriate key")
+		if rsa_key is None:
+			raise exceptions.AuthenticationFailed("Unable to find appropriate key")
 
-        # Verify and decode token
-        payload = jwt.decode(
-            token,
-            rsa_key,
-            algorithms=settings.AUTH0_ALGORITHMS,
-            audience=settings.AUTH0_AUDIENCE,
-            issuer=f"https://{settings.AUTH0_DOMAIN}/",
-        )
+		# Verify and decode token
+		payload = jwt.decode(
+			token,
+			rsa_key,
+			algorithms=settings.AUTH0_ALGORITHMS,
+			audience=settings.AUTH0_AUDIENCE,
+			issuer=f"https://{settings.AUTH0_DOMAIN}/",
+		)
 
-        return payload
+		return payload

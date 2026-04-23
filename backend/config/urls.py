@@ -28,46 +28,46 @@ from hoagieplan.api.calendar import ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
 from hoagieplan.api.dashboard import (
-    almost_completed,
-    comments,
-    details,
-    program_details_api,
-    requirements,
-    search,
-    upload,
+	almost_completed,
+	comments,
+	details,
+	program_details_api,
+	requirements,
+	search,
+	upload,
 )
 from hoagieplan.api.profile import info, tutorial
 
 urlpatterns = [
-    # Admin
-    path("admin/", admin.site.urls),
-    # Profile
-    path("profile/get_user/", info.get_user, name="get_user"),
-    path("profile/update/", info.update_profile, name="update_profile"),
-    path("profile/class-year/", info.update_class_year, name="update_class_year"),
-    # Tutorial
-    path("tutorial/get-status/", tutorial.get_status, name="get_tutorial_status"),
-    path("tutorial/set-status/", tutorial.set_status, name="set_tutorial_status"),
-    # Dashboard
-    path("search/", search.search_courses, name="search"),
-    path("fetch_courses/", info.get_user_courses, name="fetch_courses"),
-    path("update_courses/", requirements.update_courses, name="update_courses"),
-    path("update_transcript_courses/", requirements.update_transcript_courses, name="update_transcript_courses"),
-    path("manually_settle/", requirements.manually_settle, name="manually_settle"),
-    path("mark_satisfied/", requirements.mark_satisfied, name="mark_satisfied"),
-    path("update_requirements/", requirements.update_requirements, name="update_requirements"),
-    path("requirement_info/", requirements.requirement_info, name="requirement_info"),
-    path("course/details/", details.course_details, name="course_details"),
-    path("course/comments/", comments.course_comments_view, name="course_comments"),
-    path("upload/", upload.upload_file, name="upload_file"),
-    path("almost_completed/", almost_completed.almost_completed, name="almost_completed"),
-    path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
-    # Calendar
-    path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
-    path("calendars/<int:term>/", CalendarConfigurationView.as_view(), name="calendars"),
-    path(
-        "calendar_events/<str:calendar_name>/<int:term>/",
-        CalendarEventView.as_view(),
-        name="calendar_events",
-    ),
+	# Admin
+	path("admin/", admin.site.urls),
+	# Profile
+	path("profile/get_user/", info.get_user, name="get_user"),
+	path("profile/update/", info.update_profile, name="update_profile"),
+	path("profile/class-year/", info.update_class_year, name="update_class_year"),
+	# Tutorial
+	path("tutorial/get-status/", tutorial.get_status, name="get_tutorial_status"),
+	path("tutorial/set-status/", tutorial.set_status, name="set_tutorial_status"),
+	# Dashboard
+	path("search/", search.search_courses, name="search"),
+	path("fetch_courses/", info.get_user_courses, name="fetch_courses"),
+	path("update_courses/", requirements.update_courses, name="update_courses"),
+	path("update_transcript_courses/", requirements.update_transcript_courses, name="update_transcript_courses"),
+	path("manually_settle/", requirements.manually_settle, name="manually_settle"),
+	path("mark_satisfied/", requirements.mark_satisfied, name="mark_satisfied"),
+	path("update_requirements/", requirements.update_requirements, name="update_requirements"),
+	path("requirement_info/", requirements.requirement_info, name="requirement_info"),
+	path("course/details/", details.course_details, name="course_details"),
+	path("course/comments/", comments.course_comments_view, name="course_comments"),
+	path("upload/", upload.upload_file, name="upload_file"),
+	path("almost_completed/", almost_completed.almost_completed, name="almost_completed"),
+	path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
+	# Calendar
+	path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
+	path("calendars/<int:term>/", CalendarConfigurationView.as_view(), name="calendars"),
+	path(
+		"calendar_events/<str:calendar_name>/<int:term>/",
+		CalendarEventView.as_view(),
+		name="calendar_events",
+	),
 ]
