@@ -107,6 +107,7 @@ def check_requirements(user_inst, table, code, courses, manually_satisfied_reqs)
 	        - bool: Whether the requirements are satisfied.
 	        - dict: A list of courses with details about the requirements they satisfy.
 	        - dict: A simplified JSON-like structure showing how much of each requirement is satisfied.
+
 	"""
 	req = cached_init_req(user_inst, table, code)
 	courses = _init_courses(courses)
@@ -765,12 +766,12 @@ def parse_semester(semester_id, class_year):
 		semester_num = 8 - ((class_year - year) * 2 - is_Fall)
 		return semester_num
 	except ValueError:
-		raise ValueError(f"Invalid semester format: {semester_id}")
+		raise ValueError(f"Invalid semester format: {semester_id}") from None
 
 
 def assign_sequential_semesters(transcript_data):
-	"""
-	Assigns sequential semester numbers based on their order in the JSON file.
+	"""Assigns sequential semester numbers based on their order in the JSON file.
+
 	The first semester in the transcript gets '1', the second '2', etc.
 	"""
 	semester_list = list(transcript_data.keys())  # Preserve the order of appearance
@@ -783,7 +784,7 @@ def parse_transcript_semester(semester_name):
 		term, year = semester_name.split(" ")  # Fix the order
 		return f"{term} {year}"  # Keep it unchanged
 	except ValueError:
-		raise ValueError(f"Invalid semester format: {semester_name}")
+		raise ValueError(f"Invalid semester format: {semester_name}") from None
 
 
 @api_view(["POST"])
@@ -865,7 +866,6 @@ def update_courses(request):
 		data = json.loads(request.body)
 		crosslistings = data.get("crosslistings")
 		container = data.get("semesterId")
-		net_id = request.user.net_id
 		user_inst = request.user
 		class_year = user_inst.class_year
 

@@ -58,11 +58,11 @@ class Auth0JWTAuthentication(authentication.BaseAuthentication):
 			return (user_inst, payload)
 
 		except jwt.ExpiredSignatureError:
-			raise exceptions.AuthenticationFailed("Token has expired")
-		except jwt.InvalidTokenError as e:
-			raise exceptions.AuthenticationFailed(f"Invalid token: {str(e)}")
-		except Exception as e:
-			raise exceptions.AuthenticationFailed(f"Authentication failed: {str(e)}")
+			raise exceptions.AuthenticationFailed("Token has expired") from None
+		except jwt.InvalidTokenError:
+			raise exceptions.AuthenticationFailed("Invalid token") from None
+		except Exception:
+			raise exceptions.AuthenticationFailed("Authentication failed") from None
 
 	def verify_token(self, token):
 		# Get Auth0 public keys (cached to avoid HTTP round-trip on every request)

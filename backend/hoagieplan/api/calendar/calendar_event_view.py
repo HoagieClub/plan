@@ -171,7 +171,7 @@ class CalendarEventView(APIView):
 		try:
 			term_id: int = get_term(term).id
 			calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-		except Exception as e:
+		except Exception:
 			return Response({"detail": "Failed to get calendar configuration"}, status=status.HTTP_404_NOT_FOUND)
 
 		unique_guids = set(item["guid"] for item in events_data)
