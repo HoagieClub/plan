@@ -27,9 +27,9 @@ export type AuthState = {
 
 export type UserState = {
 	profile: Profile;
-	academicPlan: { [key: string]: any }; // TODO: Use a more specific type for academicPlan
+	academicPlan: Record<string, unknown>;
 	updateProfile: (updates: Partial<Profile>) => void;
-	updateRequirements: () => Promise<any | null>; // TODO: Try to type this better
+	updateRequirements: () => Promise<Record<string, unknown> | null>;
 	fetchAndUpdateProfile: (userProfile: User) => void;
 };
 
