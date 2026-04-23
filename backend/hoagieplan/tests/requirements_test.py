@@ -1,4 +1,4 @@
-from hoagieplan.api.dashboard.almost_completed_reqs import get_almost_completed_reqs
+from hoagieplan.api.dashboard.almost_completed import get_almost_completed_reqs
 
 
 def main():
