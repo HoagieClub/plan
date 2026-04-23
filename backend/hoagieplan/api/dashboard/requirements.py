@@ -747,14 +747,14 @@ def requirement_info(request):
 		pass
 
 	info = {}
-	info[0] = req_id
-	info[1] = explanation
-	info[2] = completed_by_semester
-	info[3] = dist_req
-	info[4] = sorted_dept_list
-	info[5] = sorted_course_list
-	info[6] = sorted_dept_sample_list
-	info[7] = marked_satisfied
+	info["req_id"] = req_id
+	info["explanation"] = explanation
+	info["completed_by_semester"] = completed_by_semester
+	info["dist_req"] = dist_req
+	info["sorted_dept_list"] = sorted_dept_list
+	info["sorted_course_list"] = sorted_course_list
+	info["sorted_dept_sample_list"] = sorted_dept_sample_list
+	info["marked_satisfied"] = marked_satisfied
 	return JsonResponse(info)
 
 
