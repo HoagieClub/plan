@@ -40,6 +40,41 @@ const darken = (hex: string, amount: number) => {
 	return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };
 
+interface GradingComponent {
+	label: string;
+	percent: number;
+}
+
+interface CourseSetupEntry {
+	class_type: string;
+	count: number;
+	duration: number;
+}
+
+interface TermEntry {
+	term_code: string;
+	label: string;
+	instructors: string[];
+	quality_of_course: number | null;
+	course_setup: CourseSetupEntry[];
+}
+
+interface CourseDetails {
+	title?: string;
+	description?: string;
+	distribution_area?: string;
+	grading_basis?: string;
+	reading_writing_assignments?: string;
+	reading_list?: string;
+	instructors?: string[];
+	registrar?: string;
+	grading?: GradingComponent[];
+	semester_availability?: string;
+	term?: string;
+	course_setup?: CourseSetupEntry[];
+	terms: TermEntry[];
+}
+
 interface InfoComponentProps {
 	value: string;
 }
@@ -49,12 +84,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const coursenum = value.split(' ')[1];
 	const [showPopup, setShowPopup] = useState<boolean>(false);
 	const [feedbackRating, setFeedbackRating] = useState<number>(0);
-	const [courseDetails, setCourseDetails] = useState<{
-		// TODO: Address this typing eventually.
-
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		[key: string]: any;
-	} | null>(null);
+	const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
 
 	const modalRef = useRef(null);
 	const feedbackScrollRef = useRef<HTMLDivElement>(null);
@@ -79,18 +109,18 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 	const courseColor = departmentColors[dept];
 
-	const distShort = (courseDetails?.['Distribution Area'] || '').trim().toUpperCase();
+	const distShort = (courseDetails?.distribution_area || '').trim().toUpperCase();
 	const distColor = getDistributionColors(distShort);
 	const distTitle = distributionAreasInverse[distShort];
 
-	const gradingBasis = courseDetails?.['Grading Basis'];
+	const gradingBasis = courseDetails?.grading_basis;
 	const pdfTag = getPdfTag(gradingBasis);
 	const pdfColor = getPdfColor(pdfTag);
 	const pdfTitle = pdfTag === 'PDF' ? 'PDF Available' : 'PDF Unavailable';
 	const auditTag = getAuditTag(gradingBasis);
 	const auditColor = getAuditColor(auditTag);
 	const auditTitle = auditTag === 'A' ? 'Audit Available' : 'Audit Unavailable';
-	const semesterAvailability = (courseDetails?.['Semester Availability'] || '').trim();
+	const semesterAvailability = (courseDetails?.semester_availability || '').trim();
 	const displaySemester = getSemesterType(semesterAvailability);
 
 	// Use course_setup from API response
@@ -111,7 +141,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				})
 				.catch((error) => {
 					console.error('Error fetching course details:', error);
-					setCourseDetails({ error: 'Failed to load course details' });
+					setCourseDetails(null);
 				});
 		}
 	}, [showPopup, value]);
@@ -259,9 +289,9 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									</div>
 								</div>
 								{displaySemester && <SemesterTag semester={displaySemester} />}
-								{courseDetails['Title'] && (
+								{courseDetails.title && (
 									<h2 style={{ fontSize: '1.4rem', fontWeight: 600, margin: 0 }}>
-										{courseDetails['Title']}
+										{courseDetails.title}
 									</h2>
 								)}
 							</div>
@@ -270,16 +300,16 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 							<div style={{ display: 'flex', alignItems: 'stretch', gap: '8px' }}>
 								<ExternalLink
 									href={`https://www.princetoncourses.com/course/${
-										new URL(courseDetails.Registrar).searchParams.get('term') +
-										new URL(courseDetails.Registrar).searchParams.get('courseid')
+										new URL(courseDetails.registrar).searchParams.get('term') +
+										new URL(courseDetails.registrar).searchParams.get('courseid')
 									}`}
 								>
 									Princeton
 									<br />
 									Courses
 								</ExternalLink>
-								{courseDetails?.Registrar && (
-									<ExternalLink href={courseDetails.Registrar}>
+								{courseDetails?.registrar && (
+									<ExternalLink href={courseDetails.registrar}>
 										Official
 										<br />
 										Registrar
@@ -315,8 +345,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													flexDirection: 'column',
 												}}
 											>
-												{typeof courseDetails?.Instructors === 'string' ? (
-													courseDetails.Instructors.split(',').map((name, index, arr) => (
+												{courseDetails?.instructors && courseDetails.instructors.length > 0 ? (
+													courseDetails.instructors.map((name, index, arr) => (
 														<div
 															key={index}
 															style={{
@@ -325,7 +355,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 																borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
 															}}
 														>
-															{name.trim()}
+															{name}
 														</div>
 													))
 												) : (
@@ -344,11 +374,11 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 
 								<SectionTitle label='Description' iconSrc='/icons/description.svg' />
 								<CourseDetailSection>
-									<div style={{ fontSize: '0.85rem' }}>{courseDetails['Description']}</div>
+									<div style={{ fontSize: '0.85rem' }}>{courseDetails.description}</div>
 								</CourseDetailSection>
 
 								{/* Grading */}
-								{Array.isArray(courseDetails['Grading']) && courseDetails['Grading'].length > 0 && (
+								{courseDetails.grading && courseDetails.grading.length > 0 && (
 									<div>
 										<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
 										<CourseDetailSection>
@@ -360,12 +390,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 													flexDirection: 'column',
 												}}
 											>
-												{(
-													courseDetails['Grading'] as unknown as {
-														label: string;
-														percent: number;
-													}[]
-												)
+												{courseDetails.grading
 													.slice()
 													.sort((a, b) => b.percent - a.percent)
 													.map(({ label, percent }, index, arr) => (
