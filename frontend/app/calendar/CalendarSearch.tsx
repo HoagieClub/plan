@@ -16,6 +16,7 @@ import Alert from '@mui/material/Alert';
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
+import { RecentSearches } from '@/components/RecentSearches';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
@@ -477,31 +478,11 @@ export const CalendarSearch: FC = () => {
 						</button>
 					</div>
 
-					<div className='recent-searches'>
-						<div className='mb-2 flex items-center justify-between'>
-							<div className='text-sm text-gray-500'>Recent searches:</div>
-							<div className='flex items-center space-x-2'>
-								<button
-									className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-									onClick={() => clearRecentSearches()}
-								>
-									Clear
-								</button>
-							</div>
-						</div>
-						<div className='recent-searches-list'>
-							{recentSearches.slice(-5).map((search, index) => (
-								<button
-									key={index}
-									className='recent-search-item'
-									title={search}
-									onClick={() => retrieveCachedSearch(search)}
-								>
-									{search}
-								</button>
-							))}
-						</div>
-					</div>
+					<RecentSearches
+						searches={recentSearches}
+						onSearch={retrieveCachedSearch}
+						onClear={clearRecentSearches}
+					/>
 				</div>
 				<div className='search-results'>
 					<CalendarSearchResults courses={calendarSearchResults} />

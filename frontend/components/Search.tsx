@@ -13,6 +13,7 @@ import {
 } from '@mui/joy';
 import { LRUCache } from 'typescript-lru-cache';
 
+import { RecentSearches } from '@/components/RecentSearches';
 import { useFilterStore } from '@/store/filterSlice';
 import useSearchStore from '@/store/searchSlice';
 import type { Course, Filter } from '@/types';
@@ -388,31 +389,11 @@ export const Search: FC = () => {
 						/>
 					</button>
 				</div>
-				<div className='mt-3'>
-					<div className='mb-2 flex items-center justify-between'>
-						<div className='text-sm text-gray-500'>Recent searches:</div>
-						<div className='flex items-center space-x-2'>
-							<button
-								className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-								onClick={() => clearRecentSearches()}
-							>
-								Clear
-							</button>
-						</div>
-					</div>
-					<div className='flex flex-wrap gap-2 space-x-2 overflow-x-scroll pb-2'>
-						{recentSearches.map((search, index) => (
-							<button
-								key={index}
-								className='max-w-[120px] truncate rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300'
-								title={search}
-								onClick={() => retrieveCachedSearch(search)}
-							>
-								{search}
-							</button>
-						))}
-					</div>
-				</div>
+				<RecentSearches
+					searches={recentSearches}
+					onSearch={retrieveCachedSearch}
+					onClear={clearRecentSearches}
+				/>
 			</div>
 			{modalContent}
 		</>
