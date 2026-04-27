@@ -30,8 +30,10 @@ const searchCache = new LRUCache<string, Course[]>({
 });
 
 export const Search: FC = () => {
-	const [query, setQuery] = useState<string>('');
+	// Input value for the search box, updated immediately on user input
 	const [inputValue, setInputValue] = useState<string>('');
+	// Query used for triggering searches, updated after debounce
+	const [query, setQuery] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
 		setSearchResults,
