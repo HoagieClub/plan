@@ -28,6 +28,9 @@ GRADING_OPTIONS = {
 class CourseWithTermsSerializer(CourseSerializer):
 	terms = serializers.ListField(child=serializers.CharField())
 
+	class Meta(CourseSerializer.Meta):
+		fields = (*CourseSerializer.Meta.fields, "terms")
+
 
 class SearchResultSerializer(serializers.Serializer):
 	courses = CourseWithTermsSerializer(many=True)
