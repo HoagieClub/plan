@@ -49,16 +49,6 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 		}
 	};
 
-<<<<<<< HEAD
-	const distColor = getDistributionColors(course.distribution_area_short);
-
-	const gradingBasis = course.grading_basis?.['Grading Basis'];
-	const pdfTag = getPdfTag(gradingBasis);
-	const pdfColor = getPdfColor(pdfTag);
-
-	const auditTag = getAuditTag(gradingBasis);
-	const auditColor = getAuditColor(auditTag);
-=======
 	const currentTermCode = course.guid?.slice(0, 4) ?? '';
 	const prevTerms = (course.terms ?? [])
 		.filter((code) => code <= currentTermCode)
@@ -71,7 +61,6 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 	const auditTag = getAuditTag(course.grading_basis);
 	const auditColor = getAuditColor(auditTag);
 	const displaySemester = getDisplaySemester(course);
->>>>>>> origin/preview
 
 	return (
 		<div className={styles.card} onClick={handleClick}>
@@ -91,15 +80,6 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 						</div>
 					)}
 				</div>
-<<<<<<< HEAD
-				<div className={styles.titleRow} style={{ justifyContent: 'left' }}>
-					<div style={{ color: distColor, paddingRight: '10px' }}>
-						{course.distribution_area_short}
-					</div>
-					<div style={{ color: pdfColor, paddingRight: '10px' }}>{getPdfTag(gradingBasis)}</div>
-					<div style={{ color: auditColor }}>{getAuditTag(gradingBasis)}</div>
-				</div>
-=======
 				<div className={styles.tagsRow}>
 					{course.distribution_area_short && (
 						<span style={{ color: distColor }}>{course.distribution_area_short}</span>
@@ -118,7 +98,6 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 						</div>
 					</>
 				)}
->>>>>>> origin/preview
 			</div>
 		</div>
 	);
