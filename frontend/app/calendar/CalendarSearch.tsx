@@ -494,6 +494,7 @@ export const CalendarSearch: FC = () => {
 								<button
 									key={index}
 									className='recent-search-item'
+									title={search}
 									onClick={() => retrieveCachedSearch(search)}
 								>
 									{search}

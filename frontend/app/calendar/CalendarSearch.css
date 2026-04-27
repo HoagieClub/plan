@@ -119,6 +119,10 @@
 }
 
 .recent-search-item {
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	padding: 0.1rem 0.5rem;
 	font-size: 0.75rem;
 	font-weight: 500;
