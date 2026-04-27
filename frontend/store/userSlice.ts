@@ -5,32 +5,8 @@ import { useEffect } from 'react';
 import { type User } from '@auth0/nextjs-auth0/types';
 import { create } from 'zustand';
 
+import { fetchCustomUser } from '@/services/userService';
 import type { Profile, MajorMinorType, UserState } from '@/types';
-
-// Fetch user profile from the backend
-async function fetchCustomUser(): Promise<Profile | null> {
-	try {
-		const response = await fetch(`/api/hoagie/profile/get_user`);
-
-		if (!response.ok) {
-			if (response.status === 401) {
-				console.error('User not authenticated.');
-				return null;
-			}
-			if (response.status === 404) {
-				console.error('User profile not found.');
-				return null;
-			}
-			throw new Error(`Error fetching CustomUser: ${response.statusText}`);
-		}
-
-		const data = await response.json();
-		return data as Profile;
-	} catch (error) {
-		console.error('Error fetching CustomUser:', error);
-		return null;
-	}
-}
 
 // Utility function: Map Auth0 user profile to app's Profile type
 async function mapUserProfileToProfile(userProfile: User): Promise<Profile> {

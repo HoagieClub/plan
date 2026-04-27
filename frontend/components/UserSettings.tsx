@@ -11,6 +11,7 @@ import {
 	Typography,
 } from '@mui/joy';
 
+import { updateUserProfile } from '@/services/userService';
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType, ProfileProps } from '@/types';
 import { CERTIFICATE_OPTIONS, MAJOR_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
@@ -88,14 +89,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		};
 
 		try {
-			const response = await fetch(`/api/hoagie/profile/update`, {
-				method: 'POST',
-				body: JSON.stringify(profile),
-			});
-
-			if (!response.ok) {
-				throw new Error('POST request to update profile failed.');
-			}
+			await updateUserProfile(profile);
 
 			updateProfile(profile);
 			onSave(profile);
