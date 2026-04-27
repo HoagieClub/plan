@@ -31,6 +31,7 @@ const searchCache = new LRUCache<string, Course[]>({
 
 export const Search: FC = () => {
 	const [query, setQuery] = useState<string>('');
+	const [inputValue, setInputValue] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
 		setSearchResults,
@@ -132,7 +133,13 @@ export const Search: FC = () => {
 	);
 
 	function retrieveCachedSearch(search: string): void {
-		setSearchResults(searchCache.get(search) ?? []);
+		setInputValue(search);
+		setQuery(search);
+		addRecentSearch(search);
+		const cached = searchCache.get(search);
+		if (cached) {
+			setSearchResults(cached);
+		}
 	}
 
 	useEffect(() => {
@@ -151,12 +158,14 @@ export const Search: FC = () => {
 	}, [query, termFilter, distributionFilters, levelFilter, gradingFilter, search]);
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		setInputValue(value);
 		if (timerRef.current) {
 			clearTimeout(timerRef.current);
 		}
 
 		timerRef.current = window.setTimeout(() => {
-			setQuery(event.target.value);
+			setQuery(value);
 		}, 500);
 	};
 
@@ -375,6 +384,7 @@ export const Search: FC = () => {
 						className='block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-10 pr-9 text-sm text-gray-900 shadow-sm focus:border-indigo-600 focus:ring-indigo-600'
 						placeholder='Search courses'
 						autoComplete='off'
+						value={inputValue}
 						onChange={handleInputChange}
 					/>
 					<button

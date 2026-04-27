@@ -76,6 +76,7 @@ export const CalendarSearch: FC = () => {
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
 	const [query, setQuery] = useState<string>('');
+	const [inputValue, setInputValue] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
 		setCalendarSearchResults,
@@ -158,16 +159,24 @@ export const CalendarSearch: FC = () => {
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
 	function retrieveCachedSearch(search: string) {
-		setCalendarSearchResults(searchCache.get(search) || []);
+		setInputValue(search);
+		setQuery(search);
+		addRecentSearch(search);
+		const cached = searchCache.get(search);
+		if (cached) {
+			setCalendarSearchResults(cached);
+		}
 	}
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		setInputValue(value);
 		if (timerRef.current) {
 			clearTimeout(timerRef.current);
 		}
 
 		timerRef.current = window.setTimeout(() => {
-			setQuery(event.target.value);
+			setQuery(value);
 		}, 500);
 	};
 
@@ -463,6 +472,7 @@ export const CalendarSearch: FC = () => {
 							className='search-input'
 							placeholder='Search courses'
 							autoComplete='off'
+							value={inputValue}
 							onChange={handleInputChange}
 						/>
 						<button
