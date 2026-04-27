@@ -113,11 +113,7 @@ export const Search: FC = () => {
 					const data: { courses: Course[] } = await response.json();
 					setSearchResults(data.courses);
 					if (data.courses.length > 0) {
-						if (searchQuery.length > 14) {
-							addRecentSearch(searchQuery.slice(0, 10) + '...');
-						} else {
-							addRecentSearch(searchQuery);
-						}
+						addRecentSearch(searchQuery);
 						searchCache.set(searchQuery, data.courses);
 					}
 				} else {
