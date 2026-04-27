@@ -1,240 +1,59 @@
+from collections import defaultdict
 from datetime import datetime
+from enum import Enum
 
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
 from hoagieplan.models import (
+    AcademicTerm,
     ClassMeeting,
     Course,
-    CourseComment,
-    CourseEvalSummary,
-    Department,
     GradingInfo,
     Section,
 )
+from hoagieplan.utils import get_term, get_term_and_course_id, is_fall_course, is_spring_course, suffix_to_label
+
+class SemesterOffered(str, Enum):
+    FALL = "Fall"
+    SPRING = "Spring"
+    BOTH = "Both"
 
 
-def clean_comment(comment):
-    """Clean a single comment string."""
-    if not (2 <= len(comment) <= 2000):
-        return None
+REGISTRAR_URL = "https://registrar.princeton.edu/course-offerings/course-details"
 
-    comment = comment.replace('\\"', '"')
-    comment = comment.replace("it?s", "it's")
-    comment = comment.replace("?s", "'s")
-    comment = comment.replace("?r", "'r")
+COURSE_FIELD_LABELS = {
+    "title": "Title",
+    "description": "Description",
+    "distribution_area_short": "Distribution Area",
+    "grading_basis": "Grading Basis",
+    "reading_writing_assignment": "Reading / Writing Assignments",
+}
 
-    # Remove surrounding brackets if present
-    if comment[0] == "[" and comment[-1] == "]":
-        comment = comment[1:-1]
-
-    return comment
-
-
-def get_course_comments(dept, num):
-    """Retrieve and process course comments."""
-    # Get department or return None
-    department = Department.objects.filter(code=dept).first()
-    if not department:
-        return None
-
-    # Get course or return None
-    course = Course.objects.filter(department=department, catalog_number=str(num)).first()
-    if not course:
-        return None
-
-    # Get comments
-    comments = CourseComment.objects.filter(course=course)
-
-    # Process comments
-    cleaned_comments = []
-    for comment_obj in comments:
-        cleaned = clean_comment(comment_obj.comment)
-        if cleaned:
-            cleaned_comments.append(cleaned)
-
-    # Remove duplicates while preserving order
-    cleaned_comments = list(dict.fromkeys(cleaned_comments))
-
-    # Build result dictionary
-    result = {"reviews": cleaned_comments}
-
-    # Try to get course evaluation
-    evaluation = (
-        Course.objects.filter(department=department, catalog_number=str(num))
-        .filter(quality_of_course__isnull=False)  # Extract only courses with non-null rating
-        .order_by("course_id", "-guid")
-        .first()
-    )
-
-    if evaluation and evaluation.quality_of_course:
-        result["rating"] = evaluation.quality_of_course
-
-    summary = CourseEvalSummary.objects.filter(course=course).first()
-    if summary:
-        result["summary"] = summary.summary
-
-    return result
-
-
-def get_course_info(crosslistings):
-    """Retrieve detailed course information."""
-    try:
-        course = (
-            Course.objects.select_related("department")
-            .prefetch_related("instructors")
-            .filter(crosslistings__icontains=crosslistings)
-            .latest("guid")
-        )
-    except Course.DoesNotExist:
-        return None
-
-    course_dict = {}
-
-    # Add title of course
-    title = getattr(course, "title", None)
-    if title:
-        course_dict["Title"] = title
-
-    # Add instructors from Course M2M
-    instructors = course.instructors.all()
-    instructor_names = [i.full_name for i in instructors if i.full_name]
-    if instructor_names:
-        course_dict["Instructors"] = ", ".join(instructor_names)
-
-    # Get all sections for this course
-    all_sections = Section.objects.filter(course=course).select_related("term")
-
-    # Map fields to their display names
-    field_mapping = {
-        "description": "Description",
-        "distribution_area_short": "Distribution Area",
-        "grading_basis": "Grading Basis",
-    }
-
-    # Add basic fields if they exist
-    for field, display_name in field_mapping.items():
-        if value := getattr(course, field):
-            course_dict[display_name] = value
-
-    # Add registrar link
-    if course.guid:
-        course_id = course.guid[4:]
-        term = course.guid[:4]
-        registrar_link = (
-            f"https://registrar.princeton.edu/course-offerings/course-details?term={term}&courseid={course_id}"
-        )
-        course_dict["Registrar"] = registrar_link
-    
-    # Add grading info if available
-    GRADING_LABELS = {
-        "grading_final_exam": "Final Exam",
-        "grading_mid_exam": "Midterm Exam",
-        "grading_home_final_exam": "Home Final Exam",
-        "grading_home_mid_exam": "Home Midterm Exam",
-        "grading_paper_final_exam": "Paper in lieu of final",
-        "grading_paper_mid_exam": "Paper in lieu of midterm",
-        "grading_other_exam": "Other Exam",
-        "grading_oral_pres": "Oral Presentation",
-        "grading_quizzes": "Quizzes",
-        "grading_lab_reports": "Lab Reports",
-        "grading_papers": "Papers",
-        "grading_prob_sets": "Problem Sets",
-        "grading_prog_assign": "Programming Assignments",
-        "grading_precept_part": "Class/precept participation",
-        "grading_term_papers": "Term Papers",
-        "grading_design_projects": "Design Projects",
-        "grading_other": "Other",
-    }
-    try:
-        grading_info = course.grading_info
-        grading_breakdown = [
-            {"label": label, "percent": getattr(grading_info, field)}
-            for field, label in GRADING_LABELS.items()
-            if getattr(grading_info, field, 0)
-        ]
-        if grading_breakdown:
-            course_dict["Grading"] = grading_breakdown
-    except GradingInfo.DoesNotExist:
-        pass
-
-    # Handle reading list specially due to cleaning requirements
-    if course.reading_list:
-        reading_list = course.reading_list.replace("//", ", by ").replace(";", "; ")
-        course_dict["Reading List"] = reading_list
-
-    # Add reading/writing assignments if they exist
-    if course.reading_writing_assignment:
-        course_dict["Reading / Writing Assignments"] = course.reading_writing_assignment
-
-    # === Semester Availability ===
-    all_courses = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
-    has_fall = False
-    has_spring = False
-    for guid in all_courses:
-        if guid and len(guid) >= 4:
-            term_suffix = guid[3]
-            if term_suffix == "2":
-                has_fall = True
-            if term_suffix == "4":
-                has_spring = True
-    if has_fall and has_spring:
-        course_dict["Semester Availability"] = "Both"
-    elif has_fall:
-        course_dict["Semester Availability"] = "Fall"
-    elif has_spring:
-        course_dict["Semester Availability"] = "Spring"
-
-    # === NEW: Add Course Setup ===
-    # Get the most recent term's sections
-    latest_term_section = all_sections.order_by("-term__term_code").first()
-
-    if latest_term_section:
-        latest_term_sections = all_sections.filter(term=latest_term_section.term)
-
-        # Calculate course setup based on meeting times
-        course_setup_dict = {}
-
-        for section in latest_term_sections:
-            class_type = section.class_type
-
-            # Get all meetings for this section
-            meetings = ClassMeeting.objects.filter(section=section)
-
-            # Calculate total weekly duration for this section
-            total_duration = 0
-            meeting_count = 0
-            for meeting in meetings:
-                if meeting.start_time and meeting.end_time:
-                    start = datetime.combine(datetime.today(), meeting.start_time)
-                    end = datetime.combine(datetime.today(), meeting.end_time)
-                    duration = int((end - start).total_seconds() / 60)
-                    total_duration += duration
-                    meeting_count += 1
-
-            # If we haven't seen this class type yet, or if this is the first section
-            # we're examining, store its total duration
-            if class_type not in course_setup_dict and total_duration > 0:
-                course_setup_dict[class_type] = {
-                    "count": meeting_count,  # Number of meetings per week
-                    "duration": total_duration,
-                }
-
-        # Build course setup array
-        course_setup = [
-            {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
-            for class_type, info in course_setup_dict.items()
-        ]
-
-        if course_setup:
-            course_dict["course_setup"] = course_setup
-
-    return course_dict
+GRADING_FIELD_LABELS = {
+    "grading_final_exam": "Final Exam",
+    "grading_mid_exam": "Midterm Exam",
+    "grading_home_final_exam": "Home Final Exam",
+    "grading_home_mid_exam": "Home Midterm Exam",
+    "grading_paper_final_exam": "Paper in lieu of final",
+    "grading_paper_mid_exam": "Paper in lieu of midterm",
+    "grading_other_exam": "Other Exam",
+    "grading_oral_pres": "Oral Presentation",
+    "grading_quizzes": "Quizzes",
+    "grading_lab_reports": "Lab Reports",
+    "grading_papers": "Papers",
+    "grading_prob_sets": "Problem Sets",
+    "grading_prog_assign": "Programming Assignments",
+    "grading_precept_part": "Class/precept participation",
+    "grading_term_papers": "Term Papers",
+    "grading_design_projects": "Design Projects",
+    "grading_other": "Other",
+}
 
 
 @api_view(["GET"])
 def course_details(request):
-    """API endpoint for course details."""
+    """Return course detail JSON for a ``crosslistings`` query param."""
     crosslistings = request.GET.get("crosslistings")
     if not crosslistings:
         return JsonResponse({"error": "Missing crosslistings parameter"}, status=400)
@@ -246,17 +65,240 @@ def course_details(request):
     return JsonResponse(course_info)
 
 
-@api_view(["GET"])
-def course_comments_view(request):
-    """API endpoint for course comments."""
-    dept = request.GET.get("dept")
-    num = request.GET.get("coursenum")
+def get_course_info(crosslistings):
+    """Assemble the detail payload for a course's latest offering.
 
-    if not (dept and num):
-        return JsonResponse({"error": "Missing department or course number"}, status=400)
+    Collects title, instructors, description, distribution area, grading
+    basis, registrar link, grading breakdown, reading list, semester
+    availability, latest-term course setup, and per-term history.
 
-    comments = get_course_comments(dept, num)
-    if comments is None:
-        return JsonResponse({"error": "Course not found"}, status=404)
+    Args:
+        crosslistings: Crosslistings string used to locate the course.
 
-    return JsonResponse(comments)
+    Returns:
+        Dict of course detail fields, or ``None`` if no course matches.
+
+    """
+    try:
+        course = (
+            Course.objects.select_related("department")
+            .prefetch_related("instructors")
+            .filter(crosslistings__icontains=crosslistings)
+            .latest("guid")
+        )
+    except Course.DoesNotExist:
+        return None
+
+    # Dictionary to be returned
+    course_dict = {}
+
+    # Add fields that are on the Course model
+    for field, display_name in COURSE_FIELD_LABELS.items():
+        value = getattr(course, field, None)
+        if value:
+            course_dict[display_name] = value
+
+    # Add course reading list with cleaned formatting
+    if course.reading_list:
+        course_dict["Reading List"] = course.reading_list.replace("//", ", by ").replace(";", "; ")
+
+    # Add instructors as a comma-separated string
+    instructors = course.instructors.all()
+    instructor_names = [instructor.full_name for instructor in instructors if instructor.full_name]
+    if instructor_names:
+        course_dict["Instructors"] = ", ".join(instructor_names)
+
+    # Add registrar url
+    registrar_url = _build_registrar_url(course.guid)
+    if registrar_url:
+        course_dict["Registrar"] = registrar_url
+
+    # Add grading breakdown
+    grading_breakdown = _build_grading_breakdown(course)
+    if grading_breakdown:
+        course_dict["Grading"] = grading_breakdown
+
+    # Add semester offered (Both, Fall, Spring)
+    semester_offered = _get_semester_offered(crosslistings)
+    if semester_offered:
+        course_dict["Semester Availability"] = semester_offered
+
+    # Latest-term course_setup
+    all_sections = Section.objects.filter(course=course).select_related("term")
+    latest_term_section = all_sections.order_by("-term__term_code").first()
+    if latest_term_section:
+        if latest_term_section.term:
+            course_dict["Term"] = latest_term_section.term.suffix
+        latest_term_sections = all_sections.filter(term=latest_term_section.term)
+        course_setup = _build_course_setup(latest_term_sections)
+        if course_setup:
+            course_dict["course_setup"] = course_setup
+
+    # Per-term history
+    course_dict["terms"] = _build_terms_list(crosslistings)
+
+    return course_dict
+
+
+def _build_registrar_url(guid: str | None) -> str | None:
+    """Return the registrar course-details URL for a given course guid, or None."""
+    if not guid:
+        return None
+    term, course_id = get_term_and_course_id(guid)
+    return f"{REGISTRAR_URL}?term={term}&courseid={course_id}"
+
+
+def _build_grading_breakdown(course) -> list:
+    """Return a list of grading components for a course, or an empty list if none exist."""
+    try:
+        grading_info = course.grading_info
+    except GradingInfo.DoesNotExist:
+        return []
+
+    breakdown = []
+    for field, label in GRADING_FIELD_LABELS.items():
+        percent = getattr(grading_info, field, 0)
+        if percent:
+            breakdown.append({"label": label, "percent": percent})
+    return breakdown
+
+
+def _get_semester_offered(crosslistings: str) -> SemesterOffered | None:
+    """Return a SemesterOffered value based on historical offerings, or None if unknown."""
+    all_guids = Course.objects.filter(crosslistings__icontains=crosslistings).values_list("guid", flat=True)
+    valid_guids = [guid for guid in all_guids if guid and len(guid) >= 4]
+    has_fall = any(is_fall_course(guid) for guid in valid_guids)
+    has_spring = any(is_spring_course(guid) for guid in valid_guids)
+    if has_fall and has_spring:
+        return SemesterOffered.BOTH
+    if has_fall:
+        return SemesterOffered.FALL
+    if has_spring:
+        return SemesterOffered.SPRING
+    return None
+
+
+def _build_course_setup(sections_queryset) -> list:
+    """Build a course_setup list from a Section queryset for one term.
+
+    Fetches ClassMeeting rows for the given sections, then delegates to
+    :func:`_build_course_setup_from_data`.
+
+    Args:
+        sections_queryset: Section queryset scoped to a single term.
+
+    Returns:
+        List of dicts with ``class_type``, ``count``, and ``duration``
+        (minutes).
+
+    """
+    section_ids = list(sections_queryset.values_list("id", flat=True))
+    meetings = ClassMeeting.objects.filter(section_id__in=section_ids).select_related("section")
+
+    meetings_by_section: dict = defaultdict(list)
+    for meeting in meetings:
+        meetings_by_section[meeting.section_id].append(meeting)
+
+    return _build_course_setup_from_data(list(sections_queryset), meetings_by_section)
+
+
+def _build_terms_list(crosslistings: str) -> list:
+    """Return per-term dicts for every historical offering of a course.
+
+    Uses four bulk queries (courses, sections, meetings, term labels) so
+    the total cost is independent of the number of historical terms.
+
+    Args:
+        crosslistings: Crosslistings string used to match course offerings.
+
+    Returns:
+        List of dicts with ``term_code``, ``label``, ``instructors``,
+        ``quality_of_course``, and ``course_setup``, ordered newest first.
+
+    """
+    all_term_courses = (
+        Course.objects.filter(crosslistings__icontains=crosslistings).prefetch_related("instructors").order_by("-guid")
+    )
+
+    course_ids = list(all_term_courses.values_list("id", flat=True))
+
+    # Get all sections for every historical offering
+    all_sections = Section.objects.filter(course_id__in=course_ids)
+    sections_by_course: dict = defaultdict(list)
+    all_section_ids = []
+    for section in all_sections:
+        sections_by_course[section.course_id].append(section)
+        all_section_ids.append(section.id)
+
+    # Get all meetings for every section
+    all_meetings = ClassMeeting.objects.filter(section_id__in=all_section_ids)
+    meetings_by_section: dict = defaultdict(list)
+    for meeting in all_meetings:
+        meetings_by_section[meeting.section_id].append(meeting)
+
+    # Get all term labels at once
+    term_codes = {get_term(course.guid) for course in all_term_courses if course.guid}
+    term_suffix_map: dict = dict(
+        AcademicTerm.objects.filter(term_code__in=term_codes).values_list("term_code", "suffix")
+    )
+
+    # Build result list
+    terms = []
+    seen_term_codes: set = set()
+    for course in all_term_courses:
+        if not course.guid:
+            continue
+        term_code = get_term(course.guid)
+        if term_code in seen_term_codes:
+            continue
+        seen_term_codes.add(term_code)
+
+        instructor_names = [instructor.full_name for instructor in course.instructors.all() if instructor.full_name]
+        course_sections = sections_by_course[course.id]
+        course_setup = _build_course_setup_from_data(course_sections, meetings_by_section)
+        label = suffix_to_label(term_suffix_map.get(term_code, ""), term_code)
+
+        terms.append(
+            {
+                "term_code": term_code,
+                "label": label,
+                "instructors": instructor_names,
+                "quality_of_course": course.quality_of_course,
+                "course_setup": course_setup,
+            }
+        )
+
+    return terms
+
+
+def _build_course_setup_from_data(sections, meetings_by_section: dict) -> list:
+    """Summarize meeting count and total duration per class type.
+
+    Args:
+        sections: Section objects for a single course offering.
+        meetings_by_section: Map of section id to its ClassMeeting objects.
+
+    Returns:
+        List of dicts with ``class_type``, ``count``, and ``duration`` (minutes).
+
+    """
+    course_setup_dict = {}
+    for section in sections:
+        class_type = section.class_type
+        if class_type in course_setup_dict:
+            continue
+        total_duration = 0
+        meeting_count = 0
+        for meeting in meetings_by_section.get(section.id, []):
+            if meeting.start_time and meeting.end_time:
+                start = datetime.combine(datetime.today(), meeting.start_time)
+                end = datetime.combine(datetime.today(), meeting.end_time)
+                total_duration += int((end - start).total_seconds() / 60)
+                meeting_count += len(meeting.days.split(",")) if meeting.days else 0
+        if total_duration > 0:
+            course_setup_dict[class_type] = {"count": meeting_count, "duration": total_duration}
+
+    return [
+        {"class_type": class_type, "count": info["count"], "duration": info["duration"]}
+        for class_type, info in course_setup_dict.items()
+    ]
