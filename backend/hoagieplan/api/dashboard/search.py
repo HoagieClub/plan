@@ -2,6 +2,7 @@ from re import IGNORECASE, compile, split, sub
 
 from django.db.models import Q
 from django.http import JsonResponse
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 
 from hoagieplan.logger import logger
@@ -22,6 +23,14 @@ GRADING_OPTIONS = {
 	"P/D/F": ["PDF", "FUL", "NAU"],
 	"Audit": ["FUL", "PDF", "ARC", "NGR", "NOT", "NPD", "YR"],
 }
+
+
+class CourseWithTermsSerializer(CourseSerializer):
+	terms = serializers.ListField(child=serializers.CharField())
+
+
+class SearchResultSerializer(serializers.Serializer):
+	courses = CourseWithTermsSerializer(many=True)
 
 
 def make_sort_key(dept):
