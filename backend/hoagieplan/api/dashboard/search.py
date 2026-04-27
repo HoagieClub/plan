@@ -1,9 +1,9 @@
 from re import IGNORECASE, compile, split, sub
 
 from django.db.models import Q
-from django.http import JsonResponse
 from rest_framework import serializers
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from hoagieplan.logger import logger
 from hoagieplan.models import (
@@ -65,7 +65,7 @@ def attach_terms(serialized_courses, course_objects):
 def search_courses(request):
 	"""Handle search queries for courses."""
 	if request.method != "GET":
-		return JsonResponse({"error": "Method not allowed"}, status=405)
+		return Response({"error": "Method not allowed"}, status=405)
 
 	query = request.GET.get("course", None)
 	term = request.GET.get("term", None)
@@ -74,7 +74,7 @@ def search_courses(request):
 	grading_options = request.GET.get("grading")
 
 	if not query:
-		return JsonResponse({"courses": []})
+		return _empty_courses_response()
 
 	return search_courses_helper(query, term, distribution, levels, grading_options)
 
@@ -100,7 +100,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 		num = ""
 		search_key = dept
 	else:
-		return JsonResponse({"courses": []})
+		return _empty_courses_response()
 
 	query_conditions = Q()
 
@@ -165,7 +165,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 		if exact_match_course:
 			# If an exact match is found, return only that course
 			serialized_course = CourseSerializer(exact_match_course, many=True)
-			return JsonResponse({"courses": attach_terms(serialized_course.data, exact_match_course)})
+			return _courses_response(attach_terms(serialized_course.data, exact_match_course))
 
 		filtered_query = query_conditions
 		if len(search_key) > 3:
@@ -203,8 +203,16 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 			serialized_courses = CourseSerializer(courses, many=True)
 			with_terms = attach_terms(serialized_courses.data, courses)
 			sorted_data = sorted(with_terms, key=make_sort_key(dept))
-			return JsonResponse({"courses": sorted_data})
-		return JsonResponse({"courses": []})
+			return _courses_response(sorted_data)
+		return _empty_courses_response()
 	except Exception as e:
 		logger.error(f"An error occurred while searching for courses: {e}")
-		return JsonResponse({"error": "Internal Server Error"}, status=500)
+		return Response({"error": "Internal Server Error"}, status=500)
+
+
+def _courses_response(courses_list):
+	return Response(SearchResultSerializer({"courses": courses_list}).data)
+
+
+def _empty_courses_response():
+	return _courses_response([])
