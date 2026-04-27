@@ -12,30 +12,21 @@ import type {
 	/* ClassMeeting, */ Course /* Section */,
 } from '@/types';
 
-interface CalendarStore {
+import { computeAddRecentSearch, type RecentSearchesSlice } from './recentSearchesSlice';
+
+interface CalendarStore extends RecentSearchesSlice {
 	calendarSearchResults: Course[];
 	// Map of term id to (guid, section id, column) to calendar event
 	selectedCourses: Record<string, Record<string, OldCalendarEvent>>;
-
-	recentSearches: string[];
-
 	error: string | null;
 	loading: boolean;
-
 	loadCourses: (semester: string) => Promise<void>; // Loads courses for a given semester
-
 	setCalendarSearchResults: (results: Course[]) => void; // Sets search results
-	addRecentSearch: (search: string) => void; // Caches search to recent searches
-	clearRecentSearches: () => void; // Clears recent searches
-
 	addCourse: (course: Course) => Promise<void>; // Fetches course details and adds all candidate sections to selectedCourses
 	removeCourse: (sectionKey: string) => void; // Removes all instances of a course from selectedCourses and selectedSections
-
 	activateSection: (event: OldCalendarEvent) => void; // Activates a selected section
-
 	setError: (error: string | null) => void;
 	setLoading: (loading: boolean) => void;
-
 	// Getters
 	getSelectedCourses: (semester: string) => OldCalendarEvent[];
 }
@@ -103,6 +94,9 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	recentSearches: [],
 	error: null,
 	loading: false,
+	clearRecentSearches: () => set({ recentSearches: [] }),
+	addRecentSearch: (query) =>
+		set((state) => ({ recentSearches: computeAddRecentSearch(state.recentSearches, query) })),
 
 	loadCourses: async (semester: string) => {
 		set({ loading: true, error: null });
@@ -124,11 +118,8 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		}));
 	},
 	setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
-	addRecentSearch: (search) =>
-		set((state) => ({ recentSearches: [...state.recentSearches, search] })),
 	setError: (error) => set({ error }),
 	setLoading: (loading) => set({ loading }),
-	clearRecentSearches: () => set({ recentSearches: [] }),
 
 	addCourse: async (course: Course) => {
 		const term = course.guid.substring(0, 4);

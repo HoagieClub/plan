@@ -82,18 +82,6 @@ export type Filter = {
 	gradingFilter: string[];
 };
 
-export type SearchStoreState = {
-	searchResults: Course[];
-	setSearchResults: (results: Course[]) => void;
-	recentSearches: string[];
-	addRecentSearch: (query: string) => void;
-	clearRecentSearches: () => void;
-	error: string | null;
-	setError: (error: string | null) => void;
-	loading: boolean;
-	setLoading: (loading: boolean) => void;
-};
-
 export type CourseProps = {
 	id: number;
 	course: Course;
