@@ -3,6 +3,7 @@ from django.db import transaction
 from django.db.models import F
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from hoagieplan.logger import logger
 from hoagieplan.models import Certificate, Course, CustomUser, Major, Minor
@@ -34,7 +35,11 @@ def fetch_user_info(user_inst: CustomUser) -> dict:
 
 @api_view(["GET"])
 def get_user_courses(request):
-	"""Retrieve user's courses for frontend."""
+	"""Retrieve user's courses for frontend.
+
+	Returns a dict with keys 1-8, each mapping to a list of
+	courses for that semester.
+	"""
 	try:
 		all_courses = (
 			Course.objects.filter(usercourses__user=request.user)
@@ -48,11 +53,11 @@ def get_user_courses(request):
 			serialized = CourseSerializer(course).data
 			user_course_dict[course.semester].append(serialized)
 
-		return JsonResponse(user_course_dict)
+		return Response(user_course_dict)
 
 	except Exception as e:
 		logger.error(f"An error occurred while retrieving courses: {e}")
-		return JsonResponse({"error": "Internal Server Error"}, status=500)
+		return Response({"error": "Internal Server Error"}, status=500)
 
 
 @api_view(["POST"])
