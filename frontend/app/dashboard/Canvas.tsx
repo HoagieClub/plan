@@ -76,6 +76,7 @@ const dropAnimation: DropAnimation = {
 };
 
 type Items = Record<UniqueIdentifier, UniqueIdentifier[]>;
+type UserCoursesResponse = Record<string, Course[]>;
 
 type Props = {
 	profile: Profile;
@@ -176,7 +177,7 @@ export function Canvas({
 	const updateSemesters = (
 		prevItems: Items,
 		classYear: number,
-		userCourses: { [key: number]: Course[] }
+		userCourses: UserCoursesResponse
 	): Items => {
 		const startYear = classYear - 4;
 		let semester = 1;
@@ -250,7 +251,7 @@ export function Canvas({
 	const fetchCourses = useCallback(async () => {
 		try {
 			const response = await fetch(`/api/hoagie/fetch_courses`);
-			const data = await response.json();
+			const data = (await response.json()) as UserCoursesResponse;
 			return data;
 		} catch {
 			return null; // TODO: Handle error appropriately
