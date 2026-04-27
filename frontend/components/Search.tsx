@@ -15,7 +15,7 @@ import { LRUCache } from 'typescript-lru-cache';
 
 import { useFilterStore } from '@/store/filterSlice';
 import useSearchStore from '@/store/searchSlice';
-import type { Course, Filter } from '@/types';
+import type { CourseWithTerms, Filter } from '@/types';
 import { distributionAreas, distributionAreasInverse } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
@@ -23,7 +23,7 @@ import { terms, termsInverse } from '@/utils/terms';
 
 import { FilterModal } from './Modal';
 
-const searchCache = new LRUCache<string, Course[]>({
+const searchCache = new LRUCache<string, CourseWithTerms[]>({
 	maxSize: 50,
 	entryExpirationTimeInMS: 1000 * 60 * 60 * 24,
 });
@@ -110,7 +110,7 @@ export const Search: FC = () => {
 				const response = await fetch(`/api/hoagie/search?${queryString}`);
 
 				if (response.ok) {
-					const data: { courses: Course[] } = await response.json();
+					const data: { courses: CourseWithTerms[] } = await response.json();
 					setSearchResults(data.courses);
 					if (data.courses.length > 0) {
 						addRecentSearch(searchQuery);

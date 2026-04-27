@@ -19,7 +19,7 @@ import { FilterModal } from '@/components/Modal';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
-import type { Course, Filter } from '@/types';
+import type { CourseWithTerms, Filter } from '@/types';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
@@ -52,7 +52,7 @@ function buildQuery(searchQuery: string, filter: Filter): string {
 	return queryString;
 }
 
-const searchCache = new LRUCache<string, Course[]>({
+const searchCache = new LRUCache<string, CourseWithTerms[]>({
 	maxSize: 50,
 	entryExpirationTimeInMS: 1000 * 60 * 60 * 24,
 });
@@ -120,7 +120,7 @@ export const CalendarSearch: FC = () => {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
 				}
 
-				const data: { courses: Course[] } = await response.json();
+				const data: { courses: CourseWithTerms[] } = await response.json();
 				setCalendarSearchResults(data.courses);
 				if (data.courses.length > 0) {
 					addRecentSearch(searchQuery);
