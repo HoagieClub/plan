@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from constants import CERTIFICATES, MINORS
 from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequirements
@@ -50,10 +50,10 @@ def almost_completed(request):
 				}
 			)
 
-		return JsonResponse({"programs": out})
+		return Response(out)
 	except Exception as e:
 		logger.error(f"Failed to compute almost completed programs: {e}", exc_info=True)
-		return JsonResponse({"programs": []})
+		return Response([])
 
 
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:

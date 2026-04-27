@@ -12,9 +12,7 @@ const ProgramSchema = z.object({
 	incomplete_requirements: z.array(z.string()),
 });
 
-const AlmostCompletedResponseSchema = z.object({
-	programs: z.array(ProgramSchema),
-});
+const AlmostCompletedResponseSchema = z.array(ProgramSchema);
 
 export type Program = z.infer<typeof ProgramSchema>;
 
@@ -43,7 +41,7 @@ export async function getAlmostCompletedPrograms(): Promise<AlmostCompletedResul
 
 		const data = await response.json();
 		const validatedData = AlmostCompletedResponseSchema.parse(data);
-		return { success: true, programs: validatedData.programs };
+		return { success: true, programs: validatedData };
 	} catch (error) {
 		console.error('Error fetching programs:', error);
 		return {
