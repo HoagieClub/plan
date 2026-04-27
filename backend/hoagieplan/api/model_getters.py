@@ -4,65 +4,65 @@ from hoagieplan.models import AcademicTerm, CalendarConfiguration, CalendarEvent
 
 
 def get_course(guid: str) -> Course:
-    """Retrieve Course."""
-    try:
-        return Course.objects.select_related("department").get(guid=guid)
-    except Course.DoesNotExist as error:
-        raise Exception("Course not found") from error
+	"""Retrieve Course."""
+	try:
+		return Course.objects.select_related("department").get(guid=guid)
+	except Course.DoesNotExist as error:
+		raise Exception("Course not found") from error
 
 
 def get_section(course: Course, class_section: str) -> List[Section]:
-    """Retrieve Section."""
-    try:
-        return list(Section.objects.filter(course=course, class_section=class_section))
-    except Course.DoesNotExist as error:
-        raise Exception("Course not found") from error
+	"""Retrieve Section."""
+	try:
+		return list(Section.objects.filter(course=course, class_section=class_section))
+	except Course.DoesNotExist as error:
+		raise Exception("Course not found") from error
 
 
 def get_term(term_code: str | int) -> AcademicTerm:
-    """Retrieve AcademicTerm by term code."""
-    try:
-        return AcademicTerm.objects.get(term_code=str(term_code))
-    except AcademicTerm.DoesNotExist as error:
-        raise Exception("AcademicTerm not found") from error
+	"""Retrieve AcademicTerm by term code."""
+	try:
+		return AcademicTerm.objects.get(term_code=str(term_code))
+	except AcademicTerm.DoesNotExist as error:
+		raise Exception("AcademicTerm not found") from error
 
 
 def get_calendar(user_inst: CustomUser, calendar_name: str, term_id: str) -> CalendarConfiguration:
-    """Retrieve CalendarConfiguration."""
-    try:
-        return CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
-    except CalendarConfiguration.DoesNotExist as error:
-        raise Exception("Calendar not found") from error
+	"""Retrieve CalendarConfiguration."""
+	try:
+		return CalendarConfiguration.objects.get(user=user_inst, name=calendar_name, term_id=term_id)
+	except CalendarConfiguration.DoesNotExist as error:
+		raise Exception("Calendar not found") from error
 
 
 def get_calendar_event(
-    calendar_configuration: CalendarConfiguration, course: Course, section: Section
+	calendar_configuration: CalendarConfiguration, course: Course, section: Section
 ) -> CalendarEvent:
-    """Retrieve CalendarEvent."""
-    event = (
-        CalendarEvent.objects.filter(calendar_configuration=calendar_configuration, course=course, section=section)
-        .select_related(
-            "course",
-            "section",
-        )
-        .first()
-    )
-    if event is None:
-        raise Exception("CalendarEvent not found")
+	"""Retrieve CalendarEvent."""
+	event = (
+		CalendarEvent.objects.filter(calendar_configuration=calendar_configuration, course=course, section=section)
+		.select_related(
+			"course",
+			"section",
+		)
+		.first()
+	)
+	if event is None:
+		raise Exception("CalendarEvent not found")
 
-    return event
+	return event
 
 
 def get_calendar_events(calendar_configuration: CalendarConfiguration, course: Course):
-    events = list(
-        CalendarEvent.objects.filter(
-            calendar_configuration=calendar_configuration,
-            course=course,
-        ).select_related(
-            "course",
-            "section",
-        )
-    )
-    if not events:
-        raise Exception("CalendarEvent not found")
-    return events
+	events = list(
+		CalendarEvent.objects.filter(
+			calendar_configuration=calendar_configuration,
+			course=course,
+		).select_related(
+			"course",
+			"section",
+		)
+	)
+	if not events:
+		raise Exception("CalendarEvent not found")
+	return events

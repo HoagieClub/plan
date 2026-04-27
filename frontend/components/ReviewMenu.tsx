@@ -51,7 +51,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({
 
 			void fetchReviews();
 		}
-	}, [dept, coursenum]);
+	}, [dept, coursenum, onRatingLoaded, onSummaryLoaded]);
 
 	if (loading) {
 		return (
