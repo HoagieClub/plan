@@ -1,9 +1,12 @@
 import type { Profile } from '@/types';
 
+const GET_USER_URL = '/api/hoagie/profile/get_user';
+const UPDATE_PROFILE_URL = '/api/hoagie/profile/update';
+
 // Fetch user profile from the backend
 export async function fetchCustomUser(): Promise<Profile | null> {
 	try {
-		const response = await fetch(`/api/hoagie/profile/get_user`);
+		const response = await fetch(GET_USER_URL);
 
 		if (!response.ok) {
 			if (response.status === 401) {
@@ -28,7 +31,7 @@ export async function fetchCustomUser(): Promise<Profile | null> {
 // Update user profile
 export async function updateUserProfile(updatedProfile: Profile): Promise<Profile | null> {
 	try {
-		const response = await fetch(`/api/hoagie/profile/update`, {
+		const response = await fetch(UPDATE_PROFILE_URL, {
 			method: 'POST',
 			body: JSON.stringify(updatedProfile),
 		});
