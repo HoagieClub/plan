@@ -202,6 +202,8 @@ export type Course = {
 	terms?: string[];
 };
 
+export type CourseWithTerms = Course & { terms: string[] };
+
 export type Section = {
 	// From model
 	id: number;
