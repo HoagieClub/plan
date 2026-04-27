@@ -29,7 +29,6 @@ import { useUploadModal } from '@/components/UploadModal/Upload';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
 import type { Course, Profile } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { getPrimaryColor, getSecondaryColor } from '@/utils/departmentColors';
 
 import { SEARCH_RESULTS_ID } from './constants';
@@ -64,18 +63,6 @@ const staticRectSortingStrategy = () => {
 };
 
 const transitionAnimation = 'width 0.2s ease-in-out, left 0.2s ease-in-out';
-
-let csrfToken: string;
-
-if (typeof window === 'undefined') {
-	// Server-side or during pre-rendering/build time
-	csrfToken = '';
-} else {
-	// Client-side
-	void (async () => {
-		csrfToken = await fetchCsrfToken();
-	})();
-}
 
 const dropAnimation: DropAnimation = {
 	duration: 200,
@@ -262,7 +249,7 @@ export function Canvas({
 
 	const fetchCourses = useCallback(async () => {
 		try {
-			const response = await fetch(`/api/hoagie/fetch_courses/`);
+			const response = await fetch(`/api/hoagie/fetch_courses`);
 			const data = await response.json();
 			return data;
 		} catch {
@@ -488,12 +475,8 @@ export function Canvas({
 
 					if (overContainerId) {
 						if (activeContainerId !== overContainerId) {
-							csrfToken = await fetchCsrfToken();
 							void fetch(`/api/hoagie/update_courses`, {
 								method: 'POST',
-								headers: {
-									'X-CSRFToken': csrfToken,
-								},
 								body: JSON.stringify({
 									crosslistings: active.id.toString().split('|')[1],
 									semesterId: overContainerId,
@@ -595,7 +578,7 @@ export function Canvas({
 								width: requirementsWidth,
 							}}
 						>
-							<TabbedMenu csrfToken={csrfToken} />
+							<TabbedMenu />
 						</div>
 					</div>
 				</SortableContext>
@@ -668,9 +651,6 @@ export function Canvas({
 
 		void fetch(`/api/hoagie/update_courses`, {
 			method: 'POST',
-			headers: {
-				'X-CSRFToken': csrfToken,
-			},
 			body: JSON.stringify({
 				crosslistings: value.toString().split('|')[1],
 				semesterId: 'Search Results',

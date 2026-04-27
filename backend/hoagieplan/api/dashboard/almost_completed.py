@@ -1,15 +1,63 @@
-from typing import Dict, Optional
+from enum import Enum
+from typing import Dict, List, Optional
+
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 from constants import CERTIFICATES, MINORS
 from hoagieplan.api.dashboard.requirement_models import Requirement, UserRequirements
 from hoagieplan.api.dashboard.requirements import check_user
 from hoagieplan.api.profile.info import fetch_user_info
+from hoagieplan.logger import logger
+from hoagieplan.models import Certificate, CustomUser, Minor
 
 TOP_ALMOST_COMPLETED = 100
 
 
+class ProgramTable(Enum):
+    MINOR = "Minor"
+    CERTIFICATE = "Certificate"
+
+
+@api_view(["GET"])
+def almost_completed(request):
+    """Return a JSON list of almost-completed programs for the current user.
+
+    Response format: [{"code": "COS", "name": "Computer Science", "needed": 1, "type": "minor", "prereqFulfilled": true|false|null, "independentWorkRequired": true|false, "incompleteRequirements": ["Electives (1 more)", "Advanced Courses (2 more)"]}, ...]
+    """
+    try:
+        # Optimized: compute all data in a single check_user() call
+        results, prereq_status, iw_status, incomplete_subreqs = get_all_program_data(request.user)
+
+        # results is dict{code: needed_count}. Convert to list with names from MINORS/CERTIFICATES
+        out: List[Dict] = []
+        for code, needed in results.items():
+            name = MINORS.get(code) or CERTIFICATES.get(code) or code
+            typ = "minor" if code in MINORS else ("certificate" if code in CERTIFICATES else "unknown")
+            prereq_fulfilled = prereq_status.get(code)  # Can be True, False, or None
+            independent_work_required = iw_status.get(code, False)  # Default to False if not found
+            incomplete_requirements = incomplete_subreqs.get(code, [])
+
+            out.append(
+                {
+                    "code": code,
+                    "name": name,
+                    "needed": needed,
+                    "type": typ,
+                    "prereqFulfilled": prereq_fulfilled,
+                    "independentWorkRequired": independent_work_required,
+                    "incompleteRequirements": incomplete_requirements,
+                }
+            )
+
+        return JsonResponse({"programs": out})
+    except Exception as e:
+        logger.error(f"Failed to compute almost completed programs: {e}", exc_info=True)
+        return JsonResponse({"programs": []})
+
+
 def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED) -> Dict[str, int]:
-    all_outstanding_reqs = _get_all_outstanding_reqs_for_user(net_id)
+    all_outstanding_reqs = _get_all_outstanding_reqs_for_user(CustomUser.objects.get(net_id=net_id))
     # Sort by number of outstanding courses in ascending order and take the top N
     pairs = sorted(all_outstanding_reqs.items(), key=lambda item: item[1])
     top_pairs = pairs[:top_almost_completed]
@@ -18,82 +66,81 @@ def get_almost_completed_reqs(net_id: str, top_almost_completed=TOP_ALMOST_COMPL
 
 def _check_prereq_satisfied(requirement: Requirement) -> Optional[bool]:
     """Check if a program's prerequisites are satisfied by looking for a 'Prerequisites' or 'Prerequisite' subrequirement.
-    
+
     Returns:
         - True if prerequisites exist and are satisfied
         - False if prerequisites exist and are not satisfied
         - None if no prerequisites exist
+
     """
     if requirement.subrequirements is None:
         return None
-    
+
     # Look for a subrequirement named "Prerequisites" or "Prerequisite" (case-insensitive)
     for name, subreq in requirement.subrequirements.items():
-        if name.lower() in ['prerequisites', 'prerequisite']:
+        if name.lower() in ["prerequisites", "prerequisite"]:
             # Debug: Check if count/min_needed tells us more than satisfied flag
             # If a requirement has min_needed but count is 0, it's not satisfied regardless of the flag
             if subreq.count == 0 and subreq.min_needed > 0:
                 return False
             return subreq.satisfied
-    
+
     # If no prerequisites requirement found, return None
     return None
 
 
-def _check_independent_work_required(requirement: Requirement) -> bool:
-    """Check if a program requires independent work by looking for an 'Independent Work' subrequirement.
-    
+def _check_independent_work_required(code: str, table: ProgramTable) -> bool:
+    """Check if a program requires independent work by using the iw_required field.
+
     Returns:
         - True if independent work requirement exists
         - False if no independent work requirement exists
+
     """
-    if requirement.subrequirements is None:
-        return False
-    
-    # Look for a subrequirement named "Independent Work" (case-insensitive)
-    for name in requirement.subrequirements.keys():
-        if name.lower() == 'independent work':
-            return True
-    
+    if table == ProgramTable.MINOR:
+        return Minor.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
+    if table == ProgramTable.CERTIFICATE:
+        return Certificate.objects.filter(code=code).values_list("iw_required", flat=True).first() or False
+
     return False
 
 
 def _get_incomplete_subrequirements(requirement: Requirement, max_items: int = 3) -> list[str]:
     """Get a list of incomplete subrequirement names for better progress visibility.
-    
+
     Returns up to max_items incomplete subrequirement names.
     """
     if requirement.subrequirements is None:
         return []
-    
+
     incomplete = []
     for name, subreq in requirement.subrequirements.items():
         # Skip Prerequisites and Independent Work as they're shown separately
-        if name.lower() in ['prerequisites', 'prerequisite', 'independent work']:
+        if name.lower() in ["prerequisites", "prerequisite", "independent work"]:
             continue
-        
+
         # Check if this subrequirement is incomplete
         # A subrequirement is incomplete if it's not satisfied OR if count < min_needed
         if not subreq.satisfied or subreq.count < subreq.min_needed:
             needed = subreq.min_needed - subreq.count
             if needed > 0:  # Only include if actually needs more courses
                 incomplete.append(f"{name} ({needed} more)")
-                
+
                 if len(incomplete) >= max_items:
                     break
-    
+
     return incomplete
 
 
-def _get_all_outstanding_reqs_for_user(net_id: str) -> Dict[str, int]:
-    user_info = fetch_user_info(net_id)
+def _get_all_outstanding_reqs_for_user(user: CustomUser) -> Dict[str, int]:
+    user_info = fetch_user_info(user)
     user_major = user_info["major"]
 
     minors_as_list = _convert_dict_to_list(MINORS)
     certs_as_list = _convert_dict_to_list(CERTIFICATES)
 
     user_req_output = check_user(
-        net_id,
+        user,
         user_major,
         minors_as_list,
         certs_as_list,
@@ -154,18 +201,6 @@ def count_outstanding_courses_helper(requirement: Requirement, used: list[int]) 
         )
         return val
 
-    val = max(
-        requirement.min_needed - requirement.count,
-        sum(
-            sorted(
-                [
-                    count_outstanding_courses_helper(subrequirement, used)
-                    for subrequirement in requirement.subrequirements.values()
-                ]
-            )[: requirement.min_needed]
-        ),
-    )
-
     return max(
         requirement.min_needed - requirement.count,
         sum(
@@ -192,8 +227,7 @@ def _count_courses_for_minor_helper(requirement: Requirement) -> int:
     # Top level node
     if requirement.code is not None:
         return sum(
-            _count_courses_for_minor_helper(subrequirement)
-            for subrequirement in requirement.subrequirements.values()
+            _count_courses_for_minor_helper(subrequirement) for subrequirement in requirement.subrequirements.values()
         )
 
     # Parent of leaf
@@ -208,8 +242,7 @@ def _count_courses_for_minor_helper(requirement: Requirement) -> int:
 
     # Internal node
     child_counts = sorted(
-        _count_courses_for_minor_helper(subrequirement)
-        for subrequirement in requirement.subrequirements.values()
+        _count_courses_for_minor_helper(subrequirement) for subrequirement in requirement.subrequirements.values()
     )
     return max(
         requirement.min_needed,
@@ -226,14 +259,14 @@ def _is_parent_of_leaf(requirement: Requirement) -> bool:
     return True
 
 
-def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED):
+def get_all_program_data(user: CustomUser, top_almost_completed=TOP_ALMOST_COMPLETED):
     """Optimized function that computes all program data in a single pass.
-    
+
     Returns a tuple of (almost_completed_dict, prereq_status_dict, iw_status_dict, incomplete_subreqs_dict)
     where almost_completed_dict contains {code: courses_needed_to_complete}
     and incomplete_subreqs_dict contains {code: [list of incomplete subrequirement descriptions]}
     """
-    user_info = fetch_user_info(net_id)
+    user_info = fetch_user_info(user)
     user_major = user_info["major"]
 
     minors_as_list = _convert_dict_to_list(MINORS)
@@ -241,7 +274,7 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
 
     # Single call to check_user
     user_req_output = check_user(
-        net_id,
+        user,
         user_major,
         minors_as_list,
         certs_as_list,
@@ -253,13 +286,13 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
     prereq_status_dict = {}
     iw_status_dict = {}
     incomplete_subreqs_dict = {}
-    
+
     for minor_code in MINORS.keys():
         req = output_requirements.minors[minor_code]
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[minor_code] = outstanding
         prereq_status_dict[minor_code] = _check_prereq_satisfied(req)
-        iw_status_dict[minor_code] = _check_independent_work_required(req)
+        iw_status_dict[minor_code] = _check_independent_work_required(minor_code, ProgramTable.MINOR)
         incomplete_subreqs_dict[minor_code] = _get_incomplete_subrequirements(req)
 
     for cert_code in CERTIFICATES.keys():
@@ -267,7 +300,7 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
         outstanding = count_outstanding_courses(req)
         all_outstanding_reqs[cert_code] = outstanding
         prereq_status_dict[cert_code] = _check_prereq_satisfied(req)
-        iw_status_dict[cert_code] = _check_independent_work_required(req)
+        iw_status_dict[cert_code] = _check_independent_work_required(cert_code, ProgramTable.CERTIFICATE)
         incomplete_subreqs_dict[cert_code] = _get_incomplete_subrequirements(req)
 
     pairs = sorted(all_outstanding_reqs.items(), key=lambda item: item[1])
@@ -275,4 +308,3 @@ def get_all_program_data(net_id: str, top_almost_completed=TOP_ALMOST_COMPLETED)
     almost_completed_dict = dict(top_pairs)
 
     return almost_completed_dict, prereq_status_dict, iw_status_dict, incomplete_subreqs_dict
-

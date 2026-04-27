@@ -4,11 +4,14 @@ from typing import Dict, List
 
 import pytz
 from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import api_view
 from icalendar import Calendar, Event
+from rest_framework.decorators import api_view
 
 # Maps from day abbreviations to days used in ical rrule
 DAY_DICT = {"M": "MO", "T": "TU", "W": "WE", "Th": "TH", "F": "FR"}
+
+# Maps from day abbreviations to weekday index
+DAY_INDEX = {"M": 0, "T": 1, "W": 2, "Th": 3, "F": 4}
 
 # Offset for first class of the semester
 DAYS_OFFSET = {
@@ -19,6 +22,8 @@ DAYS_OFFSET = {
     "F": timedelta(days=4),
 }
 
+# Look at https://registrar.princeton.edu/academic-calendar-and-deadlines
+# Look for "Spring Term Classes Begin at 8:30 am" or something similar
 # Start date for each semester
 START_DATE = {
     "1242": date(2023, 9, 5),
@@ -27,8 +32,10 @@ START_DATE = {
     "1254": date(2025, 1, 27),
     "1262": date(2025, 9, 2),
     "1264": date(2026, 1, 26),
+    "1272": date(2026, 9, 2),
 }
 
+# Look for "Last Day of Scheduled Classes" or something similar
 # End date for each semester
 END_DATE = {
     "1242": date(2023, 12, 7),
@@ -37,6 +44,36 @@ END_DATE = {
     "1254": date(2025, 4, 26),
     "1262": date(2025, 12, 4),
     "1264": date(2026, 4, 24),
+    "1272": date(2026, 12, 7),
+}
+
+# Inclusive dates with no scheduled classes
+NO_CLASS_RANGES = {
+    "1242": [
+        (date(2023, 10, 14), date(2023, 10, 22)), # Fall recess
+        (date(2023, 11, 22), date(2023, 11, 26)), # Thanksgiving recess
+    ],
+    "1244": [
+        (date(2024, 3, 9), date(2024, 3, 17)), # Spring recess
+    ],
+    "1252": [
+        (date(2024, 10, 12), date(2024, 10, 20)), # Fall recess
+        (date(2024, 11, 26), date(2024, 12, 1)), # Thanksgiving recess
+    ],
+    "1254": [
+        (date(2025, 3, 8), date(2025, 3, 16)), # Spring recess
+    ],
+    "1262": [
+        (date(2025, 10, 11), date(2025, 10, 19)), # Fall recess
+        (date(2025, 11, 25), date(2025, 11, 30)), # Thanksgiving recess
+    ],
+    "1264": [
+        (date(2026, 3, 7), date(2026, 3, 15)), # Spring recess
+    ],
+    "1272": [
+        (date(2026, 10, 17), date(2026, 10, 25)), # Fall recess
+        (date(2026, 11, 24), date(2026, 11, 29)), # Thanksgiving recess
+    ],
 }
 
 
@@ -79,10 +116,10 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
 
     start_time_str = calendar_event.get("startTime") or section.get("class_meetings", [{}])[0].get("start_time")
     end_time_str = calendar_event.get("endTime") or section.get("class_meetings", [{}])[0].get("end_time")
-    start_time = datetime.strptime(start_time_str, "%H:%M").time()
-    end_time = datetime.strptime(end_time_str, "%H:%M").time()
+    start_time = datetime.strptime(start_time_str, "%I:%M %p").time()
+    end_time = datetime.strptime(end_time_str, "%I:%M %p").time()
 
-    instructor = section.get("instructor").get("name")
+    instructor = ", ".join(course.get("instructors", [])) or ""
 
     # Extract start and end dates from constants
     days_of_week = section.get("class_meetings")[0].get("days")
@@ -138,6 +175,12 @@ def generate_class_ical(cal: Calendar, calendar_event: Dict, semester_code: str)
         },
     )
 
+    no_class_ranges = NO_CLASS_RANGES.get(semester_code)
+    if no_class_ranges:
+        exdates = break_exdates(days_of_week, no_class_ranges, est_tz, start_time)
+        if exdates:
+            event.add("exdate", exdates)
+
     # Add event to calendar
     cal.add_component(event)
 
@@ -172,6 +215,29 @@ def days_of_week_list(days_of_week: str) -> List[str]:
     return new_days_of_week_list
 
 
+def weekdays_to_indices(days_of_week):
+    indices = set()
+    for raw in days_of_week.split(","):
+        token = raw.strip()
+        indices.add(DAY_INDEX[token])
+    return indices
+
+
+def break_exdates(days_of_week, ranges, tz, start_time):
+    weekdays = weekdays_to_indices(days_of_week)
+    seen = set()
+    out = []
+    for range_start, range_end in ranges:
+        d = range_start
+        while d <= range_end:
+            if d.weekday() in weekdays and d not in seen:
+                seen.add(d)
+                out.append(tz.localize(datetime.combine(d, start_time)))
+            d += timedelta(days=1)
+    out.sort()
+    return out
+
+
 # Example usage
 def main():
     # List of class sections
@@ -182,6 +248,7 @@ def main():
                 "catalog_number": "418",
                 "course_id": "013749",
                 "crosslistings": "COS 418",
+                "instructors": ["Michael J. Freedman"],
                 "department_code": "COS",
                 "description": """This course covers the design and implementation of
                 distributed systems. Students will gain an understanding of the principles and
@@ -207,7 +274,7 @@ def main():
                 "web_address": "www.cs.princeton.edu/courses/archive/spring24/cos418",
             },
             "endRowIndex": 19,
-            "endTime": "10:50",
+            "endTime": "10:50 AM",
             "isActive": True,
             "isChosen": False,
             "key": "guid: 1254013749, section id: 87114, class meeting id: 63680, column: 1",
@@ -218,10 +285,10 @@ def main():
                     {
                         "building_name": "ComSciBldg 104",
                         "days": "M,W",
-                        "end_time": "10:50",
+                        "end_time": "10:50 AM",
                         "id": 63680,
                         "room": "TBD",
-                        "start_time": "10:00",
+                        "start_time": "10:00 AM",
                     }
                 ],
                 "class_section": "L01",
@@ -229,10 +296,9 @@ def main():
                 "course": {"course_id": "013749", "title": "Distributed Systems"},
                 "enrollment": 81,
                 "id": 87114,
-                "instructor": {"name": "Michael J. Freedman"},
                 "startColumnIndex": 1,
                 "startRowIndex": 14,
-                "startTime": "10:00",
+                "startTime": "10:00 AM",
             },
         },
         {
@@ -241,6 +307,7 @@ def main():
                 "catalog_number": "307",
                 "course_id": "007998",
                 "crosslistings": "ORF 307 / EGR 307",
+                "instructors": ["Bartolomeo Stellato"],
                 "department_code": "ORF",
                 "description": """This course focuses on analytical and computational tools for
                 optimization. We will introduce least-squares optimization with multiple objectives
@@ -263,7 +330,7 @@ def main():
                 "web_address": "stellato.io/teaching/orf307",
             },
             "endRowIndex": 28,
-            "endTime": "12:20",
+            "endTime": "12:20 PM",
             "isActive": True,
             "isChosen": False,
             "key": "guid: 1254007998, section id: 85784, class meeting id: 61373, column: 2",
@@ -274,10 +341,10 @@ def main():
                     {
                         "building_name": "Sherrerd Hall 104",
                         "days": "T, Th",
-                        "end_time": "12:20",
+                        "end_time": "12:20 PM",
                         "id": 61373,
                         "room": "TBD",
-                        "start_time": "11:00",
+                        "start_time": "11:00 AM",
                     }
                 ],
                 "class_section": "L01",
@@ -285,10 +352,9 @@ def main():
                 "course": {"course_id": "007998", "title": "Optimization"},
                 "enrollment": 109,
                 "id": 85784,
-                "instructor": {"name": "Bartolomeo Stellato"},
                 "startColumnIndex": 2,
                 "startRowIndex": 20,
-                "startTime": "11:00",
+                "startTime": "11:00 AM",
             },
         },
     ]

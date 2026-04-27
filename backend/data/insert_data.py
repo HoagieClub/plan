@@ -1,11 +1,12 @@
 import argparse
-import sys
 import csv
 import os
 import re
-from hoagieplan.logger import logger
+import sys
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 from tqdm import tqdm
 
@@ -25,6 +26,7 @@ from hoagieplan.models import (
     ClassYearEnrollment,
     Course,
     Department,
+    GradingInfo,
     Instructor,
     Section,
 )
@@ -32,6 +34,26 @@ from hoagieplan.models import (
 # -------------------------------------------------------------------------------------#
 
 CLASS_YEAR_ENROLLMENT_PATTERN = re.compile(r"Year (\d+): (\d+) students")
+
+GRADING_FIELDS = {
+    "Grading Final Exam": "grading_final_exam",
+    "Grading Mid Exam": "grading_mid_exam",
+    "Grading Home Final Exam": "grading_home_final_exam",
+    "Grading Home Mid Exam": "grading_home_mid_exam",
+    "Grading Paper Final Exam": "grading_paper_final_exam",
+    "Grading Paper Midterm Exam": "grading_paper_mid_exam",
+    "Grading Other Exam": "grading_other_exam",
+    "Grading Oral Presentation": "grading_oral_pres",
+    "Grading Quizzes": "grading_quizzes",
+    "Grading Lab Reports": "grading_lab_reports",
+    "Grading Papers": "grading_papers",
+    "Grading Problem Sets": "grading_prob_sets",
+    "Grading Prog Assign": "grading_prog_assign",
+    "Grading Precept Part": "grading_precept_part",
+    "Grading Term Papers": "grading_term_papers",
+    "Grading Design Projects": "grading_design_projects",
+    "Grading Other": "grading_other",
+}
 
 
 def _parse_class_year_enrollments(str, pattern):
@@ -62,7 +84,7 @@ def _format_duration(start_time, end_time):
 
 def _parse_time(time_str):
     try:
-        return datetime.strptime(time_str, "%I:%M %p").strftime("%H:%M")
+        return datetime.strptime(time_str, "%I:%M %p").time()
     except ValueError:
         return None
 
@@ -268,7 +290,8 @@ def insert_instructors(rows):
     for row in tqdm(rows, desc="Processing Instructors..."):
         instructor_emplid = row.get("Instructor EmplID", "").strip()
         if not instructor_emplid:
-            logger.warning("Skipping row with missing Instructor EmplID")
+            course_guid = row.get("Course GUID", "unknown")
+            logger.warning(f"Skipping row with missing Instructor EmplID (Course GUID: {course_guid})")
             continue
 
         first_name = row.get("Instructor First Name", "").strip()
@@ -316,6 +339,45 @@ def insert_instructors(rows):
 # -------------------------------------------------------------------------------------#
 
 
+def insert_course_instructors(rows):
+    logger.info("Starting Course-Instructor M2M insertions...")
+
+    # Cache course and instructor objects
+    course_cache = {course.guid: course for course in Course.objects.all()}
+    instructor_cache = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
+
+    # Create set of (course_guid, instructor_emplid) pairs
+    course_instructor_pairs: Dict[str, set[str]] = defaultdict(set)
+    for row in rows:
+        course_guid = row.get("Course GUID", "")
+        instructor_emplid = row.get("Instructor EmplID", "")
+        if course_guid and instructor_emplid:
+            course_instructor_pairs[course_guid].add(instructor_emplid)
+
+    updated_count = 0
+    try:
+        with transaction.atomic():
+            for course_guid, emp_ids in tqdm(
+                course_instructor_pairs.items(), desc="Linking Instructors to Courses..."
+            ):
+                course = course_cache.get(course_guid)
+                if not course:
+                    logger.warning(f"Course not found for GUID {course_guid}, skipping instructor linking")
+                    continue
+                instructors = [instructor_cache[emp_id] for emp_id in emp_ids if emp_id in instructor_cache]
+                if instructors:
+                    course.instructors.set(instructors)
+                    updated_count += 1
+    except Exception as e:
+        logger.error(f"Error in linking instructors to courses: {e}")
+
+    logger.info(f"Linked instructors to {updated_count} courses.")
+    logger.info("Course-Instructor M2M insertions completed!")
+
+
+# -------------------------------------------------------------------------------------#
+
+
 def insert_sections(rows):
     logger.info("Starting Section insertions and updates...")
     # Load caches for terms and courses
@@ -324,27 +386,31 @@ def insert_sections(rows):
 
     # Load existing sections to facilitate updates and prevent duplicates
     existing_sections = {
-        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section
-        for section in Section.objects.select_related("course", "term", "instructor").all()
+        (section.course.guid, section.class_number): section
+        for section in Section.objects.select_related("course", "term").all()
     }
-    existing_instructors = {instructor.emplid: instructor for instructor in Instructor.objects.all()}
 
     new_sections = []
     updated_sections = []
+    seen_keys = set()
 
     for row in tqdm(rows, desc="Processing Sections..."):
         class_number = int(row["Class Number"].strip())
         term_code = row["Term Code"].strip()
         course_guid = row["Course GUID"].strip()
-        instructor_emplid = row.get("Instructor EmplID", "").strip()
         course = course_cache.get(course_guid) if course_cache else Course.objects.get(guid=course_guid)
         term = term_cache.get(term_code) if term_cache else AcademicTerm.objects.get(term_code=term_code)
-        instructor = existing_instructors.get(instructor_emplid) if instructor_emplid else None
         # Skip if mandatory information is missing
         if not term or not course:
             continue
 
-        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
+        section_key = (course_guid, class_number)
+
+        # Skip duplicate rows (same section, different instructor)
+        if section_key in seen_keys:
+            continue
+        seen_keys.add(section_key)
+
         section_data = {
             "class_number": class_number,
             "class_type": row.get("Class Type", ""),
@@ -356,7 +422,6 @@ def insert_sections(rows):
             "enrollment": int(row.get("Class Enrollment", 0)),
             "course": course,
             "term": term,
-            "instructor": instructor,
         }
 
         section = existing_sections.get(section_key)
@@ -396,8 +461,8 @@ def insert_class_meetings(rows):
     logger.info("Starting ClassMeeting insertions and updates...")
 
     section_cache = {
-        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section
-        for section in Section.objects.select_related("course", "term", "instructor").all()
+        (section.course.guid, section.class_number): section
+        for section in Section.objects.select_related("course", "term").all()
     }
 
     existing_meetings = {
@@ -417,11 +482,10 @@ def insert_class_meetings(rows):
             term_code = int(course_guid[:4])
             class_number = int(row["Class Number"].strip())
             meeting_number = int(row["Meeting Number"].strip())
-            instructor_emplid = row.get("Instructor EmplID", "").strip()
         except (ValueError, KeyError) as e:
             logger.warning(f"Skipping row due to {e}: {row}")
             continue
-        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
+        section_key = (course_guid, class_number)
         section = section_cache.get(section_key)
 
         if section is None:
@@ -512,13 +576,70 @@ def insert_class_meetings(rows):
 # -------------------------------------------------------------------------------------#
 
 
+def insert_grading_info(rows):
+    logger.info("Starting GradingInfo insertions and updates...")
+
+    # Create map of Course GUID to grading info from CSV
+    guid_to_grading_data = {}
+    for row in rows:
+        guid = row["Course GUID"].strip()
+        if guid not in guid_to_grading_data:
+            guid_to_grading_data[guid] = {
+                model_field_name: int(row.get(csv_col_name, 0) or 0)
+                for csv_col_name, model_field_name in GRADING_FIELDS.items()
+            }
+
+    course_cache = {course.guid: course for course in Course.objects.filter(guid__in=guid_to_grading_data.keys())}
+    existing_grading_infos = {
+        gi.course.guid: gi
+        for gi in GradingInfo.objects.select_related("course").filter(course__guid__in=guid_to_grading_data.keys())
+    }
+
+    new_grading_infos = []
+    updated_grading_infos = []
+    update_fields = list(GRADING_FIELDS.values())
+
+    for guid, grading_data in tqdm(guid_to_grading_data.items(), desc="Processing GradingInfo..."):
+        course = course_cache.get(guid)
+        if not course:
+            logger.warning(f"Course not found for GUID {guid}, skipping GradingInfo")
+            continue
+
+        existing_grading_info = existing_grading_infos.get(guid)
+        if existing_grading_info:
+            update_required = False
+            for field, value in grading_data.items():
+                if getattr(existing_grading_info, field) != value:
+                    setattr(existing_grading_info, field, value)
+                    update_required = True
+            if update_required:
+                updated_grading_infos.append(existing_grading_info)
+        else:
+            new_grading_infos.append(GradingInfo(course=course, **grading_data))
+
+    try:
+        with transaction.atomic():
+            if new_grading_infos:
+                GradingInfo.objects.bulk_create(new_grading_infos)
+            if updated_grading_infos:
+                GradingInfo.objects.bulk_update(updated_grading_infos, update_fields)
+    except Exception as e:
+        logger.error(f"Error in inserting/updating GradingInfo: {e}")
+
+    logger.info(f"Inserted {len(new_grading_infos)} new GradingInfo rows, updated {len(updated_grading_infos)} existing.")
+    logger.info("GradingInfo insertions and updates completed!")
+
+
+# -------------------------------------------------------------------------------------#
+
+
 def insert_class_year_enrollments(rows):
     logger.info("Starting ClassYearEnrollment insertions and updates...")
 
     # Initial cache of Section IDs to minimize database queries.
     section_cache = {
-        (section.course.guid, section.class_number, section.instructor.emplid if section.instructor else None): section.id
-        for section in Section.objects.select_related("course", "term", "instructor").all()
+        (section.course.guid, section.class_number): section.id
+        for section in Section.objects.select_related("course", "term").all()
     }
 
     # Fetch existing enrollments in bulk and create a dictionary for faster lookup
@@ -533,8 +654,7 @@ def insert_class_year_enrollments(rows):
     for row in tqdm(rows, desc="Processing Class Year Enrollments..."):
         course_guid = row["Course GUID"].strip()
         class_number = int(row["Class Number"].strip())
-        instructor_emplid = row.get("Instructor EmplID", "").strip()
-        section_key = (course_guid, class_number, instructor_emplid if instructor_emplid else None)
+        section_key = (course_guid, class_number)
         section_id = section_cache.get(section_key)
 
         if section_id:
@@ -552,8 +672,8 @@ def insert_class_year_enrollments(rows):
                 existing_enrollment = existing_enrollments.get(enrollment_key)
 
                 if existing_enrollment:
-                    if existing_enrollment.enrl_seats != enrl_seats:
-                        updated_enrollment_data.append((existing_enrollment.id, enrl_seats))
+                    if existing_enrollment.enrl_seats != int(enrl_seats):
+                        updated_enrollment_data.append((existing_enrollment.id, int(enrl_seats)))
                 else:
                     new_enrollment = ClassYearEnrollment(
                         section_id=section_id,
@@ -634,7 +754,13 @@ def insert_course_data(csv_path):
                 insert_courses(formatted_rows)
 
             with transaction.atomic():
+                insert_grading_info(formatted_rows)
+
+            with transaction.atomic():
                 insert_instructors(formatted_rows)
+
+            with transaction.atomic():
+                insert_course_instructors(formatted_rows)
 
             with transaction.atomic():
                 insert_sections(formatted_rows)
@@ -650,6 +776,7 @@ def insert_course_data(csv_path):
 
 
 # -------------------------------------------------------------------------------------#
+
 
 # Usage: python insert_data.py ../s2026.csv
 def main():

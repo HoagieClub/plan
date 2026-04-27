@@ -1,3 +1,4 @@
+# This certificate is no longer offered
 ---
 type: Certificate
 name: Technology and Society - Energy Track
@@ -38,6 +39,7 @@ contacts:
 - type: Director
   name: Naveen Verma
   email: nverma@princeton.edu
+iw_required: true
 req_list:
 - name: Gateway Course
   max_counted: 1

@@ -18,6 +18,7 @@ contacts:
 - type: Program Director
   name: Beth Lew-Williams
   email: bethlw@princeton.edu
+iw_required: false
 req_list:
 - name: Core
   max_counted: 1

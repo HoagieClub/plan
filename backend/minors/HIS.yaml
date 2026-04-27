@@ -26,6 +26,7 @@ excluded_majors:
 - HIS
 excluded_minors:
 - HSTM
+iw_required: true
 req_list:
   - name: History Courses
     min_needed: 5

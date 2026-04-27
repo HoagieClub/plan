@@ -24,22 +24,24 @@ limitations under the License.
 from django.contrib import admin
 from django.urls import path
 
-from hoagieplan.api.auth import csrf
-from hoagieplan.api.calendar import configuration, ical_generator
+from hoagieplan.api.calendar import ical_generator
 from hoagieplan.api.calendar.calendar_configuration_view import CalendarConfigurationView
 from hoagieplan.api.calendar.calendar_event_view import CalendarEventView
-from hoagieplan.api.dashboard import details, requirements, search, upload
-from hoagieplan.api.dashboard import almost_completed_api
-from hoagieplan.api.dashboard import program_details_api
+from hoagieplan.api.dashboard import (
+    almost_completed,
+    comments,
+    details,
+    program_details_api,
+    requirements,
+    search,
+    upload,
+)
 from hoagieplan.api.profile import info, tutorial
 
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
-    # CSRF Token for approving POST requests
-    path("csrf/", csrf.csrf_token_view, name="csrf"),
     # Profile
-    path("profile/", info.profile, name="profile"),
     path("profile/get_user/", info.get_user, name="get_user"),
     path("profile/update/", info.update_profile, name="update_profile"),
     path("profile/class-year/", info.update_class_year, name="update_class_year"),
@@ -56,16 +58,11 @@ urlpatterns = [
     path("update_requirements/", requirements.update_requirements, name="update_requirements"),
     path("requirement_info/", requirements.requirement_info, name="requirement_info"),
     path("course/details/", details.course_details, name="course_details"),
-    path("course/comments/", details.course_comments_view, name="course_comments"),
+    path("course/comments/", comments.course_comments_view, name="course_comments"),
     path("upload/", upload.upload_file, name="upload_file"),
-    path("almost_completed/", almost_completed_api.almost_completed, name="almost_completed"),
+    path("almost_completed/", almost_completed.almost_completed, name="almost_completed"),
     path("program_details/<str:code>/", program_details_api.program_details, name="program_details"),
     # Calendar
-    path(
-        "fetch_calendar_classes/<str:term>/<str:course_id>/",
-        configuration.FetchCalendarClasses.as_view(),
-        name="fetch_calendar_classes",
-    ),
     path("export-calendar/", ical_generator.export_calendar_view, name="export_calendar"),
     path("calendars/<int:term>/", CalendarConfigurationView.as_view(), name="calendars"),
     path(

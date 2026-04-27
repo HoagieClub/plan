@@ -5,9 +5,8 @@ import { useEffect } from 'react';
 import { type User } from '@auth0/nextjs-auth0/types';
 import { create } from 'zustand';
 
-import type { Profile, MajorMinorType, UserState } from '@/types';
 import { fetchCustomUser } from '@/services/userService';
-import { fetchCsrfToken } from '@/utils/csrf';
+import type { Profile, MajorMinorType, UserState } from '@/types';
 
 // Utility function: Map Auth0 user profile to app's Profile type
 async function mapUserProfileToProfile(userProfile: User): Promise<Profile> {
@@ -24,7 +23,7 @@ async function mapUserProfileToProfile(userProfile: User): Promise<Profile> {
 		name: 'Undeclared',
 	};
 
-	const user = await fetchCustomUser(netId, firstName, lastName, email);
+	const user = await fetchCustomUser();
 
 	return {
 		firstName: user.firstName || firstName,

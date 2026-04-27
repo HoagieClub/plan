@@ -11,10 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-from urllib.parse import urljoin
 
 import dj_database_url
-import django_heroku
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -49,13 +47,8 @@ INSTALLED_APPS = [
     "hoagieplan",
 ]
 
-# Required since frontend and backend are served on different domains. Do not change!
-SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE")
-CSRF_COOKIE_SAMESITE = os.getenv("CSRF_COOKIE_SAMESITE")
-
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "false").lower() == "true"
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
-CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "false").lower() == "true"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -63,34 +56,62 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
-HOMEPAGE = os.getenv("HOAGIEPLAN")
-DASHBOARD = urljoin(os.getenv("HOAGIEPLAN"), "dashboard")
-
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
 
-CSRF_TRUSTED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOMAIN')}"]
+LOGS = os.getenv("LOGS", "False").lower() == "true"
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "{asctime} [{levelname}] {name}: {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "standard",
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG",
-        "propagate": True,
+        "level": "WARNING",
+    },
+    "loggers": {
+        # Your application
+        "hoagieplan": {
+            "level": "DEBUG" if LOGS else "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        # Django internals
+        "django": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        # SQL queries
+        "django.db.backends": {
+            "level": "DEBUG" if LOGS else "WARNING",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        # HTTP requests
+        "django.request": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
     },
 }
 
@@ -121,8 +142,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Select the appropriate database URL based on DEBUG setting
 os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") if DEBUG else os.getenv("DATABASE_URL")
-DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"), ssl_require=False)}
-DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"), ssl_require=False, conn_health_checks=True
+    )
+}
 
 AUTH_USER_MODEL = "hoagieplan.CustomUser"
 
@@ -181,6 +205,3 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# Configure Django App for Heroku.
-django_heroku.settings(locals(), databases=False)
