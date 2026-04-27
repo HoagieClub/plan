@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -17,6 +18,16 @@ TOP_ALMOST_COMPLETED = 100
 class ProgramTable(Enum):
 	MINOR = "Minor"
 	CERTIFICATE = "Certificate"
+
+
+class ProgramSerializer(serializers.Serializer):
+	code = serializers.CharField()
+	name = serializers.CharField()
+	needed = serializers.IntegerField()
+	type = serializers.CharField()
+	prereq_fulfilled = serializers.BooleanField(allow_null=True)
+	independent_work_required = serializers.BooleanField()
+	incomplete_requirements = serializers.ListField(child=serializers.CharField())
 
 
 @api_view(["GET"])
@@ -50,7 +61,7 @@ def almost_completed(request):
 				}
 			)
 
-		return Response(out)
+		return Response(ProgramSerializer(out, many=True).data)
 	except Exception as e:
 		logger.error(f"Failed to compute almost completed programs: {e}", exc_info=True)
 		return Response([])
