@@ -119,13 +119,13 @@ export function MinorDetailsPanel({
 									})()}
 								</span>
 							</div>
-							{selectedProgram.incompleteRequirements &&
-								selectedProgram.incompleteRequirements.length > 0 && (
+							{selectedProgram.incomplete_requirements &&
+								selectedProgram.incomplete_requirements.length > 0 && (
 									<div className='mt-3 space-y-2'>
 										<div className='text-xs font-semibold text-gray-700'>
 											Incomplete requirements:
 										</div>
-										{selectedProgram.incompleteRequirements.map((req, idx) => (
+										{selectedProgram.incomplete_requirements.map((req, idx) => (
 											<div
 												key={idx}
 												className='flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2'

@@ -184,9 +184,9 @@ export function MinorsList({
 										return <span>{m.needed} more courses needed</span>;
 									})()}
 								</div>
-								{m.incompleteRequirements && m.incompleteRequirements.length > 0 && (
+								{m.incomplete_requirements && m.incomplete_requirements.length > 0 && (
 									<div className='mt-2 space-y-1'>
-										{m.incompleteRequirements.map((req, idx) => (
+										{m.incomplete_requirements.map((req, idx) => (
 											<div
 												key={idx}
 												className='flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2'
@@ -213,19 +213,19 @@ export function MinorsList({
 							</div>
 							<div className='mt-3 flex flex-wrap gap-2'>
 								<div
-									className={getPrereqClass(m.prereqFulfilled)}
-									style={m.prereqFulfilled === true ? { backgroundColor: '#56a265' } : {}}
+									className={getPrereqClass(m.prereq_fulfilled)}
+									style={m.prereq_fulfilled === true ? { backgroundColor: '#56a265' } : {}}
 								>
-									{getPrereqText(m.prereqFulfilled)}
+									{getPrereqText(m.prereq_fulfilled)}
 								</div>
 								{/* <div
 									className={
-										m.independentWorkRequired
+										m.independent_work_required
 											? 'inline-block rounded-full bg-gray-700 px-3 py-1 text-xs text-white'
 											: 'inline-block rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-700'
 									}
 								>
-									{m.independentWorkRequired
+									{m.independent_work_required
 										? 'Independent Work Required'
 										: 'Independent Work Not Required'}
 								</div> */}

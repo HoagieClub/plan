@@ -7,9 +7,9 @@ const ProgramSchema = z.object({
 	name: z.string(),
 	needed: z.number(),
 	type: z.string(),
-	prereqFulfilled: z.boolean().nullable(),
-	independentWorkRequired: z.boolean(),
-	incompleteRequirements: z.array(z.string()),
+	prereq_fulfilled: z.boolean().nullable(),
+	independent_work_required: z.boolean(),
+	incomplete_requirements: z.array(z.string()),
 });
 
 const AlmostCompletedResponseSchema = z.object({

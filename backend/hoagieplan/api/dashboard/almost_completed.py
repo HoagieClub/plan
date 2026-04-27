@@ -23,7 +23,7 @@ class ProgramTable(Enum):
 def almost_completed(request):
 	"""Return a JSON list of almost-completed programs for the current user.
 
-	Response format: [{"code": "COS", "name": "Computer Science", "needed": 1, "type": "minor", "prereqFulfilled": true|false|null, "independentWorkRequired": true|false, "incompleteRequirements": ["Electives (1 more)", "Advanced Courses (2 more)"]}, ...]
+	Response format: [{"code": "COS", "name": "Computer Science", "needed": 1, "type": "minor", "prereq_fulfilled": true|false|null, "independent_work_required": true|false, "incomplete_requirements": ["Electives (1 more)", "Advanced Courses (2 more)"]}, ...]
 	"""
 	try:
 		# Optimized: compute all data in a single check_user() call
@@ -44,9 +44,9 @@ def almost_completed(request):
 					"name": name,
 					"needed": needed,
 					"type": typ,
-					"prereqFulfilled": prereq_fulfilled,
-					"independentWorkRequired": independent_work_required,
-					"incompleteRequirements": incomplete_requirements,
+					"prereq_fulfilled": prereq_fulfilled,
+					"independent_work_required": independent_work_required,
+					"incomplete_requirements": incomplete_requirements,
 				}
 			)
 
