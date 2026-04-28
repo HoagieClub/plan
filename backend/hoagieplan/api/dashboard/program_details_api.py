@@ -1,6 +1,7 @@
 import json
 
 from django.http import JsonResponse
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 
 from constants import CERTIFICATES, MINORS
@@ -15,6 +16,28 @@ def serialize_requirement(requirement):
 		"explanation": requirement.explanation,
 		"min_needed": requirement.min_needed,
 	}
+
+
+class ContactSerializer(serializers.Serializer):
+	type = serializers.CharField()
+	name = serializers.CharField()
+	email = serializers.CharField(required=False)
+
+
+class RequirementSerializer(serializers.Serializer):
+	name = serializers.CharField()
+	explanation = serializers.CharField(allow_null=True, required=False)
+	min_needed = serializers.CharField(required=False)
+
+
+class ProgramDetailsSerializer(serializers.Serializer):
+	code = serializers.CharField()
+	name = serializers.CharField()
+	type = serializers.CharField()
+	description = serializers.CharField(allow_blank=True)
+	urls = serializers.ListField(child=serializers.CharField())
+	contacts = ContactSerializer(many=True)
+	requirements = RequirementSerializer(many=True)
 
 
 @api_view(["GET"])
