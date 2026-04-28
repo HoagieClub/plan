@@ -2,10 +2,16 @@ import { z } from 'zod';
 
 const PROGRAM_DETAILS_URL = '/api/hoagie/program_details/';
 
-const ProgramRequirementSchema = z.object({
+const ContactSchema = z.object({
+	type: z.string(),
+	name: z.string(),
+	email: z.string().optional(),
+});
+
+const RequirementSchema = z.object({
 	name: z.string(),
 	explanation: z.string().nullable().optional(),
-	min_needed: z.union([z.string(), z.number()]).optional(),
+	min_needed: z.string().optional(),
 });
 
 const ProgramDetailsSchema = z.object({
@@ -14,19 +20,12 @@ const ProgramDetailsSchema = z.object({
 	type: z.string(),
 	description: z.string().default(''),
 	urls: z.array(z.string()).default([]),
-	contacts: z
-		.array(
-			z.object({
-				type: z.string(),
-				name: z.string(),
-				email: z.string().optional(),
-			})
-		)
-		.default([]),
-	requirements: z.array(ProgramRequirementSchema).default([]),
+	contacts: z.array(ContactSchema).default([]),
+	requirements: z.array(RequirementSchema).default([]),
 });
 
-export type ProgramRequirement = z.infer<typeof ProgramRequirementSchema>;
+export type Contact = z.infer<typeof ContactSchema>;
+export type ProgramRequirement = z.infer<typeof RequirementSchema>;
 export type ProgramDetails = z.infer<typeof ProgramDetailsSchema>;
 
 export async function getProgramDetails(code: string): Promise<ProgramDetails | null> {
