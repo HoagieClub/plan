@@ -120,11 +120,11 @@ export const CalendarSearch: FC = () => {
 					throw new Error(`Server returned ${response.status}: ${response.statusText}`);
 				}
 
-				const data: { courses: CourseWithTerms[] } = await response.json();
-				setCalendarSearchResults(data.courses);
-				if (data.courses.length > 0) {
+				const data: CourseWithTerms[] = await response.json();
+				setCalendarSearchResults(data);
+				if (data.length > 0) {
 					addRecentSearch(searchQuery);
-					searchCache.set(searchQuery, data.courses);
+					searchCache.set(searchQuery, data);
 				}
 			} catch (error) {
 				setError(`There was an error fetching courses: ${error.message || ''}`);

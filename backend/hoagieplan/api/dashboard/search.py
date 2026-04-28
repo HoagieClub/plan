@@ -32,10 +32,6 @@ class CourseWithTermsSerializer(CourseSerializer):
 		fields = (*CourseSerializer.Meta.fields, "terms")
 
 
-class SearchResultSerializer(serializers.Serializer):
-	courses = CourseWithTermsSerializer(many=True)
-
-
 def make_sort_key(dept):
 	def sort_key(course):
 		crosslistings = course["crosslistings"]
@@ -77,7 +73,7 @@ def search_courses(request):
 	grading_options = request.GET.get("grading")
 
 	if not query:
-		return _empty_courses_response()
+		return Response([])
 
 	return search_courses_helper(query, term, distribution, levels, grading_options)
 
@@ -103,7 +99,7 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 		num = ""
 		search_key = dept
 	else:
-		return _empty_courses_response()
+		return Response([])
 
 	query_conditions = Q()
 
@@ -168,7 +164,8 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 		if exact_match_course:
 			# If an exact match is found, return only that course
 			serialized_course = CourseSerializer(exact_match_course, many=True)
-			return _courses_response(attach_terms(serialized_course.data, exact_match_course))
+			with_terms = attach_terms(serialized_course.data, exact_match_course)
+			return Response(CourseWithTermsSerializer(with_terms, many=True).data)
 
 		filtered_query = query_conditions
 		if len(search_key) > 3:
@@ -206,16 +203,8 @@ def search_courses_helper(query, term=None, distribution=None, levels=None, grad
 			serialized_courses = CourseSerializer(courses, many=True)
 			with_terms = attach_terms(serialized_courses.data, courses)
 			sorted_data = sorted(with_terms, key=make_sort_key(dept))
-			return _courses_response(sorted_data)
-		return _empty_courses_response()
+			return Response(CourseWithTermsSerializer(sorted_data, many=True).data)
+		return Response([])
 	except Exception as e:
 		logger.error(f"An error occurred while searching for courses: {e}")
 		return Response({"error": "Internal Server Error"}, status=500)
-
-
-def _courses_response(courses_list):
-	return Response(SearchResultSerializer({"courses": courses_list}).data)
-
-
-def _empty_courses_response():
-	return _courses_response([])

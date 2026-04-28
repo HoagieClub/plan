@@ -110,11 +110,11 @@ export const Search: FC = () => {
 				const response = await fetch(`/api/hoagie/search?${queryString}`);
 
 				if (response.ok) {
-					const data: { courses: CourseWithTerms[] } = await response.json();
-					setSearchResults(data.courses);
-					if (data.courses.length > 0) {
+					const data: CourseWithTerms[] = await response.json();
+					setSearchResults(data);
+					if (data.length > 0) {
 						addRecentSearch(searchQuery);
-						searchCache.set(searchQuery, data.courses);
+						searchCache.set(searchQuery, data);
 					}
 				} else {
 					setError(`Server returned ${response.status}: ${response.statusText}`);
