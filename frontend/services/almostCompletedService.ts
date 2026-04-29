@@ -24,9 +24,7 @@ export type AlmostCompletedResult =
 
 export async function getAlmostCompletedPrograms(): Promise<AlmostCompletedResult> {
 	try {
-		const response = await fetch(ALMOST_COMPLETED_URL, {
-			credentials: 'include',
-		});
+		const response = await fetch(ALMOST_COMPLETED_URL);
 
 		if (!response.ok) {
 			const statusCode = response.status;

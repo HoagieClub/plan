@@ -30,9 +30,7 @@ export type ProgramDetails = z.infer<typeof ProgramDetailsSchema>;
 
 export async function getProgramDetails(code: string): Promise<ProgramDetails | null> {
 	try {
-		const response = await fetch(`${PROGRAM_DETAILS_URL}${code}`, {
-			credentials: 'include',
-		});
+		const response = await fetch(`${PROGRAM_DETAILS_URL}${code}`);
 
 		if (!response.ok) {
 			return null;
