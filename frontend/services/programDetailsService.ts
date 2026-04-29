@@ -25,7 +25,7 @@ const ProgramDetailsSchema = z.object({
 });
 
 export type Contact = z.infer<typeof ContactSchema>;
-export type ProgramRequirement = z.infer<typeof RequirementSchema>;
+export type Requirement = z.infer<typeof RequirementSchema>;
 export type ProgramDetails = z.infer<typeof ProgramDetailsSchema>;
 
 export async function getProgramDetails(code: string): Promise<ProgramDetails | null> {
