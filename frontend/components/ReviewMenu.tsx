@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 
 import { CircularProgress } from '@mui/material';
 
@@ -7,6 +7,7 @@ import { AISummary } from '@/components/ui/AISummary';
 interface ReviewMenuProps {
 	dept: string;
 	coursenum: string;
+	term_code?: string;
 	onRatingLoaded?: (rating: number) => void;
 	onSummaryLoaded?: (summary: string) => void;
 }
@@ -14,6 +15,7 @@ interface ReviewMenuProps {
 export const ReviewMenu: FC<ReviewMenuProps> = ({
 	dept,
 	coursenum,
+	term_code,
 	onRatingLoaded,
 	onSummaryLoaded,
 }) => {
@@ -21,37 +23,64 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({
 	const [loading, setLoading] = useState<boolean>(true);
 	const [summary, setSummary] = useState<string>('');
 
+	// Keep latest callbacks in refs — stable identity, never stale
+	const onRatingLoadedRef = useRef(onRatingLoaded);
+	const onSummaryLoadedRef = useRef(onSummaryLoaded);
 	useEffect(() => {
-		if (dept && coursenum) {
-			const fetchReviews = async () => {
-				try {
-					setLoading(true);
+		onRatingLoadedRef.current = onRatingLoaded;
+	}, [onRatingLoaded]);
+	useEffect(() => {
+		onSummaryLoadedRef.current = onSummaryLoaded;
+	}, [onSummaryLoaded]);
 
-					const params = new URLSearchParams({ dept, coursenum });
-					const response = await fetch(`/api/hoagie/course/comments?${params}`);
+	useEffect(() => {
+		if (!dept || !coursenum) {
+			return;
+		}
 
-					const data = await response.json();
-					if (data?.reviews) {
-						setReviews(data.reviews);
-					}
-					if (data?.rating) {
-						onRatingLoaded?.(data.rating);
-					}
-					if (data?.summary) {
-						setSummary(data.summary);
-						onSummaryLoaded?.(data.summary);
-					}
-				} catch (err) {
+		const controller = new AbortController();
+
+		const fetchReviews = async () => {
+			try {
+				setLoading(true);
+				const params = new URLSearchParams({ dept, coursenum });
+				if (term_code) {
+					params.append('term_code', term_code);
+				}
+
+				const response = await fetch(`/api/hoagie/course/comments?${params}`, {
+					signal: controller.signal,
+				});
+				const data = await response.json();
+
+				if (data?.reviews) {
+					setReviews(data.reviews);
+				}
+				if (data?.rating) {
+					onRatingLoadedRef.current?.(data.rating);
+				}
+				if (data?.summary) {
+					setSummary(data.summary);
+					onSummaryLoadedRef.current?.(data.summary);
+				}
+			} catch (err) {
+				if ((err as Error).name !== 'AbortError') {
 					console.error('Error fetching course reviews:', err);
 					setReviews([]);
-				} finally {
+				}
+			} finally {
+				// Only clear loading if this effect instance wasn't cancelled
+				if (!controller.signal.aborted) {
 					setLoading(false);
 				}
-			};
+			}
+		};
 
-			void fetchReviews();
-		}
-	}, [dept, coursenum]);
+		void fetchReviews();
+		return () => controller.abort();
+
+		// Callbacks intentionally excluded — accessed via stable refs above
+	}, [dept, coursenum, term_code]);
 
 	if (loading) {
 		return (
