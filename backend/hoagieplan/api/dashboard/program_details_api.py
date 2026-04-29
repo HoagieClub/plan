@@ -33,14 +33,10 @@ class ProgramDetailsSerializer(serializers.Serializer):
 
 @api_view(["GET"])
 def program_details(request, code):
-	"""Return full details for a program (minor or certificate) from the database.
+	"""Return full details for a program (minor or certificate).
 
 	Args:
 	    code: Program code (e.g., "FIN", "QCB")
-
-	Returns:
-	    JSON with program details including description, contacts, urls, requirements
-
 	"""
 	try:
 		# Determine program type using constants
