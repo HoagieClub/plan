@@ -42,11 +42,7 @@ export const AuthButton: FC<AuthButtonProps> = ({ variant = 'login', href = '' }
 		: '/auth/login?connection=Princeton-CAS&returnTo=/dashboard';
 	return (
 		<a href={href === '' ? defHref : href}>
-			<Button
-				height={56}
-				width={majorScale(35)}
-				appearance={isLogout ? 'default' : 'primary'}
-			>
+			<Button height={56} width={majorScale(35)} appearance={isLogout ? 'default' : 'primary'}>
 				{logo}
 				<Pane display='flex'>
 					{isLogout ? 'Logout from' : 'Login using'}
