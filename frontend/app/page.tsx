@@ -103,7 +103,16 @@ export default function Index() {
 				</p>
 				<div>
 					<Pane display='flex' flexDirection='column' alignItems='center' marginTop='30px'>
-						{Profile}
+						{/* minHeight reserves space for tallest auth state; prevents CLS when spinner → buttons */}
+						<Pane
+							minHeight={300}
+							display='flex'
+							flexDirection='column'
+							alignItems='center'
+							justifyContent='center'
+						>
+							{Profile}
+						</Pane>
 						<Link href='https://hoagie.io'>
 							<Button
 								height={56}

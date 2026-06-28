@@ -22,7 +22,8 @@ const theme = extendTheme({
 export const SkeletonApp: FC = () => {
 	return (
 		<CssVarsProvider theme={theme}>
-			<div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+			{/* 87vh matches Canvas containerGridHeight; avoids footer CLS when skeleton swaps to real content */}
+			<div style={{ display: 'flex', width: '100%', height: '87vh' }}>
 				{/* Body container */}
 				<div style={{ display: 'flex', width: '100%', height: '100%' }}>
 					{/* Left sidebar with search bar */}
@@ -30,7 +31,7 @@ export const SkeletonApp: FC = () => {
 						<Skeleton variant='rectangular' height='100px' sx={{ mt: '10px', bgcolor: 'red' }} />
 						<Skeleton
 							variant='rectangular'
-							height='calc(100vh - 120px)'
+							height='calc(87vh - 125px)'
 							sx={{ mt: '2px', bgcolor: 'red' }}
 						/>
 					</div>
@@ -43,7 +44,7 @@ export const SkeletonApp: FC = () => {
 							gridAutoRows: '1fr',
 							gap: '25px',
 							width: '40%',
-							height: 'full',
+							height: '100%',
 							marginTop: '10px',
 							marginLeft: '10px',
 						}}
@@ -57,7 +58,7 @@ export const SkeletonApp: FC = () => {
 					<div style={{ width: '25%', marginRight: '12px', marginLeft: '22px' }}>
 						<Skeleton
 							variant='rectangular'
-							height='calc(100vh - 20px)'
+							height='calc(87vh - 22px)'
 							sx={{
 								mt: '10px',
 								bgcolor: 'red',

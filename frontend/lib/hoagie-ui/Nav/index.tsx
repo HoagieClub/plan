@@ -87,22 +87,30 @@ export const Nav: FC<NavProps> = ({
 			) : (
 				<Pane width='100%' height={20} background={theme.title} />
 			)}
-			<Pane
-				display='flex'
-				justifyContent='center'
-				width='100%'
-				height={majorScale(9)}
-				background='white'
+			{/* inline styles avoid CSS-in-JS timing CLS — these three layout panes were
+			    shifting as Evergreen injected their styles after first paint */}
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'center',
+					width: '100%',
+					height: '72px',
+					background: 'white',
+				}}
 			>
-				<Pane
-					display='flex'
-					alignItems='center'
-					justifyContent='space-between'
-					width='100%'
-					height='100%'
-					maxWidth={1200}
-					paddingX={majorScale(5)}
-					fontSize={18}
+				<div
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+						width: '100%',
+						height: '100%',
+						maxWidth: '1200px',
+						paddingLeft: '40px',
+						paddingRight: '40px',
+						fontSize: '18px',
+						boxSizing: 'border-box',
+					}}
 				>
 					<Link href='/'>
 						<Pane cursor='pointer' position='relative'>
@@ -125,7 +133,7 @@ export const Nav: FC<NavProps> = ({
 							)}
 						</Pane>
 					</Link>
-					<Pane display='flex' alignItems='center'>
+					<div style={{ display: 'flex', alignItems: 'center' }}>
 						<TabNavigation>
 							{tabs.map((tab) => (
 								<Tab
@@ -169,9 +177,9 @@ export const Nav: FC<NavProps> = ({
 							</Popover>
 						)}
 						{tutorialModal}
-					</Pane>
-				</Pane>
-			</Pane>
+					</div>
+				</div>
+			</div>
 			{settingsModal}
 		</Pane>
 	);

@@ -1,5 +1,5 @@
 .tabContainer {
-	height: 100vh;
+	flex-grow: 1;
 	margin-top: 1vh;
 	margin-bottom: 1vh;
 	margin-left: 0.5vw;
