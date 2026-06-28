@@ -1,8 +1,6 @@
-import json
-
 import pdfplumber
-
-from hoagieplan.api.dashboard.search import search_courses_helper
+import re
+from hoagieplan.models import Course
 
 TERMS = {
 	"Spring 2027": "1284",
@@ -77,24 +75,60 @@ def get_current_term(year_and_semester_string: str) -> str:
     return current_term
 
 
-# Queries the DB for course_id given course
-# Ex: get_course_id("COS 126") --> 002051
-def get_course_id(course):
-    response = search_courses_helper(course, None, None, None, None)
-    string_data = response.content.decode("utf-8")
+# Batch queries DB for course_ids given all unique courses in transcript_dict.
+# Returns mapping: "COS 126" -> "002051".
+def get_course_ids_for_courses(transcript_dict):
+    course_set = set()
+    for courses in transcript_dict.values():
+        course_set.update(course.strip().upper() for course in courses if course and course.strip())
 
-    # Parse JSON string to dictionary
-    courses = json.loads(string_data)["courses"]
-    if not courses:  # Only fail if no courses found
-        return None
+    if not course_set:
+        return {}
 
-    # If multiple matches, look for exact crosslisting match
-    for course_match in courses:
-        if course_match["crosslistings"].strip() == course.strip():
-            return course_match["course_id"]
-    
-    # If no exact match found, use the first result
-    return courses[0]["course_id"]
+    # Fast exact-match path for cases where DB crosslistings already match transcript tokens.
+    matched_courses = Course.objects.filter(crosslistings__in=course_set).values("crosslistings", "course_id")
+
+    course_map = {}
+    for row in matched_courses:
+        cross = (row["crosslistings"] or "").strip().upper()
+        if cross and cross not in course_map:
+            course_map[cross] = row["course_id"]
+
+    unresolved = [course for course in course_set if course not in course_map]
+    if not unresolved:
+        return course_map
+
+    # Second batch path: map by indexed department code + catalog number.
+    parsed = []
+    for course in unresolved:
+        match = re.match(r"^([A-Z]{3,4})\s+([0-9]+[A-Z]?)$", course)
+        if match:
+            parsed.append((course, match.group(1), match.group(2)))
+
+    if parsed:
+        dept_codes = {dept for _, dept, _ in parsed}
+        catalog_numbers = {num for _, _, num in parsed}
+        dept_catalog_matches = (
+            Course.objects.filter(
+                department__code__in=dept_codes,
+                catalog_number__in=catalog_numbers,
+            )
+            .select_related("department")
+            .values("department__code", "catalog_number", "course_id")
+        )
+
+        by_dept_catalog = {}
+        for row in dept_catalog_matches:
+            key = f"{(row['department__code'] or '').upper()} {str(row['catalog_number']).upper()}"
+            if key not in by_dept_catalog:
+                by_dept_catalog[key] = row["course_id"]
+
+        for original_course, _, _ in parsed:
+            cid = by_dept_catalog.get(original_course)
+            if cid and original_course not in course_map:
+                course_map[original_course] = cid
+
+    return course_map
 
 
 # Returns course_guid from the semester and course_id
@@ -102,22 +136,24 @@ def get_course_guid(semester, course_id):
     return TERMS[semester] + course_id
 
 
-# Convert transcript_dict into using guids 
+# Convert transcript_dict into guids.
 def convert_to_guids(transcript_dict):
     new_transcript_dict = {}
     missing_courses = []
 
+    course_map = get_course_ids_for_courses(transcript_dict)
+
     for semester, courses in transcript_dict.items():
         courses_guids = []
         for course in courses:
-            course_id = get_course_id(course)
+            course_id = course_map.get(course.strip().upper())
             if course_id is None:
                 missing_courses.append(course)
                 continue
             course_guid = get_course_guid(semester, course_id)
             courses_guids.append(course_guid)
         new_transcript_dict[semester] = courses_guids
-    
+
     return new_transcript_dict, missing_courses
 
 

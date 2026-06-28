@@ -68,10 +68,13 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 				{children && <div className={styles.chipContainer}>{children}</div>}
 				<div className={styles.titleRow}>
 					<div className={styles.title}>{course.title}</div>
+
 					{course.quality_of_course && (
 						<div
 							className={styles.rating}
-							style={{ background: getRatingBackground(course.quality_of_course) }}
+							style={{
+								background: getRatingBackground(course.quality_of_course),
+							}}
 						>
 							{course.quality_of_course.toFixed(2)}
 						</div>

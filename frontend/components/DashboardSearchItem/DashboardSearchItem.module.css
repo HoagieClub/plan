@@ -32,7 +32,12 @@
 
 .title {
 	color: #6b7280;
-	line-height: 1.4;
+	color: #000;
+	font-family: Poppins;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 500;
+	line-height: 100%; /* 14px */
 	margin-top: 0.4vw;
 	margin-bottom: 0.4vw;
 	flex: 1;
