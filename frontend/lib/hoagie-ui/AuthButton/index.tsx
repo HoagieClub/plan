@@ -14,8 +14,6 @@ import type { FC } from 'react';
 
 import { Button, Pane, majorScale, minorScale } from 'evergreen-ui';
 
-import { hoagiePlan } from '@/lib/hoagie-ui/Theme/themes';
-
 interface AuthButtonProps {
 	/** defines whether the button is for "login" or "logout" */
 	variant?: string;
@@ -27,7 +25,6 @@ interface AuthButtonProps {
  * different Hoagie applications.
  */
 export const AuthButton: FC<AuthButtonProps> = ({ variant = 'login', href = '' }) => {
-	const theme = hoagiePlan;
 	const logo = (
 		<h2
 			style={{
@@ -48,7 +45,6 @@ export const AuthButton: FC<AuthButtonProps> = ({ variant = 'login', href = '' }
 			<Button
 				height={56}
 				width={majorScale(35)}
-				background={theme.colors.white}
 				appearance={isLogout ? 'default' : 'primary'}
 			>
 				{logo}
