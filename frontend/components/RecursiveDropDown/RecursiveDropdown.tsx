@@ -18,6 +18,18 @@ import { Modal } from '@/components/Modal';
 import { cn } from '@/lib/utils';
 import useSearchStore from '@/store/searchSlice';
 import useUserSlice from '@/store/userSlice';
+import type { Course } from '@/types';
+
+interface RequirementExplanation {
+	req_id: string;
+	explanation: string;
+	completed_by_semester: number;
+	dist_req: string[];
+	sorted_dept_list: string[];
+	sorted_course_list: Course[];
+	sorted_dept_sample_list: Course[];
+	marked_satisfied: boolean;
+}
 
 interface Dictionary {
 	// TODO: Address this typing eventually.
@@ -118,10 +130,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 
 	const [showPopup, setShowPopup] = useState<boolean>(false);
 	const [markedSatisfied, setMarkedSatisfied] = useState<boolean>(false);
-
-	// TODO: Address this typing eventually.
-
-	const [explanation, setExplanation] = useState<{ [key: number]: any } | null>(null);
+	const [explanation, setExplanation] = useState<RequirementExplanation | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [expanded, setExpanded] = useState(new Set());
 
@@ -150,7 +159,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 			.then((academicPlan) => {
 				setExplanation(academicPlan);
 				if (academicPlan) {
-					setMarkedSatisfied(academicPlan[7]);
+					setMarkedSatisfied(academicPlan.marked_satisfied);
 				}
 			})
 			.finally(() => setIsLoading(false))
@@ -162,7 +171,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 	};
 
 	const handleCancel = useCallback(() => {
-		setExplanation('');
+		setExplanation(null);
 		setMarkedSatisfied(false);
 		setShowPopup(false);
 	}, [setExplanation, setShowPopup]); // Dependencies
@@ -170,11 +179,11 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 	const handleSearch = useCallback(() => {
 		let searchResults = [];
 
-		if (explanation && explanation[5]) {
-			searchResults = [...searchResults, ...explanation[5]];
+		if (explanation && explanation.sorted_course_list) {
+			searchResults = [...searchResults, ...explanation.sorted_course_list];
 		}
-		if (explanation && explanation[6]) {
-			searchResults = [...searchResults, ...explanation[6]];
+		if (explanation && explanation.sorted_dept_sample_list) {
+			searchResults = [...searchResults, ...explanation.sorted_dept_sample_list];
 		}
 
 		searchResults.sort((course1, course2) => {
@@ -198,7 +207,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
 			body: JSON.stringify({
-				reqId: explanation ? explanation[0] : null,
+				reqId: explanation ? explanation.req_id : null,
 				markedSatisfied: 'true',
 			}),
 		})
@@ -219,7 +228,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 		fetch(`/api/hoagie/mark_satisfied`, {
 			method: 'POST',
 			body: JSON.stringify({
-				reqId: explanation ? explanation[0] : null,
+				reqId: explanation ? explanation.req_id : null,
 				markedSatisfied: 'false',
 			}),
 		})
@@ -268,74 +277,67 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 			>
 				<div className={styles.detailRow}>
 					{explanation ? (
-						Object.entries(explanation).map(([index, value]) => {
-							if (index === '1') {
-								if (value) {
-									return (
-										<div key={index} className={styles.section}>
-											<strong className={styles.strong}>Explanation: </strong>
-											<span dangerouslySetInnerHTML={{ __html: value }} />
-										</div>
-									);
-								} else {
-									return (
-										<div key={index} className={styles.section}>
-											<strong className={styles.strong}>Explanation: </strong>
-											No explanation available
-										</div>
-									);
-								}
-							}
-							if (index === '2' && value !== 8) {
-								return (
-									<div key={index} className={styles.section}>
-										<strong className={styles.strong}>Complete by: </strong>
-										{semesterMap[value]}
-									</div>
-								);
-							}
-							if (index === '3' && value[0]) {
-								return (
-									<div key={index} className={styles.section}>
-										<strong className={styles.strong}>
-											{value.length > 1 ? 'Distribution areas' : 'Distribution area'}:{' '}
-										</strong>
-										{value
-											.map((area) => {
-												return `${area}, `;
-											})
-											.join('')
-											.slice(0, -2)}
-									</div>
-								);
-							}
-							if (index === '5' && !explanation[3][0]) {
-								return value[0] || explanation[4][0] ? (
-									<div key={index} className={styles.section}>
+						<>
+							{/* Explanation section */}
+							{explanation.explanation ? (
+								<div className={styles.section}>
+									<strong className={styles.strong}>Explanation: </strong>
+									<span dangerouslySetInnerHTML={{ __html: explanation.explanation }} />
+								</div>
+							) : (
+								<div className={styles.section}>
+									<strong className={styles.strong}>Explanation: </strong>
+									No explanation available
+								</div>
+							)}
+							{/* Completed by semester section */}
+							{explanation.completed_by_semester !== 8 && (
+								<div className={styles.section}>
+									<strong className={styles.strong}>Complete by: </strong>
+									{semesterMap[explanation.completed_by_semester]}
+								</div>
+							)}
+							{/* Distribution areas section */}
+							{explanation.dist_req[0] && (
+								<div className={styles.section}>
+									<strong className={styles.strong}>
+										{explanation.dist_req.length > 1 ? 'Distribution areas' : 'Distribution area'}
+										:{' '}
+									</strong>
+									{explanation.dist_req
+										.map((area) => `${area}, `)
+										.join('')
+										.slice(0, -2)}
+								</div>
+							)}
+							{/* List of courses */}
+							{!explanation.dist_req[0] &&
+								(explanation.sorted_course_list[0] || explanation.sorted_dept_list[0] ? (
+									<div className={styles.section}>
 										<strong className={styles.strong}>Course list: </strong>
-										{explanation[4][0]
-											? explanation[4]
-													.map((department) => {
-														return `${department} (any), `;
-													})
+										{explanation.sorted_dept_list[0]
+											? explanation.sorted_dept_list
+													.map((department) => `${department} (any), `)
 													.join('')
 													.slice(0, -2)
 											: null}
-										{explanation[4][0] && value[0] ? ', ' : null}
-										{value[0]
-											? value
+										{explanation.sorted_dept_list[0] && explanation.sorted_course_list[0]
+											? ', '
+											: null}
+										{explanation.sorted_course_list[0]
+											? explanation.sorted_course_list
 													.slice(0, 20)
-													.map((course, index) => {
-														const separator = index === 19 && value.length > 20 ? '...' : ', ';
+													.map((course, i) => {
+														const separator =
+															i === 19 && explanation.sorted_course_list.length > 20 ? '...' : ', ';
 														return `${course.crosslistings}${separator}`;
 													})
 													.join('')
-													.slice(0, value.length > 20 ? undefined : -2)
+													.slice(0, explanation.sorted_course_list.length > 20 ? undefined : -2)
 											: null}
 									</div>
-								) : null;
-							}
-						})
+								) : null)}
+						</>
 					) : (
 						<LoadingComponent />
 					)}
@@ -343,8 +345,9 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 			</div>
 			<footer className='mt-auto text-right'>
 				{explanation &&
-					((explanation[5] && explanation[5].length > 0) ||
-						(explanation[6] && explanation[6].length > 0)) && (
+					((explanation.sorted_course_list && explanation.sorted_course_list.length > 0) ||
+						(explanation.sorted_dept_sample_list &&
+							explanation.sorted_dept_sample_list.length > 0)) && (
 						<JoyButton variant='soft' color='primary' onClick={handleSearch} size='md'>
 							Search Courses
 						</JoyButton>

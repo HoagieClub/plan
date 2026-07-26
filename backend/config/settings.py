@@ -36,28 +36,28 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "corsheaders",
-    "rest_framework",
-    "hoagieplan",
+	"django.contrib.admin",
+	"django.contrib.auth",
+	"django.contrib.contenttypes",
+	"django.contrib.sessions",
+	"django.contrib.messages",
+	"django.contrib.staticfiles",
+	"corsheaders",
+	"rest_framework",
+	"hoagieplan",
 ]
 
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "false").lower() == "true"
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+	"corsheaders.middleware.CorsMiddleware",
+	"django.middleware.security.SecurityMiddleware",
+	"django.middleware.common.CommonMiddleware",
+	"django.contrib.sessions.middleware.SessionMiddleware",
+	"django.contrib.auth.middleware.AuthenticationMiddleware",
+	"django.contrib.messages.middleware.MessageMiddleware",
+	"django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
@@ -69,68 +69,68 @@ CORS_ALLOWED_ORIGINS = [os.getenv("HOAGIEPLAN"), f"https://{os.getenv('AUTH0_DOM
 LOGS = os.getenv("LOGS", "False").lower() == "true"
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": "{asctime} [{levelname}] {name}: {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
-    },
-    "loggers": {
-        # Your application
-        "hoagieplan": {
-            "level": "DEBUG" if LOGS else "INFO",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        # Django internals
-        "django": {
-            "level": "INFO",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        # SQL queries
-        "django.db.backends": {
-            "level": "DEBUG" if LOGS else "WARNING",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-        # HTTP requests
-        "django.request": {
-            "level": "INFO",
-            "handlers": ["console"],
-            "propagate": False,
-        },
-    },
+	"version": 1,
+	"disable_existing_loggers": False,
+	"formatters": {
+		"standard": {
+			"format": "{asctime} [{levelname}] {name}: {message}",
+			"style": "{",
+		},
+	},
+	"handlers": {
+		"console": {
+			"class": "logging.StreamHandler",
+			"formatter": "standard",
+		},
+	},
+	"root": {
+		"handlers": ["console"],
+		"level": "WARNING",
+	},
+	"loggers": {
+		# Your application
+		"hoagieplan": {
+			"level": "DEBUG" if LOGS else "INFO",
+			"handlers": ["console"],
+			"propagate": False,
+		},
+		# Django internals
+		"django": {
+			"level": "INFO",
+			"handlers": ["console"],
+			"propagate": False,
+		},
+		# SQL queries
+		"django.db.backends": {
+			"level": "DEBUG" if LOGS else "WARNING",
+			"handlers": ["console"],
+			"propagate": False,
+		},
+		# HTTP requests
+		"django.request": {
+			"level": "INFO",
+			"handlers": ["console"],
+			"propagate": False,
+		},
+	},
 }
 
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
+	{
+		"BACKEND": "django.template.backends.django.DjangoTemplates",
+		"DIRS": [],
+		"APP_DIRS": True,
+		"OPTIONS": {
+			"context_processors": [
+				"django.template.context_processors.debug",
+				"django.template.context_processors.request",
+				"django.contrib.auth.context_processors.auth",
+				"django.contrib.messages.context_processors.messages",
+			],
+		},
+	},
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
@@ -143,9 +143,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Select the appropriate database URL based on DEBUG setting
 os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") if DEBUG else os.getenv("DATABASE_URL")
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"), ssl_require=False, conn_health_checks=True
-    )
+	"default": dj_database_url.config(default=os.getenv("DATABASE_URL"), ssl_require=False, conn_health_checks=True)
 }
 
 AUTH_USER_MODEL = "hoagieplan.CustomUser"
@@ -156,30 +154,30 @@ AUTH0_AUDIENCE = os.getenv("AUTH0_AUDIENCE")  # Your API audience (for JWT verif
 AUTH0_ALGORITHMS = ["RS256"]
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "hoagieplan.api.auth.auth.Auth0JWTAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
+	"DEFAULT_AUTHENTICATION_CLASSES": [
+		"hoagieplan.api.auth.auth.Auth0JWTAuthentication",
+	],
+	"DEFAULT_PERMISSION_CLASSES": [
+		"rest_framework.permissions.IsAuthenticated",
+	],
 }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+	{
+		"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+	},
 ]
 
 

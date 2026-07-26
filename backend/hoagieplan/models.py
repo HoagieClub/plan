@@ -5,463 +5,463 @@ from django.db import models
 
 # Choices for degree_type
 DEGREE_TYPE_CHOICES = (
-    ("AB", "Bachelor of Arts"),
-    ("BSE", "Bachelor of Science in Engineering"),
+	("AB", "Bachelor of Arts"),
+	("BSE", "Bachelor of Science in Engineering"),
 )
 
 # Mapping from semester number to semester name
 TIMELINE_CHOICES = (
-    (1, "freshman fall"),
-    (2, "freshman spring"),
-    (3, "sophomore fall"),
-    (4, "sophomore spring"),
-    (5, "junior fall"),
-    (6, "junior spring"),
-    (7, "senior fall"),
-    (8, "senior spring"),
+	(1, "freshman fall"),
+	(2, "freshman spring"),
+	(3, "sophomore fall"),
+	(4, "sophomore spring"),
+	(5, "junior fall"),
+	(6, "junior spring"),
+	(7, "senior fall"),
+	(8, "senior spring"),
 )
 
 # ----------------------------------------------------------------------#
 
 
 class Department(models.Model):
-    code = models.CharField(max_length=4, unique=True, db_index=True, null=True)
-    name = models.CharField(max_length=100, db_index=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+	code = models.CharField(max_length=4, unique=True, db_index=True, null=True)
+	name = models.CharField(max_length=100, db_index=True, null=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "Department"
+	class Meta:
+		db_table = "Department"
 
 
 class Degree(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=10, db_index=True, null=True)
-    code = models.CharField(max_length=10, db_index=True, null=True)
-    description = models.TextField(db_index=True, null=True)
-    urls = models.JSONField(db_index=True, null=True)
-    max_counted = models.IntegerField(db_index=True, null=True)
-    min_needed = models.IntegerField(db_index=True, default=1)
+	id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=10, db_index=True, null=True)
+	code = models.CharField(max_length=10, db_index=True, null=True)
+	description = models.TextField(db_index=True, null=True)
+	urls = models.JSONField(db_index=True, null=True)
+	max_counted = models.IntegerField(db_index=True, null=True)
+	min_needed = models.IntegerField(db_index=True, default=1)
 
-    class Meta:
-        db_table = "Degree"
+	class Meta:
+		db_table = "Degree"
 
 
 class Major(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
-    code = models.CharField(max_length=10, db_index=True, null=True)
-    degree = models.ManyToManyField("Degree")
-    description = models.TextField(db_index=True, null=True)
-    urls = models.JSONField(db_index=True, null=True)
-    contacts = models.JSONField(null=True)
-    max_counted = models.IntegerField(db_index=True, null=True)
-    min_needed = models.IntegerField(db_index=True, default=1)
+	id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=150, db_index=True, null=True)
+	code = models.CharField(max_length=10, db_index=True, null=True)
+	degree = models.ManyToManyField("Degree")
+	description = models.TextField(db_index=True, null=True)
+	urls = models.JSONField(db_index=True, null=True)
+	contacts = models.JSONField(null=True)
+	max_counted = models.IntegerField(db_index=True, null=True)
+	min_needed = models.IntegerField(db_index=True, default=1)
 
-    class Meta:
-        db_table = "Major"
+	class Meta:
+		db_table = "Major"
 
 
 class Minor(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
-    code = models.CharField(max_length=10, db_index=True, null=True)
-    description = models.TextField(db_index=True, null=True)
-    excluded_majors = models.ManyToManyField("Major")
-    excluded_minors = models.ManyToManyField("Minor")
-    urls = models.JSONField(db_index=True, null=True)
-    contacts = models.JSONField(null=True)
-    apply_by_semester = models.IntegerField(default=6)
-    max_counted = models.IntegerField(db_index=True, null=True)
-    min_needed = models.IntegerField(db_index=True, default=1)
-    iw_required = models.BooleanField(null=True)
+	id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=150, db_index=True, null=True)
+	code = models.CharField(max_length=10, db_index=True, null=True)
+	description = models.TextField(db_index=True, null=True)
+	excluded_majors = models.ManyToManyField("Major")
+	excluded_minors = models.ManyToManyField("Minor")
+	urls = models.JSONField(db_index=True, null=True)
+	contacts = models.JSONField(null=True)
+	apply_by_semester = models.IntegerField(default=6)
+	max_counted = models.IntegerField(db_index=True, null=True)
+	min_needed = models.IntegerField(db_index=True, default=1)
+	iw_required = models.BooleanField(null=True)
 
-    class Meta:
-        db_table = "Minor"
+	class Meta:
+		db_table = "Minor"
 
 
 class Certificate(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True, null=True)
-    code = models.CharField(max_length=10, db_index=True, null=True)
-    description = models.TextField(db_index=True, null=True)
-    excluded_majors = models.ManyToManyField("Major")
-    urls = models.JSONField(db_index=True, null=True)
-    contacts = models.JSONField(null=True)
-    apply_by_semester = models.IntegerField(default=8)
-    max_counted = models.IntegerField(db_index=True, null=True)
-    min_needed = models.IntegerField(db_index=True, default=1)
-    # to help with phasing out certificates
-    # filter out for new users, keep for existing users pursuing it
-    active_until = models.DateField(null=True, blank=True)
-    iw_required = models.BooleanField(null=True)
+	id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=150, db_index=True, null=True)
+	code = models.CharField(max_length=10, db_index=True, null=True)
+	description = models.TextField(db_index=True, null=True)
+	excluded_majors = models.ManyToManyField("Major")
+	urls = models.JSONField(db_index=True, null=True)
+	contacts = models.JSONField(null=True)
+	apply_by_semester = models.IntegerField(default=8)
+	max_counted = models.IntegerField(db_index=True, null=True)
+	min_needed = models.IntegerField(db_index=True, default=1)
+	# to help with phasing out certificates
+	# filter out for new users, keep for existing users pursuing it
+	active_until = models.DateField(null=True, blank=True)
+	iw_required = models.BooleanField(null=True)
 
-    class Meta:
-        db_table = "Certificate"
+	class Meta:
+		db_table = "Certificate"
 
 
 # ----------------------------------------------------------------------#
 
 
 class Instructor(models.Model):
-    emplid = models.CharField(max_length=50, unique=True, db_index=True, null=True)
-    first_name = models.CharField(max_length=100, db_index=True, null=True)
-    last_name = models.CharField(max_length=100, db_index=True, null=True)
-    full_name = models.CharField(max_length=255, null=True)
+	emplid = models.CharField(max_length=50, unique=True, db_index=True, null=True)
+	first_name = models.CharField(max_length=100, db_index=True, null=True)
+	last_name = models.CharField(max_length=100, db_index=True, null=True)
+	full_name = models.CharField(max_length=255, null=True)
 
-    class Meta:
-        db_table = "Instructor"
+	class Meta:
+		db_table = "Instructor"
 
-    def __str__(self):
-        return self.full_name
+	def __str__(self):
+		return self.full_name
 
 
 class AcademicTerm(models.Model):
-    term_code = models.CharField(max_length=10, db_index=True, unique=True, null=True)
-    suffix = models.CharField(max_length=10, db_index=True)  # e.g., "F2023"
-    start_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
+	term_code = models.CharField(max_length=10, db_index=True, unique=True, null=True)
+	suffix = models.CharField(max_length=10, db_index=True)  # e.g., "F2023"
+	start_date = models.DateField(null=True)
+	end_date = models.DateField(null=True)
 
-    class Meta:
-        db_table = "AcademicTerm"
+	class Meta:
+		db_table = "AcademicTerm"
 
-    def __str__(self):
-        return self.term_code
+	def __str__(self):
+		return self.term_code
 
 
 class Course(models.Model):
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
-    guid = models.CharField(max_length=50, db_index=True, null=True)
-    course_id = models.CharField(max_length=15, db_index=True, null=True)
-    catalog_number = models.CharField(max_length=10, db_index=True, null=True)
-    title = models.CharField(max_length=150, db_index=True, null=True)
-    crosslistings = models.CharField(max_length=150, db_index=True, null=True)
-    description = models.TextField(db_index=True, null=True)
-    drop_consent = models.CharField(max_length=1, db_index=True, blank=True, null=True)
-    add_consent = models.CharField(max_length=1, db_index=True, blank=True, null=True)
-    web_address = models.URLField(max_length=255, db_index=True, blank=True, null=True)
-    transcript_title = models.CharField(max_length=150, blank=True, null=True)
-    long_title = models.CharField(max_length=250, db_index=True, blank=True, null=True)
-    distribution_area_long = models.CharField(max_length=150, db_index=True, blank=True, null=True)
-    distribution_area_short = models.CharField(max_length=10, db_index=True, blank=True, null=True)
-    reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
-    grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
-    reading_list = models.TextField(blank=True, db_index=True, null=True)
-    instructors = models.ManyToManyField(Instructor, related_name="courses", blank=True)
+	department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
+	guid = models.CharField(max_length=50, db_index=True, null=True)
+	course_id = models.CharField(max_length=15, db_index=True, null=True)
+	catalog_number = models.CharField(max_length=10, db_index=True, null=True)
+	title = models.CharField(max_length=150, db_index=True, null=True)
+	crosslistings = models.CharField(max_length=150, db_index=True, null=True)
+	description = models.TextField(db_index=True, null=True)
+	drop_consent = models.CharField(max_length=1, db_index=True, blank=True, null=True)
+	add_consent = models.CharField(max_length=1, db_index=True, blank=True, null=True)
+	web_address = models.URLField(max_length=255, db_index=True, blank=True, null=True)
+	transcript_title = models.CharField(max_length=150, blank=True, null=True)
+	long_title = models.CharField(max_length=250, db_index=True, blank=True, null=True)
+	distribution_area_long = models.CharField(max_length=150, db_index=True, blank=True, null=True)
+	distribution_area_short = models.CharField(max_length=10, db_index=True, blank=True, null=True)
+	reading_writing_assignment = models.TextField(blank=True, db_index=True, null=True)
+	grading_basis = models.CharField(max_length=5, blank=True, db_index=True, null=True)
+	reading_list = models.TextField(blank=True, db_index=True, null=True)
+	instructors = models.ManyToManyField(Instructor, related_name="courses", blank=True)
 
-    # Course evaluation fields
-    quality_of_course = models.FloatField(null=True)
-    quality_of_lectures = models.FloatField(null=True)
-    quality_of_readings = models.FloatField(null=True)
-    quality_of_written_assignments = models.FloatField(null=True)
-    recommend_to_other_students = models.FloatField(null=True)
-    quality_of_language = models.FloatField(null=True)
-    quality_of_classes = models.FloatField(null=True)
-    quality_of_the_classes = models.FloatField(null=True)
-    quality_of_seminar = models.FloatField(null=True)
-    quality_of_precepts = models.FloatField(null=True)
-    quality_of_laboratories = models.FloatField(null=True)
-    quality_of_studios = models.FloatField(null=True)
-    quality_of_ear_training = models.FloatField(null=True)
-    overall_course_quality_rating = models.FloatField(null=True)
-    overall_quality_of_the_course = models.FloatField(null=True)
-    interest_in_subject_matter = models.FloatField(null=True)
-    overall_quality_of_the_lecture = models.FloatField(null=True)
-    papers_and_problem_sets = models.FloatField(null=True)
-    readings = models.FloatField(null=True)
-    oral_presentation_skills = models.FloatField(null=True)
-    workshop_structure = models.FloatField(null=True)
-    written_work = models.FloatField(null=True)
+	# Course evaluation fields
+	quality_of_course = models.FloatField(null=True)
+	quality_of_lectures = models.FloatField(null=True)
+	quality_of_readings = models.FloatField(null=True)
+	quality_of_written_assignments = models.FloatField(null=True)
+	recommend_to_other_students = models.FloatField(null=True)
+	quality_of_language = models.FloatField(null=True)
+	quality_of_classes = models.FloatField(null=True)
+	quality_of_the_classes = models.FloatField(null=True)
+	quality_of_seminar = models.FloatField(null=True)
+	quality_of_precepts = models.FloatField(null=True)
+	quality_of_laboratories = models.FloatField(null=True)
+	quality_of_studios = models.FloatField(null=True)
+	quality_of_ear_training = models.FloatField(null=True)
+	overall_course_quality_rating = models.FloatField(null=True)
+	overall_quality_of_the_course = models.FloatField(null=True)
+	interest_in_subject_matter = models.FloatField(null=True)
+	overall_quality_of_the_lecture = models.FloatField(null=True)
+	papers_and_problem_sets = models.FloatField(null=True)
+	readings = models.FloatField(null=True)
+	oral_presentation_skills = models.FloatField(null=True)
+	workshop_structure = models.FloatField(null=True)
+	written_work = models.FloatField(null=True)
 
-    class Meta:
-        db_table = "Course"
+	class Meta:
+		db_table = "Course"
 
-    def __str__(self):
-        return self.title
+	def __str__(self):
+		return self.title
 
 
 class GradingInfo(models.Model):
-    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="grading_info")
-    grading_final_exam = models.IntegerField(null=True)
-    grading_mid_exam = models.IntegerField(null=True)
-    grading_home_final_exam = models.IntegerField(null=True)
-    grading_home_mid_exam = models.IntegerField(null=True)
-    grading_paper_final_exam = models.IntegerField(null=True)
-    grading_paper_mid_exam = models.IntegerField(null=True)
-    grading_other_exam = models.IntegerField(null=True)
-    grading_oral_pres = models.IntegerField(null=True)
-    grading_quizzes = models.IntegerField(null=True)
-    grading_lab_reports = models.IntegerField(null=True)
-    grading_papers = models.IntegerField(null=True)
-    grading_prob_sets = models.IntegerField(null=True)
-    grading_prog_assign = models.IntegerField(null=True)
-    grading_precept_part = models.IntegerField(null=True)
-    grading_term_papers = models.IntegerField(null=True)
-    grading_design_projects = models.IntegerField(null=True)
-    grading_other = models.IntegerField(null=True)
+	course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="grading_info")
+	grading_final_exam = models.IntegerField(null=True)
+	grading_mid_exam = models.IntegerField(null=True)
+	grading_home_final_exam = models.IntegerField(null=True)
+	grading_home_mid_exam = models.IntegerField(null=True)
+	grading_paper_final_exam = models.IntegerField(null=True)
+	grading_paper_mid_exam = models.IntegerField(null=True)
+	grading_other_exam = models.IntegerField(null=True)
+	grading_oral_pres = models.IntegerField(null=True)
+	grading_quizzes = models.IntegerField(null=True)
+	grading_lab_reports = models.IntegerField(null=True)
+	grading_papers = models.IntegerField(null=True)
+	grading_prob_sets = models.IntegerField(null=True)
+	grading_prog_assign = models.IntegerField(null=True)
+	grading_precept_part = models.IntegerField(null=True)
+	grading_term_papers = models.IntegerField(null=True)
+	grading_design_projects = models.IntegerField(null=True)
+	grading_other = models.IntegerField(null=True)
 
-    class Meta:
-        db_table = "GradingInfo"
+	class Meta:
+		db_table = "GradingInfo"
 
 
 class Section(models.Model):
-    CLASS_TYPE_CHOICES = [
-        ("Seminar", "Seminar"),
-        ("Lecture", "Lecture"),
-        ("Precept", "Precept"),
-        ("Unknown", "Unknown"),
-        ("Class", "Class"),
-        ("Studio", "Studio"),
-        ("Drill", "Drill"),
-        ("Lab", "Lab"),
-        ("Ear training", "Ear training"),
-    ]
+	CLASS_TYPE_CHOICES = [
+		("Seminar", "Seminar"),
+		("Lecture", "Lecture"),
+		("Precept", "Precept"),
+		("Unknown", "Unknown"),
+		("Class", "Class"),
+		("Studio", "Studio"),
+		("Drill", "Drill"),
+		("Lab", "Lab"),
+		("Ear training", "Ear training"),
+	]
 
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    class_number = models.IntegerField(db_index=True, null=True)
-    class_type = models.CharField(max_length=50, choices=CLASS_TYPE_CHOICES, db_index=True, default="")
-    class_section = models.CharField(max_length=10, db_index=True, null=True)
-    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
-    track = models.CharField(max_length=5, db_index=True, null=True)
-    seat_reservations = models.CharField(max_length=1, db_index=True, null=True)
-    capacity = models.IntegerField(db_index=True, null=True)
-    status = models.CharField(max_length=10, db_index=True, null=True)
-    enrollment = models.IntegerField(db_index=True, default=0)
+	course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+	class_number = models.IntegerField(db_index=True, null=True)
+	class_type = models.CharField(max_length=50, choices=CLASS_TYPE_CHOICES, db_index=True, default="")
+	class_section = models.CharField(max_length=10, db_index=True, null=True)
+	term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
+	track = models.CharField(max_length=5, db_index=True, null=True)
+	seat_reservations = models.CharField(max_length=1, db_index=True, null=True)
+	capacity = models.IntegerField(db_index=True, null=True)
+	status = models.CharField(max_length=10, db_index=True, null=True)
+	enrollment = models.IntegerField(db_index=True, default=0)
 
-    class Meta:
-        db_table = "Section"
+	class Meta:
+		db_table = "Section"
 
-    def __str__(self):
-        section_title = self.course.title if self.course else "None"
-        term_code = self.term.term_code if self.term else "None"
-        return f"{section_title} - {term_code}"
+	def __str__(self):
+		section_title = self.course.title if self.course else "None"
+		term_code = self.term.term_code if self.term else "None"
+		return f"{section_title} - {term_code}"
 
 
 class ClassMeeting(models.Model):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
-    meeting_number = models.PositiveIntegerField(db_index=True, null=True)
-    start_time = models.TimeField(db_index=True, null=True)
-    end_time = models.TimeField(db_index=True, null=True)
-    room = models.CharField(max_length=50, db_index=True, null=True)
-    days = models.CharField(max_length=20, db_index=True, null=True)
-    building_name = models.CharField(max_length=255, db_index=True, null=True)
+	section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+	meeting_number = models.PositiveIntegerField(db_index=True, null=True)
+	start_time = models.TimeField(db_index=True, null=True)
+	end_time = models.TimeField(db_index=True, null=True)
+	room = models.CharField(max_length=50, db_index=True, null=True)
+	days = models.CharField(max_length=20, db_index=True, null=True)
+	building_name = models.CharField(max_length=255, db_index=True, null=True)
 
-    class Meta:
-        db_table = "ClassMeeting"
+	class Meta:
+		db_table = "ClassMeeting"
 
-    def __str__(self):
-        return f"{self.section} - {self.start_time} to {self.end_time}"
+	def __str__(self):
+		return f"{self.section} - {self.start_time} to {self.end_time}"
 
 
 class ClassYearEnrollment(models.Model):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True, null=True)
-    class_year = models.IntegerField(null=True)
-    enrl_seats = models.IntegerField(null=True)
+	section = models.ForeignKey(Section, on_delete=models.CASCADE, db_index=True, null=True)
+	class_year = models.IntegerField(null=True)
+	enrl_seats = models.IntegerField(null=True)
 
-    class Meta:
-        db_table = "ClassYearEnrollment"
+	class Meta:
+		db_table = "ClassYearEnrollment"
 
 
 # ----------------------------------------------------------------------#
 
 
 class Requirement(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=150, db_index=True)
-    max_counted = models.IntegerField(default=1, db_index=True)
-    min_needed = models.IntegerField(default=1, db_index=True)
-    explanation = models.TextField(db_index=True, null=True)
-    double_counting_allowed = models.BooleanField(db_index=True, null=True)
-    max_common_with_major = models.IntegerField(db_index=True, default=0)
-    pdfs_allowed = models.IntegerField(db_index=True, default=0)
-    min_grade = models.FloatField(db_index=True, default=0.0)
-    completed_by_semester = models.IntegerField(db_index=True, default=8)
-    parent = models.ForeignKey(
-        "self",
-        on_delete=models.CASCADE,
-        related_name="req_list",
-        null=True,
-    )
-    degree = models.ForeignKey(
-        "Degree",
-        on_delete=models.CASCADE,
-        related_name="req_list",
-        null=True,
-    )
-    major = models.ForeignKey(
-        "Major",
-        on_delete=models.CASCADE,
-        related_name="req_list",
-        null=True,
-    )
-    minor = models.ForeignKey(
-        "Minor",
-        on_delete=models.CASCADE,
-        related_name="req_list",
-        null=True,
-    )
-    certificate = models.ForeignKey(
-        "Certificate",
-        on_delete=models.CASCADE,
-        related_name="req_list",
-        null=True,
-    )
-    course_list = models.ManyToManyField("Course", db_index=True, related_name="satisfied_by")
-    dept_list = models.JSONField(db_index=True, null=True)
-    excluded_course_list = models.ManyToManyField("Course", related_name="not_satisfied_by")
-    dist_req = models.JSONField(db_index=True, null=True)
-    num_courses = models.IntegerField(db_index=True, null=True)
+	id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=150, db_index=True)
+	max_counted = models.IntegerField(default=1, db_index=True)
+	min_needed = models.IntegerField(default=1, db_index=True)
+	explanation = models.TextField(db_index=True, null=True)
+	double_counting_allowed = models.BooleanField(db_index=True, null=True)
+	max_common_with_major = models.IntegerField(db_index=True, default=0)
+	pdfs_allowed = models.IntegerField(db_index=True, default=0)
+	min_grade = models.FloatField(db_index=True, default=0.0)
+	completed_by_semester = models.IntegerField(db_index=True, default=8)
+	parent = models.ForeignKey(
+		"self",
+		on_delete=models.CASCADE,
+		related_name="req_list",
+		null=True,
+	)
+	degree = models.ForeignKey(
+		"Degree",
+		on_delete=models.CASCADE,
+		related_name="req_list",
+		null=True,
+	)
+	major = models.ForeignKey(
+		"Major",
+		on_delete=models.CASCADE,
+		related_name="req_list",
+		null=True,
+	)
+	minor = models.ForeignKey(
+		"Minor",
+		on_delete=models.CASCADE,
+		related_name="req_list",
+		null=True,
+	)
+	certificate = models.ForeignKey(
+		"Certificate",
+		on_delete=models.CASCADE,
+		related_name="req_list",
+		null=True,
+	)
+	course_list = models.ManyToManyField("Course", db_index=True, related_name="satisfied_by")
+	dept_list = models.JSONField(db_index=True, null=True)
+	excluded_course_list = models.ManyToManyField("Course", related_name="not_satisfied_by")
+	dist_req = models.JSONField(db_index=True, null=True)
+	num_courses = models.IntegerField(db_index=True, null=True)
 
-    class Meta:
-        db_table = "Requirement"
+	class Meta:
+		db_table = "Requirement"
 
 
 # --------------------------------------------------------------------------------------#
 
 
 class CustomUser(AbstractUser):
-    ROLE_CHOICES = (
-        ("admin", "Administrator"),
-        ("student", "Student"),
-    )
+	ROLE_CHOICES = (
+		("admin", "Administrator"),
+		("student", "Student"),
+	)
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
-    major = models.ForeignKey(Major, on_delete=models.CASCADE, null=True)
-    minors = models.ManyToManyField(Minor)
-    certificates = models.ManyToManyField(Certificate)
-    requirements = models.ManyToManyField(
-        "Requirement",
-        related_name="users",
-        blank=True,
-    )  # for manually marked requirements
-    req_dict = models.JSONField(null=True)
+	role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
+	major = models.ForeignKey(Major, on_delete=models.CASCADE, null=True)
+	minors = models.ManyToManyField(Minor)
+	certificates = models.ManyToManyField(Certificate)
+	requirements = models.ManyToManyField(
+		"Requirement",
+		related_name="users",
+		blank=True,
+	)  # for manually marked requirements
+	req_dict = models.JSONField(null=True)
 
-    # TODO: This field is deprecated (Django's default username serves the same purpose)
-    net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
-    # TODO: Refactor backend code to use username instead of net_id
+	# TODO: This field is deprecated (Django's default username serves the same purpose)
+	net_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+	# TODO: Refactor backend code to use username instead of net_id
 
-    email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
-    first_name = models.CharField(max_length=100, null=True, blank=True)
-    last_name = models.CharField(max_length=100, null=True, blank=True)
-    class_year = models.IntegerField(null=True, blank=True)
-    seen_tutorial = models.BooleanField(default=False, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+	email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
+	first_name = models.CharField(max_length=100, null=True, blank=True)
+	last_name = models.CharField(max_length=100, null=True, blank=True)
+	class_year = models.IntegerField(null=True, blank=True)
+	seen_tutorial = models.BooleanField(default=False, null=True, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "CustomUser"
+	class Meta:
+		db_table = "CustomUser"
 
-        # Hacky way to prevent alias bugs
-        # TODO: Find a more controlled/deterministic way to identify username/NetID from Auth0
-        constraints = [models.UniqueConstraint(fields=["email", "username"], name="unique_email_username_combination")]
+		# Hacky way to prevent alias bugs
+		# TODO: Find a more controlled/deterministic way to identify username/NetID from Auth0
+		constraints = [models.UniqueConstraint(fields=["email", "username"], name="unique_email_username_combination")]
 
 
 class UserCourses(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
-    semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)
-    requirements = models.ManyToManyField(Requirement, blank=True)
+	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True, null=True)
+	course = models.ForeignKey(Course, on_delete=models.CASCADE, db_index=True, null=True)
+	semester = models.IntegerField(choices=TIMELINE_CHOICES, db_index=True, null=True)
+	requirements = models.ManyToManyField(Requirement, blank=True)
 
-    class Meta:
-        db_table = "UserCourses"
+	class Meta:
+		db_table = "UserCourses"
 
 
 # Table for storing details related to individual calendar configurations
 class CalendarConfiguration(models.Model):
-    # The user associated with this calendar configuration
-    user = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name="calendar_configurations",
-        null=True,
-        blank=True,
-        db_index=True,
-    )
+	# The user associated with this calendar configuration
+	user = models.ForeignKey(
+		CustomUser,
+		on_delete=models.CASCADE,
+		related_name="calendar_configurations",
+		null=True,
+		blank=True,
+		db_index=True,
+	)
 
-    # The name of the calendar configuration
-    name = models.CharField(max_length=100, db_index=True, blank=True)
+	# The name of the calendar configuration
+	name = models.CharField(max_length=100, db_index=True, blank=True)
 
-    # The academic term this calendar configuration is associated with
-    term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
+	# The academic term this calendar configuration is associated with
+	term = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, db_index=True, null=True)
 
-    # Timestamp for when this row was created
-    created_at = models.DateTimeField(auto_now_add=True)
+	# Timestamp for when this row was created
+	created_at = models.DateTimeField(auto_now_add=True)
 
-    # Timestamp for when this row was last updated
-    updated_at = models.DateTimeField(auto_now=True)
+	# Timestamp for when this row was last updated
+	updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        unique_together = ("user", "name", "term")
-        db_table = "CalendarConfiguration"
+	class Meta:
+		unique_together = ("user", "name", "term")
+		db_table = "CalendarConfiguration"
 
-    def __str__(self):
-        return f"{self.user.username}: {self.name} ({self.term})"
+	def __str__(self):
+		return f"{self.user.username}: {self.name} ({self.term})"
 
 
 # Table for storing the events that belong to each calendar configuration
 class CalendarEvent(models.Model):
-    # The calendar configuration this course belongs to
-    calendar_configuration = models.ForeignKey(
-        CalendarConfiguration,
-        on_delete=models.CASCADE,
-        related_name="calendar_events",
-        db_index=True,
-    )
-    # The course that the calendar event belongs to
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        db_index=True,
-    )
-    # The section that the calendar event represents
-    section = models.ForeignKey(
-        Section,
-        on_delete=models.CASCADE,
-        db_index=True,
-    )
+	# The calendar configuration this course belongs to
+	calendar_configuration = models.ForeignKey(
+		CalendarConfiguration,
+		on_delete=models.CASCADE,
+		related_name="calendar_events",
+		db_index=True,
+	)
+	# The course that the calendar event belongs to
+	course = models.ForeignKey(
+		Course,
+		on_delete=models.CASCADE,
+		db_index=True,
+	)
+	# The section that the calendar event represents
+	section = models.ForeignKey(
+		Section,
+		on_delete=models.CASCADE,
+		db_index=True,
+	)
 
-    # Start time of the event
-    start_time = models.TimeField(db_index=True, null=True)
-    # End time of the event
-    end_time = models.TimeField(db_index=True, null=True)
+	# Start time of the event
+	start_time = models.TimeField(db_index=True, null=True)
+	# End time of the event
+	end_time = models.TimeField(db_index=True, null=True)
 
-    # The weekday column that the event belongs in
-    start_column_index = models.IntegerField()
+	# The weekday column that the event belongs in
+	start_column_index = models.IntegerField()
 
-    # Whether the event is visible in the calendar
-    is_active = models.BooleanField(default=False)
-    # Whether the event can be chosen by the user (if there are alternatives)
-    needs_choice = models.BooleanField(default=False)
-    # Whether the event is chosen among alternatives
-    is_chosen = models.BooleanField(default=False)
+	# Whether the event is visible in the calendar
+	is_active = models.BooleanField(default=False)
+	# Whether the event can be chosen by the user (if there are alternatives)
+	needs_choice = models.BooleanField(default=False)
+	# Whether the event is chosen among alternatives
+	is_chosen = models.BooleanField(default=False)
 
-    class Meta:
-        db_table = "CalendarEvent"
-        unique_together = ("calendar_configuration", "course", "section", "start_column_index")
+	class Meta:
+		db_table = "CalendarEvent"
+		unique_together = ("calendar_configuration", "course", "section", "start_column_index")
 
-    def __str__(self):
-        return f"{self.course} - {self.section}"
+	def __str__(self):
+		return f"{self.course} - {self.section}"
 
-    def get_key(self):
-        return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
+	def get_key(self):
+		return f"guid: ${self.course.id}, section id: ${self.section.id}, column: ${self.start_column_index}"
 
 
 class CourseComment(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="comments")
-    comment = models.TextField()
+	course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="comments")
+	comment = models.TextField()
 
-    class Meta:
-        db_table = "CourseComment"
+	class Meta:
+		db_table = "CourseComment"
 
 
 class CourseEvalSummary(models.Model):
-    course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="eval_summary")
-    summary = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+	course = models.OneToOneField(Course, on_delete=models.CASCADE, related_name="eval_summary")
+	summary = models.TextField()
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "CourseEvalSummary"
+	class Meta:
+		db_table = "CourseEvalSummary"
 
 
 # ----------------------------------------------------------------------#
