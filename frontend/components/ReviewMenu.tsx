@@ -80,7 +80,7 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({
 		return () => controller.abort();
 
 		// Callbacks intentionally excluded — accessed via stable refs above
-	}, [dept, coursenum, term_code]);
+	}, [dept, coursenum, term_code, onRatingLoaded, onSummaryLoaded]);
 
 	if (loading) {
 		return (

@@ -73,25 +73,33 @@ export default function Index() {
 	}
 
 	return (
-		<Pane
-			display='flex'
-			justifyContent='center'
-			alignItems='center'
-			marginX={majorScale(1)}
-			paddingBottom={majorScale(4)}
-			paddingTop={majorScale(8)}
+		<div
+			style={{
+				display: 'flex',
+				justifyContent: 'center',
+				alignItems: 'center',
+				marginLeft: '8px',
+				marginRight: '8px',
+				paddingBottom: '32px',
+				paddingTop: '64px',
+			}}
 		>
-			<Pane
-				borderRadius={8}
-				textAlign='center'
-				elevation={1}
-				background='white'
-				marginX={20}
-				maxWidth='600px'
-				width='100%'
-				paddingX='10px'
-				paddingTop={majorScale(5)}
-				paddingBottom={majorScale(7)}
+			<div
+				style={{
+					borderRadius: '8px',
+					textAlign: 'center',
+					boxShadow: '0 0 1px rgba(67, 90, 111, 0.3), 0 2px 4px -2px rgba(67, 90, 111, 0.47)',
+					background: 'white',
+					marginLeft: '20px',
+					marginRight: '20px',
+					maxWidth: '600px',
+					width: '100%',
+					paddingLeft: '10px',
+					paddingRight: '10px',
+					paddingTop: '40px',
+					paddingBottom: '56px',
+					boxSizing: 'border-box',
+				}}
 			>
 				<Heading size={900} className='hoagie'>
 					Welcome to HoagiePlan
@@ -101,29 +109,34 @@ export default function Index() {
 					Explore courses, read reviews, and manage <br />
 					your four-year schedule.
 				</p>
-				<div>
-					<Pane display='flex' flexDirection='column' alignItems='center' marginTop='30px'>
-						{Profile}
-						<Link href='https://hoagie.io'>
-							<Button
-								height={56}
-								width={majorScale(35)}
-								appearance='default'
-								marginTop={20}
-								iconBefore={ArrowLeftIcon}
-							>
-								<Pane display='flex'>
-									Back to
-									<Pane marginLeft={minorScale(1)} className='hoagie'>
-										hoagie<b>platform</b>
-									</Pane>
+				<div
+					style={{
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'center',
+						marginTop: '30px',
+					}}
+				>
+					{Profile}
+					<Link href='https://hoagie.io'>
+						<Button
+							height={56}
+							width={majorScale(35)}
+							appearance='default'
+							marginTop={20}
+							iconBefore={ArrowLeftIcon}
+						>
+							<Pane display='flex'>
+								Back to
+								<Pane marginLeft={minorScale(1)} className='hoagie'>
+									hoagie<b>platform</b>
 								</Pane>
-							</Button>
-						</Link>
-						<br />
-					</Pane>
+							</Pane>
+						</Button>
+					</Link>
+					<br />
 				</div>
-			</Pane>
-		</Pane>
+			</div>
+		</div>
 	);
 }
