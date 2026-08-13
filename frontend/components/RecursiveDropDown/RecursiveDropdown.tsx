@@ -301,8 +301,7 @@ const Dropdown: FC<DropdownProps> = ({ academicPlan }) => {
 							{explanation.dist_req[0] && (
 								<div className={styles.section}>
 									<strong className={styles.strong}>
-										{explanation.dist_req.length > 1 ? 'Distribution areas' : 'Distribution area'}
-										:{' '}
+										{explanation.dist_req.length > 1 ? 'Distribution areas' : 'Distribution area'}:{' '}
 									</strong>
 									{explanation.dist_req
 										.map((area) => `${area}, `)
