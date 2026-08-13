@@ -56,7 +56,11 @@ export function SortableItem({
 		const cleanId = id.toString().replace('|disabled', '');
 		const crosslisting = cleanId.split('|')[1] ?? cleanId;
 		return (
-			<InfoComponentPopOver value={crosslisting}>
+			<InfoComponentPopOver
+				value={crosslisting}
+				dept={course?.department_code}
+				coursenum={course ? String(course.catalog_number) : undefined}
+			>
 				<DashboardSearchItem course={course}>
 					<Item
 						disabled={disabled}
@@ -86,6 +90,7 @@ export function SortableItem({
 			disabled={disabled}
 			ref={disabled ? undefined : setNodeRef}
 			value={id}
+			course={course}
 			dragging={isDragging}
 			sorting={isSorting}
 			handle={handle}

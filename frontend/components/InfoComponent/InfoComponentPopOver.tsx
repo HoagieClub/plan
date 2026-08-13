@@ -21,6 +21,10 @@ import { getRatingBackground } from '@/utils/ratingColors';
 interface InfoComponentPopOverProps {
 	value: string;
 	children: ReactNode;
+	// Explicit course identity, preferred over parsing `value` (which may be a
+	// display string listing every crosslisting, e.g. "COM 476 / LAS 376").
+	dept?: string;
+	coursenum?: string;
 }
 
 interface CourseSetupItem {
@@ -43,13 +47,19 @@ interface CourseDetails {
 
 const PANEL_WIDTH = 560;
 
-export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, children }) => {
-	const dept = value.split(' ')[0];
-	const coursenum = value.split(' ')[1];
+export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
+	value,
+	children,
+	dept: deptProp,
+	coursenum: coursenumProp,
+}) => {
+	const dept = deptProp ?? value.split(' ')[0];
+	const coursenum = coursenumProp ?? value.split(' ')[1];
 
 	const [showPopover, setShowPopover] = useState(false);
 	const [isVisible, setIsVisible] = useState(false);
 	const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
+	const [fetchError, setFetchError] = useState(false);
 	const [showScrollGradient, setShowScrollGradient] = useState(false);
 	const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
@@ -59,23 +69,20 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 		? (courseDetails['terms'] as TermEntry[])
 		: [];
 
-	// If the selected term has no student feedback, opt to the previous semester with feedback if available
+	// Once terms load, default to the first (newest) term with student feedback,
+	// independent of backend ordering. Only runs once per course open — later
+	// manual selections via the dropdown are left alone.
+	const didAutoSelectTerm = useRef(false);
 	useEffect(() => {
-		if (!terms.length) {
+		if (didAutoSelectTerm.current || !terms.length) {
 			return;
 		}
-		const current = terms[selectedTermIdx];
-		if (!current || current.quality_of_course === null || current.quality_of_course === 0) {
-			// Look for the most recent previous term with feedback
-			for (let i = selectedTermIdx - 1; i >= 0; i--) {
-				const prev = terms[i];
-				if (prev && prev.quality_of_course !== null && prev.quality_of_course !== 0) {
-					setSelectedTermIdx(i);
-					break;
-				}
-			}
-		}
-	}, [terms, selectedTermIdx]);
+		didAutoSelectTerm.current = true;
+		const idx = terms.findIndex(
+			(term) => term.quality_of_course !== null && term.quality_of_course !== 0
+		);
+		setSelectedTermIdx(idx === -1 ? 0 : idx);
+	}, [terms]);
 	const [showTermDropdown, setShowTermDropdown] = useState(false);
 
 	const instanceId = useRef(Math.random());
@@ -203,6 +210,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 		} else {
 			updatePopoverPosition();
 			setShowPopover(true);
+			setFetchError(false);
 			requestAnimationFrame(() => setIsVisible(true));
 			window.dispatchEvent(new CustomEvent('popover-open', { detail: instanceId.current }));
 		}
@@ -210,8 +218,10 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 
 	useEffect(() => {
 		setCourseDetails(null);
+		setFetchError(false);
 		setShowScrollGradient(false);
 		setSelectedTermIdx(0);
+		didAutoSelectTerm.current = false;
 		setShowTermDropdown(false);
 	}, [value]);
 
@@ -223,7 +233,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 	}, [courseDetails]);
 
 	useEffect(() => {
-		if (!showPopover || !value || courseDetails) {
+		if (!showPopover || !value || courseDetails || fetchError) {
 			return;
 		}
 
@@ -248,7 +258,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 				}
 
 				console.error('Error fetching course details:', error);
-				setCourseDetails({ error: 'Failed to load course details.' });
+				setFetchError(true);
 			}
 		};
 
@@ -257,7 +267,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 		return () => {
 			controller.abort();
 		};
-	}, [courseDetails, showPopover, value]);
+	}, [courseDetails, fetchError, showPopover, value]);
 
 	useEffect(() => {
 		const onOtherPopoverOpen = (e: Event) => {
@@ -275,19 +285,30 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 			return;
 		}
 
-		const onWindowChange = () => updatePopoverPosition();
-		const onOutsideClick = () => {
+		const closePopover = () => {
 			setIsVisible(false);
-			setTimeout(() => setShowPopover(false), 150);
+			setTimeout(() => {
+				setShowPopover(false);
+				triggerRef.current?.focus();
+			}, 150);
+		};
+		const onWindowChange = () => updatePopoverPosition();
+		const onOutsideClick = () => closePopover();
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				closePopover();
+			}
 		};
 		window.addEventListener('resize', onWindowChange);
 		window.addEventListener('scroll', onWindowChange, true);
 		window.addEventListener('click', onOutsideClick);
+		window.addEventListener('keydown', onKeyDown);
 
 		return () => {
 			window.removeEventListener('resize', onWindowChange);
 			window.removeEventListener('scroll', onWindowChange, true);
 			window.removeEventListener('click', onOutsideClick);
+			window.removeEventListener('keydown', onKeyDown);
 		};
 	}, [showPopover]);
 
@@ -711,6 +732,35 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 							</div>
 						</div>
 					</div>
+				) : fetchError ? (
+					<div
+						style={{
+							flex: 1,
+							display: 'flex',
+							flexDirection: 'column',
+							gap: '8px',
+							justifyContent: 'center',
+							alignItems: 'center',
+							fontSize: '0.85rem',
+							color: '#999',
+						}}
+					>
+						<span>Failed to load course details.</span>
+						<button
+							type='button'
+							onClick={() => setFetchError(false)}
+							style={{
+								border: '1px solid #ccc',
+								borderRadius: '4px',
+								padding: '4px 10px',
+								background: '#fff',
+								cursor: 'pointer',
+								fontSize: '0.8rem',
+							}}
+						>
+							Retry
+						</button>
+					</div>
 				) : (
 					<div
 						style={{
@@ -743,7 +793,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({ value, chi
 
 	return (
 		<>
-			<div ref={triggerRef} onClick={togglePopover}>
+			<div ref={triggerRef} tabIndex={-1} onClick={togglePopover}>
 				{children}
 			</div>
 			{popoverContent && createPortal(popoverContent, document.body)}

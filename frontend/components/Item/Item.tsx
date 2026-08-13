@@ -3,6 +3,7 @@ import { memo, forwardRef, useEffect } from 'react'; // todo: not needed in reac
 
 import { InfoComponentPopOver } from '@/components/InfoComponent/InfoComponentPopOver';
 import { cn } from '@/lib/utils';
+import type { Course } from '@/types';
 
 import infoStyles from '../InfoComponent/InfoComponent.module.css';
 
@@ -30,6 +31,9 @@ export type Props = {
 	transition?: string | null;
 	wrapperStyle?: CSSProperties;
 	value: ReactNode; // Note: This should be the text that appears on the course card
+	// Backing course record, used to identify the exact course for the info
+	// popover instead of guessing from the (possibly multi-crosslisting) label.
+	course?: Course;
 	onRemove?(): void;
 };
 
@@ -39,6 +43,7 @@ export const Item = memo(
 			{
 				color_primary,
 				color_secondary,
+				course,
 				dragOverlay,
 				dragging,
 				disabled,
@@ -119,7 +124,11 @@ export const Item = memo(
 						{/* Text Container for InfoComponent */}
 						<div className={styles.TextContainer}>
 							{!disabled ? (
-								<InfoComponentPopOver value={value.toString().split('|')[1] ?? ''}>
+								<InfoComponentPopOver
+									value={value.toString().split('|')[1] ?? ''}
+									dept={course?.department_code}
+									coursenum={course ? String(course.catalog_number) : undefined}
+								>
 									<div
 										className={infoStyles.Action}
 										style={{
