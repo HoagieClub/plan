@@ -732,35 +732,6 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 							</div>
 						</div>
 					</div>
-				) : fetchError ? (
-					<div
-						style={{
-							flex: 1,
-							display: 'flex',
-							flexDirection: 'column',
-							gap: '8px',
-							justifyContent: 'center',
-							alignItems: 'center',
-							fontSize: '0.85rem',
-							color: '#999',
-						}}
-					>
-						<span>Failed to load course details.</span>
-						<button
-							type='button'
-							onClick={() => setFetchError(false)}
-							style={{
-								border: '1px solid #ccc',
-								borderRadius: '4px',
-								padding: '4px 10px',
-								background: '#fff',
-								cursor: 'pointer',
-								fontSize: '0.8rem',
-							}}
-						>
-							Retry
-						</button>
-					</div>
 				) : (
 					<div
 						style={{
