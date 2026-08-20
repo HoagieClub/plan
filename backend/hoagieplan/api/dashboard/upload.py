@@ -3,50 +3,50 @@ from rest_framework.decorators import api_view
 from data.transcript_to_json import transcript_to_json, convert_to_guids
 from hoagieplan.api.dashboard.requirements import update_transcript_courses_helper
 
+
 @api_view(["POST"])
 def upload_file(request):
-    if "file" not in request.FILES:
-        return JsonResponse({"error": "No file uploaded"}, status=400)
+	if "file" not in request.FILES:
+		return JsonResponse({"error": "No file uploaded"}, status=400)
 
-    uploaded_file = request.FILES["file"]
-    print(f"Processing transcript: {uploaded_file.name}")
+	uploaded_file = request.FILES["file"]
+	print(f"Processing transcript: {uploaded_file.name}")
 
-    # Validate file type
-    if not uploaded_file.name.lower().endswith('.pdf'):
-        return JsonResponse({"error": "Please upload a PDF file"}, status=400)
+	# Validate file type
+	if not uploaded_file.name.lower().endswith(".pdf"):
+		return JsonResponse({"error": "Please upload a PDF file"}, status=400)
 
-    # Convert transcript PDF to JSON
-    try:
-        json_data = transcript_to_json(uploaded_file)
-        
-        # Check if the JSON data looks like a transcript
-        if not json_data or not isinstance(json_data, dict):
-            return JsonResponse({"error": "Invalid transcript format"}, status=400)
-            
-        # Check if it has at least one semester with courses
-        has_valid_semesters = any(
-            isinstance(courses, list) and len(courses) > 0 
-            for courses in json_data.values()
-        )
-        if not has_valid_semesters:
-            return JsonResponse({"error": "No valid courses found in transcript"}, status=400)
+	# Convert transcript PDF to JSON
+	try:
+		json_data = transcript_to_json(uploaded_file)
 
-        transcript_output, missing_courses = convert_to_guids(json_data)
+		# Check if the JSON data looks like a transcript
+		if not json_data or not isinstance(json_data, dict):
+			return JsonResponse({"error": "Invalid transcript format"}, status=400)
 
-        if missing_courses:
-            print(f"⚠️ Could not find: {', '.join(missing_courses)}")
+		# Check if it has at least one semester with courses
+		has_valid_semesters = any(isinstance(courses, list) and len(courses) > 0 for courses in json_data.values())
+		if not has_valid_semesters:
+			return JsonResponse({"error": "No valid courses found in transcript"}, status=400)
 
-    except Exception as e:
-        print(f"Error processing transcript: {e}")
-        return JsonResponse({"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500)
+		transcript_output, missing_courses = convert_to_guids(json_data)
 
-    # Simulate an HTTP request with correct JSON structure
-    try:
-        response = update_transcript_courses_helper(request.user, transcript_output)
+		if missing_courses:
+			print(f"⚠️ Could not find: {', '.join(missing_courses)}")
 
-        print("✅ Transcript processed successfully")
-        return response
+	except Exception as e:
+		print(f"Error processing transcript: {e}")
+		return JsonResponse(
+			{"error": "Failed to process transcript. Please ensure you uploaded a valid transcript PDF."}, status=500
+		)
 
-    except Exception as e:
-        print(f"❌ Error adding courses: {e}")
-        return JsonResponse({"error": "Failed to add courses"}, status=500)
+	# Simulate an HTTP request with correct JSON structure
+	try:
+		response = update_transcript_courses_helper(request.user, transcript_output)
+
+		print("✅ Transcript processed successfully")
+		return response
+
+	except Exception as e:
+		print(f"❌ Error adding courses: {e}")
+		return JsonResponse({"error": "Failed to add courses"}, status=500)

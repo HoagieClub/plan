@@ -9,343 +9,342 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hoagieplan.api.model_getters import (
-    get_calendar,
-    get_course,
-    get_term,
+	get_calendar,
+	get_course,
+	get_term,
 )
 from hoagieplan.models import CalendarEvent, ClassMeeting, Course, CustomUser, Section
 from hoagieplan.serializers import CalendarEventSerializer
 
 DAYS_TO_START_COLUMN_INDEX = {
-    "M": 1,  # Monday
-    "T": 2,  # Tuesday
-    "W": 3,  # Wednesday
-    "Th": 4,  # Thursday
-    "F": 5,  # Friday
+	"M": 1,  # Monday
+	"T": 2,  # Tuesday
+	"W": 3,  # Wednesday
+	"Th": 4,  # Thursday
+	"F": 5,  # Friday
 }
 
 EXCEPTIONS_FOR_NEEDS_CHOICE = ["Seminar", "Lecture"]
 
 
 class CalendarEventPostAction(Enum):
-    AddAllCalendarEventsForCourse = "ADD_ALL_CALENDAR_EVENTS_FOR_COURSE"
-    BulkAddCalendarEvents = "BULK_ADD_CALENDAR_EVENTS"
+	AddAllCalendarEventsForCourse = "ADD_ALL_CALENDAR_EVENTS_FOR_COURSE"
+	BulkAddCalendarEvents = "BULK_ADD_CALENDAR_EVENTS"
 
 
 class CalendarEventView(APIView):
-    def get(self, request, calendar_name: str, term: int) -> Response:
-        """Fetch all calendar events associated with a calendar."""
-        user_inst: CustomUser = request.user
-        try:
-            term_id = get_term(term).id
-            calendar = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+	def get(self, request, calendar_name: str, term: int) -> Response:
+		"""Fetch all calendar events associated with a calendar."""
+		user_inst: CustomUser = request.user
+		try:
+			term_id = get_term(term).id
+			calendar = get_calendar(user_inst, calendar_name, term_id)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        queryset = (
-            CalendarEvent.objects.filter(calendar_configuration=calendar)
-            .select_related(
-                "calendar_configuration",
-                "course__department",
-                "section",
-            )
-            .prefetch_related(
-                "course__instructors",
-                "section__classmeeting_set",
-            )
-        )
+		queryset = (
+			CalendarEvent.objects.filter(calendar_configuration=calendar)
+			.select_related(
+				"calendar_configuration",
+				"course__department",
+				"section",
+			)
+			.prefetch_related(
+				"course__instructors",
+				"section__classmeeting_set",
+			)
+		)
 
-        serializer = CalendarEventSerializer(queryset, many=True)
-        return Response(serializer.data)
+		serializer = CalendarEventSerializer(queryset, many=True)
+		return Response(serializer.data)
 
-    def post(self, request, calendar_name: str, term: int) -> Response:
-        """Handle post operations for calendar events for the user."""
-        user_inst: CustomUser = request.user
-        action: str = request.query_params.get("action")
-        if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
-            return self._add_all_calendar_events_for_course(request, user_inst, calendar_name, term)
-        elif action == CalendarEventPostAction.BulkAddCalendarEvents.value:
-            return self._bulk_add_calendar_events(request, user_inst, calendar_name, term)
-        else:
-            return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
+	def post(self, request, calendar_name: str, term: int) -> Response:
+		"""Handle post operations for calendar events for the user."""
+		user_inst: CustomUser = request.user
+		action: str = request.query_params.get("action")
+		if action == CalendarEventPostAction.AddAllCalendarEventsForCourse.value:
+			return self._add_all_calendar_events_for_course(request, user_inst, calendar_name, term)
+		elif action == CalendarEventPostAction.BulkAddCalendarEvents.value:
+			return self._bulk_add_calendar_events(request, user_inst, calendar_name, term)
+		else:
+			return Response({"error": f"Unknown operation: {action}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def _add_all_calendar_events_for_course(
-        self, request, user_inst: CustomUser, calendar_name: str, term: int
-    ) -> Response:
-        """Add all calendar events for a course identified by guid."""
-        guid: str = request.data.get("guid")
+	def _add_all_calendar_events_for_course(
+		self, request, user_inst: CustomUser, calendar_name: str, term: int
+	) -> Response:
+		"""Add all calendar events for a course identified by guid."""
+		guid: str = request.data.get("guid")
 
-        try:
-            term_id: int = get_term(term).id
-            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-            course = get_course(guid)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+		try:
+			term_id: int = get_term(term).id
+			calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+			course = get_course(guid)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        sections = self._get_unique_class_meetings(term_id, course.id)
-        if not sections:
-            return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
+		sections = self._get_unique_class_meetings(term_id, course.id)
+		if not sections:
+			return Response({"error": "No sections found"}, status=status.HTTP_404_NOT_FOUND)
 
-        unique_sections: Set[Section] = set(section.class_section for section in sections)
-        unique_count = len(unique_sections)
+		unique_sections: Set[Section] = set(section.class_section for section in sections)
+		unique_count = len(unique_sections)
 
-        # Identifying lectures
-        lecture_sections = [
-            section
-            for section in sections
-            if section.class_type == "Lecture" and re.match(r"^L0\d+", section.class_section)
-        ]
+		# Identifying lectures
+		lecture_sections = [
+			section
+			for section in sections
+			if section.class_type == "Lecture" and re.match(r"^L0\d+", section.class_section)
+		]
 
-        # Computing the number of unique lectures
-        unique_lecture_numbers = set()
-        for section in lecture_sections:
-            match = re.match(r"^L0(\d+)", section.class_section)
-            if match:
-                unique_lecture_numbers.add(match.group(1))
+		# Computing the number of unique lectures
+		unique_lecture_numbers = set()
+		for section in lecture_sections:
+			match = re.match(r"^L0(\d+)", section.class_section)
+			if match:
+				unique_lecture_numbers.add(match.group(1))
 
-        # Identifying seminars
-        seminar_sections = [
-            section
-            for section in sections
-            if section.class_type == "Seminar" and re.match(r"^S0\d+", section.class_section)
-        ]
+		# Identifying seminars
+		seminar_sections = [
+			section
+			for section in sections
+			if section.class_type == "Seminar" and re.match(r"^S0\d+", section.class_section)
+		]
 
-        # Computing the number of unique seminars
-        unique_seminar_numbers = set()
-        for section in seminar_sections:
-            match = re.match(r"^S0(\d+)", section.class_section)
-            if match:
-                unique_seminar_numbers.add(match.group(1))
+		# Computing the number of unique seminars
+		unique_seminar_numbers = set()
+		for section in seminar_sections:
+			match = re.match(r"^S0(\d+)", section.class_section)
+			if match:
+				unique_seminar_numbers.add(match.group(1))
 
-        # Creating the CalendarEvent objects
-        calendar_events_to_create: List[CalendarEvent] = []
-        for section in sections:
-            for class_meeting in section.unique_class_meetings:
-                start_column_indices = self._get_start_column_index_for_days(class_meeting.days)
-                for start_column_index in start_column_indices:
-                    calendar_events_to_create.append(
-                        CalendarEvent(
-                            calendar_configuration=calendar_configuration,
-                            course=course,
-                            section=section,
-                            start_time=class_meeting.start_time,
-                            end_time=class_meeting.end_time,
-                            start_column_index=start_column_index,
-                            is_active=True,
-                            needs_choice=(
-                                (section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
-                                or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
-                                or (len(unique_seminar_numbers) > 1 and section.class_type == "Seminar")
-                            ),
-                            is_chosen=False,
-                        )
-                    )
+		# Creating the CalendarEvent objects
+		calendar_events_to_create: List[CalendarEvent] = []
+		for section in sections:
+			for class_meeting in section.unique_class_meetings:
+				start_column_indices = self._get_start_column_index_for_days(class_meeting.days)
+				for start_column_index in start_column_indices:
+					calendar_events_to_create.append(
+						CalendarEvent(
+							calendar_configuration=calendar_configuration,
+							course=course,
+							section=section,
+							start_time=class_meeting.start_time,
+							end_time=class_meeting.end_time,
+							start_column_index=start_column_index,
+							is_active=True,
+							needs_choice=(
+								(section.class_type not in EXCEPTIONS_FOR_NEEDS_CHOICE and unique_count > 1)
+								or (len(unique_lecture_numbers) > 1 and section.class_type == "Lecture")
+								or (len(unique_seminar_numbers) > 1 and section.class_type == "Seminar")
+							),
+							is_chosen=False,
+						)
+					)
 
-        CalendarEvent.objects.bulk_create(calendar_events_to_create, ignore_conflicts=True)
+		CalendarEvent.objects.bulk_create(calendar_events_to_create, ignore_conflicts=True)
 
-        events_for_course = (
-            CalendarEvent.objects.filter(
-                calendar_configuration=calendar_configuration,
-                course=course,
-            )
-            .select_related(
-                "calendar_configuration",
-                "course__department",
-                "section",
-            )
-            .prefetch_related(
-                "course__instructors",
-                "section__classmeeting_set",
-            )
-        )
+		events_for_course = (
+			CalendarEvent.objects.filter(
+				calendar_configuration=calendar_configuration,
+				course=course,
+			)
+			.select_related(
+				"calendar_configuration",
+				"course__department",
+				"section",
+			)
+			.prefetch_related(
+				"course__instructors",
+				"section__classmeeting_set",
+			)
+		)
 
-        serializer = CalendarEventSerializer(events_for_course, many=True)
-        return Response(serializer.data)
+		serializer = CalendarEventSerializer(events_for_course, many=True)
+		return Response(serializer.data)
 
-    def _bulk_add_calendar_events(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:
-        """Add multiple calendar events at once."""
-        events_data: list = request.data.get("events", [])
-        if not events_data:
-            return Response({"error": "No events provided"}, status=status.HTTP_400_BAD_REQUEST)
+	def _bulk_add_calendar_events(self, request, user_inst: CustomUser, calendar_name: str, term: int) -> Response:
+		"""Add multiple calendar events at once."""
+		events_data: list = request.data.get("events", [])
+		if not events_data:
+			return Response({"error": "No events provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            term_id: int = get_term(term).id
-            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": "Failed to get calendar configuration"}, status=status.HTTP_404_NOT_FOUND)
+		try:
+			term_id: int = get_term(term).id
+			calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+		except Exception:
+			return Response({"detail": "Failed to get calendar configuration"}, status=status.HTTP_404_NOT_FOUND)
 
-        unique_guids = set(item["guid"] for item in events_data)
-        courses_by_guid = {
-            c.guid: c
-            for c in Course.objects.select_related("department").filter(guid__in=unique_guids)
-        }
-        missing_guids = unique_guids - courses_by_guid.keys()
-        if missing_guids:
-            return Response(
-                {"detail": f"Courses not found: {', '.join(missing_guids)}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+		unique_guids = set(item["guid"] for item in events_data)
+		courses_by_guid = {
+			c.guid: c for c in Course.objects.select_related("department").filter(guid__in=unique_guids)
+		}
+		missing_guids = unique_guids - courses_by_guid.keys()
+		if missing_guids:
+			return Response(
+				{"detail": f"Courses not found: {', '.join(missing_guids)}"},
+				status=status.HTTP_404_NOT_FOUND,
+			)
 
-        # Build a lookup of sections by (course_id, class_section)
-        sections_by_key = {}
-        for course in courses_by_guid.values():
-            for section in Section.objects.filter(course=course, term_id=term_id):
-                sections_by_key[(course.guid, section.class_section)] = section
+		# Build a lookup of sections by (course_id, class_section)
+		sections_by_key = {}
+		for course in courses_by_guid.values():
+			for section in Section.objects.filter(course=course, term_id=term_id):
+				sections_by_key[(course.guid, section.class_section)] = section
 
-        calendar_events_to_create: List[CalendarEvent] = []
-        for item in events_data:
-            section_key = (item["guid"], item["class_section"])
-            section = sections_by_key.get(section_key)
-            if not section:
-                return Response(
-                    {"detail": f"Section {item['class_section']} not found for course {item['guid']}"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            calendar_events_to_create.append(
-                CalendarEvent(
-                    calendar_configuration=calendar_configuration,
-                    course=courses_by_guid[item["guid"]],
-                    section=section,
-                    start_time=item["start_time"],
-                    end_time=item["end_time"],
-                    start_column_index=item["start_column_index"],
-                    is_active=item["is_active"],
-                    needs_choice=item["needs_choice"],
-                    is_chosen=item["is_chosen"],
-                )
-            )
+		calendar_events_to_create: List[CalendarEvent] = []
+		for item in events_data:
+			section_key = (item["guid"], item["class_section"])
+			section = sections_by_key.get(section_key)
+			if not section:
+				return Response(
+					{"detail": f"Section {item['class_section']} not found for course {item['guid']}"},
+					status=status.HTTP_404_NOT_FOUND,
+				)
+			calendar_events_to_create.append(
+				CalendarEvent(
+					calendar_configuration=calendar_configuration,
+					course=courses_by_guid[item["guid"]],
+					section=section,
+					start_time=item["start_time"],
+					end_time=item["end_time"],
+					start_column_index=item["start_column_index"],
+					is_active=item["is_active"],
+					needs_choice=item["needs_choice"],
+					is_chosen=item["is_chosen"],
+				)
+			)
 
-        CalendarEvent.objects.bulk_create(calendar_events_to_create)
+		CalendarEvent.objects.bulk_create(calendar_events_to_create)
 
-        created_ids = [e.id for e in calendar_events_to_create]
-        created_events = (
-            CalendarEvent.objects.filter(id__in=created_ids)
-            .select_related(
-                "calendar_configuration",
-                "course__department",
-                "section",
-            )
-            .prefetch_related(
-                "course__instructors",
-                "section__classmeeting_set",
-            )
-        )
+		created_ids = [e.id for e in calendar_events_to_create]
+		created_events = (
+			CalendarEvent.objects.filter(id__in=created_ids)
+			.select_related(
+				"calendar_configuration",
+				"course__department",
+				"section",
+			)
+			.prefetch_related(
+				"course__instructors",
+				"section__classmeeting_set",
+			)
+		)
 
-        serializer = CalendarEventSerializer(created_events, many=True)
-        return Response(serializer.data)
+		serializer = CalendarEventSerializer(created_events, many=True)
+		return Response(serializer.data)
 
-    def delete(self, request, calendar_name: str, term: int) -> Response:
-        """Delete all calendar events associated with a given guid."""
-        guid: str = request.data.get("guid")
-        user_inst = request.user
+	def delete(self, request, calendar_name: str, term: int) -> Response:
+		"""Delete all calendar events associated with a given guid."""
+		guid: str = request.data.get("guid")
+		user_inst = request.user
 
-        try:
-            term_id = get_term(term).id
-            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-            course = get_course(guid)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+		try:
+			term_id = get_term(term).id
+			calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+			course = get_course(guid)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            events_to_delete = CalendarEvent.objects.filter(
-                calendar_configuration=calendar_configuration,
-                course=course,
-            )
-            deleted_count, _ = events_to_delete.delete()
-            return Response({"detail": f"Deleted {deleted_count} events."}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+		try:
+			events_to_delete = CalendarEvent.objects.filter(
+				calendar_configuration=calendar_configuration,
+				course=course,
+			)
+			deleted_count, _ = events_to_delete.delete()
+			return Response({"detail": f"Deleted {deleted_count} events."}, status=status.HTTP_200_OK)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, calendar_name: str, term: int) -> Response:
-        """Inverts a calendar event (Activates an inactive event or deactivates an active event)."""
-        guid: str = request.data.get("guid")
+	def put(self, request, calendar_name: str, term: int) -> Response:
+		"""Inverts a calendar event (Activates an inactive event or deactivates an active event)."""
+		guid: str = request.data.get("guid")
 
-        # class_section are L01, C01, P01, etc.
-        class_section: str = request.data.get("classSection")
-        user_inst = request.user
+		# class_section are L01, C01, P01, etc.
+		class_section: str = request.data.get("classSection")
+		user_inst = request.user
 
-        try:
-            term_id = get_term(term).id
-            calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+		try:
+			term_id = get_term(term).id
+			calendar_configuration = get_calendar(user_inst, calendar_name, term_id)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        # Fetch all events for this course in one query, avoiding separate Course and Section lookups
-        events_for_course = list(
-            CalendarEvent.objects.filter(
-                calendar_configuration=calendar_configuration,
-                course__guid=guid,
-            ).select_related("course", "section")
-        )
-        if not events_for_course:
-            return Response({"detail": "CalendarEvent not found"}, status=status.HTTP_404_NOT_FOUND)
+		# Fetch all events for this course in one query, avoiding separate Course and Section lookups
+		events_for_course = list(
+			CalendarEvent.objects.filter(
+				calendar_configuration=calendar_configuration,
+				course__guid=guid,
+			).select_related("course", "section")
+		)
+		if not events_for_course:
+			return Response({"detail": "CalendarEvent not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        clicked_event = next(
-            (event for event in events_for_course if event.section.class_section == class_section),
-            None,
-        )
-        if not clicked_event:
-            return Response({"detail": "No CalendarEvents found for the section"}, status=status.HTTP_404_NOT_FOUND)
+		clicked_event = next(
+			(event for event in events_for_course if event.section.class_section == class_section),
+			None,
+		)
+		if not clicked_event:
+			return Response({"detail": "No CalendarEvents found for the section"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Change status of is_chosen and is_active
-        matched_sections = [
-            section
-            for section in events_for_course
-            if (section.course.guid == clicked_event.course.guid and section.section.id == clicked_event.section.id)
-        ]
-        sections_per_grouping = len(matched_sections)
+		# Change status of is_chosen and is_active
+		matched_sections = [
+			section
+			for section in events_for_course
+			if (section.course.guid == clicked_event.course.guid and section.section.id == clicked_event.section.id)
+		]
+		sections_per_grouping = len(matched_sections)
 
-        active_sections = [
-            section
-            for section in events_for_course
-            if (
-                section.course.guid == clicked_event.course.guid
-                and section.is_active
-                and section.section.class_type == clicked_event.section.class_type
-            )
-        ]
-        is_active_single = len(active_sections) <= sections_per_grouping
+		active_sections = [
+			section
+			for section in events_for_course
+			if (
+				section.course.guid == clicked_event.course.guid
+				and section.is_active
+				and section.section.class_type == clicked_event.section.class_type
+			)
+		]
+		is_active_single = len(active_sections) <= sections_per_grouping
 
-        events_to_update: List[CalendarEvent] = []
-        with transaction.atomic():
-            for section in events_for_course:
-                # Section that was clicked
-                if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
-                    section.is_chosen = not section.is_chosen
-                    events_to_update.append(section)
+		events_to_update: List[CalendarEvent] = []
+		with transaction.atomic():
+			for section in events_for_course:
+				# Section that was clicked
+				if section.section.id == clicked_event.section.id and section.course.guid == clicked_event.course.guid:
+					section.is_chosen = not section.is_chosen
+					events_to_update.append(section)
 
-                # Completely different course, do nothing
-                elif section.course.guid != clicked_event.course.guid:
-                    continue
+				# Completely different course, do nothing
+				elif section.course.guid != clicked_event.course.guid:
+					continue
 
-                # Only has one section that is visible, which is the one that is clicked
-                elif is_active_single and clicked_event.is_active:
-                    if section.section.class_type == clicked_event.section.class_type:
-                        section.is_active = True
-                        section.is_chosen = False
-                        events_to_update.append(section)
-                elif section.section.class_type == clicked_event.section.class_type:
-                    section.is_active = section.get_key() == clicked_event.get_key()
-                    section.is_chosen = section.get_key() == clicked_event.get_key()
-                    events_to_update.append(section)
+				# Only has one section that is visible, which is the one that is clicked
+				elif is_active_single and clicked_event.is_active:
+					if section.section.class_type == clicked_event.section.class_type:
+						section.is_active = True
+						section.is_chosen = False
+						events_to_update.append(section)
+				elif section.section.class_type == clicked_event.section.class_type:
+					section.is_active = section.get_key() == clicked_event.get_key()
+					section.is_chosen = section.get_key() == clicked_event.get_key()
+					events_to_update.append(section)
 
-            if events_to_update:
-                CalendarEvent.objects.bulk_update(events_to_update, ["is_active", "is_chosen"])
+			if events_to_update:
+				CalendarEvent.objects.bulk_update(events_to_update, ["is_active", "is_chosen"])
 
-        return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
+		return Response({"detail": "Updated events."}, status=status.HTTP_200_OK)
 
-    def _get_unique_class_meetings(self, term_id: int, course_id: int) -> list[Section]:
-        sections = Section.objects.filter(term_id=term_id, course_id=course_id)
+	def _get_unique_class_meetings(self, term_id: int, course_id: int) -> list[Section]:
+		sections = Section.objects.filter(term_id=term_id, course_id=course_id)
 
-        unique_sections = sections.prefetch_related(
-            Prefetch(
-                "classmeeting_set",
-                queryset=ClassMeeting.objects.order_by("id"),
-                to_attr="unique_class_meetings",
-            )
-        )
-        return unique_sections
+		unique_sections = sections.prefetch_related(
+			Prefetch(
+				"classmeeting_set",
+				queryset=ClassMeeting.objects.order_by("id"),
+				to_attr="unique_class_meetings",
+			)
+		)
+		return unique_sections
 
-    def _get_start_column_index_for_days(self, days_string: str) -> list[int]:
-        days_array = days_string.split(",")
-        return [DAYS_TO_START_COLUMN_INDEX.get(day.strip(), 0) for day in days_array]
+	def _get_start_column_index_for_days(self, days_string: str) -> list[int]:
+		days_array = days_string.split(",")
+		return [DAYS_TO_START_COLUMN_INDEX.get(day.strip(), 0) for day in days_array]

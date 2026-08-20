@@ -10,7 +10,9 @@
  * and/or sell copies of the software. This software is provided "as-is", without warranty of any kind.
  */
 
+// @ts-ignore
 import './globals.css';
+// @ts-ignore
 import '@/lib/hoagie-ui/Theme/theme.css';
 
 import { type ReactNode, type JSX } from 'react';
@@ -30,6 +32,7 @@ import { Theme } from '@/lib/hoagie-ui/Theme';
 const poppins = Poppins({
 	weight: ['400', '500', '600', '700'],
 	subsets: ['latin'],
+	display: 'optional', // prevents font-swap CLS; uses fallback permanently on uncached visits
 });
 
 import type { Metadata } from 'next';
@@ -63,7 +66,12 @@ async function Content({ children }: { children: ReactNode }): Promise<JSX.Eleme
 		<Auth0Provider user={user}>
 			<Theme palette='plan'>
 				<Layout>
-					<Nav name='plan' tabs={tabs} user={user} />
+					{/* height 92px = Nav's 20px header strip + 72px (majorScale(9)) nav bar.
+					    Inline style avoids ui-box CSS-in-JS timing: if Evergreen styles load after first paint,
+					    Nav shrinks from auto-height to 92px and shifts `main` — this wrapper prevents that. */}
+					<div style={{ height: '92px', overflow: 'visible' }}>
+						<Nav name='plan' tabs={tabs} user={user} />
+					</div>
 					{children}
 					<Toaster />
 				</Layout>
