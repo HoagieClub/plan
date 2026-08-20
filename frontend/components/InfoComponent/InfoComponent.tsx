@@ -149,7 +149,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				className={styles.modal}
 				style={{
 					width: '75%',
-					height: courseDetails ? '82vh' : '160px',
+					height: courseDetails ? '70vh' : '160px',
+					maxHeight: courseDetails ? '70vh' : '160px',
 					gap: '10px',
 					padding: '25px',
 					display: 'flex',
