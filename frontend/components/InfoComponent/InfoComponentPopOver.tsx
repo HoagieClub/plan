@@ -65,9 +65,10 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 	const [selectedTermIdx, setSelectedTermIdx] = useState(0);
 
 	// Per-term data (move up so it's available for useEffect)
-	const terms: TermEntry[] = Array.isArray(courseDetails?.['terms'])
-		? (courseDetails['terms'] as TermEntry[])
-		: [];
+	const terms: TermEntry[] = useMemo(
+		() => (Array.isArray(courseDetails?.['terms']) ? (courseDetails['terms'] as TermEntry[]) : []),
+		[courseDetails]
+	);
 
 	// Once terms load, default to the first (newest) term with student feedback,
 	// independent of backend ordering. Only runs once per course open — later
@@ -107,19 +108,9 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 
 	const courseSetup: CourseSetupItem[] = selectedTerm?.course_setup ?? [];
 
-	// Per-term description and grading
-	const selectedDescription = Array.isArray(courseDetails?.descriptions)
-		? (courseDetails.descriptions[selectedTermIdx] ?? courseDetails['Description'])
-		: courseDetails?.['Description'];
-	// Prefer grading from selectedTerm if available, else fallback
-	let selectedGrading;
-	if (selectedTerm && Array.isArray((selectedTerm as any).grading)) {
-		selectedGrading = (selectedTerm as any).grading;
-	} else if (Array.isArray(courseDetails?.gradings)) {
-		selectedGrading = courseDetails.gradings[selectedTermIdx] ?? courseDetails['Grading'];
-	} else {
-		selectedGrading = courseDetails?.['Grading'];
-	}
+	// The backend returns a single Description/Grading for the course, not per-term.
+	const selectedDescription = courseDetails?.['Description'];
+	const selectedGrading = courseDetails?.['Grading'];
 
 	// Per-term student feedback (stars)
 	const selectedQuality = selectedTerm?.quality_of_course ?? null;
@@ -684,7 +675,7 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 												flexDirection: 'column',
 											}}
 										>
-											{(selectedGrading as { label: string; percent: number }[]).map(
+											{(selectedGrading as unknown as { label: string; percent: number }[]).map(
 												(item, index, arr) => (
 													<div
 														key={item.label}
