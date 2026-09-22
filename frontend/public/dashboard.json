@@ -15,5 +15,12 @@
 		"<span style=\"font-weight: 500;\">1. Click Almost Completed Minors in the top left <br> 2. Check which minors/certificates you’re close to completing! You can see which requirements or prerequisites you’re missing <br> 3. Add minors to your plan as desired </span>",
 		"<span style=\"font-weight: 500;\">Some courses can only count towards one of multiple requirements. They are displayed in red. Click on the course to settle it into your desired requirement. </span>"
 	],
-	"photos": ["/profile.png", "/transcript.png", "/search.png", "/requirement.png", "/almost_completed_minors.png", "/settle.png"]
+	"photos": [
+		"/profile.png",
+		"/transcript.png",
+		"/search.png",
+		"/requirement.png",
+		"/almost_completed_minors.png",
+		"/settle.png"
+	]
 }
