@@ -704,16 +704,18 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 								style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
 							>
 								<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
-								{selectedQuality !== null &&
-									selectedQuality !== undefined &&
-									selectedQuality > 0 && (
-										<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-											<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
-												{selectedQuality.toFixed(2)}
-											</span>
-											<Rating value={selectedQuality} precision={0.1} readOnly size='small' />
-										</div>
-									)}
+								{selectedQuality !== null && selectedQuality > 0 ? (
+									<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+										<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
+											{selectedQuality.toFixed(2)}
+										</span>
+										<Rating value={selectedQuality} precision={0.1} readOnly size='small' />
+									</div>
+								) : (
+									<span style={{ fontSize: '0.75rem', color: '#999' }}>
+										No rating for this term
+									</span>
+								)}
 							</div>
 							<div
 								style={{

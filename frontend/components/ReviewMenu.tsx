@@ -8,7 +8,7 @@ interface ReviewMenuProps {
 	dept: string;
 	coursenum: string;
 	term_code?: string;
-	onRatingLoaded?: (rating: number) => void;
+	onRatingLoaded?: (rating: number | null) => void;
 	onSummaryLoaded?: (summary: string) => void;
 }
 
@@ -56,9 +56,8 @@ export const ReviewMenu: FC<ReviewMenuProps> = ({
 				if (data?.reviews) {
 					setReviews(data.reviews);
 				}
-				if (data?.rating) {
-					onRatingLoadedRef.current?.(data.rating);
-				}
+				// Always report, including null, so a previous term's rating isn't left on screen
+				onRatingLoadedRef.current?.(data?.rating ?? null);
 				if (data?.summary) {
 					setSummary(data.summary);
 					onSummaryLoadedRef.current?.(data.summary);
