@@ -33,12 +33,18 @@ interface CourseSetupItem {
 	duration?: number;
 }
 
+interface GradingItem {
+	label: string;
+	percent: number;
+}
+
 interface TermEntry {
 	term_code: string;
 	label: string;
 	instructors: string[];
 	quality_of_course: number | null;
 	course_setup: CourseSetupItem[];
+	grading: GradingItem[];
 }
 
 interface CourseDetails {
@@ -108,9 +114,9 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 
 	const courseSetup: CourseSetupItem[] = selectedTerm?.course_setup ?? [];
 
-	// The backend returns a single Description/Grading for the course, not per-term.
+	// Description is course-level; grading breakdown is per-term.
 	const selectedDescription = courseDetails?.['Description'];
-	const selectedGrading = courseDetails?.['Grading'];
+	const selectedGrading: GradingItem[] = selectedTerm?.grading ?? [];
 
 	// Per-term student feedback (stars)
 	const selectedQuality = selectedTerm?.quality_of_course ?? null;
@@ -659,40 +665,38 @@ export const InfoComponentPopOver: FC<InfoComponentPopOverProps> = ({
 						</div>
 
 						{/* Grading */}
-						{Array.isArray(selectedGrading) &&
-							selectedGrading.length > 0 &&
-							(selectedGrading as unknown[]).every(
-								(g) => typeof g === 'object' && g !== null && 'label' in g && 'percent' in g
-							) && (
-								<div>
-									<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
-									<CourseDetailSection>
-										<div
-											style={{
-												fontSize: '0.85rem',
-												fontWeight: 600,
-												display: 'flex',
-												flexDirection: 'column',
-											}}
-										>
-											{(selectedGrading as unknown as { label: string; percent: number }[]).map(
-												(item, index, arr) => (
-													<div
-														key={item.label}
-														style={{
-															paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
-															marginBottom: index !== arr.length - 1 ? '5px' : '0px',
-															borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
-														}}
-													>
-														{item.percent}% {item.label}
-													</div>
-												)
-											)}
-										</div>
-									</CourseDetailSection>
-								</div>
-							)}
+						<div>
+							<SectionTitle label='Grading' iconSrc='/icons/description.svg' />
+							<CourseDetailSection>
+								{selectedGrading.length > 0 ? (
+									<div
+										style={{
+											fontSize: '0.85rem',
+											fontWeight: 600,
+											display: 'flex',
+											flexDirection: 'column',
+										}}
+									>
+										{selectedGrading.map((item, index, arr) => (
+											<div
+												key={item.label}
+												style={{
+													paddingBottom: index !== arr.length - 1 ? '5px' : '0px',
+													marginBottom: index !== arr.length - 1 ? '5px' : '0px',
+													borderBottom: index !== arr.length - 1 ? '1px solid #ccc' : 'none',
+												}}
+											>
+												{item.percent}% {item.label}
+											</div>
+										))}
+									</div>
+								) : (
+									<div style={{ fontSize: '0.85rem', color: '#999' }}>
+										No grading information for this term.
+									</div>
+								)}
+							</CourseDetailSection>
+						</div>
 
 						{/* Student Feedback */}
 						<div>
