@@ -46,14 +46,8 @@ def get_course_comments(dept, num, term_code=None):
 
 	result = {"reviews": cleaned_comments}
 
-	evaluation = (
-		Course.objects.filter(department=department, catalog_number=str(num))
-		.filter(quality_of_course__isnull=False)
-		.order_by("course_id", "-guid")
-		.first()
-	)
-	if evaluation and evaluation.quality_of_course:
-		result["rating"] = evaluation.quality_of_course
+	# Rating comes from the same term-filtered course as the comments; null when that term has none
+	result["rating"] = course.quality_of_course
 
 	summary = CourseEvalSummary.objects.filter(course=course).first()
 	if summary:
