@@ -16,11 +16,11 @@ import Alert from '@mui/material/Alert';
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal } from '@/components/Modal';
+import { RecentSearches } from '@/components/RecentSearches';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import useCalendarStore from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
@@ -79,6 +79,10 @@ export const CalendarSearch: FC = () => {
 	const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
+
+	// Input value for the search box, updated immediately on user input
+	const [inputValue, setInputValue] = useState<string>('');
+	// Query used for triggering searches, updated after debounce
 	const [query, setQuery] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
@@ -88,10 +92,12 @@ export const CalendarSearch: FC = () => {
 		recentSearches,
 		setError,
 		setLoading,
+		clearRecentSearches,
 	} = useCalendarStore((state) => ({
 		setCalendarSearchResults: state.setCalendarSearchResults,
 		calendarSearchResults: state.calendarSearchResults,
 		addRecentSearch: state.addRecentSearch,
+		clearRecentSearches: state.clearRecentSearches,
 		recentSearches: state.recentSearches,
 		setError: state.setError,
 		setLoading: state.setLoading,
@@ -160,16 +166,24 @@ export const CalendarSearch: FC = () => {
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
 	function retrieveCachedSearch(search: string) {
-		setCalendarSearchResults(searchCache.get(search) || []);
+		setInputValue(search);
+		setQuery(search);
+		addRecentSearch(search);
+		const cached = searchCache.get(search);
+		if (cached) {
+			setCalendarSearchResults(cached);
+		}
 	}
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		setInputValue(value);
 		if (timerRef.current) {
 			clearTimeout(timerRef.current);
 		}
 
 		timerRef.current = window.setTimeout(() => {
-			setQuery(event.target.value);
+			setQuery(value);
 		}, 500);
 	};
 
@@ -189,13 +203,8 @@ export const CalendarSearch: FC = () => {
 				return;
 			}
 
-			const csrfToken = await fetchCsrfToken();
-
 			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 				body: JSON.stringify(calendarData),
 			});
 
@@ -234,18 +243,24 @@ export const CalendarSearch: FC = () => {
 		// All courses in the selected semester
 		const currentSemesterCourses = getSelectedCourses(termFilter);
 
-		// We need to make sure user doesn't have any unsettled courses
+		const hasMeetingTime = (course: (typeof currentSemesterCourses)[number]) => {
+			const meetings = course.section?.class_meetings;
+			return meetings && meetings.length > 0 && meetings[0]?.days && meetings[0].days.trim() !== '';
+		};
+
+		// We need to make sure user doesn't have any unsettled courses that have an assigned time
 		const hasUnselectedRequired = currentSemesterCourses.some(
-			(course) => course.isActive && course.needsChoice && !course.isChosen
+			(course) =>
+				course.isActive && course.needsChoice && !course.isChosen && hasMeetingTime(course)
 		);
 
 		if (hasUnselectedRequired) {
 			return null;
 		}
 
-		// Filter out sections that are active
+		// Filter out sections that are active and have an assigned meeting time
 		const class_sections = currentSemesterCourses.filter(
-			(course) => course.isChosen || !course.needsChoice
+			(course) => (course.isChosen || !course.needsChoice) && hasMeetingTime(course)
 		);
 
 		const seenSectionIds = new Set<number>();
@@ -459,6 +474,7 @@ export const CalendarSearch: FC = () => {
 							className='search-input'
 							placeholder='Search courses'
 							autoComplete='off'
+							value={inputValue}
 							onChange={handleInputChange}
 						/>
 						<button
@@ -473,20 +489,12 @@ export const CalendarSearch: FC = () => {
 							/>
 						</button>
 					</div>
-					<div className='recent-searches'>
-						<div className='recent-searches-label'>Recent searches:</div>
-						<div className='recent-searches-list'>
-							{recentSearches.slice(-5).map((search, index) => (
-								<button
-									key={index}
-									className='recent-search-item'
-									onClick={() => retrieveCachedSearch(search)}
-								>
-									{search}
-								</button>
-							))}
-						</div>
-					</div>
+
+					<RecentSearches
+						searches={recentSearches}
+						onSearch={retrieveCachedSearch}
+						onClear={clearRecentSearches}
+					/>
 				</div>
 				<div className='search-results'>
 					<CalendarSearchResults courses={calendarSearchResults} />

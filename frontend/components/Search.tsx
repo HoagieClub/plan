@@ -13,6 +13,7 @@ import {
 } from '@mui/joy';
 import { LRUCache } from 'typescript-lru-cache';
 
+import { RecentSearches } from '@/components/RecentSearches';
 import { useFilterStore } from '@/store/filterSlice';
 import useSearchStore from '@/store/searchSlice';
 import type { Course, Filter } from '@/types';
@@ -29,6 +30,9 @@ const searchCache = new LRUCache<string, Course[]>({
 });
 
 export const Search: FC = () => {
+	// Input value for the search box, updated immediately on user input
+	const [inputValue, setInputValue] = useState<string>('');
+	// Query used for triggering searches, updated after debounce
 	const [query, setQuery] = useState<string>('');
 	const timerRef = useRef<number>(undefined);
 	const {
@@ -131,7 +135,13 @@ export const Search: FC = () => {
 	);
 
 	function retrieveCachedSearch(search: string): void {
-		setSearchResults(searchCache.get(search) ?? []);
+		setInputValue(search);
+		setQuery(search);
+		addRecentSearch(search);
+		const cached = searchCache.get(search);
+		if (cached) {
+			setSearchResults(cached);
+		}
 	}
 
 	useEffect(() => {
@@ -150,12 +160,14 @@ export const Search: FC = () => {
 	}, [query, termFilter, distributionFilters, levelFilter, gradingFilter, search]);
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		setInputValue(value);
 		if (timerRef.current) {
 			clearTimeout(timerRef.current);
 		}
 
 		timerRef.current = window.setTimeout(() => {
-			setQuery(event.target.value);
+			setQuery(value);
 		}, 500);
 	};
 
@@ -374,6 +386,7 @@ export const Search: FC = () => {
 						className='block w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-10 pr-9 text-sm text-gray-900 shadow-sm focus:border-indigo-600 focus:ring-indigo-600'
 						placeholder='Search courses'
 						autoComplete='off'
+						value={inputValue}
 						onChange={handleInputChange}
 					/>
 					<button
@@ -388,30 +401,11 @@ export const Search: FC = () => {
 						/>
 					</button>
 				</div>
-				<div className='mt-3'>
-					<div className='mb-2 flex items-center justify-between'>
-						<div className='text-sm text-gray-500'>Recent searches:</div>
-						<div className='flex items-center space-x-2'>
-							<button
-								className='rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 hover:bg-red-200 focus:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-300'
-								onClick={() => clearRecentSearches()}
-							>
-								Clear
-							</button>
-						</div>
-					</div>
-					<div className='flex space-x-2 overflow-x-auto pb-2'>
-						{recentSearches.map((search, index) => (
-							<button
-								key={index}
-								className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300'
-								onClick={() => retrieveCachedSearch(search)}
-							>
-								{search}
-							</button>
-						))}
-					</div>
-				</div>
+				<RecentSearches
+					searches={recentSearches}
+					onSearch={retrieveCachedSearch}
+					onClear={clearRecentSearches}
+				/>
 			</div>
 			{modalContent}
 		</>
