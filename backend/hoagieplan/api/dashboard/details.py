@@ -214,11 +214,14 @@ def _build_terms_list(crosslistings: str) -> list:
 
 	Returns:
 	    List of dicts with ``term_code``, ``label``, ``instructors``,
-	    ``quality_of_course``, and ``course_setup``, ordered newest first.
+	    ``quality_of_course``, ``course_setup``, and ``grading``, ordered newest first.
 
 	"""
 	all_term_courses = (
-		Course.objects.filter(crosslistings__icontains=crosslistings).prefetch_related("instructors").order_by("-guid")
+		Course.objects.filter(crosslistings__icontains=crosslistings)
+		.select_related("grading_info")
+		.prefetch_related("instructors")
+		.order_by("-guid")
 	)
 
 	course_ids = list(all_term_courses.values_list("id", flat=True))
@@ -266,6 +269,7 @@ def _build_terms_list(crosslistings: str) -> list:
 				"instructors": instructor_names,
 				"quality_of_course": course.quality_of_course,
 				"course_setup": course_setup,
+				"grading": _build_grading_breakdown(course),
 			}
 		)
 
