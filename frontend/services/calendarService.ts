@@ -173,29 +173,17 @@ export async function duplicateCalendar(
 	}
 }
 
-// Deletes the calendar with calendarName in term
-export async function deleteCalendar(
-	calendarName: string,
-	term: number
-): Promise<CalendarConfiguration | null> {
+// Deletes the calendar with calendarName in term. Returns true on success.
+export async function deleteCalendar(calendarName: string, term: number): Promise<boolean> {
 	try {
 		const url = buildCalendarsUrl(term);
 		const response = await fetch(
 			url,
 			buildRequest(HttpRequestType.DELETE, null, { calendar_name: calendarName })
 		);
-
-		if (!response.ok) {
-			// TODO: Handle error
-			return null;
-		}
-
-		const responseData = await response.json();
-		const validatedData = CalendarConfigurationSchema.parse(responseData) as CalendarConfiguration;
-		return validatedData;
+		return response.ok;
 	} catch {
-		// TODO: Handle error
-		return null;
+		return false;
 	}
 }
 

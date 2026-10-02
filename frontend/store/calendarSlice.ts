@@ -22,6 +22,7 @@ interface CalendarStore {
 
 	error: string | null;
 	loading: boolean;
+	eventsLoading: boolean;
 
 	loadCourses: (semester: string) => Promise<void>; // Loads courses for a given semester
 
@@ -106,17 +107,42 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	recentSearches: [],
 	error: null,
 	loading: false,
+	eventsLoading: false,
 
 	loadCourses: async (semester: string) => {
-		set({ loading: true, error: null });
-		const events = await getCalendarEvents(get().activeCalendarName, Number(semester));
+		const name = get().activeCalendarName;
+		if (!name) {
+			return;
+		}
+
+		// Clear this term's events so a previous calendar's events never show under this one
+		set((state) => ({
+			loading: true,
+			eventsLoading: true,
+			error: null,
+			selectedCourses: { ...state.selectedCourses, [semester]: {} },
+		}));
+
+		const events = await getCalendarEvents(name, Number(semester));
+
+		// The active calendar changed while we were fetching; drop this stale response
+		if (get().activeCalendarName !== name) {
+			// A newer loadCourses owns eventsLoading unless no calendar is active at all
+			if (!get().activeCalendarName) {
+				set({ loading: false, eventsLoading: false });
+			}
+			return;
+		}
+
+		if (!events) {
+			set({ loading: false, eventsLoading: false, error: 'Failed to load calendar' });
+			return;
+		}
 
 		const eventsRecord: Record<string, OldCalendarEvent> = {};
-		if (events) {
-			for (const event of events) {
-				const transformed = transformToOldCalendarEvent(event);
-				eventsRecord[transformed.key] = transformed;
-			}
+		for (const event of events) {
+			const transformed = transformToOldCalendarEvent(event);
+			eventsRecord[transformed.key] = transformed;
 		}
 		set((state) => ({
 			selectedCourses: {
@@ -124,6 +150,7 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 				[semester]: eventsRecord,
 			},
 			loading: false,
+			eventsLoading: false,
 		}));
 	},
 	setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
@@ -133,6 +160,12 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	setLoading: (loading) => set({ loading }),
 
 	addCourse: async (course: Course) => {
+		const name = get().activeCalendarName;
+		if (!name) {
+			set({ error: 'No calendar selected yet. Please try again.' });
+			return;
+		}
+
 		const term = course.guid.substring(0, 4);
 		const termCourses = get().selectedCourses[term] ?? {};
 
@@ -143,13 +176,15 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		set({ loading: true, error: null });
 
 		try {
-			const addCourseResponse = await addCourseToCalendar(
-				get().activeCalendarName,
-				Number(term),
-				course.guid
-			);
+			const addCourseResponse = await addCourseToCalendar(name, Number(term), course.guid);
 			if (!addCourseResponse) {
 				throw new Error('Failed to add course to calendar');
+			}
+
+			// The user switched calendars while this request was in flight
+			if (get().activeCalendarName !== name) {
+				set({ loading: false });
+				return;
 			}
 
 			const newEvents: Record<string, OldCalendarEvent> = {};
@@ -176,6 +211,11 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	setActiveCalendarName: (name: string) => set({ activeCalendarName: name }),
 
 	activateSection: (clickedSection) => {
+		const name = get().activeCalendarName;
+		if (!name) {
+			return;
+		}
+
 		const term = clickedSection.course.guid.substring(0, 4);
 		const termCourses = get().selectedCourses[term] ?? {};
 		const sections = Object.values(termCourses);
@@ -235,21 +275,27 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		const guid = clickedSection.course.guid;
 		const classSection = clickedSection.section.class_section;
 
-		invertSectionInCalendar(get().activeCalendarName, Number(term), guid, classSection).catch(
-			() => {
-				// Rollback on failure: restore only the keys we changed
-				set((state) => ({
-					selectedCourses: {
-						...state.selectedCourses,
-						[term]: { ...(state.selectedCourses[term] ?? {}), ...rollback },
-					},
-					error: 'Failed to save section change',
-				}));
+		invertSectionInCalendar(name, Number(term), guid, classSection).catch(() => {
+			// Only roll back if the user is still on the same calendar
+			if (get().activeCalendarName !== name) {
+				return;
 			}
-		);
+			set((state) => ({
+				selectedCourses: {
+					...state.selectedCourses,
+					[term]: { ...(state.selectedCourses[term] ?? {}), ...rollback },
+				},
+				error: 'Failed to save section change',
+			}));
+		});
 	},
 
 	removeCourse: (sectionKey) => {
+		const name = get().activeCalendarName;
+		if (!name) {
+			return;
+		}
+
 		const currentState = get();
 		const term = Object.keys(currentState.selectedCourses).find(
 			(semester) => sectionKey in currentState.selectedCourses[semester]
@@ -292,8 +338,11 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		});
 
 		// Persist to DB in background
-		deleteCourseFromCalendar(get().activeCalendarName, Number(term), courseToRemove).catch(() => {
-			// Rollback on failure: re-add only the events we removed
+		deleteCourseFromCalendar(name, Number(term), courseToRemove).catch(() => {
+			// Only roll back if the user is still on the same calendar
+			if (get().activeCalendarName !== name) {
+				return;
+			}
 			set((state) => ({
 				selectedCourses: {
 					...state.selectedCourses,

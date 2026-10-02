@@ -25,7 +25,7 @@ import {
 	renameCalendar,
 	duplicateCalendar,
 } from '@/services/calendarService';
-import useCalendarStore from '@/store/calendarSlice';
+import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
 import { fetchCsrfToken } from '@/utils/csrf';
@@ -40,6 +40,11 @@ import './CalendarSearch.css';
 
 interface TermMap {
 	[key: string]: string;
+}
+
+interface Schedule {
+	id: string;
+	name: string;
 }
 
 function buildQuery(searchQuery: string, filter: Filter): string {
@@ -70,6 +75,17 @@ function invert(obj: TermMap): TermMap {
 	return Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key]));
 }
 
+// Returns "<name> (copy)", or "<name> (copy 2)", etc. so it doesn't collide with existing names
+function getUniqueCopyName(name: string, existingNames: string[]): string {
+	let candidate = `${name} (copy)`;
+	let n = 2;
+	while (existingNames.includes(candidate)) {
+		candidate = `${name} (copy ${n})`;
+		n += 1;
+	}
+	return candidate;
+}
+
 export const CalendarSearch: FC = () => {
 	const [isClient, setIsClient] = useState<boolean>(false);
 
@@ -79,16 +95,21 @@ export const CalendarSearch: FC = () => {
 
 	const [openSuccessSnackBar, setOpenSuccessSnackBar] = useState(false);
 	const [openErrorSnackBar, setOpenErrorSnackBar] = useState(false);
+	const [actionError, setActionError] = useState<string | null>(null);
 	const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
 	const [query, setQuery] = useState<string>('');
 	const [showCreateModal, setShowCreateModal] = useState(false);
-	const [schedules, setSchedules] = useState([]);
+	const [schedules, setSchedules] = useState<Schedule[]>([]);
 	const [newScheduleName, setNewScheduleName] = useState('');
 	const [showEditModal, setShowEditModal] = useState(false);
-	const [editingSchedule, setEditingSchedule] = useState<{ id: string; name: string } | null>(null);
+	const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
 	const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null);
+	const [scheduleActionPending, setScheduleActionPending] = useState(false);
+	// Mirrors scheduleActionPending synchronously so a second click lands in the same
+	// tick, before React has re-rendered the buttons as disabled, is still blocked
+	const scheduleActionPendingRef = useRef(false);
 	const timerRef = useRef<number>(undefined);
 	const {
 		setActiveCalendarName,
@@ -116,7 +137,7 @@ export const CalendarSearch: FC = () => {
 		levelFilter,
 		gradingFilter,
 		showPopup,
-		// setTermFilter, TODO: Not used
+		setTermFilter,
 		setDistributionFilters,
 		setLevelFilter,
 		setGradingFilter,
@@ -154,9 +175,12 @@ export const CalendarSearch: FC = () => {
 		[setLoading, setCalendarSearchResults, addRecentSearch, setError]
 	);
 
+	// Clear the other persisted filters on load, but keep the term that page.tsx set.
 	useEffect(() => {
+		const keepTerm = useFilterStore.getState().termFilter;
 		resetFilters();
-	}, [resetFilters]);
+		setTermFilter(keepTerm);
+	}, [resetFilters, setTermFilter]);
 
 	useEffect(() => {
 		const filters = {
@@ -172,37 +196,61 @@ export const CalendarSearch: FC = () => {
 		}
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
+	// The single place that switches the active calendar: UI tab, store name, and events.
+	const selectCalendar = async (calendar: Schedule, term: string) => {
+		setActiveScheduleId(calendar.id);
+		setActiveCalendarName(calendar.name);
+		await loadCourses(term);
+	};
+
+	// Load (or create) the calendars for the selected term
 	useEffect(() => {
 		if (!termFilter) {
 			return;
 		}
 
+		let cancelled = false;
+
+		// Drop the previous term's calendars right away so nothing can act on them
+		setSchedules([]);
+		setActiveScheduleId(null);
+		setActiveCalendarName('');
+
 		const loadCalendars = async () => {
-			const calendars = await getCalendars(Number(termFilter));
-
-			setSchedules(calendars.map((c) => ({ id: String(c.id), name: c.name })));
-			setActiveScheduleId(String(calendars[0].id));
-			setActiveCalendarName(calendars[0].name);
-		};
-
-		loadCalendars();
-	}, [termFilter]);
-
-	useEffect(() => {
-		if (!activeScheduleId || !termFilter) {
-			return;
-		}
-
-		const changeCalendar = async () => {
-			const calendar = schedules.find((c) => c.id === activeScheduleId);
-			if (!calendar) {
+			let calendars = await getCalendars(Number(termFilter));
+			if (cancelled) {
 				return;
 			}
-			setActiveCalendarName(calendar.name);
-			await loadCourses(termFilter);
+
+			// No calendars for this term yet: create a default one
+			if (calendars && calendars.length === 0) {
+				const created = await createCalendar(DEFAULT_CALENDAR_NAME, Number(termFilter));
+				if (cancelled) {
+					return;
+				}
+				// If create failed (e.g. one already exists), refetch
+				calendars = created ? [created] : await getCalendars(Number(termFilter));
+				if (cancelled) {
+					return;
+				}
+			}
+
+			if (!calendars || calendars.length === 0) {
+				setError('Could not load your calendars. Please refresh and try again.');
+				return;
+			}
+
+			const list = calendars.map((c) => ({ id: String(c.id), name: c.name }));
+			setSchedules(list);
+			await selectCalendar(list[0], termFilter);
 		};
-		changeCalendar();
-	}, [activeScheduleId, termFilter, schedules, loadCourses]);
+
+		void loadCalendars();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [termFilter]);
 
 	function retrieveCachedSearch(search: string) {
 		setCalendarSearchResults(searchCache.get(search) || []);
@@ -384,67 +432,143 @@ export const CalendarSearch: FC = () => {
 		}
 	};
 
+	// Claims the single in-flight slot shared by create/delete/duplicate/rename. Returns
+	// false if one of them is already running, in which case the caller must bail out.
+	const beginScheduleAction = (): boolean => {
+		if (scheduleActionPendingRef.current) {
+			return false;
+		}
+		scheduleActionPendingRef.current = true;
+		setScheduleActionPending(true);
+		return true;
+	};
+
+	const endScheduleAction = () => {
+		scheduleActionPendingRef.current = false;
+		setScheduleActionPending(false);
+	};
+
 	const handleCreateSchedule = async () => {
-		if (!newScheduleName.trim() || !termFilter) {
+		const name = newScheduleName.trim();
+		if (!name || !termFilter) {
+			return;
+		}
+		if (!beginScheduleAction()) {
 			return;
 		}
 
-		const created = await createCalendar(newScheduleName.trim(), Number(termFilter));
-		if (created) {
-			setSchedules([...schedules, { id: String(created.id), name: created.name }]);
-			setActiveScheduleId(String(created.id));
-			setActiveCalendarName(created.name);
-		}
+		try {
+			const created = await createCalendar(name, Number(termFilter));
+			if (!created) {
+				setActionError(`Could not create "${name}". A schedule with that name may already exist.`);
+				return;
+			}
 
-		setNewScheduleName('');
-		setShowCreateModal(false);
+			const newSchedule = { id: String(created.id), name: created.name };
+			setSchedules((prev) => [...prev, newSchedule]);
+			setNewScheduleName('');
+			setShowCreateModal(false);
+			await selectCalendar(newSchedule, termFilter);
+		} finally {
+			endScheduleAction();
+		}
 	};
 
-	const handleDeleteSchedule = async (schedule) => {
+	const handleDeleteSchedule = async (schedule: Schedule) => {
 		if (!termFilter || schedules.length <= 1) {
 			return;
 		}
-
-		await deleteCalendar(schedule.name, Number(termFilter));
-		const remaining = schedules.filter((s) => s.id !== schedule.id);
-		setSchedules(remaining);
-		if (activeScheduleId === schedule.id) {
-			setActiveScheduleId(remaining[0]?.id || '');
-			setActiveCalendarName(remaining[0]?.name || '');
+		if (!beginScheduleAction()) {
+			return;
 		}
-		setShowEditModal(false);
+
+		try {
+			const deleted = await deleteCalendar(schedule.name, Number(termFilter));
+			if (!deleted) {
+				setActionError(`Could not delete "${schedule.name}". Please try again.`);
+				return;
+			}
+
+			const remaining = schedules.filter((s) => s.id !== schedule.id);
+			setSchedules(remaining);
+			setShowEditModal(false);
+
+			// If we deleted the active calendar, switch to the first remaining one (and load its events)
+			if (activeScheduleId === schedule.id && remaining.length > 0) {
+				await selectCalendar(remaining[0], termFilter);
+			}
+		} finally {
+			endScheduleAction();
+		}
 	};
 
-	const handleDuplicateSchedule = async (schedule: { id: string; name: string }) => {
+	const handleDuplicateSchedule = async (schedule: Schedule) => {
 		if (!termFilter) {
 			return;
 		}
 
-		const calendarName = schedule.name;
-		const newCalendarName = `${calendarName} (copy)`;
-
-		const duplicate = await duplicateCalendar(calendarName, newCalendarName, Number(termFilter));
-		if (duplicate) {
-			setSchedules([...schedules, { id: String(duplicate.id), name: duplicate.name }]);
-			setActiveScheduleId(String(duplicate.id));
-		}
-		setShowEditModal(false);
-	};
-
-	const handleUpdateSchedule = async (schedule) => {
-		if (!newScheduleName.trim() || !termFilter) {
+		if (!beginScheduleAction()) {
 			return;
 		}
 
-		const updated = await renameCalendar(schedule.name, newScheduleName.trim(), Number(termFilter));
-		if (updated) {
-			setSchedules(
-				schedules.map((s) => (s.id === schedule.id ? { ...s, name: newScheduleName.trim() } : s))
+		try {
+			const newCalendarName = getUniqueCopyName(
+				schedule.name,
+				schedules.map((s) => s.name)
 			);
-			setActiveCalendarName(newScheduleName.trim());
+
+			const duplicate = await duplicateCalendar(schedule.name, newCalendarName, Number(termFilter));
+			if (!duplicate) {
+				setActionError(`Could not duplicate "${schedule.name}". Please try again.`);
+				return;
+			}
+
+			const newSchedule = { id: String(duplicate.id), name: duplicate.name };
+			setSchedules((prev) => [...prev, newSchedule]);
+			setShowEditModal(false);
+			await selectCalendar(newSchedule, termFilter);
+		} finally {
+			endScheduleAction();
 		}
-		setNewScheduleName('');
-		setShowEditModal(false);
+	};
+
+	const handleUpdateSchedule = async (schedule: Schedule) => {
+		const newName = newScheduleName.trim();
+		if (!newName || !termFilter) {
+			return;
+		}
+
+		// Nothing to do if the name didn't change
+		if (newName === schedule.name) {
+			setNewScheduleName('');
+			setShowEditModal(false);
+			return;
+		}
+
+		if (!beginScheduleAction()) {
+			return;
+		}
+
+		try {
+			const updated = await renameCalendar(schedule.name, newName, Number(termFilter));
+			if (!updated) {
+				setActionError(
+					`Could not rename to "${newName}". A schedule with that name may already exist.`
+				);
+				return;
+			}
+
+			setSchedules((prev) => prev.map((s) => (s.id === schedule.id ? { ...s, name: newName } : s)));
+
+			// Only touch the store if the renamed calendar is the active one
+			if (schedule.id === activeScheduleId) {
+				setActiveCalendarName(newName);
+			}
+			setNewScheduleName('');
+			setShowEditModal(false);
+		} finally {
+			endScheduleAction();
+		}
 	};
 
 	const distributionAreasInverse = invert(distributionAreas);
@@ -557,8 +681,7 @@ export const CalendarSearch: FC = () => {
 						key={schedule.id}
 						className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded px-3 py-1 text-sm ${activeScheduleId === schedule.id ? 'bg-purple-700 text-white' : 'bg-gray-200'}`}
 						onClick={() => {
-							setActiveScheduleId(schedule.id);
-							setActiveCalendarName(schedule.name);
+							void selectCalendar(schedule, termFilter);
 						}}
 					>
 						{schedule.name}
@@ -574,7 +697,13 @@ export const CalendarSearch: FC = () => {
 					</button>
 				))}
 
-				<button className='flex h-7 w-7 items-center' onClick={() => setShowCreateModal(true)}>
+				<button
+					className='flex h-7 w-7 items-center'
+					onClick={() => {
+						setNewScheduleName('');
+						setShowCreateModal(true);
+					}}
+				>
 					<PlusIcon className='h-4 w-4 hover:text-purple-700' />
 				</button>
 			</div>
@@ -670,6 +799,20 @@ export const CalendarSearch: FC = () => {
 						: 'Please select course times before exporting your calendar.'}
 				</Alert>
 			</Snackbar>
+
+			<Snackbar
+				open={actionError !== null}
+				autoHideDuration={5000}
+				onClose={() => setActionError(null)}
+				sx={{
+					padding: 0,
+					boxShadow: 'none',
+				}}
+			>
+				<Alert onClose={() => setActionError(null)} severity='error' variant='filled'>
+					{actionError}
+				</Alert>
+			</Snackbar>
 			{modalContent}
 			{showCreateModal && (
 				<Modal onClose={() => setShowCreateModal(false)}>
@@ -712,8 +855,10 @@ export const CalendarSearch: FC = () => {
 									fontWeight: 'bold',
 									padding: '8px 40px',
 									borderRadius: '10px',
+									opacity: scheduleActionPending ? 0.5 : 1,
 								}}
 								onClick={handleCreateSchedule}
+								disabled={scheduleActionPending}
 							>
 								Create
 							</button>
@@ -763,10 +908,10 @@ export const CalendarSearch: FC = () => {
 									fontWeight: 'bold',
 									padding: '8px 40px',
 									borderRadius: '10px',
-									opacity: schedules.length <= 1 ? 0.5 : 1,
+									opacity: schedules.length <= 1 || scheduleActionPending ? 0.5 : 1,
 								}}
 								onClick={() => handleDeleteSchedule(editingSchedule)}
-								disabled={schedules.length <= 1}
+								disabled={schedules.length <= 1 || scheduleActionPending}
 							>
 								Delete
 							</button>
@@ -777,8 +922,10 @@ export const CalendarSearch: FC = () => {
 									fontWeight: 'bold',
 									padding: '8px 40px',
 									borderRadius: '10px',
+									opacity: scheduleActionPending ? 0.5 : 1,
 								}}
 								onClick={() => handleDuplicateSchedule(editingSchedule)}
+								disabled={scheduleActionPending}
 							>
 								Duplicate
 							</button>
@@ -789,8 +936,10 @@ export const CalendarSearch: FC = () => {
 									fontWeight: 'bold',
 									padding: '8px 40px',
 									borderRadius: '10px',
+									opacity: scheduleActionPending ? 0.5 : 1,
 								}}
 								onClick={() => handleUpdateSchedule(editingSchedule)}
+								disabled={scheduleActionPending}
 							>
 								Save
 							</button>
