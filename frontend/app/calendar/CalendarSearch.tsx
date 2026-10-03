@@ -208,11 +208,15 @@ export const CalendarSearch: FC = () => {
 	}, [query, distributionFilters, levelFilter, gradingFilter, search, termFilter]);
 
 	// The single place that switches the active calendar: UI tab, store name, and events.
-	const selectCalendar = async (calendar: Schedule, term: string) => {
-		setActiveScheduleId(calendar.id);
-		setActiveCalendarName(calendar.name);
-		await loadCourses(term);
-	};
+	// Memoized so the term effect below can depend on it without re-running every render.
+	const selectCalendar = useCallback(
+		async (calendar: Schedule, term: string) => {
+			setActiveScheduleId(calendar.id);
+			setActiveCalendarName(calendar.name);
+			await loadCourses(term);
+		},
+		[setActiveCalendarName, loadCourses]
+	);
 
 	// Load (or create) the calendars for the selected term
 	useEffect(() => {
@@ -261,7 +265,7 @@ export const CalendarSearch: FC = () => {
 		return () => {
 			cancelled = true;
 		};
-	}, [termFilter]);
+	}, [termFilter, selectCalendar, setActiveCalendarName, setError]);
 
 	function retrieveCachedSearch(search: string) {
 		setInputValue(search);
