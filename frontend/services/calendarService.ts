@@ -125,6 +125,7 @@ export async function renameCalendar(
 			buildRequest(HttpRequestType.POST, null, {
 				calendar_name: calendarName,
 				new_calendar_name: newCalendarName,
+				action: 'UPDATE_CALENDAR',
 			})
 		);
 
@@ -142,16 +143,20 @@ export async function renameCalendar(
 	}
 }
 
-// Deletes the calendar with calendarName in term
-export async function deleteCalendar(
+export async function duplicateCalendar(
 	calendarName: string,
+	newCalendarName: string,
 	term: number
 ): Promise<CalendarConfiguration | null> {
 	try {
 		const url = buildCalendarsUrl(term);
 		const response = await fetch(
 			url,
-			buildRequest(HttpRequestType.DELETE, null, { calendar_name: calendarName })
+			buildRequest(HttpRequestType.POST, null, {
+				calendar_name: calendarName,
+				new_calendar_name: newCalendarName,
+				action: 'DUPLICATE_CALENDAR',
+			})
 		);
 
 		if (!response.ok) {
@@ -165,6 +170,20 @@ export async function deleteCalendar(
 	} catch {
 		// TODO: Handle error
 		return null;
+	}
+}
+
+// Deletes the calendar with calendarName in term. Returns true on success.
+export async function deleteCalendar(calendarName: string, term: number): Promise<boolean> {
+	try {
+		const url = buildCalendarsUrl(term);
+		const response = await fetch(
+			url,
+			buildRequest(HttpRequestType.DELETE, null, { calendar_name: calendarName })
+		);
+		return response.ok;
+	} catch {
+		return false;
 	}
 }
 
