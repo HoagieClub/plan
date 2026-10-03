@@ -17,6 +17,7 @@ import { PlusIcon } from 'evergreen-ui';
 import { LRUCache } from 'typescript-lru-cache';
 
 import { FilterModal, Modal } from '@/components/Modal';
+import { RecentSearches } from '@/components/RecentSearches';
 import { ButtonWidget } from '@/components/Widgets/Widget';
 import {
 	getCalendars,
@@ -28,7 +29,6 @@ import {
 import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import type { Course, Filter } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { distributionAreas } from '@/utils/distributionAreas';
 import { grading } from '@/utils/grading';
 import { levels } from '@/utils/levels';
@@ -62,6 +62,11 @@ function buildQuery(searchQuery: string, filter: Filter): string {
 	if (filter.gradingFilter.length > 0) {
 		queryString += `&grading=${filter.gradingFilter.map(encodeURIComponent).join(',')}`;
 	}
+
+	/* test for time filtering
+	queryString += '&start=13:00:00';
+	queryString += '&end=16:00:00';
+	*/
 
 	return queryString;
 }
@@ -99,6 +104,10 @@ export const CalendarSearch: FC = () => {
 	const [localDistributionFilters, setLocalDistributionFilters] = useState<string[]>([]);
 	const [localGradingFilter, setLocalGradingFilter] = useState<string[]>([]);
 	const [localLevelFilter, setLocalLevelFilter] = useState<string[]>([]);
+
+	// Input value for the search box, updated immediately on user input
+	const [inputValue, setInputValue] = useState<string>('');
+	// Query used for triggering searches, updated after debounce
 	const [query, setQuery] = useState<string>('');
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -120,11 +129,13 @@ export const CalendarSearch: FC = () => {
 		setError,
 		setLoading,
 		loadCourses,
+		clearRecentSearches,
 	} = useCalendarStore((state) => ({
 		setActiveCalendarName: state.setActiveCalendarName,
 		setCalendarSearchResults: state.setCalendarSearchResults,
 		calendarSearchResults: state.calendarSearchResults,
 		addRecentSearch: state.addRecentSearch,
+		clearRecentSearches: state.clearRecentSearches,
 		recentSearches: state.recentSearches,
 		setError: state.setError,
 		setLoading: state.setLoading,
@@ -253,16 +264,24 @@ export const CalendarSearch: FC = () => {
 	}, [termFilter]);
 
 	function retrieveCachedSearch(search: string) {
-		setCalendarSearchResults(searchCache.get(search) || []);
+		setInputValue(search);
+		setQuery(search);
+		addRecentSearch(search);
+		const cached = searchCache.get(search);
+		if (cached) {
+			setCalendarSearchResults(cached);
+		}
 	}
 
 	const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+		const value = event.target.value;
+		setInputValue(value);
 		if (timerRef.current) {
 			clearTimeout(timerRef.current);
 		}
 
 		timerRef.current = window.setTimeout(() => {
-			setQuery(event.target.value);
+			setQuery(value);
 		}, 500);
 	};
 
@@ -282,13 +301,8 @@ export const CalendarSearch: FC = () => {
 				return;
 			}
 
-			const csrfToken = await fetchCsrfToken();
-
 			const response = await fetch(`/api/hoagie/export-calendar`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 				body: JSON.stringify(calendarData),
 			});
 
@@ -730,6 +744,7 @@ export const CalendarSearch: FC = () => {
 							className='search-input'
 							placeholder='Search courses'
 							autoComplete='off'
+							value={inputValue}
 							onChange={handleInputChange}
 						/>
 						<button
@@ -744,20 +759,12 @@ export const CalendarSearch: FC = () => {
 							/>
 						</button>
 					</div>
-					<div className='recent-searches'>
-						<div className='recent-searches-label'>Recent searches:</div>
-						<div className='recent-searches-list'>
-							{recentSearches.slice(-5).map((search, index) => (
-								<button
-									key={index}
-									className='recent-search-item'
-									onClick={() => retrieveCachedSearch(search)}
-								>
-									{search}
-								</button>
-							))}
-						</div>
-					</div>
+
+					<RecentSearches
+						searches={recentSearches}
+						onSearch={retrieveCachedSearch}
+						onClear={clearRecentSearches}
+					/>
 				</div>
 				<div className='search-results'>
 					<CalendarSearchResults courses={calendarSearchResults} />

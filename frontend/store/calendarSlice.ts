@@ -12,29 +12,22 @@ import type {
 	/* ClassMeeting, */ Course /* Section */,
 } from '@/types';
 
-interface CalendarStore {
+import { computeAddRecentSearch, type RecentSearchesSlice } from './recentSearchesSlice';
+
+interface CalendarStore extends RecentSearchesSlice {
 	activeCalendarName: string;
 	calendarSearchResults: Course[];
 	// Map of term id to (guid, section id, column) to calendar event
 	selectedCourses: Record<string, Record<string, OldCalendarEvent>>;
-
-	recentSearches: string[];
-
 	error: string | null;
 	loading: boolean;
 	eventsLoading: boolean;
 
 	loadCourses: (semester: string) => Promise<void>; // Loads courses for a given semester
-
 	setCalendarSearchResults: (results: Course[]) => void; // Sets search results
-
-	addRecentSearch: (search: string) => void; // Caches search to recent searches
-
 	addCourse: (course: Course) => Promise<void>; // Fetches course details and adds all candidate sections to selectedCourses
 	removeCourse: (sectionKey: string) => void; // Removes all instances of a course from selectedCourses and selectedSections
-
 	activateSection: (event: OldCalendarEvent) => void; // Activates a selected section
-
 	setError: (error: string | null) => void;
 	setLoading: (loading: boolean) => void;
 	setActiveCalendarName: (name: string) => void;
@@ -108,6 +101,9 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 	error: null,
 	loading: false,
 	eventsLoading: false,
+	clearRecentSearches: () => set({ recentSearches: [] }),
+	addRecentSearch: (query) =>
+		set((state) => ({ recentSearches: computeAddRecentSearch(state.recentSearches, query) })),
 
 	loadCourses: async (semester: string) => {
 		const name = get().activeCalendarName;
@@ -154,8 +150,6 @@ const useCalendarStore = create<CalendarStore>()((set, get) => ({
 		}));
 	},
 	setCalendarSearchResults: (results) => set({ calendarSearchResults: results }),
-	addRecentSearch: (search) =>
-		set((state) => ({ recentSearches: [...state.recentSearches, search] })),
 	setError: (error) => set({ error }),
 	setLoading: (loading) => set({ loading }),
 

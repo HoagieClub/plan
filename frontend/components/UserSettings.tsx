@@ -11,9 +11,9 @@ import {
 	Typography,
 } from '@mui/joy';
 
+import { updateUserProfile } from '@/services/userService';
 import useUserSlice from '@/store/userSlice';
 import type { MajorMinorType, ProfileProps } from '@/types';
-import { fetchCsrfToken } from '@/utils/csrf';
 import { CERTIFICATE_OPTIONS, MAJOR_OPTIONS, MINOR_OPTIONS } from '@/utils/programs';
 
 import { isOptionEqual, smartSearch } from './MajorMinorSearch';
@@ -76,14 +76,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		setOpenSnackbar(false);
 	};
 
-	const [csrfToken, setCsrfToken] = useState('');
-	useEffect(() => {
-		void (async () => {
-			const token = await fetchCsrfToken();
-			setCsrfToken(token);
-		})();
-	}, []);
-
 	const handleSave = useCallback(async () => {
 		const oldProfile = useUserSlice.getState().profile;
 		const profile = {
@@ -97,17 +89,7 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		};
 
 		try {
-			const response = await fetch(`/api/hoagie/profile/update`, {
-				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
-				body: JSON.stringify(profile),
-			});
-
-			if (!response.ok) {
-				throw new Error('POST request to update profile failed.');
-			}
+			await updateUserProfile(profile);
 
 			updateProfile(profile);
 			onSave(profile);
@@ -123,7 +105,6 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 		minors,
 		certificates,
 		classYear,
-		csrfToken,
 		onSave,
 		updateRequirements,
 	]);
@@ -188,6 +169,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your major'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={major}
 						// inputValue={major.code === undeclared.code ? '' : major.code}
 						isOptionEqualToValue={isOptionEqual}
@@ -216,6 +202,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your minor(s)'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={minors}
 						isOptionEqualToValue={isOptionEqual}
 						onChange={(event, newMinors: MajorMinorType[]) => {
@@ -258,6 +249,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						filterOptions={(options, { inputValue }) => smartSearch(inputValue, options)}
 						placeholder='Select your certificate(s)'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={certificates}
 						isOptionEqualToValue={isOptionEqual}
 						onChange={(event, newCertificates: MajorMinorType[]) => {
@@ -339,6 +335,11 @@ export const UserSettings: FC<ProfileProps> = ({ profile, onClose, onSave }) => 
 						options={generateClassYears()}
 						placeholder='Class year'
 						variant='soft'
+						slotProps={{
+							listbox: {
+								disablePortal: true,
+							},
+						}}
 						value={classYear}
 						isOptionEqualToValue={(option, value) => value === undefined || option === value}
 						onChange={(event, newClassYear: number | undefined) => {
