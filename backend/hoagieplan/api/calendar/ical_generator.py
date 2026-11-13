@@ -33,6 +33,7 @@ START_DATE = {
     "1262": date(2025, 9, 2),
     "1264": date(2026, 1, 26),
     "1272": date(2026, 9, 2),
+    "1274": date(2027, 1, 25),
 }
 
 # Look for "Last Day of Scheduled Classes" or something similar
@@ -45,6 +46,7 @@ END_DATE = {
     "1262": date(2025, 12, 4),
     "1264": date(2026, 4, 24),
     "1272": date(2026, 12, 7),
+    "1274": date(2027, 4, 23),
 }
 
 # Inclusive dates with no scheduled classes
@@ -73,6 +75,9 @@ NO_CLASS_RANGES = {
     "1272": [
         (date(2026, 10, 17), date(2026, 10, 25)), # Fall recess
         (date(2026, 11, 24), date(2026, 11, 29)), # Thanksgiving recess
+    ],
+    "1274": [
+        (date(2027, 3, 6), date(2027, 3, 14)),  # Spring recess
     ],
 }
 
