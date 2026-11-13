@@ -10,6 +10,11 @@ fi
 
 SEMESTER="$1"
 
+# fetch_data.py imports `constants` and `data.*` from backend/, so put backend/ on the path
+# and always run from this script's own directory (where the CSVs are written).
+cd "$(dirname "$0")" || exit 1
+export PYTHONPATH="..${PYTHONPATH:+:$PYTHONPATH}"
+
 # List of departments to fetch data for
 DEPTS=(
     'AAS' 'ASL' 'AFS' 'AMS' 'ANT' 'AOS' 'APC' 'ARA' 'ARC' 'ART' 'ASA' 'AST' 'ATL' 'BCS' 'BNG' 'CBE' 'CEE' 'CDH' 'CGS' 'CHI' 'CHM' 'CHV' 'CLA' 'CLG' 'COM' 'COS' 'CSE' 'CTL' 'CWR' 'CZE' 'DAN' 'EAS' 'ECE' 'ECO' 'ECS' 'EEB' 'EGR' 'ENE' 'ENG' 'ENT' 'ENV' 'EPS' 'FIN' 'FRE' 'FRS' 'GEO' 'GER' 'GEZ' 'GHP' 'GSS' 'HEB' 'HIN' 'HIS' 'HLS' 'HOS' 'HUM' 'ISC' 'ITA' 'JDS' 'JPN' 'JRN' 'KOR' 'LAO' 'LAS' 'LAT' 'LCA' 'LIN' 'MAE' 'MAT' 'MED' 'MOD' 'MOG' 'MOL' 'MPP' 'MSE' 'MTD' 'MUS' 'NES' 'NEU' 'ORF' 'PAW' 'PER' 'PHI' 'PHY' 'PLS' 'POL' 'POP' 'POR' 'PSY' 'QCB' 'REL' 'RES' 'RUS' 'SAN' 'SAS' 'SLA' 'SML' 'SOC' 'SPA' 'SPI' 'STC' 'SWA' 'THR' 'TPP' 'TRA' 'TUR' 'TWI' 'UKR' 'URB' 'URD' 'VIS' 'WRI'
