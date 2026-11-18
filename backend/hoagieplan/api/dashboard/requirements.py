@@ -698,6 +698,7 @@ def requirement_info(request):
 				query |= Q(distribution_area_short__icontains=distribution)
 			course_list = (
 				Course.objects.select_related("department")
+				.prefetch_related("instructors")
 				.filter(query)
 				.order_by("course_id", "-guid")
 				.distinct("course_id")
@@ -705,7 +706,9 @@ def requirement_info(request):
 		else:
 			excluded_course_ids = req_inst.excluded_course_list.values_list("course_id", flat=True).distinct()
 			course_list = (
-				req_inst.course_list.exclude(course_id__in=excluded_course_ids)
+				req_inst.course_list.select_related("department")
+				.prefetch_related("instructors")
+				.exclude(course_id__in=excluded_course_ids)
 				.order_by("course_id", "-guid")
 				.distinct("course_id")
 			)
@@ -735,6 +738,7 @@ def requirement_info(request):
 
 			dept_sample_list = (
 				Course.objects.select_related("department")
+				.prefetch_related("instructors")
 				.filter(query)
 				.order_by("course_id", "-guid")
 				.distinct("course_id")
