@@ -43,6 +43,11 @@ const foundingTeam: HoagieChef[] = [
 
 const prevteamLeads: HoagieChef[] = [
 	{
+		name: 'Emily You',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+	},
+	{
 		name: 'Issac Li',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/issactli/',
@@ -61,9 +66,9 @@ const teamLeads: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/hannah-e-choi/',
 	},
 	{
-		name: 'Emily You',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+		name: 'Rishabh Mohapatra',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/rmohapatra06',
 	},
 ];
 
@@ -117,11 +122,6 @@ const contributors: HoagieChef[] = [
 		name: 'Vikram Meyyappan',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/vikram-meyyappan',
-	},
-	{
-		name: 'Rishabh Mohapatra',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/rmohapatra06',
 	},
 	{
 		name: 'Albert Rho',
