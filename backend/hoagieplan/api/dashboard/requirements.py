@@ -7,6 +7,7 @@ from django.db.models import Prefetch, Q
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
+from hoagieplan.api.dashboard.search import attach_terms
 from hoagieplan.api.dashboard.utils import cumulative_time
 from hoagieplan.api.profile.info import fetch_user_info
 from hoagieplan.logger import logger
@@ -709,9 +710,13 @@ def requirement_info(request):
 				.distinct("course_id")
 			)
 
+		course_list = list(course_list)
 		if course_list:
 			serialized_course_list = CourseSerializer(course_list, many=True)
-			sorted_course_list = sorted(serialized_course_list.data, key=lambda course: course["crosslistings"])
+			sorted_course_list = sorted(
+				attach_terms(serialized_course_list.data, course_list),
+				key=lambda course: course["crosslistings"],
+			)
 
 		if req_inst.dept_list:
 			sorted_dept_list = sorted(oj.loads(req_inst.dept_list))
@@ -734,10 +739,11 @@ def requirement_info(request):
 				.order_by("course_id", "-guid")
 				.distinct("course_id")
 			)
+			dept_sample_list = list(dept_sample_list)
 			if dept_sample_list:
 				serialized_dept_sample_list = CourseSerializer(dept_sample_list, many=True)
 				sorted_dept_sample_list = sorted(
-					serialized_dept_sample_list.data,
+					attach_terms(serialized_dept_sample_list.data, dept_sample_list),
 					key=lambda course: course["crosslistings"],
 				)
 
