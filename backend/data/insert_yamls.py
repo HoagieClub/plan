@@ -28,7 +28,8 @@ from hoagieplan.models import (
 )
 
 DEGREE_FIELDS = ["name", "code", "description", "urls"]
-MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts", "iw_required"]
+# Major has no iw_required column (only Minor and Certificate do)
+MAJOR_FIELDS = ["name", "code", "description", "urls", "contacts"]
 MINOR_FIELDS = ["name", "code", "description", "urls", "contacts", "apply_by_semester", "iw_required"]
 CERTIFICATE_FIELDS = [
 	"name",

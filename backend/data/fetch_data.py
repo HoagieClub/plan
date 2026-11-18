@@ -161,7 +161,7 @@ def process_course(term, subject, course, seat_mapping, course_details, writer):
 	# Pre-process class and meeting data since it's not instructor-dependent
 	classes_data = []
 	for course_class in course.get("classes", []):
-		class_data = extract_class_data(course_class, seat_mapping)
+		class_data = extract_class_data(course_class, seat_mapping.get(course.get("course_id", ""), {}))
 
 		for meeting in course_class.get("schedule", {}).get("meetings", []):
 			meeting_data = extract_meeting_data(meeting)
@@ -285,9 +285,9 @@ def extract_crosslisting_data(crosslistings):
 # --------------------------------------------------------------------------------------
 
 
-def extract_class_data(course_class, seat_mapping):
+def extract_class_data(course_class, seat_mapping_data):
+	"""Extract class info; seat_mapping_data is the reserved-seat entry for this class's own course."""
 	class_number = course_class.get("class_number", "")
-	seat_mapping_data = next(iter(seat_mapping.values()), {}) if seat_mapping else {}
 
 	# Find the class information based on class_number
 	class_info_found = next(
