@@ -79,6 +79,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/eric--c/',
 	},
 	{
+		name: 'Jackson Chen',
+		graduationYear: '2030',
+		link: 'https://www.linkedin.com/in/jacksonc2630/',
+	},
+	{
 		name: 'Lucy Chen',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/lucy-c1/',
