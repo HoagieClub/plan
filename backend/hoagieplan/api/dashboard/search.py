@@ -115,9 +115,7 @@ def search_courses(request):
 	if not query:
 		return JsonResponse({"courses": []})
 
-	return search_courses_helper(
-		query, term, distribution, levels, grading_options, start_time_str, end_time_str
-	)
+	return search_courses_helper(query, term, distribution, levels, grading_options, start_time_str, end_time_str)
 
 
 def search_courses_helper(
@@ -265,9 +263,7 @@ def search_courses_helper(
 		courses = list(courses_with_rating) + list(courses_without_rating)
 
 		if filter_by_time:
-			courses = [
-				course for course in courses if course_fits_time_constraint(course, start_time, end_time, term)
-			]
+			courses = [course for course in courses if course_fits_time_constraint(course, start_time, end_time, term)]
 
 		if courses:
 			serialized_courses = CourseSerializer(courses, many=True)
