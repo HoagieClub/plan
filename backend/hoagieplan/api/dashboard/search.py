@@ -38,14 +38,29 @@ def make_sort_key(dept):
 	return sort_key
 
 
-def attach_terms(serialized_courses, course_objects):
-	"""Bulk-fetch all term codes for the given courses and inject them into the serialized dicts."""
+def attach_terms(serialized_courses, course_objects, max_term=None):
+	"""Bulk-fetch the term codes each course was offered in and inject them into the serialized dicts.
+
+	Terms are listed newest first. The list is independent of which offering was
+	serialized, so a course whose rated offering is old still lists its newer terms.
+
+	Args:
+	    serialized_courses: Serialized course dicts to add a ``terms`` key to.
+	    course_objects: The Course instances that were serialized.
+	    max_term: Optional term code. If given, later terms are left out, so a
+	        search filtered to a term lists that term and the ones before it.
+
+	"""
 	course_ids = [c.course_id for c in course_objects]
 	rows = Course.objects.filter(course_id__in=course_ids).values_list("course_id", "guid").order_by("-guid")
 	terms_map: dict[int, list[str]] = {}
 	for course_id, guid in rows:
-		if guid:
-			terms_map.setdefault(course_id, []).append(guid[:4])
+		if not guid:
+			continue
+		term_code = guid[:4]
+		if max_term and term_code > str(max_term):
+			continue
+		terms_map.setdefault(course_id, []).append(term_code)
 	result = []
 	for item in serialized_courses:
 		item = dict(item)
@@ -226,7 +241,7 @@ def search_courses_helper(
 		if exact_match_course:
 			# If an exact match is found, return only that course
 			serialized_course = CourseSerializer(exact_match_course, many=True)
-			return JsonResponse({"courses": attach_terms(serialized_course.data, exact_match_course)})
+			return JsonResponse({"courses": attach_terms(serialized_course.data, exact_match_course, term)})
 
 		filtered_query = query_conditions
 		if len(search_key) > 3:
@@ -267,7 +282,7 @@ def search_courses_helper(
 
 		if courses:
 			serialized_courses = CourseSerializer(courses, many=True)
-			with_terms = attach_terms(serialized_courses.data, courses)
+			with_terms = attach_terms(serialized_courses.data, courses, term)
 			sorted_data = sorted(with_terms, key=make_sort_key(dept))
 			return JsonResponse({"courses": sorted_data})
 		return JsonResponse({"courses": []})

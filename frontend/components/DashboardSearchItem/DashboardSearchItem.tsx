@@ -10,15 +10,16 @@ import { termsInverse } from '@/utils/terms';
 
 import styles from './DashboardSearchItem.module.css';
 
-function getDisplaySemester(course: Course): SemesterType | undefined {
-	const currentTermCode = course.guid?.slice(0, 4) ?? '';
-	const prevTerms = (course.terms ?? [])
-		.filter((code) => code <= currentTermCode)
-		.map((code) => termsInverse[code])
-		.filter(Boolean);
+// Labels for the terms a course was offered in, newest first. The backend decides
+// which terms to include, so this does not depend on which offering the card shows
+// (search returns the latest rated offering, which can be older than the newest term).
+function getOfferedTerms(course: Course): string[] {
+	return (course.terms ?? []).map((code) => termsInverse[code]).filter(Boolean);
+}
 
-	const hasFall = prevTerms.some((t) => t.startsWith('Fall'));
-	const hasSpring = prevTerms.some((t) => t.startsWith('Spring'));
+function getDisplaySemester(offeredTerms: string[]): SemesterType | undefined {
+	const hasFall = offeredTerms.some((t) => t.startsWith('Fall'));
+	const hasSpring = offeredTerms.some((t) => t.startsWith('Spring'));
 
 	if (hasFall && hasSpring) {
 		return SemesterType.Multiple;
@@ -49,18 +50,14 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 		}
 	};
 
-	const currentTermCode = course.guid?.slice(0, 4) ?? '';
-	const prevTerms = (course.terms ?? [])
-		.filter((code) => code <= currentTermCode)
-		.map((code) => termsInverse[code])
-		.filter(Boolean);
+	const offeredTerms = getOfferedTerms(course);
 
 	const distColor = getDistributionColors(course.distribution_area_short);
 	const pdfTag = getPdfTag(course.grading_basis);
 	const pdfColor = getPdfColor(pdfTag);
 	const auditTag = getAuditTag(course.grading_basis);
 	const auditColor = getAuditColor(auditTag);
-	const displaySemester = getDisplaySemester(course);
+	const displaySemester = getDisplaySemester(offeredTerms);
 
 	return (
 		<div className={styles.card} onClick={handleClick}>
@@ -89,8 +86,8 @@ export const DashboardSearchItem: FC<DashboardSearchItemProps> = ({
 						<hr className={styles.divider} />
 						<div className={styles.termRow}>
 							<SemesterTag semester={displaySemester} />
-							{prevTerms.length > 0 && (
-								<span className={styles.termList}>{prevTerms.join(', ')}</span>
+							{offeredTerms.length > 0 && (
+								<span className={styles.termList}>{offeredTerms.join(', ')}</span>
 							)}
 						</div>
 					</>
