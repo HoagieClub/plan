@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 
+import CircularProgress from '@mui/material/CircularProgress';
 import { Pane, Tablist, Tab, IconButton, ChevronLeftIcon, ChevronRightIcon } from 'evergreen-ui';
 
 import { Calendar } from '@/app/calendar/Calendar';
@@ -14,7 +15,7 @@ import {
 	createCalendar,
 	getCalendars,
 } from '@/services/calendarService';
-import useCalendarStore, { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
+import { DEFAULT_CALENDAR_NAME } from '@/store/calendarSlice';
 import { useFilterStore } from '@/store/filterSlice';
 import UserState from '@/store/userSlice';
 import type { CalendarEvent } from '@/types';
@@ -32,10 +33,11 @@ const CalendarUI: FC = () => {
 	const semesterList = useMemo(() => Object.keys(terms).reverse(), []);
 	const semestersPerPage = 5;
 	const totalPages = Math.ceil(semesterList.length / semestersPerPage);
-	const loadCourses = useCalendarStore((state) => state.loadCourses);
+
+	// Default to the current term on first render. This runs long before the
+	// migration gate opens, so CalendarSearch always mounts with a term already set.
 	useEffect(() => {
-		const currentSemester = Object.values(terms)[0] ?? '';
-		setTermFilter(currentSemester);
+		setTermFilter(Object.values(terms)[0] ?? '');
 	}, [setTermFilter]);
 
 	const handlePageChange = (page: number) => {
@@ -130,26 +132,6 @@ const CalendarUI: FC = () => {
 		});
 	}, [createUserCalendarData]);
 
-	// Load from DB when term changes (only after migration is complete)
-	// Create calendar if it doesn't exist for the term
-	useEffect(() => {
-		if (!termFilter || !migrationComplete) {
-			return;
-		}
-
-		async function initCalendar() {
-			const calendars = await getCalendars(parseInt(termFilter));
-			if (!calendars || calendars.length === 0) {
-				await createCalendar(DEFAULT_CALENDAR_NAME, parseInt(termFilter));
-			}
-			void loadCourses(termFilter);
-		}
-
-		initCalendar().catch((err) => {
-			console.error('Error loading calendar:', err);
-		});
-	}, [termFilter, loadCourses, migrationComplete]);
-
 	const startIndex = (currentPage - 1) * semestersPerPage;
 	const endIndex = startIndex + semestersPerPage;
 	const displayedSemesters = semesterList.slice(startIndex, endIndex);
@@ -193,13 +175,22 @@ const CalendarUI: FC = () => {
 			</div>
 
 			<main className='flex flex-grow justify-center'>
-				<div>
-					<CalendarSearch />
-					<SelectedCourses />
-				</div>
-				<div className='margin flex-grow pr-2'>
-					{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
-				</div>
+				{!migrationComplete && (
+					<div className='flex w-full items-center justify-center pt-24'>
+						<CircularProgress size={35} sx={{ color: '#9e9e9e' }} />
+					</div>
+				)}
+				{migrationComplete && (
+					<>
+						<div>
+							<CalendarSearch />
+							<SelectedCourses />
+						</div>
+						<div className='margin flex-grow pr-2'>
+							{userProfile && userProfile.netId !== '' ? <Calendar /> : <SkeletonApp />}
+						</div>
+					</>
+				)}
 			</main>
 		</>
 	);
