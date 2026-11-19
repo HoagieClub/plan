@@ -27,10 +27,9 @@ export type AuthState = {
 
 export type UserState = {
 	profile: Profile;
-	academicPlan: { [key: string]: any }; // TODO: Use a more specific type for academicPlan
+	academicPlan: Record<string, unknown>;
 	updateProfile: (updates: Partial<Profile>) => void;
-	setAcademicPlan: (plan: { [key: string]: any }) => void;
-	updateRequirements: () => Promise<any | null>; // TODO: Try to type this better
+	updateRequirements: () => Promise<Record<string, unknown> | null>;
 	fetchAndUpdateProfile: (userProfile: User) => void;
 };
 
@@ -80,18 +79,6 @@ export type Filter = {
 	distributionFilters: string[];
 	levelFilter: string[];
 	gradingFilter: string[];
-};
-
-export type SearchStoreState = {
-	searchResults: Course[];
-	setSearchResults: (results: Course[]) => void;
-	recentSearches: string[];
-	addRecentSearch: (query: string) => void;
-	clearRecentSearches: () => void;
-	error: string | null;
-	setError: (error: string | null) => void;
-	loading: boolean;
-	setLoading: (loading: boolean) => void;
 };
 
 export type CourseProps = {

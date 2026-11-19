@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 
 import { Tutorial } from '@/components/Tutorial/TutorialModal';
 import useUserSlice from '@/store/userSlice';
-import { fetchCsrfToken } from '@/utils/csrf';
 
 /**
  * Custom hook that manages the state and logic for the tutorial modal.
@@ -29,14 +28,6 @@ export function useTutorialModal() {
 	const [tutorialType, setTutorialType] = useState<string>('dashboard');
 	const profile = useUserSlice((state) => state.profile);
 	const pathname = usePathname();
-
-	const [csrfToken, setCsrfToken] = useState('');
-	useEffect(() => {
-		void (async () => {
-			const token = await fetchCsrfToken();
-			setCsrfToken(token);
-		})();
-	}, []);
 
 	useEffect(() => {
 		if (pathname !== '/dashboard') {
@@ -75,9 +66,6 @@ export function useTutorialModal() {
 		try {
 			await fetch(`/api/hoagie/tutorial/set-status`, {
 				method: 'POST',
-				headers: {
-					'X-CSRFToken': csrfToken,
-				},
 			});
 			setIsModalOpen(false);
 		} catch (error) {

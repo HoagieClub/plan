@@ -20,7 +20,6 @@ maintainers = [
 # Project dependencies
 dependencies = [
     "requests>=2.32.5",
-    "ruff>=0.15.7",
     "django>=6.0.3",
     "dj_database_url>=3.1.2",
     "python-dotenv>=1.2.2",
@@ -80,6 +79,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "hoagieplan/migrations",
 ]
 
 # General Ruff settings
@@ -93,17 +93,12 @@ target-version = "py312"
 [tool.ruff.lint]
 
 # Enable pydocstyle rules for Google-style docstrings
-select = ["E4", "E7", "E9", "F", "B", "Q", "D"] # Flake8 rules, Bugbear, Quotes, etc.
+select = ["E4", "E7", "E9", "F", "B", "Q", "D2"] # Flake8 rules, Bugbear, Quotes, etc.
 
 ignore = [
     "D203",  # Ignore conflicts for one-liner docstring style
+    "D206",  # Ignore docstring being indented with spaces, not tabs
     "D213",  # Allow Google-style multi-line docstrings with different line breaks
-    "D100", # Allow public modules without docstrings
-    "D101", # Allow public classes without docstrings
-    "D103", # Allow public functions without docstrings
-    "D104", # Allow public packages without docstrings
-    "D105", # Allow public functions without docstrings
-    "D106", # Allow nested functions without docstrings
     "E402", # Allow arbitrary import order to support django.setup() flow
 ]
 
@@ -123,9 +118,14 @@ inline-quotes = "double"     # Enforce double quotes for inline strings
 # -------------------------------
 [tool.ruff.format]
 quote-style = "double"                  # Use double quotes for auto-formatting
-indent-style = "space"                  # Indent with spaces instead of tabs
+indent-style = "tab"                    # Indent with tabs instead of spaces
 skip-magic-trailing-comma = false       # Respect magic trailing commas
 line-ending = "auto"                    # Automatically detect line endings
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.4",
+]
 
 [build-system]
 requires = ["hatchling"]

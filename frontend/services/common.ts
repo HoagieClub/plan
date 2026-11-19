@@ -13,7 +13,6 @@ export function buildRequest(
 	return {
 		method,
 		headers: { 'Content-Type': 'application/json', ...headers },
-		credentials: 'include',
 		...(body && { body: JSON.stringify(body) }),
 	};
 }

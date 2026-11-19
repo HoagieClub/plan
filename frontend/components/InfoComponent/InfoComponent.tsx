@@ -48,7 +48,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 	const dept = value.split(' ')[0];
 	const coursenum = value.split(' ')[1];
 	const [showPopup, setShowPopup] = useState<boolean>(false);
-	const [feedbackRating, setFeedbackRating] = useState<number>(0);
+	const [feedbackRating, setFeedbackRating] = useState<number | null>(null);
 	const [courseDetails, setCourseDetails] = useState<{
 		// TODO: Address this typing eventually.
 
@@ -149,7 +149,8 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 				className={styles.modal}
 				style={{
 					width: '75%',
-					height: courseDetails ? '82vh' : '160px',
+					height: courseDetails ? '70vh' : '160px',
+					maxHeight: courseDetails ? '70vh' : '160px',
 					gap: '10px',
 					padding: '25px',
 					display: 'flex',
@@ -398,7 +399,7 @@ export const InfoComponent: FC<InfoComponentProps> = ({ value }) => {
 									style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
 								>
 									<SectionTitle label='Student Feedback' iconSrc='/icons/feedback.svg' />
-									{feedbackRating > 0 && (
+									{feedbackRating !== null && feedbackRating > 0 && (
 										<div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
 											<span style={{ fontSize: '0.75rem', color: '#8b8b8b', fontWeight: 600 }}>
 												{feedbackRating.toFixed(1)}

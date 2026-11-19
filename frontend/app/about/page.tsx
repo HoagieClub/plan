@@ -43,6 +43,11 @@ const foundingTeam: HoagieChef[] = [
 
 const prevteamLeads: HoagieChef[] = [
 	{
+		name: 'Emily You',
+		graduationYear: '2027',
+		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+	},
+	{
 		name: 'Issac Li',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/issactli/',
@@ -61,9 +66,9 @@ const teamLeads: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/hannah-e-choi/',
 	},
 	{
-		name: 'Emily You',
-		graduationYear: '2027',
-		link: 'https://www.linkedin.com/in/emily-you-0a0943215/',
+		name: 'Rishabh Mohapatra',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/rmohapatra06',
 	},
 ];
 
@@ -72,6 +77,11 @@ const contributors: HoagieChef[] = [
 		name: 'Eric Chen',
 		graduationYear: '2029',
 		link: 'https://www.linkedin.com/in/eric--c/',
+	},
+	{
+		name: 'Jackson Chen',
+		graduationYear: '2030',
+		link: 'https://www.linkedin.com/in/jacksonc2630/',
 	},
 	{
 		name: 'Lucy Chen',
@@ -104,6 +114,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/niyathi-kukkapalli',
 	},
 	{
+		name: 'Anna Lau',
+		graduationYear: '2029',
+		link: 'https://www.linkedin.com/in/anna1au/',
+	},
+	{
 		name: 'David Lee',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/davidlee08/',
@@ -117,11 +132,6 @@ const contributors: HoagieChef[] = [
 		name: 'Vikram Meyyappan',
 		graduationYear: '2026',
 		link: 'https://www.linkedin.com/in/vikram-meyyappan',
-	},
-	{
-		name: 'Rishabh Mohapatra',
-		graduationYear: '2028',
-		link: 'https://www.linkedin.com/in/rmohapatra06',
 	},
 	{
 		name: 'Albert Rho',
@@ -162,6 +172,11 @@ const contributors: HoagieChef[] = [
 		name: 'Gary Yang',
 		graduationYear: '2027',
 		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
+	},
+	{
+		name: 'Ariel Yuan',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/ariel-yuan-1591a723b/',
 	},
 	{
 		name: 'Stephy Zhang',

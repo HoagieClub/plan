@@ -1,6 +1,7 @@
 import { type FC } from 'react';
 import { useEffect, useRef } from 'react';
 
+import CircularProgress from '@mui/material/CircularProgress';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 
 import './Calendar.css';
@@ -21,6 +22,7 @@ export const Calendar: FC = () => {
 	const { selectedCourses } = useCalendarStore((state) => ({
 		selectedCourses: state.getSelectedCourses(termFilter).filter((course) => course.isActive),
 	}));
+	const showLoading = useCalendarStore((state) => state.eventsLoading || !state.activeCalendarName);
 
 	const defaultColor: string = '#657786';
 
@@ -109,7 +111,7 @@ export const Calendar: FC = () => {
 	}, []);
 
 	return (
-		<div>
+		<div className='relative'>
 			<CalendarBody
 				calendarRef={calendarElementRef}
 				days={formattedDays.map((day) => day.name)}
@@ -118,6 +120,11 @@ export const Calendar: FC = () => {
 				events={events}
 				onEventClick={handleClick}
 			/>
+			{showLoading && (
+				<div className='absolute inset-0 z-20 flex items-center justify-center bg-white/70'>
+					<CircularProgress size={35} sx={{ color: '#9e9e9e' }} />
+				</div>
+			)}
 		</div>
 	);
 };

@@ -20,9 +20,7 @@ const Dashboard: FC = () => {
 				{profile && profile.netId !== '' ? ( // prob don't need to verify netId too
 					<Canvas profile={profile} columns={2} />
 				) : (
-					<div>
-						<SkeletonApp />
-					</div>
+					<SkeletonApp />
 				)}
 			</main>
 		</>
