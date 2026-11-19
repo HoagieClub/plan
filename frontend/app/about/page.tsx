@@ -174,6 +174,11 @@ const contributors: HoagieChef[] = [
 		link: 'https://www.linkedin.com/in/gary-yang-4a5ab9292/',
 	},
 	{
+		name: 'Ariel Yuan',
+		graduationYear: '2028',
+		link: 'https://www.linkedin.com/in/ariel-yuan-1591a723b/',
+	},
+	{
 		name: 'Stephy Zhang',
 		graduationYear: '2028',
 		link: 'https://www.linkedin.com/in/stephy-zhang/',
